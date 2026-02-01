@@ -90,23 +90,21 @@
       opacity: 1;
     }
     
-    /* Closeup shot character - large, visible, fills good portion of frame */
+    /* Closeup shot character - large and centered */
     .character.closeup-center {
       position: absolute;
-      bottom: 0;
-      width: 55%;
+      bottom: 5%;
+      width: 50%;
       max-width: none;
       height: auto;
     }
-    /* Left character closeup - on left third of screen */
+    /* Left character closeup - slightly left of center, looking right */
     #shot-closeup-left .character.closeup-center {
-      left: 5%;
-      right: auto;
+      left: 15%;
     }
-    /* Right character closeup - on right third of screen */
+    /* Right character closeup - slightly right of center, looking left */
     #shot-closeup-right .character.closeup-center {
-      right: 5%;
-      left: auto;
+      right: 15%;
     }
     
     /* Closeup caption - centered at bottom */
@@ -582,6 +580,12 @@
         const emotion = characterEmotions[pos];
         if (emotion) {
           setEmotion(`closeup-${pos}`, emotion, 0);
+        }
+        // Make closeup character look toward the other side (where other character would be)
+        const closeupChar = document.getElementById(`char-closeup-${pos}`);
+        if (closeupChar) {
+          closeupChar.classList.remove('look-left', 'look-right');
+          closeupChar.classList.add(pos === 'left' ? 'look-right' : 'look-left');
         }
       }
       
