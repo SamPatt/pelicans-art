@@ -32,9 +32,9 @@
     <ellipse class="highlight highlight-right" cx="58" cy="38" rx="2" ry="3" fill="#fff" opacity="0"/>
   </g>
   <g id="head-bottom">
-    <!-- Small mouth -->
-    <ellipse id="mouth-closed" cx="50" cy="62" rx="3" ry="2" fill="#558b2f"/>
+    <!-- Small mouth - path for emotion system -->
+    <path id="mouth-closed" d="M47 62 Q50 64 53 62" stroke="#558b2f" stroke-width="2" fill="none"/>
     <!-- Open mouth for speaking -->
-    <ellipse id="mouth-open" cx="50" cy="62" rx="5" ry="4" fill="#33691e" opacity="0"/>
+    <ellipse id="mouth-open" cx="50" cy="63" rx="4" ry="3" fill="#33691e" opacity="0"/>
   </g>
 </svg>
