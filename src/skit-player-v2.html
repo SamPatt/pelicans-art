@@ -484,7 +484,7 @@
         browLeftHuman: "M37 30 Q43 26 49 30",
         browRightHuman: "M51 30 Q57 26 63 30",
         mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
-        mouthHuman: "M47 52 Q50 58 53 52",
+        mouthHuman: "M46 52 Q44 56 46 58 Q50 60 54 58 Q56 56 54 52 Q50 50 46 52",
         highlight: 1
       },
       excited: {
@@ -655,7 +655,7 @@
     // === SKITS ===
     const skits = {
       luckyCharms: {
-        meta: { title: "Lucky Charms", duration: 50 },
+        meta: { title: "Lucky Charms", duration: 52 },
         stage: { background: "restaurant" },
         cast: {
           waiter: { x: 30, sprite: "waiter", voice: "jean" },
@@ -739,7 +739,11 @@
           // Back to wide - woman annoyed
           { t: 47, do: "shot", type: "wide" },
           { t: 47, do: "look", who: "leprechaun", at: "right" },
-          { t: 47.5, do: "emote", who: "woman", emotion: "angry" }
+          { t: 47.5, do: "emote", who: "woman", emotion: "angry" },
+          
+          // Leprechaun confused
+          { t: 48.5, do: "emote", who: "leprechaun", emotion: "surprised" },
+          { t: 49, do: "say", who: "leprechaun", line: "What?" }
         ]
       }
     };
