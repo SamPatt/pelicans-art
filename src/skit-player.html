@@ -90,14 +90,17 @@
       opacity: 1;
     }
     
-    /* Closeup shot character - large and centered (override base .character limits) */
+    /* Closeup shot character - large and centered */
     #shot-closeup-left .character,
     #shot-closeup-right .character {
       position: absolute;
       bottom: 5%;
-      width: 50% !important;
+    }
+    #shot-closeup-left .character svg,
+    #shot-closeup-right .character svg {
+      width: 50vw !important;
+      height: auto !important;
       max-width: none !important;
-      height: auto;
     }
     /* Left character closeup - slightly left of center */
     #shot-closeup-left .character {
