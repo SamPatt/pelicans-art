@@ -263,6 +263,7 @@
     <button id="script4Btn">Giant Cat</button>
     <button id="script5Btn">Long Week</button>
     <button id="script6Btn">Lucky Charms</button>
+    <button id="script7Btn">Space Wall</button>
   </div>
   
   <div class="status" id="status">Loading...</div>
@@ -507,6 +508,88 @@
           
           // End wide shot
           { t: 42, do: "shot", type: "wide" }
+        ]
+      },
+      spaceWall: {
+        meta: { title: "The Space Wall", duration: 55 },
+        stage: { background: "space" },
+        cast: {
+          trump: { position: "right", sprite: "trump", voice: "https://openclaw-vps.tail4abd9a.ts.net/skit/audio/trump_voice.wav", startOffscreen: false },
+          alien: { position: "left", sprite: "alien", voice: "cosette", startOffscreen: true }
+        },
+        props: {},
+        script: [
+          // Trump alone in space, looking important
+          { t: 0.5, do: "shot", type: "closeup", who: "trump" },
+          { t: 0.5, do: "emote", who: "trump", emotion: "smug" },
+          { t: 1, do: "say", who: "trump", line: "Space. The final frontier. And frankly, it needs a wall.", target: "audience" },
+          
+          // Alien enters
+          { t: 5, do: "shot", type: "wide" },
+          { t: 5, do: "enter", who: "alien", from: "left" },
+          { t: 5.5, do: "emote", who: "alien", emotion: "neutral" },
+          
+          // Trump notices
+          { t: 6, do: "shot", type: "closeup", who: "trump" },
+          { t: 6, do: "emote", who: "trump", emotion: "surprised" },
+          { t: 6.5, do: "say", who: "trump", line: "Whoa! An alien! Tremendous! Are you here legally?", target: "alien" },
+          
+          // Alien confused
+          { t: 10, do: "shot", type: "closeup", who: "alien" },
+          { t: 10, do: "emote", who: "alien", emotion: "surprised" },
+          { t: 10.5, do: "say", who: "alien", line: "Legally? We have traveled forty thousand light years.", target: "trump" },
+          
+          // Trump negotiating
+          { t: 14, do: "shot", type: "closeup", who: "trump" },
+          { t: 14, do: "emote", who: "trump", emotion: "smug" },
+          { t: 14.5, do: "say", who: "trump", line: "Forty thousand? That's a lot of miles. You're gonna need a visa.", target: "alien" },
+          
+          // Alien increasingly confused
+          { t: 18, do: "shot", type: "closeup", who: "alien" },
+          { t: 18, do: "emote", who: "alien", emotion: "worried" },
+          { t: 18.5, do: "say", who: "alien", line: "We do not use your primitive currency systems.", target: "trump" },
+          
+          // Trump excited about deal
+          { t: 22, do: "shot", type: "closeup", who: "trump" },
+          { t: 22, do: "emote", who: "trump", emotion: "excited" },
+          { t: 22.5, do: "say", who: "trump", line: "No currency? Even better! You're gonna help me build the wall!", target: "alien" },
+          
+          // Alien intrigued
+          { t: 26, do: "shot", type: "closeup", who: "alien" },
+          { t: 26, do: "emote", who: "alien", emotion: "surprised" },
+          { t: 26.5, do: "say", who: "alien", line: "Wall? What wall? There is nothing here but void.", target: "trump" },
+          
+          // Trump explaining
+          { t: 30, do: "shot", type: "closeup", who: "trump" },
+          { t: 30, do: "emote", who: "trump", emotion: "happy" },
+          { t: 30.5, do: "say", who: "trump", line: "Exactly! We need to keep the void out. It's pouring in!", target: "alien" },
+          
+          // Alien trying to comprehend
+          { t: 34, do: "shot", type: "closeup", who: "alien" },
+          { t: 34, do: "emote", who: "alien", emotion: "worried" },
+          { t: 34.5, do: "say", who: "alien", line: "Your species confuses us greatly.", target: "trump" },
+          
+          // Trump making the deal
+          { t: 38, do: "shot", type: "closeup", who: "trump" },
+          { t: 38, do: "emote", who: "trump", emotion: "smug" },
+          { t: 38.5, do: "say", who: "trump", line: "Look, I wrote a book. The Art of the Deal. Best seller. You should read it.", target: "alien" },
+          
+          // Alien had enough
+          { t: 43, do: "shot", type: "closeup", who: "alien" },
+          { t: 43, do: "emote", who: "alien", emotion: "angry" },
+          { t: 43.5, do: "say", who: "alien", line: "We are leaving. This planet was a mistake.", target: "trump" },
+          
+          // Wide shot - alien exits
+          { t: 47, do: "shot", type: "wide" },
+          { t: 47, do: "exit", who: "alien", to: "left" },
+          
+          // Trump alone, satisfied
+          { t: 49, do: "shot", type: "closeup", who: "trump" },
+          { t: 49, do: "emote", who: "trump", emotion: "smug" },
+          { t: 49.5, do: "say", who: "trump", line: "Another successful negotiation. Nobody negotiates like me.", target: "audience" },
+          
+          // End wide
+          { t: 53, do: "shot", type: "wide" }
         ]
       }
     };
@@ -923,6 +1006,7 @@
       document.getElementById('script4Btn').classList.toggle('active', name === 'giantCat');
       document.getElementById('script5Btn').classList.toggle('active', name === 'longWeek');
       document.getElementById('script6Btn').classList.toggle('active', name === 'luckyCharms');
+      document.getElementById('script7Btn').classList.toggle('active', name === 'spaceWall');
       
       // Load background to all shots
       setAllBackgrounds(currentScript.stage.background);
@@ -1169,6 +1253,7 @@
     document.getElementById('script4Btn').addEventListener('click', () => loadScript('giantCat'));
     document.getElementById('script5Btn').addEventListener('click', () => loadScript('longWeek'));
     document.getElementById('script6Btn').addEventListener('click', () => loadScript('luckyCharms'));
+    document.getElementById('script7Btn').addEventListener('click', () => loadScript('spaceWall'));
 
     // Init
     init().then(() => loadScript('performanceReview'));
