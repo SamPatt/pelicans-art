@@ -14,7 +14,7 @@
       min-height: 100vh;
     }
     h1 { color: #e94560; margin-bottom: 10px; text-align: center; font-size: 20px; }
-    .stage {
+    .stage-container {
       width: 100%;
       max-width: 800px;
       aspect-ratio: 16/9;
@@ -24,6 +24,13 @@
       border-radius: 8px;
       overflow: hidden;
       background: #e8e0d5;
+    }
+    .stage, .shot-stage {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
     @media (max-width: 600px) {
       body { padding: 5px; }
@@ -81,6 +88,26 @@
       transform: scale(1);
       bottom: 10%;
       opacity: 1;
+    }
+    
+    /* Closeup shot character - centered and larger */
+    .character.closeup-center {
+      position: absolute;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 35%;
+      max-width: 280px;
+      height: auto;
+    }
+    
+    /* Closeup caption - centered at bottom */
+    .caption.closeup {
+      position: absolute;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 80%;
     }
     
     .prop {
@@ -167,13 +194,30 @@
 <body>
   <h1>🎭 AI Improv Theater</h1>
   
-  <div class="stage" id="stage">
-    <img class="background" id="background" src="backgrounds/office.svg" alt="background">
-    <div class="character left" id="char-left"></div>
-    <div class="character right" id="char-right"></div>
-    <div id="props-container"></div>
-    <div class="caption left" id="caption-left"></div>
-    <div class="caption right" id="caption-right"></div>
+  <div class="stage-container" id="stage-container">
+    <!-- Wide shot (both characters) -->
+    <div class="stage shot-stage" id="shot-wide">
+      <img class="background" id="bg-wide" src="backgrounds/office.svg" alt="background">
+      <div class="character left" id="char-left"></div>
+      <div class="character right" id="char-right"></div>
+      <div id="props-container"></div>
+      <div class="caption left" id="caption-left"></div>
+      <div class="caption right" id="caption-right"></div>
+    </div>
+    
+    <!-- Closeup left character -->
+    <div class="stage shot-stage" id="shot-closeup-left" style="display:none">
+      <img class="background" id="bg-closeup-left" src="backgrounds/office.svg" alt="background">
+      <div class="character closeup-center" id="char-closeup-left"></div>
+      <div class="caption closeup" id="caption-closeup-left"></div>
+    </div>
+    
+    <!-- Closeup right character -->
+    <div class="stage shot-stage" id="shot-closeup-right" style="display:none">
+      <img class="background" id="bg-closeup-right" src="backgrounds/office.svg" alt="background">
+      <div class="character closeup-center" id="char-closeup-right"></div>
+      <div class="caption closeup" id="caption-closeup-right"></div>
+    </div>
   </div>
   
   <div class="controls">
@@ -226,14 +270,28 @@
           banana: { sprite: "banana", x: "45%", y: "60%" }
         },
         script: [
+          // Shot-reverse-shot demo
+          { t: 0, do: "shot", type: "closeup", who: "human" },
           { t: 0, do: "say", who: "human", line: "I should eat something healthy.", target: "cat" },
+          { t: 2, do: "shot", type: "wide" },
           { t: 2, do: "spawn", what: "banana" },
+          { t: 3.5, do: "shot", type: "closeup", who: "cat" },
+          { t: 3.5, do: "emote", who: "cat", emotion: "angry" },
           { t: 3.5, do: "say", who: "cat", line: "Don't.", target: "human" },
+          { t: 5, do: "shot", type: "closeup", who: "human" },
+          { t: 5, do: "emote", who: "human", emotion: "surprised" },
           { t: 5, do: "say", who: "human", line: "You can talk?!", target: "cat" },
+          { t: 6.5, do: "shot", type: "closeup", who: "cat" },
+          { t: 6.5, do: "emote", who: "cat", emotion: "surprised" },
           { t: 6.5, do: "say", who: "cat", line: "You can hear?", target: "human" },
+          { t: 8.5, do: "emote", who: "cat", emotion: "worried" },
           { t: 8.5, do: "say", who: "cat", line: "This has never happened before.", target: "human" },
+          { t: 10.5, do: "shot", type: "wide" },
           { t: 10.5, do: "despawn", what: "banana" },
+          { t: 10.5, do: "emote", who: "human", emotion: "worried" },
           { t: 10.5, do: "say", who: "human", line: "Where did the banana go?", target: "cat" },
+          { t: 12, do: "shot", type: "closeup", who: "cat" },
+          { t: 12, do: "emote", who: "cat", emotion: "smug" },
           { t: 12, do: "say", who: "cat", line: "We don't talk about the banana.", target: "human" }
         ]
       },
@@ -470,6 +528,9 @@
 
     // Track current emotion per character
     let characterEmotions = { left: 'neutral', right: 'neutral' };
+    
+    // Track current shot
+    let currentShot = 'wide';
 
     let audioContext, analyser, dataArray;
     let currentScript = null;
@@ -485,10 +546,45 @@
         res = await fetch(`sprites/${spriteName}.svg`);
       }
       if (res.ok) {
-        document.getElementById(elementId).innerHTML = await res.text();
+        const svgText = await res.text();
+        document.getElementById(elementId).innerHTML = svgText;
         document.getElementById(elementId).dataset.sprite = spriteName;
         document.getElementById(elementId).dataset.view = view;
       }
+    }
+    
+    async function loadSpriteToAll(position, spriteName, view = 'front') {
+      // Load sprite to wide shot and corresponding closeup
+      await loadSprite(`char-${position}`, spriteName, view);
+      await loadSprite(`char-closeup-${position}`, spriteName, view);
+    }
+    
+    function switchShot(shotType, who = null) {
+      // Hide all shots
+      document.querySelectorAll('.shot-stage').forEach(el => el.style.display = 'none');
+      
+      // Show the requested shot
+      if (shotType === 'wide') {
+        document.getElementById('shot-wide').style.display = 'block';
+      } else if (shotType === 'closeup' && who) {
+        const char = currentScript.cast[who];
+        const pos = char.position;
+        document.getElementById(`shot-closeup-${pos}`).style.display = 'block';
+        // Sync emotion to closeup character
+        const emotion = characterEmotions[pos];
+        if (emotion) {
+          setEmotion(`closeup-${pos}`, emotion, 0);
+        }
+      }
+      
+      currentShot = shotType;
+      console.log(`Shot: ${shotType}${who ? ' (' + who + ')' : ''}`);
+    }
+    
+    function setAllBackgrounds(bgName) {
+      document.getElementById('bg-wide').src = `backgrounds/${bgName}.svg`;
+      document.getElementById('bg-closeup-left').src = `backgrounds/${bgName}.svg`;
+      document.getElementById('bg-closeup-right').src = `backgrounds/${bgName}.svg`;
     }
     
     async function turnCharacter(charId, toView) {
@@ -496,6 +592,8 @@
       const spriteName = charEl.dataset.sprite;
       if (spriteName) {
         await loadSprite(`char-${charId}`, spriteName, toView);
+        // Also update closeup version
+        await loadSprite(`char-closeup-${charId}`, spriteName, toView);
       }
     }
 
@@ -603,6 +701,15 @@
       
       // Track current emotion
       characterEmotions[charId] = emotion;
+      
+      // Also update closeup version if it exists (but don't recurse)
+      if (!charId.startsWith('closeup-')) {
+        const closeupEl = document.getElementById(`char-closeup-${charId}`);
+        if (closeupEl) {
+          setEmotion(`closeup-${charId}`, emotion, durationMs);
+        }
+      }
+      
       console.log(`${charId} emotion: ${emotion}`);
     }
 
@@ -699,13 +806,16 @@
       document.getElementById('script4Btn').classList.toggle('active', name === 'giantCat');
       document.getElementById('script5Btn').classList.toggle('active', name === 'longWeek');
       
-      // Load background
-      document.getElementById('background').src = `backgrounds/${currentScript.stage.background}.svg`;
+      // Load background to all shots
+      setAllBackgrounds(currentScript.stage.background);
       
-      // Load character sprites (default to front view)
+      // Reset to wide shot
+      switchShot('wide');
+      
+      // Load character sprites to all shots (default to front view)
       for (const [charName, char] of Object.entries(currentScript.cast)) {
         const initialView = char.initialView || 'front';
-        await loadSprite(`char-${char.position}`, char.sprite, initialView);
+        await loadSpriteToAll(char.position, char.sprite, initialView);
       }
       
       // Default: look at each other, reset emotions
@@ -780,8 +890,12 @@
       document.getElementById('playBtn').textContent = '▶ Play';
       document.getElementById('char-left').classList.remove('speaking', 'facing-left', 'facing-right');
       document.getElementById('char-right').classList.remove('speaking', 'facing-left', 'facing-right');
+      document.getElementById('char-closeup-left')?.classList.remove('speaking');
+      document.getElementById('char-closeup-right')?.classList.remove('speaking');
       document.getElementById('caption-left').classList.remove('visible');
       document.getElementById('caption-right').classList.remove('visible');
+      document.getElementById('caption-closeup-left')?.classList.remove('visible');
+      document.getElementById('caption-closeup-right')?.classList.remove('visible');
       audioCache.forEach(({ audio }) => { audio.pause(); audio.currentTime = 0; });
     }
 
@@ -818,9 +932,16 @@
               setEyeDirection(charPos, otherPos);
               setEyeDirection(otherPos, charPos);
               
-              document.getElementById(`caption-${charPos}`).textContent = beat.line;
-              document.getElementById(`caption-${charPos}`).classList.add('visible');
-              document.getElementById(`caption-${otherPos}`).classList.remove('visible');
+              // Handle captions based on current shot
+              if (currentShot === 'wide') {
+                document.getElementById(`caption-${charPos}`).textContent = beat.line;
+                document.getElementById(`caption-${charPos}`).classList.add('visible');
+                document.getElementById(`caption-${otherPos}`).classList.remove('visible');
+              } else if (currentShot === 'closeup') {
+                // Show caption in closeup shot
+                document.getElementById(`caption-closeup-${charPos}`).textContent = beat.line;
+                document.getElementById(`caption-closeup-${charPos}`).classList.add('visible');
+              }
               
               currentSpeaker = charPos;
               cached.audio.play();
@@ -869,13 +990,16 @@
             const char = currentScript.cast[beat.who];
             setEmotion(char.position, beat.emotion, beat.duration || 300);
           } else if (beat.do === 'scene') {
-            // Change background/scene mid-skit
-            document.getElementById('background').src = `backgrounds/${beat.background}.svg`;
+            // Change background/scene mid-skit (all shots)
+            setAllBackgrounds(beat.background);
             // Optionally reset character positions
             if (beat.resetPositions) {
               document.getElementById('char-left').classList.add('offscreen-left');
               document.getElementById('char-right').classList.add('offscreen-right');
             }
+          } else if (beat.do === 'shot') {
+            // Switch camera shot
+            switchShot(beat.type, beat.who);
           } else if (beat.do === 'pose') {
             // Change character to a specific pose/variant (e.g., "flop")
             const char = currentScript.cast[beat.who];
@@ -896,9 +1020,11 @@
           openDuration++;
           const dip = (openDuration > 20 && openDuration % 25 < 5);
           document.getElementById(`char-${currentSpeaker}`).classList.toggle('speaking', !dip);
+          document.getElementById(`char-closeup-${currentSpeaker}`)?.classList.toggle('speaking', !dip);
         } else {
           openDuration = 0;
           document.getElementById(`char-${currentSpeaker}`).classList.remove('speaking');
+          document.getElementById(`char-closeup-${currentSpeaker}`)?.classList.remove('speaking');
         }
       }
       
