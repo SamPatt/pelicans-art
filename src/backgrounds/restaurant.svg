@@ -32,26 +32,6 @@
   <!-- Tablecloth edge -->
   <ellipse cx="400" cy="290" rx="170" ry="28" fill="none" stroke="#e8e8e8" stroke-width="3"/>
   
-  <!-- Seated woman on right side of table -->
-  <g transform="translate(520, 195)">
-    <!-- Chair back -->
-    <rect x="-25" y="60" width="50" height="80" rx="5" fill="#5a252c"/>
-    <!-- Body/dress -->
-    <ellipse cx="0" cy="95" rx="25" ry="30" fill="#2d5a4a"/>
-    <!-- Head -->
-    <ellipse cx="0" cy="40" rx="18" ry="22" fill="#deb887"/>
-    <!-- Hair -->
-    <ellipse cx="0" cy="30" rx="20" ry="18" fill="#4a3728"/>
-    <ellipse cx="-12" cy="45" rx="8" ry="15" fill="#4a3728"/>
-    <ellipse cx="12" cy="45" rx="8" ry="15" fill="#4a3728"/>
-    <!-- Simple face -->
-    <circle cx="-6" cy="42" r="2" fill="#333"/>
-    <circle cx="6" cy="42" r="2" fill="#333"/>
-    <ellipse cx="0" cy="52" rx="4" ry="2" fill="#c97878"/>
-    <!-- Arm on table -->
-    <ellipse cx="-35" cy="80" rx="22" ry="8" fill="#deb887"/>
-  </g>
-  
   <!-- Plates - adjusted for higher table -->
   <ellipse cx="300" cy="280" rx="35" ry="12" fill="#fff"/>
   <ellipse cx="300" cy="280" rx="28" ry="9" fill="#f5f5f5"/>

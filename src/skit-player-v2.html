@@ -326,6 +326,11 @@
       // Add position class for head rotation direction
       el.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
       
+      // Apply scale if specified
+      if (config.scale) {
+        el.style.height = `${40 * config.scale}%`;
+      }
+      
       // Load sprite as inline SVG
       const svgText = await loadSprite(config.sprite, 'front');
       el.innerHTML = svgText;
@@ -337,6 +342,7 @@
         y: 67, // character center
         sprite: config.sprite,
         voice: config.voice,
+        scale: config.scale || 1,
         el: el
       };
     }
@@ -654,7 +660,7 @@
         cast: {
           waiter: { x: 30, sprite: "waiter", voice: "jean" },
           woman: { x: 70, sprite: "girl", voice: "cosette" },
-          leprechaun: { x: -20, sprite: "leprechaun", voice: "marius", startOffscreen: true }
+          leprechaun: { x: -20, sprite: "leprechaun", voice: "marius", startOffscreen: true, scale: 0.6 }
         },
         script: [
           // Opening - wide shot
@@ -715,16 +721,18 @@
           { t: 39, do: "shot", type: "wide" },
           { t: 39, do: "emote", who: "waiter", emotion: "sad" },
           
-          // Waiter looks right and exits
-          { t: 40, do: "look", who: "waiter", at: "right" },
-          { t: 40.5, do: "exit", who: "waiter", to: "right" },
+          // Waiter looks left and exits
+          { t: 40, do: "look", who: "waiter", at: "left" },
+          { t: 40.5, do: "exit", who: "waiter", to: "left" },
           
           // Leprechaun enters from left
           { t: 43, do: "enter", who: "leprechaun", from: "left", to: 30 },
           { t: 43, do: "emote", who: "leprechaun", emotion: "happy" },
+          { t: 43, do: "look", who: "leprechaun", at: "right" },
           
           // Leprechaun introduces himself
           { t: 45, do: "shot", type: "closeup", who: "leprechaun" },
+          { t: 45, do: "look", who: "leprechaun", at: "right" },
           { t: 45, do: "say", who: "leprechaun", line: "Can I help you?" },
           
           // End wide shot
