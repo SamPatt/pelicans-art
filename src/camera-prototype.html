@@ -201,6 +201,21 @@
     };
     
     // === CAMERA MATH ===
+    function clampCamera() {
+      // Prevent camera from revealing edges
+      // At zoom Z, we see 100/Z % of stage, so camera must stay 50/Z away from edges
+      const marginX = 50 / camera.zoom;
+      const marginY = 50 / camera.zoom;
+      
+      // For Y, account for portrait aspect ratio (9:16)
+      // Vertical view is taller relative to stage, so we need more margin
+      const aspectRatio = 16 / 9;
+      const marginYAdjusted = marginY * aspectRatio;
+      
+      camera.x = Math.max(marginX, Math.min(100 - marginX, camera.x));
+      camera.y = Math.max(marginYAdjusted, Math.min(100 - marginYAdjusted, camera.y));
+    }
+    
     function updateCamera() {
       const stage = document.getElementById('stage');
       
@@ -209,6 +224,9 @@
         camera.x = characters[camera.follow].x;
         camera.y = characters[camera.follow].y;
       }
+      
+      // Clamp camera to avoid showing edges
+      clampCamera();
       
       // Transform approach:
       // 1. Set transform-origin to the camera target point
