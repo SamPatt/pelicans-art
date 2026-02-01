@@ -655,7 +655,7 @@
     // === SKITS ===
     const skits = {
       luckyCharms: {
-        meta: { title: "Lucky Charms", duration: 52 },
+        meta: { title: "Lucky Charms", duration: 50 },
         stage: { background: "restaurant" },
         cast: {
           waiter: { x: 30, sprite: "waiter", voice: "jean" },
@@ -725,18 +725,21 @@
           { t: 40, do: "look", who: "waiter", at: "left" },
           { t: 40.5, do: "exit", who: "waiter", to: "left" },
           
-          // Leprechaun enters from left
+          // Leprechaun enters from left - woman surprised
           { t: 43, do: "enter", who: "leprechaun", from: "left", to: 30 },
           { t: 43, do: "emote", who: "leprechaun", emotion: "happy" },
           { t: 43, do: "look", who: "leprechaun", at: "right" },
+          { t: 43, do: "emote", who: "woman", emotion: "surprised" },
           
-          // Leprechaun introduces himself
-          { t: 45, do: "shot", type: "closeup", who: "leprechaun" },
-          { t: 45, do: "look", who: "leprechaun", at: "right" },
-          { t: 45, do: "say", who: "leprechaun", line: "Can I help you?" },
+          // Leprechaun introduces himself - short closeup
+          { t: 44.5, do: "shot", type: "closeup", who: "leprechaun" },
+          { t: 44.5, do: "look", who: "leprechaun", at: "right" },
+          { t: 44.5, do: "say", who: "leprechaun", line: "Can I help you?" },
           
-          // End wide shot
-          { t: 49, do: "shot", type: "wide" }
+          // Back to wide - woman annoyed
+          { t: 47, do: "shot", type: "wide" },
+          { t: 47, do: "look", who: "leprechaun", at: "right" },
+          { t: 47.5, do: "emote", who: "woman", emotion: "angry" }
         ]
       }
     };
