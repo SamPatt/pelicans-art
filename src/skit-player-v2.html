@@ -76,13 +76,23 @@
     
     .character.offscreen { opacity: 0; pointer-events: none; }
     
-    /* Speaking animation - head bob */
-    .character.speaking svg #head-top,
-    .character.speaking svg #head-bottom {
-      animation: speak-bob 0.15s infinite alternate;
+    /* Head rotation when speaking - transform from chin area */
+    .character svg #head-top,
+    .character svg #head-bottom {
+      transition: transform 0.05s ease-out;
+      transform-origin: 50% 55px;
     }
-    @keyframes speak-bob {
-      to { transform: translateY(-1px); }
+    
+    /* Left-side character tilts head left when speaking */
+    .character.pos-left.speaking svg #head-top,
+    .character.pos-left.speaking svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    
+    /* Right-side character tilts head right when speaking */
+    .character.pos-right.speaking svg #head-top,
+    .character.pos-right.speaking svg #head-bottom {
+      transform: rotate(8deg);
     }
     
     /* Mouth open/closed for lip sync */
@@ -296,6 +306,9 @@
       el.dataset.voice = config.voice;
       el.style.left = `${config.x}%`;
       
+      // Add position class for head rotation direction
+      el.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
+      
       // Load sprite as inline SVG
       const svgText = await loadSprite(config.sprite, 'front');
       el.innerHTML = svgText;
@@ -351,6 +364,10 @@
       char.el.style.transition = `left ${duration}s ease-in-out, opacity 0.3s`;
       char.x = toX;
       char.el.style.left = `${toX}%`;
+      
+      // Update position class for head rotation direction
+      char.el.classList.remove('pos-left', 'pos-right');
+      char.el.classList.add(toX < 50 ? 'pos-left' : 'pos-right');
       
       if (camera.follow === name) {
         animateCameraTo(toX, char.y, duration * 1000);
@@ -764,6 +781,8 @@
     function stop() {
       isPlaying = false;
       currentSpeaker = null;
+      peakAmp = 50;
+      openDuration = 0;
       if (animationId) cancelAnimationFrame(animationId);
       document.getElementById('playBtn').textContent = '▶ Play';
       document.getElementById('caption').classList.remove('visible');
@@ -799,15 +818,15 @@
       // Lip sync based on audio amplitude
       if (currentSpeaker && characters[currentSpeaker]) {
         const rawAmp = getAmplitude();
-        peakAmp = Math.max(peakAmp * 0.995, rawAmp, 30);
-        const normalizedAmp = rawAmp / peakAmp;
+        if (rawAmp > peakAmp) peakAmp = rawAmp;
+        peakAmp = Math.max(30, peakAmp * 0.998);
+        const normalizedAmp = (rawAmp / peakAmp) * 100;
         
-        // Threshold for mouth open
-        const threshold = 0.25;
-        if (normalizedAmp > threshold) {
+        const isSpeaking = normalizedAmp > 25;
+        if (isSpeaking) {
           openDuration++;
-          // Occasional dips for more natural movement
-          const dip = openDuration > 3 && Math.random() < 0.15;
+          // Rhythmic dips: after 20 frames open, close for 5 frames every 25 frames
+          const dip = (openDuration > 20 && openDuration % 25 < 5);
           characters[currentSpeaker].el.classList.toggle('speaking', !dip);
         } else {
           openDuration = 0;
