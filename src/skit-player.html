@@ -90,21 +90,24 @@
       opacity: 1;
     }
     
-    /* Closeup shot character - large and centered */
-    .character.closeup-center {
+    /* Closeup shot character - large and centered (override base .character limits) */
+    #shot-closeup-left .character,
+    #shot-closeup-right .character {
       position: absolute;
       bottom: 5%;
-      width: 50%;
-      max-width: none;
+      width: 50% !important;
+      max-width: none !important;
       height: auto;
     }
-    /* Left character closeup - slightly left of center, looking right */
-    #shot-closeup-left .character.closeup-center {
+    /* Left character closeup - slightly left of center */
+    #shot-closeup-left .character {
       left: 15%;
+      right: auto;
     }
-    /* Right character closeup - slightly right of center, looking left */
-    #shot-closeup-right .character.closeup-center {
+    /* Right character closeup - slightly right of center */
+    #shot-closeup-right .character {
       right: 15%;
+      left: auto;
     }
     
     /* Closeup caption - centered at bottom */
