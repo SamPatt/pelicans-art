@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 100" width="150" height="100">
+  <!-- Horizontal/flopped pose - face down -->
+  <g id="body">
+    <!-- Body/dress - horizontal -->
+    <ellipse cx="80" cy="55" rx="30" ry="18" fill="#7dd3dc"/>
+    <!-- Legs sticking up slightly -->
+    <ellipse cx="115" cy="45" rx="10" ry="6" fill="#fce4d4"/>
+    <ellipse cx="115" cy="60" rx="10" ry="6" fill="#fce4d4"/>
+    <!-- Feet -->
+    <ellipse cx="128" cy="42" rx="6" ry="4" fill="#fce4d4"/>
+    <ellipse cx="128" cy="63" rx="6" ry="4" fill="#fce4d4"/>
+    <!-- Arms splayed out -->
+    <ellipse cx="55" cy="35" rx="12" ry="5" fill="#fce4d4"/>
+    <ellipse cx="55" cy="70" rx="12" ry="5" fill="#fce4d4"/>
+  </g>
+  <g id="head-top">
+    <!-- Hair spread on pillow -->
+    <ellipse cx="30" cy="50" rx="26" ry="22" fill="#2d2d2d"/>
+    <!-- Hair spread out -->
+    <path d="M20 30 Q5 40 15 55" stroke="#2d2d2d" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M20 70 Q5 60 15 50" stroke="#2d2d2d" stroke-width="10" fill="none" stroke-linecap="round"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Face not visible (face down) -->
+    <path id="mouth-closed" d="M0 0" stroke="none" fill="none" opacity="0"/>
+    <ellipse id="mouth-open" cx="0" cy="0" rx="1" ry="1" fill="none" opacity="0"/>
+  </g>
+</svg>

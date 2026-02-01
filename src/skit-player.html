@@ -186,6 +186,7 @@
     <button id="script2Btn">Existential Kitchen</button>
     <button id="script3Btn">Space Station</button>
     <button id="script4Btn">Giant Cat</button>
+    <button id="script5Btn">Long Week</button>
   </div>
   
   <div class="status" id="status">Loading...</div>
@@ -312,6 +313,37 @@
           { t: 33, do: "emote", who: "cat", emotion: "angry" },
           { t: 33, do: "say", who: "cat", line: "Bring back my yarn!", target: "audience" }
         ]
+      },
+      longWeek: {
+        meta: { title: "Long Week", duration: 18 },
+        stage: { background: "office-pink" },
+        cast: {
+          girl: { position: "left", sprite: "girl", voice: "cosette", startOffscreen: false }
+        },
+        props: {},
+        script: [
+          // Panel 1: Tired at work
+          { t: 0.5, do: "emote", who: "girl", emotion: "tired" },
+          { t: 1, do: "say", who: "girl", line: "Finally, it's over! That was such a long week.", target: "audience" },
+          
+          // Panel 2: Excited about going home
+          { t: 5, do: "emote", who: "girl", emotion: "excited" },
+          { t: 5.5, do: "say", who: "girl", line: "I can't wait to go home and celebrate!", target: "audience" },
+          
+          // Scene change to bedroom
+          { t: 9, do: "exit", who: "girl", to: "right" },
+          { t: 10, do: "scene", background: "bedroom" },
+          
+          // Panel 3 & 4: Enter and flop
+          { t: 11, do: "enter", who: "girl", from: "left" },
+          { t: 11, do: "emote", who: "girl", emotion: "tired" },
+          { t: 12, do: "turn", who: "girl", to: "back" },
+          { t: 12.5, do: "move", who: "girl", to: "mid" },
+          
+          // The flop
+          { t: 14, do: "pose", who: "girl", pose: "flop" },
+          { t: 14, do: "move", who: "girl", to: "far" }
+        ]
       }
     };
 
@@ -420,6 +452,19 @@
         mouth: "M44 67 Q52 72 58 66",
         mouthHuman: "M44 67 Q54 73 60 66",
         highlight: 0
+      },
+      tired: {
+        eyeWhite: { ry: 4, cy: 54 },
+        eyeWhiteHuman: { ry: 2, cy: 48 },
+        pupil: { ry: 3, cy: 54 },
+        pupilHuman: { r: 1.5, cy: 48 },
+        browLeft: "M30 46 L48 48",
+        browRight: "M52 48 L70 46",
+        browLeftHuman: "M37 44 L49 46",
+        browRightHuman: "M51 46 L63 44",
+        mouth: "M46 68 Q50 66 54 68",
+        mouthHuman: "M46 60 Q50 58 54 60",
+        highlight: 0
       }
     };
 
@@ -478,7 +523,7 @@
       
       // Detect if human or cat based on sprite
       const sprite = charEl.dataset.sprite || '';
-      const isHuman = sprite === 'person' || sprite === 'trump';
+      const isHuman = sprite === 'person' || sprite === 'trump' || sprite === 'girl';
       
       // Get elements
       const eyeLeftWhite = charEl.querySelector('#eye-left-white');
@@ -652,6 +697,7 @@
       document.getElementById('script2Btn').classList.toggle('active', name === 'existentialKitchen');
       document.getElementById('script3Btn').classList.toggle('active', name === 'spaceStation');
       document.getElementById('script4Btn').classList.toggle('active', name === 'giantCat');
+      document.getElementById('script5Btn').classList.toggle('active', name === 'longWeek');
       
       // Load background
       document.getElementById('background').src = `backgrounds/${currentScript.stage.background}.svg`;
@@ -822,6 +868,18 @@
             // Change character emotion with animation
             const char = currentScript.cast[beat.who];
             setEmotion(char.position, beat.emotion, beat.duration || 300);
+          } else if (beat.do === 'scene') {
+            // Change background/scene mid-skit
+            document.getElementById('background').src = `backgrounds/${beat.background}.svg`;
+            // Optionally reset character positions
+            if (beat.resetPositions) {
+              document.getElementById('char-left').classList.add('offscreen-left');
+              document.getElementById('char-right').classList.add('offscreen-right');
+            }
+          } else if (beat.do === 'pose') {
+            // Change character to a specific pose/variant (e.g., "flop")
+            const char = currentScript.cast[beat.who];
+            loadSprite(`char-${char.position}`, char.sprite, beat.pose);
           }
         }
       });
@@ -856,6 +914,7 @@
     document.getElementById('script2Btn').addEventListener('click', () => loadScript('existentialKitchen'));
     document.getElementById('script3Btn').addEventListener('click', () => loadScript('spaceStation'));
     document.getElementById('script4Btn').addEventListener('click', () => loadScript('giantCat'));
+    document.getElementById('script5Btn').addEventListener('click', () => loadScript('longWeek'));
 
     // Init
     init().then(() => loadScript('performanceReview'));
