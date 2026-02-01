@@ -484,7 +484,7 @@
         browLeftHuman: "M37 30 Q43 26 49 30",
         browRightHuman: "M51 30 Q57 26 63 30",
         mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
-        mouthHuman: "M46 52 Q44 56 46 58 Q50 60 54 58 Q56 56 54 52 Q50 50 46 52",
+        mouthHuman: "M46 53 Q46 57 50 57 Q54 57 54 53 Q54 51 50 51 Q46 51 46 53",
         highlight: 1
       },
       excited: {
@@ -736,14 +736,16 @@
           { t: 44.5, do: "look", who: "leprechaun", at: "right" },
           { t: 44.5, do: "say", who: "leprechaun", line: "Can I help you?" },
           
-          // Back to wide - woman annoyed
+          // Back to wide - woman annoyed, leprechaun keeps looking at her
           { t: 47, do: "shot", type: "wide" },
           { t: 47, do: "look", who: "leprechaun", at: "right" },
           { t: 47.5, do: "emote", who: "woman", emotion: "angry" },
+          { t: 47.5, do: "look", who: "leprechaun", at: "right" },
           
-          // Leprechaun confused
-          { t: 48.5, do: "emote", who: "leprechaun", emotion: "surprised" },
-          { t: 49, do: "say", who: "leprechaun", line: "What?" }
+          // Leprechaun says What? - still looking at her
+          { t: 49, do: "look", who: "leprechaun", at: "right" },
+          { t: 49, do: "say", who: "leprechaun", line: "What?" },
+          { t: 49.5, do: "look", who: "leprechaun", at: "right" }
         ]
       }
     };
