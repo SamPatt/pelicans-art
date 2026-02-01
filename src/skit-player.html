@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Improv Theater</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      padding: 10px;
+      min-height: 100vh;
+    }
+    h1 { color: #e94560; margin-bottom: 10px; text-align: center; font-size: 20px; }
+    .stage {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+      margin: 0 auto;
+      position: relative;
+      border: 2px solid #e94560;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e8e0d5;
+    }
+    @media (max-width: 600px) {
+      body { padding: 5px; }
+      h1 { font-size: 16px; margin-bottom: 5px; }
+      .controls button { padding: 10px 16px; font-size: 14px; }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      h1 { display: none; }
+      .status { display: none; }
+      .script-selector { display: none; }
+      body { padding: 0; }
+      .stage { 
+        width: 100vw; 
+        max-width: none;
+        height: calc(100vh - 50px); 
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+      .controls { margin-top: 5px; }
+      .controls button { padding: 8px 12px; font-size: 12px; }
+    }
+    .background {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+    .character {
+      position: absolute;
+      bottom: 10%;
+      width: 15%;
+      max-width: 120px;
+      height: auto;
+      transition: left 1s ease-in-out, right 1s ease-in-out, opacity 0.3s;
+    }
+    .character.left { left: 15%; }
+    .character.right { right: 15%; }
+    .character.offscreen-left { left: -20%; opacity: 0; }
+    .character.offscreen-right { right: -20%; opacity: 0; }
+    
+    .prop {
+      position: absolute;
+      width: 8%;
+      height: auto;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .prop.visible { opacity: 1; }
+    
+    /* Head rotation from center */
+    .character svg #head-top,
+    .character svg #head-bottom {
+      transition: transform 0.05s ease-out;
+      transform-origin: 50% 55px;
+    }
+    /* Left character - tilts back away from where looking */
+    .character.left.speaking svg #head-top,
+    .character.left.speaking svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    .character.left.speaking.facing-right svg #head-top,
+    .character.left.speaking.facing-right svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    /* Right character - tilts back away from where looking */
+    .character.right.speaking svg #head-top,
+    .character.right.speaking svg #head-bottom {
+      transform: rotate(8deg);
+    }
+    .character.right.speaking.facing-left svg #head-top,
+    .character.right.speaking.facing-left svg #head-bottom {
+      transform: rotate(8deg);
+    }
+    .character.speaking svg #mouth-open { opacity: 1 !important; }
+    .character.speaking svg #mouth-closed { opacity: 0 !important; }
+    
+    /* Eye movement */
+    .character svg .pupil { transition: transform 0.15s ease-out; }
+    .character.look-left svg .pupil { transform: translateX(-1.5px); }
+    .character.look-right svg .pupil { transform: translateX(1.5px); }
+
+    .speech-bubble {
+      position: absolute;
+      background: white;
+      color: black;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      max-width: 35%;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+    }
+    .speech-bubble.visible { opacity: 1; }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 8px solid transparent;
+      border-top-color: white;
+      border-bottom: 0;
+    }
+    .speech-bubble.left { top: 10%; left: 10%; }
+    .speech-bubble.right { top: 10%; right: 10%; }
+    
+    .controls { text-align: center; margin-top: 15px; }
+    button {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover { background: #ff6b6b; }
+    button:disabled { background: #444; cursor: not-allowed; }
+    .status { text-align: center; margin-top: 10px; color: #888; font-size: 14px; }
+    .script-selector { text-align: center; margin-top: 10px; }
+    .script-selector button { background: #16213e; border: 1px solid #e94560; }
+    .script-selector button.active { background: #e94560; }
+  </style>
+</head>
+<body>
+  <h1>🎭 AI Improv Theater</h1>
+  
+  <div class="stage" id="stage">
+    <img class="background" id="background" src="backgrounds/office.svg" alt="background">
+    <div class="character left" id="char-left"></div>
+    <div class="character right" id="char-right"></div>
+    <div id="props-container"></div>
+    <div class="speech-bubble left" id="bubble-left"></div>
+    <div class="speech-bubble right" id="bubble-right"></div>
+  </div>
+  
+  <div class="controls">
+    <button id="playBtn" disabled>▶ Play</button>
+    <button id="stopBtn">⬛ Stop</button>
+  </div>
+  
+  <div class="script-selector">
+    <button id="script1Btn" class="active">Performance Review</button>
+    <button id="script2Btn">Existential Kitchen</button>
+    <button id="script3Btn">Space Station</button>
+  </div>
+  
+  <div class="status" id="status">Loading...</div>
+
+  <script>
+    // Scripts
+    const scripts = {
+      performanceReview: {
+        meta: { title: "The Performance Review", duration: 18 },
+        stage: { background: "office" },
+        cast: {
+          boss: { position: "right", sprite: "trump", voice: "fantine", startOffscreen: false },
+          employee: { position: "left", sprite: "trump", voice: "jean", startOffscreen: true }
+        },
+        props: {
+          sword: { sprite: "sword", x: "60%", y: "50%" }
+        },
+        script: [
+          { t: 0, do: "enter", who: "employee", from: "left" },
+          { t: 1.5, do: "say", who: "boss", line: "Have a seat. Let's discuss your performance.", target: "employee" },
+          { t: 5, do: "say", who: "employee", line: "I don't work here.", target: "boss" },
+          { t: 7.5, do: "say", who: "boss", line: "Exactly. That's the problem.", target: "employee" },
+          { t: 10.5, do: "spawn", what: "sword" },
+          { t: 11, do: "say", who: "boss", line: "We're letting you go.", target: "employee" },
+          { t: 14, do: "exit", who: "employee", to: "right" },
+          { t: 16.5, do: "say", who: "boss", line: "Same time next week.", target: "employee" }
+        ]
+      },
+      existentialKitchen: {
+        meta: { title: "Existential Kitchen", duration: 16 },
+        stage: { background: "kitchen" },
+        cast: {
+          human: { position: "left", sprite: "person", voice: "alba", startOffscreen: false },
+          cat: { position: "right", sprite: "cat", voice: "cosette", startOffscreen: false }
+        },
+        props: {
+          banana: { sprite: "banana", x: "45%", y: "60%" }
+        },
+        script: [
+          { t: 0, do: "say", who: "human", line: "I should eat something healthy.", target: "cat" },
+          { t: 2, do: "spawn", what: "banana" },
+          { t: 3.5, do: "say", who: "cat", line: "Don't.", target: "human" },
+          { t: 5, do: "say", who: "human", line: "You can talk?!", target: "cat" },
+          { t: 6.5, do: "say", who: "cat", line: "You can hear?", target: "human" },
+          { t: 8.5, do: "say", who: "cat", line: "This has never happened before.", target: "human" },
+          { t: 10.5, do: "despawn", what: "banana" },
+          { t: 10.5, do: "say", who: "human", line: "Where did the banana go?", target: "cat" },
+          { t: 12, do: "say", who: "cat", line: "We don't talk about the banana.", target: "human" }
+        ]
+      },
+      spaceStation: {
+        meta: { title: "Space Station Malfunction", duration: 14 },
+        stage: { background: "space" },
+        cast: {
+          astronaut: { position: "left", sprite: "person", voice: "jean", startOffscreen: false },
+          ai: { position: "right", sprite: "robot", voice: "alba", startOffscreen: false }
+        },
+        props: {},
+        script: [
+          { t: 0.5, do: "say", who: "astronaut", line: "Computer, why is there no oxygen?", target: "ai" },
+          { t: 3.5, do: "say", who: "ai", line: "I'm sorry Dave. I can't do that.", target: "astronaut" },
+          { t: 6, do: "say", who: "astronaut", line: "My name is Steve.", target: "ai" },
+          { t: 8, do: "say", who: "ai", line: "That's what Dave said.", target: "astronaut" },
+          { t: 10.5, do: "say", who: "astronaut", line: "What happened to Dave?!", target: "ai" },
+          { t: 12.5, do: "say", who: "ai", line: "We don't talk about Dave.", target: "astronaut" }
+        ]
+      }
+    };
+
+    let audioContext, analyser, dataArray;
+    let currentScript = null;
+    let audioCache = new Map();
+    let isPlaying = false;
+    let startTime = 0;
+    let animationId = null;
+
+    async function loadSprite(elementId, spriteName) {
+      const res = await fetch(`sprites/${spriteName}.svg`);
+      document.getElementById(elementId).innerHTML = await res.text();
+    }
+
+    function setEyeDirection(charId, direction) {
+      const charEl = document.getElementById(`char-${charId}`);
+      charEl.classList.remove('look-left', 'look-right');
+      if (direction === 'left' || direction === 'right') {
+        charEl.classList.add(`look-${direction}`);
+      }
+    }
+
+    function setFacing(charId, target) {
+      const charEl = document.getElementById(`char-${charId}`);
+      charEl.classList.remove('facing-left', 'facing-right');
+      if (target === 'left') charEl.classList.add('facing-right');
+      if (target === 'right') charEl.classList.add('facing-left');
+    }
+
+    async function init() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.connect(audioContext.destination);
+      
+      document.getElementById('status').textContent = 'Select a skit...';
+    }
+
+    function getAmplitude() {
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      return sum / dataArray.length;
+    }
+
+    async function generateAudio(text, voice) {
+      const formData = new FormData();
+      formData.append('text', text);
+      formData.append('voice_url', voice);
+      const res = await fetch('/tts/tts', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('TTS failed');
+      return await res.blob();
+    }
+
+    async function loadScript(name) {
+      currentScript = scripts[name];
+      audioCache.clear();
+      
+      document.getElementById('status').textContent = 'Generating audio...';
+      document.getElementById('playBtn').disabled = true;
+      
+      // Update buttons
+      document.getElementById('script1Btn').classList.toggle('active', name === 'performanceReview');
+      document.getElementById('script2Btn').classList.toggle('active', name === 'existentialKitchen');
+      document.getElementById('script3Btn').classList.toggle('active', name === 'spaceStation');
+      
+      // Load background
+      document.getElementById('background').src = `backgrounds/${currentScript.stage.background}.svg`;
+      
+      // Load character sprites
+      for (const [charName, char] of Object.entries(currentScript.cast)) {
+        await loadSprite(`char-${char.position}`, char.sprite);
+      }
+      
+      // Default: look at each other
+      setEyeDirection('left', 'right');
+      setEyeDirection('right', 'left');
+      
+      // Set up characters initial positions
+      Object.entries(currentScript.cast).forEach(([charName, char]) => {
+        const charEl = document.getElementById(`char-${char.position}`);
+        charEl.classList.remove('offscreen-left', 'offscreen-right');
+        if (char.startOffscreen) {
+          charEl.classList.add(`offscreen-${char.position}`);
+        }
+      });
+      
+      // Set up props
+      const propsContainer = document.getElementById('props-container');
+      propsContainer.innerHTML = '';
+      if (currentScript.props) {
+        Object.entries(currentScript.props).forEach(([propName, prop]) => {
+          const propEl = document.createElement('div');
+          propEl.id = `prop-${propName}`;
+          propEl.className = 'prop';
+          propEl.style.left = prop.x;
+          propEl.style.bottom = prop.y;
+          propEl.innerHTML = `<div style="font-size:40px">${prop.sprite === 'sword' ? '⚔️' : '🍌'}</div>`;
+          propsContainer.appendChild(propEl);
+        });
+      }
+      
+      // Generate audio for all lines
+      const sayActions = currentScript.script.filter(b => b.do === 'say');
+      for (let i = 0; i < sayActions.length; i++) {
+        const beat = sayActions[i];
+        const char = currentScript.cast[beat.who];
+        document.getElementById('status').textContent = `Generating ${i+1}/${sayActions.length}...`;
+        
+        try {
+          const blob = await generateAudio(beat.line, char.voice);
+          const audio = new Audio(URL.createObjectURL(blob));
+          const source = audioContext.createMediaElementSource(audio);
+          source.connect(analyser);
+          audioCache.set(`${beat.t}-${beat.who}`, { audio, beat, char });
+        } catch (e) {
+          console.error('TTS error:', e);
+        }
+      }
+      
+      document.getElementById('status').textContent = 'Ready!';
+      document.getElementById('playBtn').disabled = false;
+    }
+
+    function play() {
+      if (audioContext.state === 'suspended') audioContext.resume();
+      isPlaying = true;
+      startTime = performance.now();
+      document.getElementById('playBtn').textContent = '⏸ Pause';
+      animate();
+    }
+
+    function stop() {
+      isPlaying = false;
+      if (animationId) cancelAnimationFrame(animationId);
+      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('char-left').classList.remove('speaking', 'facing-left', 'facing-right');
+      document.getElementById('char-right').classList.remove('speaking', 'facing-left', 'facing-right');
+      document.getElementById('bubble-left').classList.remove('visible');
+      document.getElementById('bubble-right').classList.remove('visible');
+      audioCache.forEach(({ audio }) => { audio.pause(); audio.currentTime = 0; });
+    }
+
+    let triggeredBeats = new Set();
+    let currentSpeaker = null;
+    let peakAmp = 50;
+    let openDuration = 0;
+
+    function animate() {
+      if (!isPlaying) return;
+      
+      const elapsed = (performance.now() - startTime) / 1000;
+      
+      // Check if skit ended
+      if (elapsed > currentScript.meta.duration) {
+        stop();
+        return;
+      }
+      
+      // Trigger beats
+      currentScript.script.forEach(beat => {
+        const key = `${beat.t}-${beat.do}-${beat.who || beat.what}`;
+        if (elapsed >= beat.t && !triggeredBeats.has(key)) {
+          triggeredBeats.add(key);
+          
+          if (beat.do === 'say') {
+            const cached = audioCache.get(`${beat.t}-${beat.who}`);
+            if (cached) {
+              const char = currentScript.cast[beat.who];
+              const charPos = char.position;
+              const otherPos = charPos === 'left' ? 'right' : 'left';
+              
+              setFacing(charPos, otherPos);
+              setEyeDirection(charPos, otherPos);
+              setEyeDirection(otherPos, charPos);
+              
+              document.getElementById(`bubble-${charPos}`).textContent = beat.line;
+              document.getElementById(`bubble-${charPos}`).classList.add('visible');
+              document.getElementById(`bubble-${otherPos}`).classList.remove('visible');
+              
+              currentSpeaker = charPos;
+              cached.audio.play();
+            }
+          } else if (beat.do === 'enter') {
+            const char = currentScript.cast[beat.who];
+            const charEl = document.getElementById(`char-${char.position}`);
+            charEl.classList.remove('offscreen-left', 'offscreen-right');
+          } else if (beat.do === 'exit') {
+            const char = currentScript.cast[beat.who];
+            const charEl = document.getElementById(`char-${char.position}`);
+            charEl.classList.add(`offscreen-${beat.to}`);
+          } else if (beat.do === 'spawn') {
+            const propEl = document.getElementById(`prop-${beat.what}`);
+            if (propEl) propEl.classList.add('visible');
+          } else if (beat.do === 'despawn') {
+            const propEl = document.getElementById(`prop-${beat.what}`);
+            if (propEl) propEl.classList.remove('visible');
+          }
+        }
+      });
+      
+      // Lip sync
+      if (currentSpeaker) {
+        const rawAmp = getAmplitude();
+        if (rawAmp > peakAmp) peakAmp = rawAmp;
+        peakAmp = Math.max(30, peakAmp * 0.998);
+        const normalizedAmp = (rawAmp / peakAmp) * 100;
+        
+        const isSpeaking = normalizedAmp > 25;
+        if (isSpeaking) {
+          openDuration++;
+          const dip = (openDuration > 20 && openDuration % 25 < 5);
+          document.getElementById(`char-${currentSpeaker}`).classList.toggle('speaking', !dip);
+        } else {
+          openDuration = 0;
+          document.getElementById(`char-${currentSpeaker}`).classList.remove('speaking');
+        }
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // Event listeners
+    document.getElementById('playBtn').addEventListener('click', () => {
+      if (isPlaying) { stop(); } else { triggeredBeats.clear(); play(); }
+    });
+    document.getElementById('stopBtn').addEventListener('click', () => { stop(); triggeredBeats.clear(); });
+    document.getElementById('script1Btn').addEventListener('click', () => loadScript('performanceReview'));
+    document.getElementById('script2Btn').addEventListener('click', () => loadScript('existentialKitchen'));
+    document.getElementById('script3Btn').addEventListener('click', () => loadScript('spaceStation'));
+
+    // Init
+    init().then(() => loadScript('performanceReview'));
+  </script>
+</body>
+</html>

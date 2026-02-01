@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Body -->
+    <ellipse cx="50" cy="105" rx="25" ry="40" fill="#ff9800"/>
+    <!-- Chest -->
+    <ellipse cx="50" cy="100" rx="15" ry="22" fill="#ffe0b2"/>
+    <!-- Tail -->
+    <path d="M75 110 Q95 90 90 70" stroke="#ff9800" stroke-width="10" fill="none" stroke-linecap="round"/>
+  </g>
+  <g id="head-top">
+    <!-- Ears -->
+    <polygon points="28,45 35,20 45,45" fill="#ff9800"/>
+    <polygon points="32,42 36,28 42,42" fill="#ffcc80"/>
+    <polygon points="72,45 65,20 55,45" fill="#ff9800"/>
+    <polygon points="68,42 64,28 58,42" fill="#ffcc80"/>
+    <!-- Head -->
+    <ellipse cx="50" cy="55" rx="25" ry="22" fill="#ff9800"/>
+    <!-- Inner face -->
+    <ellipse cx="50" cy="58" rx="18" ry="15" fill="#ffe0b2"/>
+    <!-- Eyes -->
+    <ellipse cx="40" cy="52" rx="6" ry="7" fill="#fff176"/>
+    <ellipse cx="60" cy="52" rx="6" ry="7" fill="#fff176"/>
+    <ellipse class="pupil pupil-left" cx="40" cy="52" rx="2" ry="5" fill="#000000"/>
+    <ellipse class="pupil pupil-right" cx="60" cy="52" rx="2" ry="5" fill="#000000"/>
+    <!-- Nose -->
+    <polygon points="50,62 46,58 54,58" fill="#ff7043"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Muzzle -->
+    <ellipse cx="50" cy="68" rx="12" ry="8" fill="#ffe0b2"/>
+    <!-- Mouth closed -->
+    <path d="M50 65 L46 70 M50 65 L54 70" stroke="#5d4037" stroke-width="1.5" fill="none" id="mouth-closed"/>
+    <!-- Mouth open -->
+    <ellipse cx="50" cy="68" rx="6" ry="4" fill="#f44336" opacity="0" id="mouth-open"/>
+    <!-- Whiskers -->
+    <line x1="25" y1="62" x2="38" y2="65" stroke="#5d4037" stroke-width="1"/>
+    <line x1="25" y1="68" x2="38" y2="68" stroke="#5d4037" stroke-width="1"/>
+    <line x1="62" y1="65" x2="75" y2="62" stroke="#5d4037" stroke-width="1"/>
+    <line x1="62" y1="68" x2="75" y2="68" stroke="#5d4037" stroke-width="1"/>
+  </g>
+</svg>

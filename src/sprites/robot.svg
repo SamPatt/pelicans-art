@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <rect x="28" y="78" width="44" height="72" fill="#78909c" rx="5"/>
+    <rect x="35" y="88" width="30" height="20" fill="#546e7a" rx="3"/>
+    <circle cx="42" cy="98" r="4" fill="#4caf50"/>
+    <circle cx="58" cy="98" r="4" fill="#f44336"/>
+    <rect x="38" y="115" width="24" height="8" fill="#455a64"/>
+  </g>
+  <g id="head-top">
+    <!-- Antenna -->
+    <rect x="47" y="15" width="6" height="15" fill="#90a4ae"/>
+    <circle cx="50" cy="12" r="6" fill="#f44336"/>
+    <!-- Head -->
+    <rect x="28" y="30" width="44" height="45" fill="#90a4ae" rx="8"/>
+    <!-- Eyes -->
+    <rect x="35" y="42" width="12" height="10" fill="#263238" rx="2"/>
+    <rect x="53" y="42" width="12" height="10" fill="#263238" rx="2"/>
+    <circle class="pupil pupil-left" cx="41" cy="47" r="3" fill="#4fc3f7"/>
+    <circle class="pupil pupil-right" cx="59" cy="47" r="3" fill="#4fc3f7"/>
+    <!-- Brow -->
+    <rect x="33" y="38" width="16" height="3" fill="#607d8b"/>
+    <rect x="51" y="38" width="16" height="3" fill="#607d8b"/>
+  </g>
+  <g id="head-bottom">
+    <rect x="32" y="75" width="36" height="15" fill="#90a4ae" rx="4"/>
+    <rect x="40" y="78" width="20" height="6" fill="#263238" rx="2" id="mouth-closed"/>
+    <rect x="40" y="78" width="20" height="8" fill="#f44336" rx="2" opacity="0" id="mouth-open"/>
+  </g>
+</svg>

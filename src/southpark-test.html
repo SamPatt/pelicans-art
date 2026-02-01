@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>South Park Style Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      padding: 10px;
+      min-height: 100vh;
+    }
+    h1 { color: #e94560; margin-bottom: 10px; text-align: center; font-size: 20px; }
+    .stage {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+      margin: 0 auto;
+      position: relative;
+      border: 2px solid #e94560;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e8e0d5;
+    }
+    @media (max-width: 600px) {
+      body { padding: 5px; }
+      h1 { font-size: 16px; margin-bottom: 5px; }
+      .controls button { padding: 10px 16px; font-size: 14px; }
+    }
+    /* Landscape mobile optimization */
+    @media (max-height: 500px) and (orientation: landscape) {
+      h1 { display: none; }
+      .amplitude-bar { display: none; }
+      .status { display: none; }
+      .stage { height: calc(100vh - 60px); }
+      .controls { margin-top: 5px; }
+      .controls button { padding: 8px 12px; font-size: 12px; }
+    }
+    .background {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .character {
+      position: absolute;
+      bottom: 10%;
+      width: 15%;
+      max-width: 120px;
+      height: auto;
+    }
+    .character.left { left: 15%; }
+    .character.right { right: 15%; }
+    /* Head tilt animation - rotates from center of head */
+    .character svg #head-top,
+    .character svg #head-bottom {
+      transition: transform 0.05s ease-out;
+      transform-origin: 50% 55px; /* pivot at center of head */
+    }
+    /* Left character default: tilts right (toward center/audience) */
+    .character.left.speaking svg #head-top {
+      transform: rotate(8deg);
+    }
+    .character.left.speaking svg #head-bottom {
+      transform: rotate(8deg);
+    }
+    /* Right character default: tilts left (toward center/audience) */
+    .character.right.speaking svg #head-top {
+      transform: rotate(-8deg);
+    }
+    .character.right.speaking svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    /* When facing other character, tilt BACK away from them */
+    .character.left.speaking.facing-right svg #head-top {
+      transform: rotate(-8deg);
+    }
+    .character.left.speaking.facing-right svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    .character.right.speaking.facing-left svg #head-top {
+      transform: rotate(8deg);
+    }
+    .character.right.speaking.facing-left svg #head-bottom {
+      transform: rotate(8deg);
+    }
+    .character.speaking svg #mouth-open { opacity: 1 !important; }
+    .character.speaking svg #mouth-closed { opacity: 0 !important; }
+    
+    /* Eye movement */
+    .character svg .pupil {
+      transition: transform 0.15s ease-out;
+    }
+    .character.look-left svg .pupil { transform: translateX(-1.5px); }
+    .character.look-right svg .pupil { transform: translateX(1.5px); }
+    .character.look-up svg .pupil { transform: translateY(-1px); }
+    .character.look-down svg .pupil { transform: translateY(1px); }
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+    button {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover { background: #ff6b6b; }
+    .speech-bubble {
+      position: absolute;
+      background: white;
+      color: black;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      max-width: 35%;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .speech-bubble.visible { opacity: 1; }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 8px solid transparent;
+      border-top-color: white;
+      border-bottom: 0;
+    }
+    .speech-bubble.left { top: 10%; left: 10%; }
+    .speech-bubble.right { top: 10%; right: 10%; }
+    @media (max-width: 600px) {
+      .speech-bubble { font-size: 11px; padding: 6px 10px; }
+    }
+    .status { text-align: center; margin-top: 15px; color: #888; }
+    .amplitude-bar {
+      width: 200px;
+      height: 20px;
+      background: #333;
+      margin: 10px auto;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .amplitude-fill {
+      height: 100%;
+      background: #4caf50;
+      width: 0%;
+      transition: width 0.05s;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎭 South Park Lip Sync Test</h1>
+  
+  <div class="stage" id="stage">
+    <img class="background" src="backgrounds/office.svg" alt="background">
+    <div class="character left" id="char-left"></div>
+    <div class="character right" id="char-right"></div>
+    <div class="speech-bubble left" id="bubble-left"></div>
+    <div class="speech-bubble right" id="bubble-right"></div>
+  </div>
+  
+  <div class="amplitude-bar">
+    <div class="amplitude-fill" id="amplitudeFill"></div>
+  </div>
+  
+  <div class="controls">
+    <button onclick="testLipSync('left')">Test Left</button>
+    <button onclick="testLipSync('right')">Test Right</button>
+    <button onclick="runDemo()">Run Demo</button>
+  </div>
+  
+  <div class="status" id="status">Tap a button to test</div>
+
+  <script>
+    let audioContext, analyser, dataArray;
+    
+    async function loadSprite(id, path) {
+      const res = await fetch(path);
+      document.getElementById(id).innerHTML = await res.text();
+    }
+    
+    async function init() {
+      await loadSprite('char-left', 'sprites/trump.svg');
+      await loadSprite('char-right', 'sprites/trump.svg');
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.connect(audioContext.destination);
+      
+      // Default: characters look at each other
+      setEyeDirection('left', 'right');
+      setEyeDirection('right', 'left');
+      
+      document.getElementById('status').textContent = 'Ready!';
+    }
+    
+    function getAmplitude() {
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      return sum / dataArray.length;
+    }
+    
+    function setEyeDirection(charId, lookAt) {
+      // lookAt: 'left', 'right', 'other', 'audience', 'up', 'down', or another charId
+      const charEl = document.getElementById(`char-${charId}`);
+      charEl.classList.remove('look-left', 'look-right', 'look-up', 'look-down');
+      
+      let direction = lookAt;
+      if (lookAt === 'other') {
+        direction = charId === 'left' ? 'right' : 'left';
+      } else if (lookAt === 'audience') {
+        direction = charId === 'left' ? 'left' : 'right';
+      }
+      
+      if (['left', 'right', 'up', 'down'].includes(direction)) {
+        charEl.classList.add(`look-${direction}`);
+      }
+    }
+    
+    async function testLipSync(charId, target = 'other') {
+      // target: 'other' (face the other character), 'audience' (face away from center), 'all'
+      document.getElementById('status').textContent = 'Generating...';
+      if (audioContext.state === 'suspended') await audioContext.resume();
+      
+      const charEl = document.getElementById(`char-${charId}`);
+      charEl.classList.remove('facing-left', 'facing-right');
+      
+      // Set facing direction based on target
+      if (target === 'other') {
+        charEl.classList.add(charId === 'left' ? 'facing-right' : 'facing-left');
+      }
+      
+      // Set eyes to look at target
+      setEyeDirection(charId, target);
+      
+      // Make the OTHER character look at the speaker
+      const otherCharId = charId === 'left' ? 'right' : 'left';
+      setEyeDirection(otherCharId, charId === 'left' ? 'left' : 'right');
+      
+      const text = charId === 'left' 
+        ? "Have a seat. Let's discuss your performance."
+        : "I don't work here.";
+      const voice = charId === 'left' ? 'fantine' : 'jean';
+      
+      try {
+        const formData = new FormData();
+        formData.append('text', text);
+        formData.append('voice_url', voice);
+        
+        const res = await fetch('/tts/tts', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('TTS failed');
+        
+        const blob = await res.blob();
+        const audio = new Audio(URL.createObjectURL(blob));
+        const source = audioContext.createMediaElementSource(audio);
+        source.connect(analyser);
+        
+        const bubbleEl = document.getElementById(`bubble-${charId}`);
+        bubbleEl.textContent = text;
+        bubbleEl.classList.add('visible');
+        
+        let peakAmp = 50;
+        let openDuration = 0; // How long mouth has been open
+        
+        const animate = () => {
+          if (audio.paused || audio.ended) {
+            document.getElementById(`char-${charId}`).classList.remove('speaking', 'facing-left', 'facing-right');
+            // Don't reset eye direction - keep looking at each other
+            document.getElementById('amplitudeFill').style.width = '0%';
+            bubbleEl.classList.remove('visible');
+            document.getElementById('status').textContent = 'Done!';
+            return;
+          }
+          
+          const rawAmp = getAmplitude();
+          
+          // Track peak for normalization
+          if (rawAmp > peakAmp) peakAmp = rawAmp;
+          peakAmp = Math.max(30, peakAmp * 0.998);
+          
+          // Normalize amplitude
+          const normalizedAmp = (rawAmp / peakAmp) * 100;
+          document.getElementById('amplitudeFill').style.width = `${Math.min(100, normalizedAmp)}%`;
+          
+          const isSpeaking = normalizedAmp > 25;
+          
+          if (isSpeaking) {
+            openDuration++;
+            // After being open for ~20 frames (~300ms), add a subtle dip
+            // Creates a gentle "breathing" motion during sustained speech
+            const dip = (openDuration > 20 && openDuration % 25 < 5);
+            document.getElementById(`char-${charId}`).classList.toggle('speaking', !dip);
+          } else {
+            openDuration = 0;
+            document.getElementById(`char-${charId}`).classList.remove('speaking');
+          }
+          
+          requestAnimationFrame(animate);
+        };
+        
+        audio.onplay = () => {
+          document.getElementById('status').textContent = 'Playing...';
+          animate();
+        };
+        await audio.play();
+      } catch (err) {
+        document.getElementById('status').textContent = 'Error: ' + err.message;
+      }
+    }
+    
+    async function runDemo() {
+      await testLipSync('left', 'other');  // Boss faces employee
+      setTimeout(() => testLipSync('right', 'other'), 4000);  // Employee faces boss
+    }
+    
+    init();
+  </script>
+</body>
+</html>
