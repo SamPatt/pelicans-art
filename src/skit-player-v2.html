@@ -65,6 +65,11 @@
       transform: translateX(-50%);
     }
     
+    .character svg {
+      height: 100%;
+      width: auto;
+    }
+    
     .character.flipped {
       transform: translateX(-50%) scaleX(-1);
     }
@@ -74,6 +79,11 @@
     /* Speaking animation */
     .character.speaking { animation: speak-bounce 0.15s infinite alternate; }
     @keyframes speak-bounce { to { transform: translateX(-50%) translateY(-2px); } }
+    
+    /* SVG emotion transitions */
+    .character svg * {
+      transition: all 0.25s ease-out;
+    }
     
     /* Captions */
     #caption {
@@ -250,18 +260,25 @@
     }
     
     // === CHARACTER SYSTEM ===
+    async function loadSprite(spriteName, view = 'front') {
+      const spritePath = `sprites/${spriteName}-${view}.svg`;
+      const response = await fetch(spritePath);
+      const svgText = await response.text();
+      return svgText;
+    }
+    
     async function createCharacter(name, config) {
       const stage = document.getElementById('stage');
-      const el = document.createElement('img');
+      const el = document.createElement('div');
       el.className = 'character' + (config.startOffscreen ? ' offscreen' : '');
       el.id = `char-${name}`;
       el.dataset.sprite = config.sprite;
       el.dataset.voice = config.voice;
       el.style.left = `${config.x}%`;
       
-      // Load sprite
-      const spritePath = `sprites/${config.sprite}-front.svg`;
-      el.src = spritePath;
+      // Load sprite as inline SVG
+      const svgText = await loadSprite(config.sprite, 'front');
+      el.innerHTML = svgText;
       
       stage.appendChild(el);
       
@@ -272,6 +289,13 @@
         voice: config.voice,
         el: el
       };
+    }
+    
+    async function setCharacterView(name, view) {
+      const char = characters[name];
+      if (!char) return;
+      const svgText = await loadSprite(char.sprite, view);
+      char.el.innerHTML = svgText;
     }
     
     function moveCharacter(name, toX, duration = 1) {
@@ -310,80 +334,129 @@
     }
     
     // === EMOTION SYSTEM ===
+    // Emotion configs for both cat-like and human sprites
     const EMOTIONS = {
       neutral: {
-        eyeWhite: { ry: 3, cy: 42 },
-        pupil: { r: 1.5, cy: 42 },
-        browLeft: "M37 36 Q43 34 49 36",
-        browRight: "M51 36 Q57 34 63 36",
-        mouth: "M46 52 Q50 55 54 52",
+        eyeWhite: { ry: 7, cy: 52 },
+        eyeWhiteHuman: { ry: 3, cy: 42 },
+        pupil: { ry: 5, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        browLeftHuman: "M37 36 Q43 34 49 36",
+        browRightHuman: "M51 36 Q57 34 63 36",
+        mouth: "M50 65 L46 70 M50 65 L54 70",
+        mouthHuman: "M46 52 Q50 55 54 52",
         highlight: 0
       },
       happy: {
-        eyeWhite: { ry: 2, cy: 41 },
-        pupil: { r: 1.5, cy: 41 },
-        browLeft: "M37 34 Q43 31 49 34",
-        browRight: "M51 34 Q57 31 63 34",
-        mouth: "M44 52 Q50 58 56 52",
+        eyeWhite: { ry: 5, cy: 50 },
+        eyeWhiteHuman: { ry: 2, cy: 41 },
+        pupil: { ry: 4, cy: 50 },
+        pupilHuman: { r: 1.5, cy: 41 },
+        browLeft: "M30 42 Q40 38 48 42",
+        browRight: "M52 42 Q60 38 70 42",
+        browLeftHuman: "M37 34 Q43 31 49 34",
+        browRightHuman: "M51 34 Q57 31 63 34",
+        mouth: "M44 66 Q50 72 56 66",
+        mouthHuman: "M44 52 Q50 58 56 52",
         highlight: 0
       },
       sad: {
-        eyeWhite: { ry: 3, cy: 44 },
-        pupil: { r: 1.5, cy: 45 },
-        browLeft: "M37 34 L49 40",
-        browRight: "M51 40 L63 34",
-        mouth: "M46 56 Q50 52 54 56",
+        eyeWhite: { ry: 6, cy: 54 },
+        eyeWhiteHuman: { ry: 3, cy: 44 },
+        pupil: { ry: 5, cy: 55 },
+        pupilHuman: { r: 1.5, cy: 45 },
+        browLeft: "M30 40 L48 46",
+        browRight: "M52 46 L70 40",
+        browLeftHuman: "M37 34 L49 40",
+        browRightHuman: "M51 40 L63 34",
+        mouth: "M44 70 Q50 65 56 70",
+        mouthHuman: "M46 56 Q50 52 54 56",
         highlight: 0
       },
       angry: {
-        eyeWhite: { ry: 2.5, cy: 42 },
-        pupil: { r: 1.5, cy: 42 },
-        browLeft: "M37 40 L49 34",
-        browRight: "M51 34 L63 40",
-        mouth: "M46 54 L54 54",
+        eyeWhite: { ry: 5, cy: 52 },
+        eyeWhiteHuman: { ry: 2.5, cy: 42 },
+        pupil: { ry: 4, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 48 L48 42",
+        browRight: "M52 42 L70 48",
+        browLeftHuman: "M37 40 L49 34",
+        browRightHuman: "M51 34 L63 40",
+        mouth: "M44 68 L56 68",
+        mouthHuman: "M46 54 L54 54",
         highlight: 0
       },
       surprised: {
-        eyeWhite: { ry: 5, cy: 42 },
-        pupil: { r: 2, cy: 42 },
-        browLeft: "M37 30 Q43 26 49 30",
-        browRight: "M51 30 Q57 26 63 30",
-        mouth: "M47 52 Q50 58 53 52",
+        eyeWhite: { ry: 9, cy: 52 },
+        eyeWhiteHuman: { ry: 5, cy: 42 },
+        pupil: { ry: 6, cy: 52 },
+        pupilHuman: { r: 2, cy: 42 },
+        browLeft: "M30 38 Q40 34 48 38",
+        browRight: "M52 38 Q60 34 70 38",
+        browLeftHuman: "M37 30 Q43 26 49 30",
+        browRightHuman: "M51 30 Q57 26 63 30",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
+        mouthHuman: "M47 52 Q50 58 53 52",
         highlight: 1
       },
       excited: {
-        eyeWhite: { ry: 5, cy: 40 },
-        pupil: { r: 2, cy: 40 },
-        browLeft: "M37 28 Q43 24 49 28",
-        browRight: "M51 28 Q57 24 63 28",
-        mouth: "M44 52 Q50 60 56 52",
+        eyeWhite: { ry: 9, cy: 50 },
+        eyeWhiteHuman: { ry: 5, cy: 40 },
+        pupil: { ry: 6, cy: 50 },
+        pupilHuman: { r: 2, cy: 40 },
+        browLeft: "M30 38 Q40 32 48 38",
+        browRight: "M52 38 Q60 32 70 38",
+        browLeftHuman: "M37 28 Q43 24 49 28",
+        browRightHuman: "M51 28 Q57 24 63 28",
+        mouth: "M42 64 Q50 74 58 64",
+        mouthHuman: "M44 52 Q50 60 56 52",
         highlight: 1
       },
       worried: {
-        eyeWhite: { ry: 3.5, cy: 43 },
-        pupil: { r: 1.5, cy: 44 },
-        browLeft: "M37 32 L49 38",
-        browRight: "M51 38 L63 32",
-        mouth: "M46 56 Q50 53 54 56",
+        eyeWhite: { ry: 7, cy: 53 },
+        eyeWhiteHuman: { ry: 3.5, cy: 43 },
+        pupil: { ry: 5, cy: 54 },
+        pupilHuman: { r: 1.5, cy: 44 },
+        browLeft: "M30 42 L48 46",
+        browRight: "M52 46 L70 42",
+        browLeftHuman: "M37 32 L49 38",
+        browRightHuman: "M51 38 L63 32",
+        mouth: "M44 68 Q50 66 56 68",
+        mouthHuman: "M46 56 Q50 53 54 56",
         highlight: 0
       },
       smug: {
-        eyeWhite: { ry: 2, cy: 42 },
-        pupil: { r: 1.5, cy: 42 },
-        browLeft: "M37 36 Q43 32 49 38",
-        browRight: "M51 38 Q57 32 63 36",
-        mouth: "M46 52 Q50 56 54 54",
+        eyeWhite: { ry: 5, cy: 52 },
+        eyeWhiteHuman: { ry: 2, cy: 42 },
+        pupil: { ry: 4, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 44 Q40 40 48 46",
+        browRight: "M52 46 Q60 40 70 44",
+        browLeftHuman: "M37 36 Q43 32 49 38",
+        browRightHuman: "M51 38 Q57 32 63 36",
+        mouth: "M44 66 Q50 70 56 68",
+        mouthHuman: "M46 52 Q50 56 54 54",
         highlight: 0
       },
       tired: {
-        eyeWhite: { ry: 1.5, cy: 44 },
-        pupil: { r: 1, cy: 44 },
-        browLeft: "M37 38 Q43 36 49 38",
-        browRight: "M51 38 Q57 36 63 38",
-        mouth: "M46 54 Q50 52 54 54",
+        eyeWhite: { ry: 4, cy: 54 },
+        eyeWhiteHuman: { ry: 1.5, cy: 44 },
+        pupil: { ry: 3, cy: 55 },
+        pupilHuman: { r: 1, cy: 44 },
+        browLeft: "M30 46 Q40 44 48 46",
+        browRight: "M52 46 Q60 44 70 46",
+        browLeftHuman: "M37 38 Q43 36 49 38",
+        browRightHuman: "M51 38 Q57 36 63 38",
+        mouth: "M44 68 Q50 66 56 68",
+        mouthHuman: "M46 54 Q50 52 54 54",
         highlight: 0
       }
     };
+    
+    // Human sprites list for emotion detection
+    const HUMAN_SPRITES = ['person', 'girl', 'waiter', 'trump'];
     
     function setEmotion(charName, emotion) {
       const char = characters[charName];
@@ -393,6 +466,9 @@
       if (!config) return;
       
       const el = char.el;
+      const isHuman = HUMAN_SPRITES.includes(char.sprite);
+      
+      // Get SVG elements
       const eyeLeftWhite = el.querySelector('#eye-left-white');
       const eyeRightWhite = el.querySelector('#eye-right-white');
       const eyeLeftPupil = el.querySelector('#eye-left-pupil');
@@ -403,15 +479,42 @@
       const highlightLeft = el.querySelector('#eye-left-highlight');
       const highlightRight = el.querySelector('#eye-right-highlight');
       
-      if (eyeLeftWhite) { eyeLeftWhite.setAttribute('ry', config.eyeWhite.ry); eyeLeftWhite.setAttribute('cy', config.eyeWhite.cy); }
-      if (eyeRightWhite) { eyeRightWhite.setAttribute('ry', config.eyeWhite.ry); eyeRightWhite.setAttribute('cy', config.eyeWhite.cy); }
-      if (eyeLeftPupil) { eyeLeftPupil.setAttribute('r', config.pupil.r); eyeLeftPupil.setAttribute('cy', config.pupil.cy); }
-      if (eyeRightPupil) { eyeRightPupil.setAttribute('r', config.pupil.r); eyeRightPupil.setAttribute('cy', config.pupil.cy); }
-      if (browLeft) browLeft.setAttribute('d', config.browLeft);
-      if (browRight) browRight.setAttribute('d', config.browRight);
-      if (mouthClosed) mouthClosed.setAttribute('d', config.mouth);
+      // Apply eye whites
+      const eyeConfig = isHuman ? config.eyeWhiteHuman : config.eyeWhite;
+      if (eyeLeftWhite) { 
+        eyeLeftWhite.setAttribute('ry', eyeConfig.ry); 
+        eyeLeftWhite.setAttribute('cy', eyeConfig.cy); 
+      }
+      if (eyeRightWhite) { 
+        eyeRightWhite.setAttribute('ry', eyeConfig.ry); 
+        eyeRightWhite.setAttribute('cy', eyeConfig.cy); 
+      }
+      
+      // Apply pupils
+      const pupilConfig = isHuman ? config.pupilHuman : config.pupil;
+      if (eyeLeftPupil) { 
+        if (pupilConfig.r) eyeLeftPupil.setAttribute('r', pupilConfig.r);
+        if (pupilConfig.ry) eyeLeftPupil.setAttribute('ry', pupilConfig.ry);
+        eyeLeftPupil.setAttribute('cy', pupilConfig.cy); 
+      }
+      if (eyeRightPupil) { 
+        if (pupilConfig.r) eyeRightPupil.setAttribute('r', pupilConfig.r);
+        if (pupilConfig.ry) eyeRightPupil.setAttribute('ry', pupilConfig.ry);
+        eyeRightPupil.setAttribute('cy', pupilConfig.cy); 
+      }
+      
+      // Apply eyebrows
+      if (browLeft) browLeft.setAttribute('d', isHuman ? config.browLeftHuman : config.browLeft);
+      if (browRight) browRight.setAttribute('d', isHuman ? config.browRightHuman : config.browRight);
+      
+      // Apply mouth
+      if (mouthClosed) mouthClosed.setAttribute('d', isHuman ? config.mouthHuman : config.mouth);
+      
+      // Apply highlights
       if (highlightLeft) highlightLeft.setAttribute('opacity', config.highlight);
       if (highlightRight) highlightRight.setAttribute('opacity', config.highlight);
+      
+      console.log(`${charName} emotion: ${emotion} (${isHuman ? 'human' : 'non-human'})`);
     }
     
     // === AUDIO SYSTEM ===

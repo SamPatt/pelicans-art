@@ -16,19 +16,24 @@
     <rect x="600" y="380" width="100" height="70"/>
   </g>
   
-  <!-- Table with 4 legs -->
-  <!-- Legs -->
-  <rect x="250" y="355" width="12" height="35" fill="#8b4513"/>
-  <rect x="350" y="355" width="12" height="35" fill="#8b4513"/>
-  <rect x="440" y="355" width="12" height="35" fill="#8b4513"/>
-  <rect x="540" y="355" width="12" height="35" fill="#8b4513"/>
-  <!-- Table top -->
-  <ellipse cx="400" cy="340" rx="180" ry="30" fill="#f5f5f5"/>
+  <!-- Table with 4 legs - positioned higher -->
+  <!-- Legs (tall, visible) -->
+  <rect x="255" y="300" width="10" height="85" fill="#5c3a21"/>
+  <rect x="345" y="300" width="10" height="85" fill="#5c3a21"/>
+  <rect x="445" y="300" width="10" height="85" fill="#5c3a21"/>
+  <rect x="535" y="300" width="10" height="85" fill="#5c3a21"/>
+  <!-- Leg bottoms (feet) -->
+  <rect x="252" y="380" width="16" height="5" rx="2" fill="#4a2f1a"/>
+  <rect x="342" y="380" width="16" height="5" rx="2" fill="#4a2f1a"/>
+  <rect x="442" y="380" width="16" height="5" rx="2" fill="#4a2f1a"/>
+  <rect x="532" y="380" width="16" height="5" rx="2" fill="#4a2f1a"/>
+  <!-- Table top - higher position -->
+  <ellipse cx="400" cy="290" rx="170" ry="28" fill="#f5f5f5"/>
   <!-- Tablecloth edge -->
-  <ellipse cx="400" cy="340" rx="180" ry="30" fill="none" stroke="#e8e8e8" stroke-width="3"/>
+  <ellipse cx="400" cy="290" rx="170" ry="28" fill="none" stroke="#e8e8e8" stroke-width="3"/>
   
   <!-- Seated woman on right side of table -->
-  <g transform="translate(520, 240)">
+  <g transform="translate(520, 195)">
     <!-- Chair back -->
     <rect x="-25" y="60" width="50" height="80" rx="5" fill="#5a252c"/>
     <!-- Body/dress -->
@@ -44,25 +49,25 @@
     <circle cx="6" cy="42" r="2" fill="#333"/>
     <ellipse cx="0" cy="52" rx="4" ry="2" fill="#c97878"/>
     <!-- Arm on table -->
-    <ellipse cx="-30" cy="85" rx="20" ry="8" fill="#deb887"/>
+    <ellipse cx="-35" cy="80" rx="22" ry="8" fill="#deb887"/>
   </g>
   
-  <!-- Plates -->
-  <ellipse cx="300" cy="330" rx="35" ry="12" fill="#fff"/>
-  <ellipse cx="300" cy="330" rx="28" ry="9" fill="#f5f5f5"/>
-  <ellipse cx="480" cy="330" rx="35" ry="12" fill="#fff"/>
-  <ellipse cx="480" cy="330" rx="28" ry="9" fill="#f5f5f5"/>
+  <!-- Plates - adjusted for higher table -->
+  <ellipse cx="300" cy="280" rx="35" ry="12" fill="#fff"/>
+  <ellipse cx="300" cy="280" rx="28" ry="9" fill="#f5f5f5"/>
+  <ellipse cx="480" cy="280" rx="35" ry="12" fill="#fff"/>
+  <ellipse cx="480" cy="280" rx="28" ry="9" fill="#f5f5f5"/>
   
-  <!-- Wine glasses -->
-  <path d="M250 325 L250 310 L245 295 Q250 290 255 295 L250 310" fill="none" stroke="#ddd" stroke-width="2"/>
-  <ellipse cx="250" cy="293" rx="8" ry="4" fill="#f8f8f8" opacity="0.8"/>
-  <path d="M550 325 L550 310 L545 295 Q550 290 555 295 L550 310" fill="none" stroke="#ddd" stroke-width="2"/>
-  <ellipse cx="550" cy="293" rx="8" ry="4" fill="#722f37" opacity="0.6"/>
+  <!-- Wine glasses - adjusted -->
+  <path d="M250 275 L250 260 L245 245 Q250 240 255 245 L250 260" fill="none" stroke="#ddd" stroke-width="2"/>
+  <ellipse cx="250" cy="243" rx="8" ry="4" fill="#f8f8f8" opacity="0.8"/>
+  <path d="M545 275 L545 260 L540 245 Q545 240 550 245 L545 260" fill="none" stroke="#ddd" stroke-width="2"/>
+  <ellipse cx="545" cy="243" rx="8" ry="4" fill="#722f37" opacity="0.6"/>
   
-  <!-- Candle -->
-  <rect x="395" y="300" width="10" height="25" fill="#f5deb3"/>
-  <ellipse cx="400" cy="295" rx="6" ry="8" fill="#ffa500"/>
-  <ellipse cx="400" cy="293" rx="3" ry="5" fill="#ffff00"/>
+  <!-- Candle - adjusted -->
+  <rect x="395" y="250" width="10" height="25" fill="#f5deb3"/>
+  <ellipse cx="400" cy="245" rx="6" ry="8" fill="#ffa500"/>
+  <ellipse cx="400" cy="243" rx="3" ry="5" fill="#ffff00"/>
   
   <!-- Wall art - framed picture -->
   <rect x="100" y="80" width="120" height="100" fill="#8b4513"/>
