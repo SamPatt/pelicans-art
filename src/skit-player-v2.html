@@ -95,7 +95,11 @@
       transform: rotate(8deg);
     }
     
-    /* Mouth open/closed for lip sync */
+    /* Mouth open/closed for lip sync - instant opacity changes */
+    .character svg #mouth-open,
+    .character svg #mouth-closed {
+      transition: opacity 0s !important;
+    }
     .character.speaking svg #mouth-open { opacity: 1 !important; }
     .character.speaking svg #mouth-closed { opacity: 0 !important; }
     
@@ -110,9 +114,22 @@
     .character.facing-left { transform: translateX(-50%) scaleX(-1); }
     .character.facing-right { transform: translateX(-50%) scaleX(1); }
     
-    /* SVG emotion transitions */
-    .character svg * {
+    /* SVG emotion transitions - specific elements only */
+    .character svg #eye-left-white,
+    .character svg #eye-right-white,
+    .character svg #eye-left-pupil,
+    .character svg #eye-right-pupil,
+    .character svg #brow-left,
+    .character svg #brow-right,
+    .character svg #mouth-closed,
+    .character svg #eye-left-highlight,
+    .character svg #eye-right-highlight {
       transition: all 0.25s ease-out;
+    }
+    
+    /* Mouth open/closed should NOT transition - instant for lip sync */
+    .character svg #mouth-open {
+      transition: none !important;
     }
     
     /* Captions */
