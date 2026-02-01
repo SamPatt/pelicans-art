@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Back of shirt -->
+    <rect x="32" y="78" width="36" height="72" fill="#2196f3"/>
+    <!-- Back seam/detail -->
+    <line x1="50" y1="78" x2="50" y2="150" stroke="#1976d2" stroke-width="2"/>
+  </g>
+  <g id="head-top">
+    <!-- Back of hair (fuller, covering more) -->
+    <ellipse cx="50" cy="40" rx="22" ry="24" fill="#5d4037"/>
+    <!-- Hair texture -->
+    <path d="M32 35 Q40 30 50 32 Q60 30 68 35" stroke="#4e342e" stroke-width="2" fill="none"/>
+    <path d="M35 45 Q50 40 65 45" stroke="#4e342e" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Neck -->
+    <rect x="42" y="62" width="16" height="18" fill="#ffcc80"/>
+    <!-- Hidden mouth elements for compatibility -->
+    <ellipse cx="50" cy="68" rx="5" ry="2" fill="#ffcc80" opacity="0" id="mouth-closed"/>
+    <ellipse cx="50" cy="68" rx="5" ry="2" fill="#ffcc80" opacity="0" id="mouth-open"/>
+  </g>
+</svg>

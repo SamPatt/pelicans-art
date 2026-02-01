@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Emotion Showcase</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      padding: 20px;
+    }
+    h1 { color: #e94560; margin-bottom: 10px; text-align: center; }
+    h2 { color: #ffab91; margin: 20px 0 10px; }
+    p.note { color: #888; font-size: 12px; margin-bottom: 15px; text-align: center; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    .sprite-card {
+      background: #16213e;
+      border: 2px solid #e94560;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .sprite-card svg {
+      width: 80px;
+      height: 120px;
+      background: #e8e0d5;
+      border-radius: 4px;
+    }
+    .sprite-card .name {
+      margin-top: 8px;
+      font-weight: bold;
+      color: #fff;
+      font-size: 13px;
+    }
+    .section { margin-bottom: 40px; }
+  </style>
+</head>
+<body>
+  <h1>🎭 Emotion Through Eyes & Eyebrows</h1>
+  <p class="note">Same character base, different eye/eyebrow configurations</p>
+
+  <div class="section">
+    <h2>Alien - Emotions</h2>
+    <div class="grid">
+      <!-- Neutral -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Neutral eyes - centered pupils -->
+          <ellipse cx="38" cy="40" rx="10" ry="14" fill="#000"/>
+          <ellipse cx="62" cy="40" rx="10" ry="14" fill="#000"/>
+          <ellipse cx="38" cy="40" rx="5" ry="7" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="40" rx="5" ry="7" fill="#e8f5e9"/>
+          <ellipse cx="50" cy="62" rx="3" ry="2" fill="#558b2f"/>
+        </svg>
+        <div class="name">Neutral</div>
+      </div>
+
+      <!-- Happy -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Happy eyes - curved/squinting, raised -->
+          <ellipse cx="38" cy="38" rx="10" ry="12" fill="#000"/>
+          <ellipse cx="62" cy="38" rx="10" ry="12" fill="#000"/>
+          <ellipse cx="38" cy="36" rx="5" ry="6" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="36" rx="5" ry="6" fill="#e8f5e9"/>
+          <!-- Eyebrow equiv - curved highlight above eyes -->
+          <path d="M30 28 Q38 24 46 28" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <path d="M54 28 Q62 24 70 28" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <!-- Smile -->
+          <path d="M44 62 Q50 68 56 62" stroke="#558b2f" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Happy</div>
+      </div>
+
+      <!-- Sad -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Sad eyes - droopy, pupils looking down -->
+          <ellipse cx="38" cy="42" rx="10" ry="12" fill="#000"/>
+          <ellipse cx="62" cy="42" rx="10" ry="12" fill="#000"/>
+          <ellipse cx="38" cy="45" rx="5" ry="6" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="45" rx="5" ry="6" fill="#e8f5e9"/>
+          <!-- Sad brow - inner ends raised high, outer ends lower (∩ shape) -->
+          <path d="M28 32 L44 26" stroke="#c8e6c9" stroke-width="3"/>
+          <path d="M56 26 L72 32" stroke="#c8e6c9" stroke-width="3"/>
+          <!-- Frown -->
+          <path d="M44 65 Q50 60 56 65" stroke="#558b2f" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Sad</div>
+      </div>
+
+      <!-- Angry -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Angry eyes - narrowed, same color -->
+          <ellipse cx="38" cy="42" rx="10" ry="10" fill="#000"/>
+          <ellipse cx="62" cy="42" rx="10" ry="10" fill="#000"/>
+          <ellipse cx="38" cy="42" rx="5" ry="5" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="42" rx="5" ry="5" fill="#e8f5e9"/>
+          <!-- Angry brow - angled DOWN into center -->
+          <path d="M28 30 L46 38" stroke="#c8e6c9" stroke-width="4"/>
+          <path d="M54 38 L72 30" stroke="#c8e6c9" stroke-width="4"/>
+          <!-- Grimace -->
+          <path d="M42 62 L58 62" stroke="#558b2f" stroke-width="2"/>
+        </svg>
+        <div class="name">Angry</div>
+      </div>
+
+      <!-- Surprised -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Surprised eyes - wide, big pupils -->
+          <ellipse cx="38" cy="40" rx="12" ry="16" fill="#000"/>
+          <ellipse cx="62" cy="40" rx="12" ry="16" fill="#000"/>
+          <ellipse cx="38" cy="40" rx="6" ry="8" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="40" rx="6" ry="8" fill="#e8f5e9"/>
+          <circle cx="36" cy="36" r="2" fill="#fff"/>
+          <circle cx="60" cy="36" r="2" fill="#fff"/>
+          <!-- Raised brows -->
+          <path d="M28 24 Q38 20 48 24" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <path d="M52 24 Q62 20 72 24" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <!-- O mouth -->
+          <ellipse cx="50" cy="64" rx="4" ry="5" fill="#558b2f"/>
+        </svg>
+        <div class="name">Surprised</div>
+      </div>
+
+      <!-- Worried -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Worried eyes - asymmetric, one higher -->
+          <ellipse cx="38" cy="42" rx="10" ry="13" fill="#000"/>
+          <ellipse cx="62" cy="40" rx="10" ry="14" fill="#000"/>
+          <ellipse cx="38" cy="44" rx="5" ry="6" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="40" rx="5" ry="7" fill="#e8f5e9"/>
+          <!-- Worried brows - asymmetric -->
+          <path d="M28 34 Q36 30 46 36" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <path d="M54 32 Q62 28 72 32" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <!-- Wavy mouth -->
+          <path d="M42 64 Q46 62 50 64 Q54 66 58 64" stroke="#558b2f" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Worried</div>
+      </div>
+
+      <!-- Skeptical -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Skeptical - one eye narrowed, one normal -->
+          <ellipse cx="38" cy="40" rx="10" ry="14" fill="#000"/>
+          <ellipse cx="62" cy="42" rx="10" ry="10" fill="#000"/>
+          <ellipse cx="38" cy="40" rx="5" ry="7" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="42" rx="5" ry="5" fill="#e8f5e9"/>
+          <!-- One raised brow -->
+          <path d="M28 30 Q38 28 48 32" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <path d="M54 38 Q62 36 72 38" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <!-- Slight smirk -->
+          <path d="M44 63 Q52 66 58 62" stroke="#558b2f" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Skeptical</div>
+      </div>
+
+      <!-- Excited -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <ellipse cx="50" cy="100" rx="20" ry="35" fill="#81c784"/>
+          <ellipse cx="50" cy="45" rx="28" ry="32" fill="#a5d6a7"/>
+          <!-- Excited - big shiny eyes -->
+          <ellipse cx="38" cy="38" rx="11" ry="15" fill="#000"/>
+          <ellipse cx="62" cy="38" rx="11" ry="15" fill="#000"/>
+          <ellipse cx="38" cy="37" rx="6" ry="8" fill="#e8f5e9"/>
+          <ellipse cx="62" cy="37" rx="6" ry="8" fill="#e8f5e9"/>
+          <circle cx="35" cy="34" r="3" fill="#fff"/>
+          <circle cx="59" cy="34" r="3" fill="#fff"/>
+          <!-- Very raised brows -->
+          <path d="M28 22 Q38 16 48 22" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <path d="M52 22 Q62 16 72 22" stroke="#c8e6c9" stroke-width="3" fill="none"/>
+          <!-- Big smile -->
+          <path d="M42 60 Q50 70 58 60" stroke="#558b2f" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Excited</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Human (Style A) - Emotions</h2>
+    <div class="grid">
+      <!-- Neutral -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Neutral eyes -->
+          <ellipse cx="40" cy="42" rx="4" ry="3" fill="#fff"/>
+          <ellipse cx="60" cy="42" rx="4" ry="3" fill="#fff"/>
+          <circle cx="40" cy="42" r="2" fill="#000"/>
+          <circle cx="60" cy="42" r="2" fill="#000"/>
+          <!-- Neutral brows with bottom skin border -->
+          <path d="M34 40 L46 40" stroke="#ffcc80" stroke-width="2"/>
+          <path d="M34 38 L46 38" stroke="#5d4037" stroke-width="2"/>
+          <path d="M54 40 L66 40" stroke="#ffcc80" stroke-width="2"/>
+          <path d="M54 38 L66 38" stroke="#5d4037" stroke-width="2"/>
+          <path d="M44 55 Q50 58 56 55" stroke="#5d4037" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Neutral</div>
+      </div>
+
+      <!-- Happy -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Happy eyes - curved up -->
+          <path d="M36 42 Q40 38 44 42" stroke="#000" stroke-width="2" fill="none"/>
+          <path d="M56 42 Q60 38 64 42" stroke="#000" stroke-width="2" fill="none"/>
+          <!-- Happy brows - raised, with bottom skin border -->
+          <path d="M34 38 Q40 36 46 38" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M34 36 Q40 34 46 36" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <path d="M54 38 Q60 36 66 38" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M54 36 Q60 34 66 36" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <!-- Smile -->
+          <path d="M42 54 Q50 62 58 54" stroke="#5d4037" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Happy</div>
+      </div>
+
+      <!-- Sad -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Sad eyes - droopy -->
+          <ellipse cx="40" cy="44" rx="4" ry="3" fill="#fff"/>
+          <ellipse cx="60" cy="44" rx="4" ry="3" fill="#fff"/>
+          <circle cx="40" cy="45" r="2" fill="#000"/>
+          <circle cx="60" cy="45" r="2" fill="#000"/>
+          <!-- Sad brows - angled up center, with bottom skin border -->
+          <path d="M34 38 Q40 42 46 40" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M34 36 Q40 40 46 38" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <path d="M54 40 Q60 42 66 38" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M54 38 Q60 40 66 36" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <!-- Frown -->
+          <path d="M42 58 Q50 52 58 58" stroke="#5d4037" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Sad</div>
+      </div>
+
+      <!-- Angry -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Angry eyes -->
+          <ellipse cx="40" cy="44" rx="4" ry="3" fill="#fff"/>
+          <ellipse cx="60" cy="44" rx="4" ry="3" fill="#fff"/>
+          <circle cx="40" cy="44" r="2" fill="#000"/>
+          <circle cx="60" cy="44" r="2" fill="#000"/>
+          <!-- Angry brows - angled DOWN into center, with bottom skin border -->
+          <path d="M34 38 L46 44" stroke="#ffcc80" stroke-width="2"/>
+          <path d="M34 36 L46 42" stroke="#5d4037" stroke-width="3"/>
+          <path d="M54 44 L66 38" stroke="#ffcc80" stroke-width="2"/>
+          <path d="M54 42 L66 36" stroke="#5d4037" stroke-width="3"/>
+          <!-- Grimace -->
+          <path d="M42 56 L58 56" stroke="#5d4037" stroke-width="2"/>
+          <path d="M44 58 L44 54" stroke="#5d4037" stroke-width="1"/>
+          <path d="M56 58 L56 54" stroke="#5d4037" stroke-width="1"/>
+        </svg>
+        <div class="name">Angry</div>
+      </div>
+
+      <!-- Surprised -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Surprised eyes - wide -->
+          <ellipse cx="40" cy="42" rx="5" ry="5" fill="#fff"/>
+          <ellipse cx="60" cy="42" rx="5" ry="5" fill="#fff"/>
+          <circle cx="40" cy="42" r="2" fill="#000"/>
+          <circle cx="60" cy="42" r="2" fill="#000"/>
+          <!-- Raised brows with bottom skin border -->
+          <path d="M34 36 Q40 32 46 36" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M34 34 Q40 30 46 34" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <path d="M54 36 Q60 32 66 36" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M54 34 Q60 30 66 34" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <!-- O mouth -->
+          <ellipse cx="50" cy="56" rx="4" ry="5" fill="#5d4037"/>
+        </svg>
+        <div class="name">Surprised</div>
+      </div>
+
+      <!-- Smug -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Smug eyes - half closed -->
+          <ellipse cx="40" cy="43" rx="4" ry="2" fill="#fff"/>
+          <ellipse cx="60" cy="43" rx="4" ry="2" fill="#fff"/>
+          <ellipse cx="40" cy="43" rx="2" ry="1.5" fill="#000"/>
+          <ellipse cx="60" cy="43" rx="2" ry="1.5" fill="#000"/>
+          <!-- One raised brow with bottom skin border -->
+          <path d="M34 40 Q40 38 46 40" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M34 38 Q40 36 46 38" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <path d="M54 38 Q60 34 66 38" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M54 36 Q60 32 66 36" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <!-- Smirk -->
+          <path d="M44 55 Q54 60 60 54" stroke="#5d4037" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Smug</div>
+      </div>
+
+      <!-- Confused -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Confused eyes - different sizes -->
+          <ellipse cx="40" cy="42" rx="4" ry="4" fill="#fff"/>
+          <ellipse cx="60" cy="43" rx="4" ry="3" fill="#fff"/>
+          <circle cx="40" cy="42" r="2" fill="#000"/>
+          <circle cx="60" cy="43" r="2" fill="#000"/>
+          <!-- Asymmetric brows with bottom skin border -->
+          <path d="M34 38 Q40 40 46 38" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M34 36 Q40 38 46 36" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <path d="M54 40 Q60 36 66 38" stroke="#ffcc80" stroke-width="2" fill="none"/>
+          <path d="M54 38 Q60 34 66 36" stroke="#5d4037" stroke-width="2" fill="none"/>
+          <!-- Squiggle mouth -->
+          <path d="M42 56 Q46 54 50 56 Q54 58 58 56" stroke="#5d4037" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Confused</div>
+      </div>
+
+      <!-- Tired -->
+      <div class="sprite-card">
+        <svg viewBox="0 0 100 150">
+          <rect x="35" y="70" width="30" height="50" fill="#37474f"/>
+          <circle cx="50" cy="45" r="22" fill="#ffcc80"/>
+          <rect x="30" y="25" width="40" height="15" fill="#5d4037"/>
+          <!-- Tired eyes - droopy lids -->
+          <ellipse cx="40" cy="44" rx="4" ry="2" fill="#fff"/>
+          <ellipse cx="60" cy="44" rx="4" ry="2" fill="#fff"/>
+          <ellipse cx="40" cy="44" rx="2" ry="1" fill="#000"/>
+          <ellipse cx="60" cy="44" rx="2" ry="1" fill="#000"/>
+          <!-- Bags under eyes -->
+          <path d="M36 47 Q40 49 44 47" stroke="#deb887" stroke-width="1" fill="none"/>
+          <path d="M56 47 Q60 49 64 47" stroke="#deb887" stroke-width="1" fill="none"/>
+          <!-- Flat brows with bottom skin border -->
+          <path d="M34 42 L46 43" stroke="#ffcc80" stroke-width="2"/>
+          <path d="M34 40 L46 41" stroke="#5d4037" stroke-width="2"/>
+          <path d="M54 43 L66 42" stroke="#ffcc80" stroke-width="2"/>
+          <path d="M54 41 L66 40" stroke="#5d4037" stroke-width="2"/>
+          <!-- Slight frown -->
+          <path d="M44 57 Q50 55 56 57" stroke="#5d4037" stroke-width="2" fill="none"/>
+        </svg>
+        <div class="name">Tired</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Key Techniques</h2>
+    <div style="background:#16213e; padding:15px; border-radius:8px; font-size:13px; line-height:1.6;">
+      <p><strong>Eyes:</strong></p>
+      <ul style="margin-left:20px; margin-bottom:10px;">
+        <li>Size: Bigger = surprised/excited, Smaller = angry/tired</li>
+        <li>Shape: Round = alert, Curved/closed = happy/smug</li>
+        <li>Position: Higher = alert, Lower = sad/tired</li>
+        <li>Pupil position: Can show where looking, or dilated for excitement</li>
+        <li>Highlights: Add white circles for "sparkle" in excited eyes</li>
+      </ul>
+      <p><strong>Eyebrows:</strong></p>
+      <ul style="margin-left:20px; margin-bottom:10px;">
+        <li>Angle up in center (∩) = sad/worried</li>
+        <li>Angle down INTO center (outer high, inner low) = angry</li>
+        <li>Raised high = surprised</li>
+        <li>One raised = skeptical/smug</li>
+        <li>Flat = neutral/tired</li>
+      </ul>
+      <p><strong>Asymmetry:</strong> Different left/right creates complex emotions (skeptical, confused, worried)</p>
+    </div>
+  </div>
+</body>
+</html>

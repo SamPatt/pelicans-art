@@ -58,12 +58,30 @@
       width: 15%;
       max-width: 120px;
       height: auto;
-      transition: left 1s ease-in-out, right 1s ease-in-out, opacity 0.3s;
+      transition: left 1s ease-in-out, right 1s ease-in-out, opacity 0.3s, transform 0.8s ease-in-out, bottom 0.8s ease-in-out;
+      transform-origin: center bottom;
     }
     .character.left { left: 15%; }
     .character.right { right: 15%; }
     .character.offscreen-left { left: -20%; opacity: 0; }
     .character.offscreen-right { right: -20%; opacity: 0; }
+    
+    /* Depth levels for moving into background */
+    .character.depth-far {
+      transform: scale(0.5);
+      bottom: 35%;
+      opacity: 0.85;
+    }
+    .character.depth-mid {
+      transform: scale(0.75);
+      bottom: 22%;
+      opacity: 0.92;
+    }
+    .character.depth-near {
+      transform: scale(1);
+      bottom: 10%;
+      opacity: 1;
+    }
     
     .prop {
       position: absolute;
@@ -236,7 +254,7 @@
         ]
       },
       giantCat: {
-        meta: { title: "Giant Cat in the Park", duration: 32 },
+        meta: { title: "Giant Cat in the Park", duration: 36 },
         stage: { background: "park" },
         cast: {
           jogger: { position: "left", sprite: "person", voice: "jean", startOffscreen: true },
@@ -273,11 +291,13 @@
           { t: 25.5, do: "despawn", what: "yarn" },
           { t: 26, do: "say", who: "cat", line: "NO! MY YARN!", target: "audience" },
           
-          // Jogger slowly backs away
+          // Jogger slowly backs away - demonstrates turn and depth
           { t: 28.5, do: "say", who: "jogger", line: "I'm just gonna... go.", target: "cat" },
-          { t: 30, do: "exit", who: "jogger", to: "left" },
-          { t: 30.5, do: "look", who: "cat", at: "left" },
-          { t: 31, do: "say", who: "cat", line: "Bring back my yarn!", target: "audience" }
+          { t: 30, do: "turn", who: "jogger", to: "back" },
+          { t: 30.5, do: "move", who: "jogger", to: "mid" },
+          { t: 31, do: "look", who: "cat", at: "up" },
+          { t: 32, do: "move", who: "jogger", to: "far" },
+          { t: 33, do: "say", who: "cat", line: "Bring back my yarn!", target: "audience" }
         ]
       }
     };
@@ -289,9 +309,25 @@
     let startTime = 0;
     let animationId = null;
 
-    async function loadSprite(elementId, spriteName) {
-      const res = await fetch(`sprites/${spriteName}.svg`);
-      document.getElementById(elementId).innerHTML = await res.text();
+    async function loadSprite(elementId, spriteName, view = 'front') {
+      // Try specific view first, fall back to base sprite
+      let res = await fetch(`sprites/${spriteName}-${view}.svg`);
+      if (!res.ok) {
+        res = await fetch(`sprites/${spriteName}.svg`);
+      }
+      if (res.ok) {
+        document.getElementById(elementId).innerHTML = await res.text();
+        document.getElementById(elementId).dataset.sprite = spriteName;
+        document.getElementById(elementId).dataset.view = view;
+      }
+    }
+    
+    async function turnCharacter(charId, toView) {
+      const charEl = document.getElementById(`char-${charId}`);
+      const spriteName = charEl.dataset.sprite;
+      if (spriteName) {
+        await loadSprite(`char-${charId}`, spriteName, toView);
+      }
     }
 
     function setEyeDirection(charId, direction) {
@@ -327,13 +363,65 @@
       return sum / dataArray.length;
     }
 
+    // Audio cache using IndexedDB for persistence across sessions
+    const AUDIO_CACHE_NAME = 'skit-audio-cache-v1';
+    
+    async function openAudioCache() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(AUDIO_CACHE_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (e) => {
+          e.target.result.createObjectStore('audio', { keyPath: 'key' });
+        };
+      });
+    }
+    
+    async function getCachedAudio(key) {
+      try {
+        const db = await openAudioCache();
+        return new Promise((resolve) => {
+          const tx = db.transaction('audio', 'readonly');
+          const store = tx.objectStore('audio');
+          const request = store.get(key);
+          request.onsuccess = () => resolve(request.result?.blob);
+          request.onerror = () => resolve(null);
+        });
+      } catch { return null; }
+    }
+    
+    async function setCachedAudio(key, blob) {
+      try {
+        const db = await openAudioCache();
+        const tx = db.transaction('audio', 'readwrite');
+        tx.objectStore('audio').put({ key, blob, ts: Date.now() });
+      } catch (e) { console.warn('Cache write failed:', e); }
+    }
+    
     async function generateAudio(text, voice) {
+      // Create cache key from text + voice
+      const cacheKey = `${voice}:${text}`;
+      
+      // Check cache first
+      const cached = await getCachedAudio(cacheKey);
+      if (cached) {
+        console.log('Audio cache hit:', text.substring(0, 30) + '...');
+        return cached;
+      }
+      
+      // Generate new audio
       const formData = new FormData();
       formData.append('text', text);
       formData.append('voice_url', voice);
       const res = await fetch('/tts/tts', { method: 'POST', body: formData });
       if (!res.ok) throw new Error('TTS failed');
-      return await res.blob();
+      const blob = await res.blob();
+      
+      // Cache it
+      await setCachedAudio(cacheKey, blob);
+      console.log('Audio cached:', text.substring(0, 30) + '...');
+      
+      return blob;
     }
 
     async function loadScript(name) {
@@ -352,9 +440,10 @@
       // Load background
       document.getElementById('background').src = `backgrounds/${currentScript.stage.background}.svg`;
       
-      // Load character sprites
+      // Load character sprites (default to front view)
       for (const [charName, char] of Object.entries(currentScript.cast)) {
-        await loadSprite(`char-${char.position}`, char.sprite);
+        const initialView = char.initialView || 'front';
+        await loadSprite(`char-${char.position}`, char.sprite, initialView);
       }
       
       // Default: look at each other
@@ -386,14 +475,19 @@
         });
       }
       
-      // Generate audio for all lines
+      // Generate audio for all lines (with caching)
       const sayActions = currentScript.script.filter(b => b.do === 'say');
+      let cacheHits = 0;
       for (let i = 0; i < sayActions.length; i++) {
         const beat = sayActions[i];
         const char = currentScript.cast[beat.who];
-        document.getElementById('status').textContent = `Generating ${i+1}/${sayActions.length}...`;
+        document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
         
         try {
+          const cacheKey = `${char.voice}:${beat.line}`;
+          const wasCached = await getCachedAudio(cacheKey);
+          if (wasCached) cacheHits++;
+          
           const blob = await generateAudio(beat.line, char.voice);
           const audio = new Audio(URL.createObjectURL(blob));
           const source = audioContext.createMediaElementSource(audio);
@@ -404,7 +498,8 @@
         }
       }
       
-      document.getElementById('status').textContent = 'Ready!';
+      const cacheMsg = cacheHits > 0 ? ` (${cacheHits} cached)` : '';
+      document.getElementById('status').textContent = `Ready!${cacheMsg}`;
       document.getElementById('playBtn').disabled = false;
     }
 
@@ -494,6 +589,18 @@
               lookDir = beat.at; // left/right directly
             }
             setEyeDirection(charPos, lookDir);
+          } else if (beat.do === 'turn') {
+            // Turn character to show front or back
+            const char = currentScript.cast[beat.who];
+            turnCharacter(char.position, beat.to); // 'front' or 'back'
+          } else if (beat.do === 'move') {
+            // Move character to different depth: 'near', 'mid', 'far'
+            const char = currentScript.cast[beat.who];
+            const charEl = document.getElementById(`char-${char.position}`);
+            charEl.classList.remove('depth-near', 'depth-mid', 'depth-far');
+            if (beat.to !== 'near') { // near is default, no class needed
+              charEl.classList.add(`depth-${beat.to}`);
+            }
           }
         }
       });
