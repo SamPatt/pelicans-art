@@ -105,32 +105,26 @@
     .character svg .pupil { transition: transform 0.15s ease-out; }
     .character.look-left svg .pupil { transform: translateX(-1.5px); }
     .character.look-right svg .pupil { transform: translateX(1.5px); }
+    .character.look-up svg .pupil { transform: translateY(-1.5px); }
+    .character.look-down svg .pupil { transform: translateY(1.5px); }
 
-    .speech-bubble {
+    .caption {
       position: absolute;
-      background: white;
-      color: black;
-      padding: 8px 12px;
-      border-radius: 10px;
-      font-size: 12px;
-      max-width: 35%;
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      max-width: 40%;
+      text-align: center;
       opacity: 0;
       transition: opacity 0.2s;
       z-index: 10;
+      bottom: 2%;
     }
-    .speech-bubble.visible { opacity: 1; }
-    .speech-bubble::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 8px solid transparent;
-      border-top-color: white;
-      border-bottom: 0;
-    }
-    .speech-bubble.left { top: 10%; left: 10%; }
-    .speech-bubble.right { top: 10%; right: 10%; }
+    .caption.visible { opacity: 1; }
+    .caption.left { left: 5%; }
+    .caption.right { right: 5%; }
     
     .controls { text-align: center; margin-top: 15px; }
     button {
@@ -160,8 +154,8 @@
     <div class="character left" id="char-left"></div>
     <div class="character right" id="char-right"></div>
     <div id="props-container"></div>
-    <div class="speech-bubble left" id="bubble-left"></div>
-    <div class="speech-bubble right" id="bubble-right"></div>
+    <div class="caption left" id="caption-left"></div>
+    <div class="caption right" id="caption-right"></div>
   </div>
   
   <div class="controls">
@@ -173,6 +167,7 @@
     <button id="script1Btn" class="active">Performance Review</button>
     <button id="script2Btn">Existential Kitchen</button>
     <button id="script3Btn">Space Station</button>
+    <button id="script4Btn">Giant Cat</button>
   </div>
   
   <div class="status" id="status">Loading...</div>
@@ -239,6 +234,51 @@
           { t: 10.5, do: "say", who: "astronaut", line: "What happened to Dave?!", target: "ai" },
           { t: 12.5, do: "say", who: "ai", line: "We don't talk about Dave.", target: "astronaut" }
         ]
+      },
+      giantCat: {
+        meta: { title: "Giant Cat in the Park", duration: 32 },
+        stage: { background: "park" },
+        cast: {
+          jogger: { position: "left", sprite: "person", voice: "jean", startOffscreen: true },
+          cat: { position: "right", sprite: "cat", voice: "cosette", startOffscreen: true }
+        },
+        props: {
+          yarn: { sprite: "yarn", x: "50%", y: "40%" }
+        },
+        script: [
+          // Jogger enters
+          { t: 0.5, do: "enter", who: "jogger", from: "left" },
+          { t: 1, do: "look", who: "jogger", at: "audience" },
+          { t: 2, do: "say", who: "jogger", line: "What a beautiful day for a jog!", target: "audience" },
+          
+          // Cat enters dramatically
+          { t: 5, do: "enter", who: "cat", from: "right" },
+          { t: 5.5, do: "look", who: "jogger", at: "right" },
+          { t: 6, do: "say", who: "jogger", line: "What the... is that a giant cat?!", target: "cat" },
+          
+          // Cat responds
+          { t: 9, do: "say", who: "cat", line: "I prefer the term 'adequately sized'.", target: "jogger" },
+          { t: 12, do: "say", who: "jogger", line: "You can talk?!", target: "cat" },
+          { t: 14, do: "say", who: "cat", line: "You can jog? In this economy?", target: "jogger" },
+          
+          // Yarn appears
+          { t: 17, do: "spawn", what: "yarn" },
+          { t: 17, do: "look", who: "cat", at: "up" },
+          { t: 17.5, do: "say", who: "cat", line: "Is that... yarn?", target: "audience" },
+          { t: 20, do: "look", who: "jogger", at: "up" },
+          { t: 20.5, do: "say", who: "jogger", line: "Where did that come from?", target: "cat" },
+          
+          // Cat gets distracted
+          { t: 23, do: "say", who: "cat", line: "I must... I must have it.", target: "audience" },
+          { t: 25.5, do: "despawn", what: "yarn" },
+          { t: 26, do: "say", who: "cat", line: "NO! MY YARN!", target: "audience" },
+          
+          // Jogger slowly backs away
+          { t: 28.5, do: "say", who: "jogger", line: "I'm just gonna... go.", target: "cat" },
+          { t: 30, do: "exit", who: "jogger", to: "left" },
+          { t: 30.5, do: "look", who: "cat", at: "left" },
+          { t: 31, do: "say", who: "cat", line: "Bring back my yarn!", target: "audience" }
+        ]
       }
     };
 
@@ -256,8 +296,8 @@
 
     function setEyeDirection(charId, direction) {
       const charEl = document.getElementById(`char-${charId}`);
-      charEl.classList.remove('look-left', 'look-right');
-      if (direction === 'left' || direction === 'right') {
+      charEl.classList.remove('look-left', 'look-right', 'look-up', 'look-down');
+      if (['left', 'right', 'up', 'down'].includes(direction)) {
         charEl.classList.add(`look-${direction}`);
       }
     }
@@ -307,6 +347,7 @@
       document.getElementById('script1Btn').classList.toggle('active', name === 'performanceReview');
       document.getElementById('script2Btn').classList.toggle('active', name === 'existentialKitchen');
       document.getElementById('script3Btn').classList.toggle('active', name === 'spaceStation');
+      document.getElementById('script4Btn').classList.toggle('active', name === 'giantCat');
       
       // Load background
       document.getElementById('background').src = `backgrounds/${currentScript.stage.background}.svg`;
@@ -339,7 +380,8 @@
           propEl.className = 'prop';
           propEl.style.left = prop.x;
           propEl.style.bottom = prop.y;
-          propEl.innerHTML = `<div style="font-size:40px">${prop.sprite === 'sword' ? '⚔️' : '🍌'}</div>`;
+          const propEmojis = { sword: '⚔️', banana: '🍌', yarn: '🧶' };
+          propEl.innerHTML = `<div style="font-size:40px">${propEmojis[prop.sprite] || '📦'}</div>`;
           propsContainer.appendChild(propEl);
         });
       }
@@ -380,8 +422,8 @@
       document.getElementById('playBtn').textContent = '▶ Play';
       document.getElementById('char-left').classList.remove('speaking', 'facing-left', 'facing-right');
       document.getElementById('char-right').classList.remove('speaking', 'facing-left', 'facing-right');
-      document.getElementById('bubble-left').classList.remove('visible');
-      document.getElementById('bubble-right').classList.remove('visible');
+      document.getElementById('caption-left').classList.remove('visible');
+      document.getElementById('caption-right').classList.remove('visible');
       audioCache.forEach(({ audio }) => { audio.pause(); audio.currentTime = 0; });
     }
 
@@ -418,9 +460,9 @@
               setEyeDirection(charPos, otherPos);
               setEyeDirection(otherPos, charPos);
               
-              document.getElementById(`bubble-${charPos}`).textContent = beat.line;
-              document.getElementById(`bubble-${charPos}`).classList.add('visible');
-              document.getElementById(`bubble-${otherPos}`).classList.remove('visible');
+              document.getElementById(`caption-${charPos}`).textContent = beat.line;
+              document.getElementById(`caption-${charPos}`).classList.add('visible');
+              document.getElementById(`caption-${otherPos}`).classList.remove('visible');
               
               currentSpeaker = charPos;
               cached.audio.play();
@@ -439,6 +481,19 @@
           } else if (beat.do === 'despawn') {
             const propEl = document.getElementById(`prop-${beat.what}`);
             if (propEl) propEl.classList.remove('visible');
+          } else if (beat.do === 'look') {
+            const char = currentScript.cast[beat.who];
+            const charPos = char.position;
+            // Handle look directions
+            let lookDir = beat.at;
+            if (beat.at === 'audience') {
+              lookDir = charPos === 'left' ? 'left' : 'right'; // Look away from center
+            } else if (beat.at === 'up' || beat.at === 'down') {
+              lookDir = beat.at;
+            } else {
+              lookDir = beat.at; // left/right directly
+            }
+            setEyeDirection(charPos, lookDir);
           }
         }
       });
@@ -472,6 +527,7 @@
     document.getElementById('script1Btn').addEventListener('click', () => loadScript('performanceReview'));
     document.getElementById('script2Btn').addEventListener('click', () => loadScript('existentialKitchen'));
     document.getElementById('script3Btn').addEventListener('click', () => loadScript('spaceStation'));
+    document.getElementById('script4Btn').addEventListener('click', () => loadScript('giantCat'));
 
     // Init
     init().then(() => loadScript('performanceReview'));
