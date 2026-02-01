@@ -182,18 +182,20 @@
     };
     
     const camera = {
-      x: 50,      // 0-100, where camera is pointing
+      x: 50,      // 0-100, where camera is pointing horizontally
+      y: 70,      // 0-100, where camera is pointing vertically (0=top, 100=bottom)
       zoom: 1,    // 1 = see full width, 2 = see half width, etc.
       follow: null // character name to track, or null
     };
     
     // === SHOT PRESETS ===
+    // y: 50 = middle of frame, 70 = lower (where characters are), 30 = upper
     const shotPresets = {
-      'wide': { zoom: 1, frameBoth: true },
-      'two-shot': { zoom: 1.4, frameBoth: true },
-      'closeup': { zoom: 2.2 },
-      'extreme-closeup': { zoom: 3 },
-      'medium': { zoom: 1.6 }
+      'wide': { zoom: 1, y: 50, frameBoth: true },
+      'two-shot': { zoom: 1.4, y: 65, frameBoth: true },
+      'closeup': { zoom: 2.2, y: 75 },
+      'extreme-closeup': { zoom: 3, y: 80 },
+      'medium': { zoom: 1.6, y: 70 }
     };
     
     // === CAMERA MATH ===
@@ -206,26 +208,21 @@
       }
       
       // Calculate transform
-      // We want camera.x (in world coords 0-100) to appear at viewport center
-      // At zoom=1, world 0-100 maps to viewport 0-100%
-      // At zoom=2, world 0-100 maps to viewport 0-200%, so we see half
+      // We want camera point (x, y) in world coords to appear at viewport center
+      // Offset = (viewport_center - camera_point) * zoom
       
-      // Offset needed: how far to shift so camera.x lands at center (50%)
-      // If camera.x=50 and zoom=1, no shift needed
-      // If camera.x=25 and zoom=1, shift right by 25%
-      // If camera.x=25 and zoom=2, shift right by 25% * 2 = 50%
-      
-      const offsetPercent = (50 - camera.x) * camera.zoom;
+      const offsetX = (50 - camera.x) * camera.zoom;
+      const offsetY = (50 - camera.y) * camera.zoom;
       
       stage.style.transformOrigin = '0 0';
-      stage.style.transform = `translateX(${offsetPercent}%) scale(${camera.zoom})`;
+      stage.style.transform = `translate(${offsetX}%, ${offsetY}%) scale(${camera.zoom})`;
       
       updateDebug();
     }
     
     function updateDebug() {
       const debug = document.getElementById('debug');
-      debug.innerHTML = `Camera: x=${camera.x.toFixed(0)}, zoom=${camera.zoom.toFixed(1)}<br>Follow: ${camera.follow || 'none'}`;
+      debug.innerHTML = `Camera: x=${camera.x.toFixed(0)}, y=${camera.y.toFixed(0)}, zoom=${camera.zoom.toFixed(1)}<br>Follow: ${camera.follow || 'none'}`;
     }
     
     // === SHOT COMMANDS ===
@@ -234,6 +231,7 @@
       if (!preset) return;
       
       camera.zoom = preset.zoom;
+      camera.y = preset.y || 50;
       
       if (preset.frameBoth) {
         // Center between both characters
@@ -319,6 +317,7 @@
       // Pelican walks to center, camera follows
       camera.follow = 'pelican';
       camera.zoom = 1.6;
+      camera.y = 70;
       updateCamera();
       await delay(300);
       moveCharacter('pelican', 50, 2);
