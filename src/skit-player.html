@@ -242,6 +242,7 @@
     <button id="script3Btn">Space Station</button>
     <button id="script4Btn">Giant Cat</button>
     <button id="script5Btn">Long Week</button>
+    <button id="script6Btn">Lucky Charms</button>
   </div>
   
   <div class="status" id="status">Loading...</div>
@@ -412,6 +413,78 @@
           // The flop
           { t: 14, do: "pose", who: "girl", pose: "flop" },
           { t: 14, do: "move", who: "girl", to: "far" }
+        ]
+      },
+      luckyCharms: {
+        meta: { title: "Lucky Charms", duration: 45 },
+        stage: { background: "restaurant" },
+        cast: {
+          waiter: { position: "left", sprite: "waiter", voice: "jean", startOffscreen: false },
+          woman: { position: "right", sprite: "girl", voice: "cosette", startOffscreen: false }
+        },
+        props: {},
+        script: [
+          // Opening - wide shot
+          { t: 0.5, do: "shot", type: "wide" },
+          { t: 0.5, do: "emote", who: "waiter", emotion: "happy" },
+          { t: 0.5, do: "emote", who: "woman", emotion: "neutral" },
+          
+          // Waiter approaches
+          { t: 1, do: "shot", type: "closeup", who: "waiter" },
+          { t: 1, do: "say", who: "waiter", line: "Good evening, madam. May I tell you about our special tonight?", target: "woman" },
+          
+          // Woman responds
+          { t: 5, do: "shot", type: "closeup", who: "woman" },
+          { t: 5, do: "emote", who: "woman", emotion: "happy" },
+          { t: 5, do: "say", who: "woman", line: "Oh yes, please!", target: "waiter" },
+          
+          // Waiter excited
+          { t: 8, do: "shot", type: "closeup", who: "waiter" },
+          { t: 8, do: "emote", who: "waiter", emotion: "excited" },
+          { t: 8, do: "say", who: "waiter", line: "Tonight we have something truly magical.", target: "woman" },
+          
+          // Woman intrigued
+          { t: 12, do: "shot", type: "closeup", who: "woman" },
+          { t: 12, do: "emote", who: "woman", emotion: "surprised" },
+          { t: 12, do: "say", who: "woman", line: "Magical? In a restaurant?", target: "waiter" },
+          
+          // Waiter reveals
+          { t: 15, do: "shot", type: "closeup", who: "waiter" },
+          { t: 15, do: "emote", who: "waiter", emotion: "happy" },
+          { t: 15, do: "say", who: "waiter", line: "Lucky Charms. Magically delicious.", target: "woman" },
+          
+          // Woman confused
+          { t: 19, do: "shot", type: "closeup", who: "woman" },
+          { t: 19, do: "emote", who: "woman", emotion: "worried" },
+          { t: 19, do: "say", who: "woman", line: "The... the cereal?", target: "waiter" },
+          
+          // Waiter doubles down
+          { t: 22, do: "shot", type: "closeup", who: "waiter" },
+          { t: 22, do: "emote", who: "waiter", emotion: "smug" },
+          { t: 22, do: "say", who: "waiter", line: "Imported directly from General Mills.", target: "woman" },
+          
+          // Woman skeptical
+          { t: 26, do: "shot", type: "closeup", who: "woman" },
+          { t: 26, do: "emote", who: "woman", emotion: "angry" },
+          { t: 26, do: "say", who: "woman", line: "Sir, this is a five star restaurant.", target: "waiter" },
+          
+          // Waiter defensive
+          { t: 30, do: "shot", type: "closeup", who: "waiter" },
+          { t: 30, do: "emote", who: "waiter", emotion: "worried" },
+          { t: 30, do: "say", who: "waiter", line: "Yes, and it has five different marshmallow shapes.", target: "woman" },
+          
+          // Woman done
+          { t: 34, do: "shot", type: "closeup", who: "woman" },
+          { t: 34, do: "emote", who: "woman", emotion: "tired" },
+          { t: 34, do: "say", who: "woman", line: "I'd like to speak to the manager.", target: "waiter" },
+          
+          // Waiter final pitch
+          { t: 38, do: "shot", type: "closeup", who: "waiter" },
+          { t: 38, do: "emote", who: "waiter", emotion: "excited" },
+          { t: 38, do: "say", who: "waiter", line: "He's also a leprechaun. You'll love him.", target: "woman" },
+          
+          // End wide shot
+          { t: 42, do: "shot", type: "wide" }
         ]
       }
     };
@@ -822,6 +895,7 @@
       document.getElementById('script3Btn').classList.toggle('active', name === 'spaceStation');
       document.getElementById('script4Btn').classList.toggle('active', name === 'giantCat');
       document.getElementById('script5Btn').classList.toggle('active', name === 'longWeek');
+      document.getElementById('script6Btn').classList.toggle('active', name === 'luckyCharms');
       
       // Load background to all shots
       setAllBackgrounds(currentScript.stage.background);
@@ -1058,6 +1132,7 @@
     document.getElementById('script3Btn').addEventListener('click', () => loadScript('spaceStation'));
     document.getElementById('script4Btn').addEventListener('click', () => loadScript('giantCat'));
     document.getElementById('script5Btn').addEventListener('click', () => loadScript('longWeek'));
+    document.getElementById('script6Btn').addEventListener('click', () => loadScript('luckyCharms'));
 
     // Init
     init().then(() => loadScript('performanceReview'));

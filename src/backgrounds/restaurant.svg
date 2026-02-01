@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450">
+  <!-- Restaurant background -->
+  <!-- Wall - warm burgundy -->
+  <rect width="800" height="450" fill="#722f37"/>
+  
+  <!-- Wainscoting -->
+  <rect y="280" width="800" height="170" fill="#3d1f23"/>
+  <rect y="275" width="800" height="10" fill="#8b4513"/>
+  
+  <!-- Floor - dark wood -->
+  <rect y="380" width="800" height="70" fill="#2d1810"/>
+  <g fill="#3d2015" opacity="0.5">
+    <rect x="0" y="380" width="100" height="70"/>
+    <rect x="200" y="380" width="100" height="70"/>
+    <rect x="400" y="380" width="100" height="70"/>
+    <rect x="600" y="380" width="100" height="70"/>
+  </g>
+  
+  <!-- Table -->
+  <ellipse cx="400" cy="340" rx="180" ry="30" fill="#f5f5f5"/>
+  <rect x="380" y="340" width="40" height="45" fill="#ddd"/>
+  
+  <!-- Tablecloth edge -->
+  <ellipse cx="400" cy="340" rx="180" ry="30" fill="none" stroke="#e8e8e8" stroke-width="3"/>
+  
+  <!-- Plates -->
+  <ellipse cx="300" cy="330" rx="35" ry="12" fill="#fff"/>
+  <ellipse cx="300" cy="330" rx="28" ry="9" fill="#f5f5f5"/>
+  <ellipse cx="500" cy="330" rx="35" ry="12" fill="#fff"/>
+  <ellipse cx="500" cy="330" rx="28" ry="9" fill="#f5f5f5"/>
+  
+  <!-- Wine glasses -->
+  <path d="M250 325 L250 310 L245 295 Q250 290 255 295 L250 310" fill="none" stroke="#ddd" stroke-width="2"/>
+  <ellipse cx="250" cy="293" rx="8" ry="4" fill="#f8f8f8" opacity="0.8"/>
+  <path d="M550 325 L550 310 L545 295 Q550 290 555 295 L550 310" fill="none" stroke="#ddd" stroke-width="2"/>
+  <ellipse cx="550" cy="293" rx="8" ry="4" fill="#722f37" opacity="0.6"/>
+  
+  <!-- Candle -->
+  <rect x="395" y="300" width="10" height="25" fill="#f5deb3"/>
+  <ellipse cx="400" cy="295" rx="6" ry="8" fill="#ffa500"/>
+  <ellipse cx="400" cy="293" rx="3" ry="5" fill="#ffff00"/>
+  
+  <!-- Wall art - framed picture -->
+  <rect x="100" y="80" width="120" height="100" fill="#8b4513"/>
+  <rect x="108" y="88" width="104" height="84" fill="#1a1a1a"/>
+  <rect x="115" y="95" width="90" height="70" fill="#2d4a3e"/>
+  <ellipse cx="160" cy="130" rx="20" ry="25" fill="#3d5a4e"/>
+  
+  <!-- Wall sconce lights -->
+  <rect x="50" y="150" width="20" height="40" fill="#d4af37"/>
+  <ellipse cx="60" cy="145" rx="15" ry="10" fill="#fff8dc"/>
+  <rect x="730" y="150" width="20" height="40" fill="#d4af37"/>
+  <ellipse cx="740" cy="145" rx="15" ry="10" fill="#fff8dc"/>
+  
+  <!-- Window with curtains -->
+  <rect x="550" y="60" width="150" height="180" fill="#1a1a2e"/>
+  <rect x="555" y="65" width="140" height="170" fill="#2a2a4e"/>
+  <!-- Stars outside -->
+  <circle cx="580" cy="90" r="2" fill="#fff"/>
+  <circle cx="620" cy="110" r="1.5" fill="#fff"/>
+  <circle cx="660" cy="85" r="2" fill="#fff"/>
+  <circle cx="640" cy="140" r="1" fill="#fff"/>
+  <!-- Curtains -->
+  <path d="M545 60 Q560 150 545 240" fill="#722f37" stroke="#5a252c" stroke-width="2"/>
+  <path d="M705 60 Q690 150 705 240" fill="#722f37" stroke="#5a252c" stroke-width="2"/>
+</svg>
