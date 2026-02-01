@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trump V3 Sprite Test</title>
+  <style>
+    body {
+      background: #1a2530;
+      color: white;
+      font-family: system-ui, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    .container {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+    }
+    
+    .sprite-container {
+      width: 300px;
+      height: 450px;
+    }
+    
+    .sprite-container svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background: #2a3545;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .control-group label {
+      font-weight: bold;
+      color: #88aacc;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      background: #4a6080;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #5a7090;
+    }
+    
+    button.active {
+      background: #6a90c0;
+    }
+    
+    /* Animation styles */
+    .sprite-container svg .pupil {
+      transition: transform 0.15s ease-out;
+    }
+    
+    .sprite-container.look-left svg .pupil {
+      transform: translateX(-5px);
+    }
+    
+    .sprite-container.look-right svg .pupil {
+      transform: translateX(5px);
+    }
+    
+    .sprite-container.look-up svg .pupil {
+      transform: translateY(-3px);
+    }
+    
+    .sprite-container.look-down svg .pupil {
+      transform: translateY(3px);
+    }
+    
+    /* Mouth transitions */
+    .sprite-container svg #mouth-open,
+    .sprite-container svg #mouth-closed,
+    .sprite-container svg #mouth-happy,
+    .sprite-container svg #mouth-sad,
+    .sprite-container svg #mouth-angry,
+    .sprite-container svg #mouth-surprised,
+    .sprite-container svg #mouth-smug {
+      transition: opacity 0.06s;
+    }
+    
+    /* Blink animation - hide eyes briefly */
+    .sprite-container.blinking svg #eye-left-white,
+    .sprite-container.blinking svg #eye-right-white,
+    .sprite-container.blinking svg #eye-left-pupil,
+    .sprite-container.blinking svg #eye-right-pupil {
+      animation: blink 3s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 92%, 100% { opacity: 1; }
+      95%, 97% { opacity: 0; }
+    }
+    
+    h1 {
+      margin-bottom: 30px;
+    }
+    
+    .status {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #2a3545;
+      border-radius: 5px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Trump V3 Sprite Test</h1>
+  
+  <div class="container">
+    <div class="sprite-container" id="sprite">
+      <!-- SVG will be loaded here -->
+    </div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label>Eye Direction</label>
+        <div class="buttons">
+          <button onclick="setLook('left')">Left</button>
+          <button onclick="setLook('center')" class="active">Center</button>
+          <button onclick="setLook('right')">Right</button>
+          <button onclick="setLook('up')">Up</button>
+          <button onclick="setLook('down')">Down</button>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <label>Mouth</label>
+        <div class="buttons">
+          <button onclick="setSpeaking(false)" class="active">Closed</button>
+          <button onclick="setSpeaking(true)">Open</button>
+          <button onclick="toggleTalking()">Toggle Talking</button>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <label>Blinking</label>
+        <div class="buttons">
+          <button onclick="setBlinking(false)" class="active">Off</button>
+          <button onclick="setBlinking(true)">On (Auto)</button>
+          <button onclick="manualBlink()">Blink Once</button>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <label>Emotions</label>
+        <div class="buttons">
+          <button onclick="setEmotion('neutral')" class="active">Neutral</button>
+          <button onclick="setEmotion('happy')">Happy</button>
+          <button onclick="setEmotion('sad')">Sad</button>
+          <button onclick="setEmotion('angry')">Angry</button>
+          <button onclick="setEmotion('surprised')">Surprised</button>
+          <button onclick="setEmotion('worried')">Worried</button>
+          <button onclick="setEmotion('smug')">Smug</button>
+          <button onclick="setEmotion('confused')">Confused</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="status" id="status">Status: Loading sprite...</div>
+  
+  <script>
+    const sprite = document.getElementById('sprite');
+    const status = document.getElementById('status');
+    let talkingInterval = null;
+    
+    // Load the SVG
+    fetch('sprites/trump-v3.svg')
+      .then(r => r.text())
+      .then(svg => {
+        sprite.innerHTML = svg;
+        status.textContent = 'Status: Sprite loaded! Try the controls.';
+      })
+      .catch(err => {
+        status.textContent = 'Status: Error loading sprite - ' + err;
+      });
+    
+    function setLook(direction) {
+      sprite.classList.remove('look-left', 'look-right', 'look-up', 'look-down');
+      if (direction !== 'center') {
+        sprite.classList.add('look-' + direction);
+      }
+      status.textContent = `Status: Looking ${direction}`;
+    }
+    
+    function setSpeaking(speaking) {
+      const svg = sprite.querySelector('svg');
+      if (!svg) return;
+      
+      const mouthOpen = svg.querySelector('#mouth-open');
+      const emotionMouth = svg.querySelector('#' + emotions[currentEmotion].mouth);
+      
+      if (speaking) {
+        if (emotionMouth) emotionMouth.setAttribute('opacity', '0');
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '1');
+      } else {
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+        if (emotionMouth) emotionMouth.setAttribute('opacity', '1');
+      }
+      status.textContent = `Status: Mouth ${speaking ? 'open' : 'closed'}`;
+    }
+    
+    let isSpeaking = false;
+    
+    function toggleTalking() {
+      if (talkingInterval) {
+        clearInterval(talkingInterval);
+        talkingInterval = null;
+        isSpeaking = false;
+        setSpeaking(false);
+        status.textContent = 'Status: Stopped talking';
+      } else {
+        talkingInterval = setInterval(() => {
+          isSpeaking = !isSpeaking;
+          setSpeaking(isSpeaking);
+        }, 120);
+        status.textContent = 'Status: Talking animation active';
+      }
+    }
+    
+    function setBlinking(on) {
+      if (on) {
+        sprite.classList.add('blinking');
+      } else {
+        sprite.classList.remove('blinking');
+      }
+      status.textContent = `Status: Blinking ${on ? 'enabled' : 'disabled'}`;
+    }
+    
+    function manualBlink() {
+      const svg = sprite.querySelector('svg');
+      const eyes = svg.querySelectorAll('#eye-left-white, #eye-right-white, #eye-left-pupil, #eye-right-pupil');
+      eyes.forEach(e => e.style.opacity = '0');
+      setTimeout(() => {
+        eyes.forEach(e => e.style.opacity = '1');
+      }, 150);
+      status.textContent = 'Status: Blinked!';
+    }
+    
+    // Emotion definitions
+    const emotions = {
+      neutral: {
+        browLeft: "M95,188 Q130,178 165,186",
+        browRight: "M235,186 Q270,178 305,188",
+        mouth: "mouth-neutral",
+        desc: "Normal resting face"
+      },
+      happy: {
+        browLeft: "M95,183 Q130,175 165,183",
+        browRight: "M235,183 Q270,175 305,183",
+        mouth: "mouth-happy",
+        desc: "Smiling, raised brows"
+      },
+      sad: {
+        browLeft: "M95,190 Q130,182 165,175",
+        browRight: "M235,175 Q270,182 305,190",
+        mouth: "mouth-sad",
+        desc: "Frown, inner brows raised"
+      },
+      angry: {
+        browLeft: "M95,178 Q130,188 165,198",
+        browRight: "M235,198 Q270,188 305,178",
+        mouth: "mouth-angry",
+        desc: "Furrowed brows, tight mouth"
+      },
+      surprised: {
+        browLeft: "M95,175 Q130,165 165,175",
+        browRight: "M235,175 Q270,165 305,175",
+        mouth: "mouth-surprised",
+        desc: "Raised brows, open mouth"
+      },
+      worried: {
+        browLeft: "M95,180 Q130,188 165,185",
+        browRight: "M235,185 Q270,188 305,180",
+        mouth: "mouth-sad",
+        desc: "Concerned look"
+      },
+      smug: {
+        browLeft: "M95,185 Q130,180 165,190",
+        browRight: "M235,185 Q270,178 305,185",
+        mouth: "mouth-smug",
+        desc: "One brow raised, slight smirk"
+      },
+      confused: {
+        browLeft: "M95,182 Q130,175 165,188",
+        browRight: "M235,180 Q270,185 305,178",
+        mouth: "mouth-neutral",
+        desc: "Asymmetric brows, uncertain mouth"
+      }
+    };
+    
+    let currentEmotion = 'neutral';
+    
+    function setEmotion(emotion) {
+      const svg = sprite.querySelector('svg');
+      if (!svg) return;
+      
+      const browLeft = svg.querySelector('#brow-left');
+      const browRight = svg.querySelector('#brow-right');
+      const browLeftBorder = svg.querySelector('#brow-left-border');
+      const browRightBorder = svg.querySelector('#brow-right-border');
+      
+      const e = emotions[emotion];
+      if (e) {
+        // Set brows
+        if (browLeft) browLeft.setAttribute('d', e.browLeft);
+        if (browRight) browRight.setAttribute('d', e.browRight);
+        if (browLeftBorder) browLeftBorder.setAttribute('d', e.browLeft);
+        if (browRightBorder) browRightBorder.setAttribute('d', e.browRight);
+        
+        // Hide all mouths
+        const allMouths = ['mouth-neutral', 'mouth-happy', 'mouth-sad', 'mouth-angry', 'mouth-surprised', 'mouth-smug', 'mouth-open'];
+        allMouths.forEach(id => {
+          const el = svg.querySelector('#' + id);
+          if (el) el.setAttribute('opacity', '0');
+        });
+        
+        // Show the right mouth
+        const mouthEl = svg.querySelector('#' + e.mouth);
+        if (mouthEl) mouthEl.setAttribute('opacity', '1');
+        
+        currentEmotion = emotion;
+      }
+      
+      status.textContent = `Status: ${emotion.charAt(0).toUpperCase() + emotion.slice(1)} - ${e.desc}`;
+    }
+  </script>
+</body>
+</html>

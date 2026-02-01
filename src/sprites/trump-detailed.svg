@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
+  <defs>
+    <!-- Skin gradient for depth - more orange for caricature -->
+    <linearGradient id="skinGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0C090"/>
+      <stop offset="50%" style="stop-color:#E89858"/>
+      <stop offset="100%" style="stop-color:#D07040"/>
+    </linearGradient>
+    
+    <!-- Hair gradient - grayer, less golden -->
+    <linearGradient id="hairGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#C8B87A"/>
+      <stop offset="50%" style="stop-color:#B0A070"/>
+      <stop offset="100%" style="stop-color:#989068"/>
+    </linearGradient>
+    
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="4" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    
+    <!-- Suit fabric pattern -->
+    <pattern id="suitPattern" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="#1a1a2e"/>
+      <line x1="0" y1="0" x2="4" y2="4" stroke="#252540" stroke-width="0.5"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background (mugshot gray-blue) -->
+  <rect width="400" height="500" fill="#2a3441"/>
+  
+  <!-- NECK - thicker -->
+  <path d="M140,385 Q145,420 150,460 L155,500 L245,500 L250,460 Q255,420 260,385" 
+        fill="url(#skinGradient)"/>
+  
+  <!-- Neck shadow -->
+  <ellipse cx="200" cy="400" rx="55" ry="18" fill="#B05830" opacity="0.4"/>
+  
+  <!-- Double chin/neck fat -->
+  <ellipse cx="200" cy="395" rx="50" ry="20" fill="#D07040" opacity="0.5"/>
+  
+  <!-- SUIT/SHOULDERS -->
+  <!-- Left shoulder -->
+  <path d="M0,440 Q70,405 140,398 L150,500 L0,500 Z" fill="url(#suitPattern)" filter="url(#shadow)"/>
+  <!-- Right shoulder -->  
+  <path d="M400,440 Q330,405 260,398 L250,500 L400,500 Z" fill="url(#suitPattern)" filter="url(#shadow)"/>
+  
+  <!-- Suit lapels -->
+  <path d="M150,398 L170,440 L158,500 L150,500 Z" fill="#0f0f1a"/>
+  <path d="M250,398 L230,440 L242,500 L250,500 Z" fill="#0f0f1a"/>
+  
+  <!-- White shirt collar visible -->
+  <path d="M170,402 L182,425 L200,415 L218,425 L230,402 Q215,410 200,407 Q185,410 170,402" fill="#f5f5f5"/>
+  
+  <!-- Red tie -->
+  <path d="M190,415 L200,422 L210,415 L206,500 L194,500 Z" fill="#8B0000"/>
+  <path d="M194,420 L200,426 L206,420" fill="#6B0000"/>
+  
+  <!-- HEAD/FACE - WIDER, FATTER for caricature -->
+  <path d="M100,200 
+           Q92,260 100,320 
+           Q110,365 145,390 
+           Q175,410 200,412 
+           Q225,410 255,390 
+           Q290,365 300,320 
+           Q308,260 300,200
+           Q295,130 275,100
+           Q250,70 200,65
+           Q150,70 125,100
+           Q105,130 100,200" 
+        fill="url(#skinGradient)"/>
+  
+  <!-- Forehead highlight -->
+  <ellipse cx="200" cy="135" rx="55" ry="38" fill="#F0C090" opacity="0.5"/>
+  
+  <!-- Puffy cheeks - bigger for caricature -->
+  <ellipse cx="130" cy="290" rx="35" ry="50" fill="#E08050" opacity="0.35"/>
+  <ellipse cx="270" cy="290" rx="35" ry="50" fill="#E08050" opacity="0.35"/>
+  
+  <!-- Extra cheek puffiness -->
+  <ellipse cx="125" cy="310" rx="25" ry="30" fill="#D07040" opacity="0.25"/>
+  <ellipse cx="275" cy="310" rx="25" ry="30" fill="#D07040" opacity="0.25"/>
+  
+  <!-- EARS - bigger -->
+  <!-- Left ear -->
+  <ellipse cx="98" cy="255" rx="15" ry="32" fill="#D07040"/>
+  <ellipse cx="98" cy="255" rx="9" ry="20" fill="#B05830" opacity="0.5"/>
+  <!-- Right ear -->
+  <ellipse cx="302" cy="255" rx="15" ry="32" fill="#D07040"/>
+  <ellipse cx="302" cy="255" rx="9" ry="20" fill="#B05830" opacity="0.5"/>
+  
+  <!-- HAIR - BIGGER, FLUFFIER, GRAYER -->
+  <!-- Main hair mass - much bigger and puffier -->
+  <path d="M95,190 
+           Q70,140 90,80
+           Q115,30 200,25
+           Q285,30 310,80
+           Q330,140 305,190
+           Q300,160 285,140
+           Q260,115 200,110
+           Q140,115 115,140
+           Q100,160 95,190" 
+        fill="url(#hairGradient)"/>
+  
+  <!-- Extra hair volume on top - fluffy poof -->
+  <path d="M110,110 Q130,45 200,35 Q270,45 290,110 Q265,70 200,60 Q135,70 110,110" 
+        fill="#C8B87A"/>
+  
+  <!-- More fluff layers -->
+  <path d="M120,95 Q145,55 200,48 Q255,55 280,95 Q255,65 200,58 Q145,65 120,95" 
+        fill="#B8A870"/>
+  
+  <!-- Wispy flyaway strands -->
+  <path d="M125,80 Q140,50 165,70" stroke="#A89860" stroke-width="3" fill="none"/>
+  <path d="M145,65 Q165,40 190,58" stroke="#A89860" stroke-width="3" fill="none"/>
+  <path d="M170,55 Q195,30 220,50" stroke="#A89860" stroke-width="3" fill="none"/>
+  <path d="M200,50 Q225,28 250,55" stroke="#A89860" stroke-width="3" fill="none"/>
+  <path d="M230,55 Q255,38 275,70" stroke="#A89860" stroke-width="3" fill="none"/>
+  <path d="M255,70 Q275,50 285,85" stroke="#A89860" stroke-width="3" fill="none"/>
+  
+  <!-- Hair texture strands -->
+  <path d="M130,100 Q155,75 180,95" stroke="#989068" stroke-width="2" fill="none"/>
+  <path d="M155,88 Q180,62 205,82" stroke="#989068" stroke-width="2" fill="none"/>
+  <path d="M180,80 Q205,55 230,78" stroke="#989068" stroke-width="2" fill="none"/>
+  <path d="M210,82 Q235,58 260,88" stroke="#989068" stroke-width="2" fill="none"/>
+  <path d="M240,92 Q265,72 280,105" stroke="#989068" stroke-width="2" fill="none"/>
+  
+  <!-- Side hair - fluffier -->
+  <path d="M100,190 Q82,155 90,115 Q105,140 115,175 Z" fill="#B0A070"/>
+  <path d="M300,190 Q318,155 310,115 Q295,140 285,175 Z" fill="#B0A070"/>
+  
+  <!-- Gray streaks in hair -->
+  <path d="M140,90 Q160,65 185,85" stroke="#C0B890" stroke-width="4" fill="none" opacity="0.6"/>
+  <path d="M215,85 Q240,65 260,90" stroke="#C0B890" stroke-width="4" fill="none" opacity="0.6"/>
+  
+  <!-- EYEBROWS - bushier, grayer for age -->
+  <path d="M130,200 Q155,188 185,195" stroke="#908070" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M215,195 Q245,188 270,200" stroke="#908070" stroke-width="8" fill="none" stroke-linecap="round"/>
+  
+  <!-- Eyebrow hairs sticking up - old man style -->
+  <path d="M145,195 L142,188" stroke="#908070" stroke-width="2"/>
+  <path d="M160,192 L158,184" stroke="#908070" stroke-width="2"/>
+  <path d="M240,192 L242,184" stroke="#908070" stroke-width="2"/>
+  <path d="M255,195 L258,188" stroke="#908070" stroke-width="2"/>
+  
+  <!-- Brow furrow/wrinkles - deeper -->
+  <path d="M192,185 Q200,180 208,185" stroke="#B05830" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M190,192 Q200,187 210,192" stroke="#B05830" stroke-width="1.5" fill="none" opacity="0.5"/>
+  
+  <!-- EYES - smaller, squintier, more bags -->
+  <!-- Eye sockets/shadows - deeper -->
+  <ellipse cx="158" cy="220" rx="32" ry="22" fill="#B05830" opacity="0.35"/>
+  <ellipse cx="242" cy="220" rx="32" ry="22" fill="#B05830" opacity="0.35"/>
+  
+  <!-- Under-eye bags - prominent -->
+  <path d="M130,232 Q158,245 186,232" fill="#C06840" opacity="0.4"/>
+  <path d="M214,232 Q242,245 270,232" fill="#C06840" opacity="0.4"/>
+  
+  <!-- Left eye - smaller, squintier -->
+  <ellipse cx="158" cy="222" rx="20" ry="8" fill="#ffffff"/>
+  <ellipse cx="161" cy="222" rx="9" ry="7" fill="#6B7F93"/>
+  <ellipse cx="162" cy="221" rx="4" ry="4" fill="#1a1a1a"/>
+  <ellipse cx="164" cy="219" rx="1.5" ry="1.5" fill="#ffffff"/>
+  <!-- Upper eyelid (very hooded) -->
+  <path d="M138,216 Q150,206 168,210 Q180,216 182,224" stroke="#D07040" stroke-width="4" fill="none"/>
+  <!-- Lower eyelid with puffiness -->
+  <path d="M140,228 Q158,236 178,228" stroke="#B05830" stroke-width="2" fill="none"/>
+  
+  <!-- Right eye - smaller, squintier -->
+  <ellipse cx="242" cy="222" rx="20" ry="8" fill="#ffffff"/>
+  <ellipse cx="239" cy="222" rx="9" ry="7" fill="#6B7F93"/>
+  <ellipse cx="238" cy="221" rx="4" ry="4" fill="#1a1a1a"/>
+  <ellipse cx="236" cy="219" rx="1.5" ry="1.5" fill="#ffffff"/>
+  <!-- Upper eyelid (very hooded) -->
+  <path d="M262,216 Q250,206 232,210 Q220,216 218,224" stroke="#D07040" stroke-width="4" fill="none"/>
+  <!-- Lower eyelid with puffiness -->
+  <path d="M260,228 Q242,236 222,228" stroke="#B05830" stroke-width="2" fill="none"/>
+  
+  <!-- Crow's feet wrinkles - more prominent -->
+  <g stroke="#B05830" stroke-width="1.2" opacity="0.5">
+    <path d="M125,215 L118,208"/>
+    <path d="M123,220 L114,220"/>
+    <path d="M125,225 L118,232"/>
+    <path d="M127,230 L122,240"/>
+    <path d="M275,215 L282,208"/>
+    <path d="M277,220 L286,220"/>
+    <path d="M275,225 L282,232"/>
+    <path d="M273,230 L278,240"/>
+  </g>
+  
+  <!-- NOSE - broader, more bulbous for caricature -->
+  <path d="M193,215 
+           Q188,250 182,285
+           Q175,310 160,322
+           Q175,330 200,335
+           Q225,330 240,322
+           Q225,310 218,285
+           Q212,250 207,215" 
+        fill="#D07040"/>
+  
+  <!-- Nose bridge highlight -->
+  <path d="M195,220 Q200,260 200,300" stroke="#F0C090" stroke-width="5" fill="none" opacity="0.4"/>
+  
+  <!-- Nostrils - bigger -->
+  <ellipse cx="180" cy="318" rx="12" ry="7" fill="#B05830"/>
+  <ellipse cx="220" cy="318" rx="12" ry="7" fill="#B05830"/>
+  <ellipse cx="180" cy="318" rx="6" ry="4" fill="#704020"/>
+  <ellipse cx="220" cy="318" rx="6" ry="4" fill="#704020"/>
+  
+  <!-- MOUTH - smaller, pursed, that signature pout -->
+  <!-- Upper lip -->
+  <path d="M165,355 Q180,348 195,352 Q200,355 205,352 Q220,348 235,355 Q220,360 205,357 Q200,355 195,357 Q180,360 165,355" 
+        fill="#B07070"/>
+  
+  <!-- Lower lip - pouty -->
+  <path d="M170,360 Q185,372 200,375 Q215,372 230,360 Q215,378 200,380 Q185,378 170,360" 
+        fill="#C08080"/>
+  
+  <!-- Mouth line - slight frown -->
+  <path d="M168,358 Q200,352 232,358" stroke="#805050" stroke-width="2" fill="none"/>
+  
+  <!-- CHIN - multiple chins for caricature -->
+  <ellipse cx="200" cy="400" rx="45" ry="18" fill="#C06838" opacity="0.4"/>
+  <ellipse cx="200" cy="390" rx="38" ry="12" fill="#B05830" opacity="0.3"/>
+  
+  <!-- Chin cleft -->
+  <ellipse cx="200" cy="388" rx="6" ry="10" fill="#B05830" opacity="0.25"/>
+  
+  <!-- Nasolabial folds (smile lines) - deeper -->
+  <path d="M168,325 Q158,340 162,358" stroke="#B05830" stroke-width="2.5" fill="none" opacity="0.6"/>
+  <path d="M232,325 Q242,340 238,358" stroke="#B05830" stroke-width="2.5" fill="none" opacity="0.6"/>
+  
+  <!-- Forehead wrinkles - more prominent -->
+  <g stroke="#B05830" stroke-width="1.5" opacity="0.4">
+    <path d="M135,150 Q200,142 265,150"/>
+    <path d="M140,162 Q200,155 260,162"/>
+    <path d="M145,174 Q200,168 255,174"/>
+    <path d="M150,186 Q200,180 250,186"/>
+  </g>
+  
+  <!-- Jowls - pronounced -->
+  <path d="M130,355 Q120,375 128,398" stroke="#C06838" stroke-width="12" fill="none" opacity="0.3"/>
+  <path d="M270,355 Q280,375 272,398" stroke="#C06838" stroke-width="12" fill="none" opacity="0.3"/>
+  
+  <!-- Age spots -->
+  <circle cx="145" cy="175" r="4" fill="#C08060" opacity="0.3"/>
+  <circle cx="260" cy="180" r="3" fill="#C08060" opacity="0.3"/>
+  <circle cx="235" cy="168" r="2.5" fill="#C08060" opacity="0.25"/>
+  
+</svg>

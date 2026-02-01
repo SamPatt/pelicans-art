@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
+  <defs>
+    <!-- Skin tone - signature orange-tan -->
+    <linearGradient id="skin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F4B87A"/>
+      <stop offset="100%" stop-color="#E8945C"/>
+    </linearGradient>
+    
+    <!-- Hair - iconic golden blonde -->
+    <linearGradient id="hair" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E8C45C"/>
+      <stop offset="100%" stop-color="#D4A030"/>
+    </linearGradient>
+    
+    <!-- Suit -->
+    <linearGradient id="suit" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a2e"/>
+      <stop offset="100%" stop-color="#0f0f1a"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="500" fill="#2a3845"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 1: BASIC FACE SHAPE                    -->
+  <!-- Wide rectangular, 0.85:1 ratio              -->
+  <!-- Widest at cheekbones (40% down)             -->
+  <!-- Minimal jaw taper, small rounded chin       -->
+  <!-- ============================================ -->
+  
+  <!-- Face occupies roughly y:90 to y:400 (310px height) -->
+  <!-- Width ~265px at cheekbones, centered at x:200 -->
+  
+  <path id="face" d="
+    M 115,180
+    Q 105,200 100,240
+    Q 95,280 100,320
+    Q 108,360 130,385
+    Q 160,408 200,412
+    Q 240,408 270,385
+    Q 292,360 300,320
+    Q 305,280 300,240
+    Q 295,200 285,180
+    Q 275,150 255,130
+    Q 230,110 200,108
+    Q 170,110 145,130
+    Q 125,150 115,180
+  " fill="url(#skin)"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 2: EARS                                -->
+  <!-- Positioned at eye level, partially covered  -->
+  <!-- ============================================ -->
+  
+  <ellipse cx="98" cy="250" rx="14" ry="30" fill="#E8945C"/>
+  <ellipse cx="98" cy="250" rx="8" ry="18" fill="#D07848" opacity="0.5"/>
+  
+  <ellipse cx="302" cy="250" rx="14" ry="30" fill="#E8945C"/>
+  <ellipse cx="302" cy="250" rx="8" ry="18" fill="#D07848" opacity="0.5"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 3: HAIR                                -->
+  <!-- M-shaped receded hairline at temples        -->
+  <!-- Swept back, voluminous, adds 15-20% height  -->
+  <!-- Golden blonde color                         -->
+  <!-- ============================================ -->
+  
+  <!-- Main hair mass -->
+  <path d="
+    M 95,185
+    Q 85,150 95,100
+    Q 110,50 160,40
+    Q 200,35 240,40
+    Q 290,50 305,100
+    Q 315,150 305,185
+    L 285,175
+    Q 280,155 270,140
+    Q 250,120 200,115
+    Q 150,120 130,140
+    Q 120,155 115,175
+    Z
+  " fill="url(#hair)"/>
+  
+  <!-- Hair volume/highlight on top -->
+  <path d="
+    M 115,120
+    Q 130,60 200,50
+    Q 270,60 285,120
+    Q 260,80 200,72
+    Q 140,80 115,120
+  " fill="#ECD070"/>
+  
+  <!-- Swept texture lines -->
+  <g stroke="#C89828" stroke-width="2" fill="none" opacity="0.7">
+    <path d="M130,100 Q160,70 195,90"/>
+    <path d="M155,85 Q185,58 220,80"/>
+    <path d="M185,75 Q215,50 250,78"/>
+    <path d="M220,80 Q250,58 280,95"/>
+  </g>
+  
+  <!-- Side hair covering ears partially -->
+  <path d="M100,185 Q88,160 95,130 Q108,150 115,178 Z" fill="#D4A030"/>
+  <path d="M300,185 Q312,160 305,130 Q292,150 285,178 Z" fill="#D4A030"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 4: EYEBROWS                            -->
+  <!-- At 40% from top, straight with slight arch  -->
+  <!-- Lighter colored                             -->
+  <!-- ============================================ -->
+  
+  <!-- Brow ridge shadow -->
+  <ellipse cx="155" cy="208" rx="35" ry="12" fill="#D08050" opacity="0.25"/>
+  <ellipse cx="245" cy="208" rx="35" ry="12" fill="#D08050" opacity="0.25"/>
+  
+  <!-- Eyebrows -->
+  <path d="M120,198 Q145,188 178,196" stroke="#B89868" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M222,196 Q255,188 280,198" stroke="#B89868" stroke-width="7" fill="none" stroke-linecap="round"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 5: EYES                                -->
+  <!-- At 45-48% from top                          -->
+  <!-- Centers at 30% from face center each side   -->
+  <!-- Narrow, horizontally elongated              -->
+  <!-- Slight downward tilt at outer corners       -->
+  <!-- Heavy hooded lids                           -->
+  <!-- ============================================ -->
+  
+  <!-- Eye socket shadows -->
+  <ellipse cx="155" cy="225" rx="30" ry="18" fill="#C87848" opacity="0.3"/>
+  <ellipse cx="245" cy="225" rx="30" ry="18" fill="#C87848" opacity="0.3"/>
+  
+  <!-- Left eye - narrow, tilted down at outer corner -->
+  <path d="M128,228 Q155,218 180,230" fill="#ffffff"/>
+  <ellipse cx="155" cy="227" rx="18" ry="7" fill="#ffffff"/>
+  <ellipse cx="158" cy="227" rx="9" ry="6" fill="#7090B0"/>
+  <circle cx="159" cy="226" r="4" fill="#1a1a1a"/>
+  <circle cx="161" cy="224" r="1.5" fill="#ffffff"/>
+  
+  <!-- Left upper lid - heavy/hooded -->
+  <path d="M128,222 Q142,212 165,216 Q178,222 182,230" stroke="#E8945C" stroke-width="4" fill="none"/>
+  <!-- Left lower lid -->
+  <path d="M130,232 Q155,240 178,232" stroke="#C87848" stroke-width="1.5" fill="none"/>
+  
+  <!-- Right eye - narrow, tilted down at outer corner -->
+  <path d="M220,230 Q245,218 272,228" fill="#ffffff"/>
+  <ellipse cx="245" cy="227" rx="18" ry="7" fill="#ffffff"/>
+  <ellipse cx="242" cy="227" rx="9" ry="6" fill="#7090B0"/>
+  <circle cx="241" cy="226" r="4" fill="#1a1a1a"/>
+  <circle cx="239" cy="224" r="1.5" fill="#ffffff"/>
+  
+  <!-- Right upper lid - heavy/hooded -->
+  <path d="M272,222 Q258,212 235,216 Q222,222 218,230" stroke="#E8945C" stroke-width="4" fill="none"/>
+  <!-- Right lower lid -->
+  <path d="M222,232 Q245,240 270,232" stroke="#C87848" stroke-width="1.5" fill="none"/>
+  
+  <!-- Crow's feet -->
+  <g stroke="#C87848" stroke-width="1" opacity="0.4">
+    <path d="M122,225 L115,220"/>
+    <path d="M120,230 L112,230"/>
+    <path d="M278,225 L285,220"/>
+    <path d="M280,230 L288,230"/>
+  </g>
+  
+  <!-- ============================================ -->
+  <!-- STEP 6: NOSE                                -->
+  <!-- Tip at 70% from top                         -->
+  <!-- 25% of face height                          -->
+  <!-- Wide at nostrils (20% of face width)        -->
+  <!-- Rounded, slightly bulbous tip               -->
+  <!-- ============================================ -->
+  
+  <!-- Nose bridge and shape -->
+  <path d="
+    M 192,220
+    Q 188,260 185,290
+    Q 180,310 168,325
+    Q 180,332 200,336
+    Q 220,332 232,325
+    Q 220,310 215,290
+    Q 212,260 208,220
+  " fill="#E08858"/>
+  
+  <!-- Nose highlight -->
+  <path d="M195,225 Q200,270 200,310" stroke="#F4C090" stroke-width="6" fill="none" opacity="0.4"/>
+  
+  <!-- Nostrils - wide -->
+  <ellipse cx="178" cy="322" rx="10" ry="6" fill="#C87040"/>
+  <ellipse cx="222" cy="322" rx="10" ry="6" fill="#C87040"/>
+  <ellipse cx="178" cy="322" rx="5" ry="3" fill="#8B4020"/>
+  <ellipse cx="222" cy="322" rx="5" ry="3" fill="#8B4020"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 7: MOUTH                               -->
+  <!-- At 80% from top                             -->
+  <!-- That distinctive pursed/pout expression     -->
+  <!-- ============================================ -->
+  
+  <!-- Upper lip - small, pursed -->
+  <path d="
+    M 162,358
+    Q 175,352 192,355
+    Q 200,358 208,355
+    Q 225,352 238,358
+    Q 225,362 208,360
+    Q 200,358 192,360
+    Q 175,362 162,358
+  " fill="#C08070"/>
+  
+  <!-- Lower lip - slightly pouty -->
+  <path d="
+    M 168,362
+    Q 185,374 200,376
+    Q 215,374 232,362
+    Q 218,378 200,380
+    Q 182,378 168,362
+  " fill="#D09080"/>
+  
+  <!-- Mouth line -->
+  <path d="M165,360 Q200,354 235,360" stroke="#906050" stroke-width="1.5" fill="none"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 8: FACIAL DETAILS                      -->
+  <!-- Nasolabial folds, chin, jowls, wrinkles     -->
+  <!-- ============================================ -->
+  
+  <!-- Nasolabial folds -->
+  <path d="M170,328 Q162,343 165,360" stroke="#C87848" stroke-width="2" fill="none" opacity="0.5"/>
+  <path d="M230,328 Q238,343 235,360" stroke="#C87848" stroke-width="2" fill="none" opacity="0.5"/>
+  
+  <!-- Chin definition -->
+  <ellipse cx="200" cy="395" rx="30" ry="12" fill="#D08050" opacity="0.3"/>
+  
+  <!-- Forehead lines -->
+  <g stroke="#D08050" stroke-width="1" opacity="0.3">
+    <path d="M140,155 Q200,148 260,155"/>
+    <path d="M145,168 Q200,162 255,168"/>
+  </g>
+  
+  <!-- Jowl shadows -->
+  <path d="M130,365 Q122,382 128,400" stroke="#C87848" stroke-width="6" fill="none" opacity="0.25"/>
+  <path d="M270,365 Q278,382 272,400" stroke="#C87848" stroke-width="6" fill="none" opacity="0.25"/>
+  
+  <!-- ============================================ -->
+  <!-- STEP 9: NECK AND SUIT                       -->
+  <!-- ============================================ -->
+  
+  <!-- Neck -->
+  <path d="M145,400 Q150,440 155,500 L245,500 Q250,440 255,400" fill="#E8945C"/>
+  <ellipse cx="200" cy="408" rx="45" ry="12" fill="#C87848" opacity="0.3"/>
+  
+  <!-- Shoulders/Suit -->
+  <path d="M0,450 Q80,415 145,408 L155,500 L0,500 Z" fill="url(#suit)"/>
+  <path d="M400,450 Q320,415 255,408 L245,500 L400,500 Z" fill="url(#suit)"/>
+  
+  <!-- Lapels -->
+  <path d="M155,408 L172,450 L160,500 L155,500 Z" fill="#0a0a15"/>
+  <path d="M245,408 L228,450 L240,500 L245,500 Z" fill="#0a0a15"/>
+  
+  <!-- White collar -->
+  <path d="M172,412 L182,435 L200,425 L218,435 L228,412 Q214,420 200,418 Q186,420 172,412" fill="#f0f0f0"/>
+  
+  <!-- Red tie -->
+  <path d="M192,425 L200,432 L208,425 L204,500 L196,500 Z" fill="#AA2020"/>
+  <path d="M196,430 L200,435 L204,430" fill="#881818"/>
+  
+</svg>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600">
+  <defs>
+    <!-- Orange skin -->
+    <linearGradient id="skin" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F5BC7A"/>
+      <stop offset="100%" stop-color="#E89050"/>
+    </linearGradient>
+    
+    <!-- Golden hair -->
+    <linearGradient id="hair" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F0D060"/>
+      <stop offset="50%" stop-color="#E0B030"/>
+      <stop offset="100%" stop-color="#C89820"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="600" fill="#1a2530"/>
+  
+  <g id="body">
+    <!-- Legs -->
+    <rect x="150" y="480" width="40" height="120" fill="#1a1a30"/>
+    <rect x="210" y="480" width="40" height="120" fill="#1a1a30"/>
+    
+    <!-- Shoes -->
+    <ellipse cx="170" cy="598" rx="25" ry="8" fill="#111118"/>
+    <ellipse cx="230" cy="598" rx="25" ry="8" fill="#111118"/>
+    
+    <!-- Suit body -->
+    <rect x="120" y="368" width="160" height="120" rx="5" fill="#1a1a30"/>
+    
+    <!-- Shoulders -->
+    <rect x="70" y="368" width="60" height="50" rx="8" fill="#1a1a30"/>
+    <rect x="270" y="368" width="60" height="50" rx="8" fill="#1a1a30"/>
+    
+    <!-- Arms -->
+    <rect x="70" y="400" width="35" height="100" rx="5" fill="#1a1a30"/>
+    <rect x="295" y="400" width="35" height="100" rx="5" fill="#1a1a30"/>
+    
+    <!-- Hands -->
+    <ellipse cx="87" cy="505" rx="18" ry="12" fill="#E89050"/>
+    <ellipse cx="313" cy="505" rx="18" ry="12" fill="#E89050"/>
+    
+    <!-- White collar -->
+    <polygon points="170,368 200,390 230,368" fill="#ffffff"/>
+    
+    <!-- Tie -->
+    <polygon points="200,370 188,395 200,480 212,395" fill="#CC2222"/>
+  </g>
+  
+  <g id="head-top">
+    <!-- Main face shape -->
+    <path id="face" d="
+      M 55,200
+      Q 45,230 50,270
+      Q 60,310 100,340
+      Q 150,365 200,368
+      Q 250,365 300,340
+      Q 340,310 350,270
+      Q 355,230 345,200
+      Q 335,160 300,140
+      Q 260,120 200,118
+      Q 140,120 100,140
+      Q 65,160 55,200
+    " fill="url(#skin)"/>
+    
+    <!-- Cheek puffiness -->
+    <ellipse cx="90" cy="260" rx="35" ry="45" fill="#E08048" opacity="0.3"/>
+    <ellipse cx="310" cy="260" rx="35" ry="45" fill="#E08048" opacity="0.3"/>
+    
+    <!-- Ears -->
+    <ellipse cx="52" cy="220" rx="12" ry="25" fill="#E08048"/>
+    <ellipse cx="348" cy="220" rx="12" ry="25" fill="#E08048"/>
+    
+    <!-- HAIR - Single piece with signature swoop -->
+    <path d="
+      M 45,215
+      Q 30,180 40,130
+      Q 55,70 120,50
+      Q 180,35 240,45
+      Q 300,55 340,90
+      Q 370,115 400,105
+      Q 440,95 460,125
+      Q 450,160 400,170
+      Q 365,180 340,195
+      Q 330,172 318,158
+      Q 300,140 265,135
+      Q 230,130 180,135
+      Q 120,140 80,165
+      Q 58,185 55,215
+      Z
+    " fill="#E8C040"/>
+    
+    <!-- Inner hair fill for depth -->
+    <path d="
+      M 58,210
+      Q 50,180 60,150
+      Q 80,105 150,90
+      Q 220,80 295,98
+      Q 332,110 338,155
+      L 335,190
+      Q 328,160 290,142
+      Q 245,125 180,130
+      Q 110,135 75,165
+      Q 60,185 62,210
+      Z
+    " fill="#D8A830"/>
+    
+    <!-- Forehead wrinkles -->
+    <g stroke="#D08048" stroke-width="1.2" opacity="0.3">
+      <path d="M100,160 Q200,150 300,160"/>
+      <path d="M110,172 Q200,163 290,172"/>
+    </g>
+    
+    <!-- Eye sockets -->
+    <ellipse cx="130" cy="210" rx="32" ry="18" fill="#C87840" opacity="0.3"/>
+    <ellipse cx="270" cy="210" rx="32" ry="18" fill="#C87840" opacity="0.3"/>
+    
+    <!-- Eyes - white part -->
+    <ellipse id="eye-left-white" cx="130" cy="212" rx="18" ry="8" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="270" cy="212" rx="18" ry="8" fill="#ffffff"/>
+    
+    <!-- Pupils (iris + center + highlight grouped) - centered in eye whites -->
+    <g class="pupil pupil-left" id="eye-left-pupil">
+      <ellipse cx="130" cy="212" rx="8" ry="7" fill="#6888A8"/>
+      <circle cx="130" cy="212" r="4" fill="#1a1a1a"/>
+      <circle id="eye-left-highlight" cx="132" cy="210" r="2" fill="#ffffff" opacity="0.8"/>
+    </g>
+    <g class="pupil pupil-right" id="eye-right-pupil">
+      <ellipse cx="270" cy="212" rx="8" ry="7" fill="#6888A8"/>
+      <circle cx="270" cy="212" r="4" fill="#1a1a1a"/>
+      <circle id="eye-right-highlight" cx="272" cy="210" r="2" fill="#ffffff" opacity="0.8"/>
+    </g>
+    
+    <!-- Eyelids -->
+    <path d="M110,207 Q120,198 140,202 Q150,207 152,214" stroke="#E08850" stroke-width="4" fill="none"/>
+    <path d="M112,218 Q130,224 148,218" stroke="#C07840" stroke-width="1.5" fill="none"/>
+    <path d="M290,207 Q280,198 260,202 Q250,207 248,214" stroke="#E08850" stroke-width="4" fill="none"/>
+    <path d="M288,218 Q270,224 252,218" stroke="#C07840" stroke-width="1.5" fill="none"/>
+    
+    <!-- Nose -->
+    <path d="
+      M 193,220
+      Q 190,245 188,265
+      Q 184,278 178,285
+      Q 188,292 200,294
+      Q 212,292 222,285
+      Q 216,278 212,265
+      Q 210,245 207,220
+    " fill="#E08048"/>
+    
+    <!-- Nose highlight -->
+    <path d="M196,225 Q200,255 200,280" stroke="#F5C888" stroke-width="4" fill="none" opacity="0.4"/>
+    
+    <!-- Nostrils -->
+    <ellipse cx="188" cy="283" rx="6" ry="4" fill="#C07038"/>
+    <ellipse cx="212" cy="283" rx="6" ry="4" fill="#C07038"/>
+    <ellipse cx="188" cy="283" rx="3" ry="2" fill="#884020"/>
+    <ellipse cx="212" cy="283" rx="3" ry="2" fill="#884020"/>
+  </g>
+  
+  <g id="head-bottom">
+    <!-- Nasolabial folds -->
+    <path d="M175,290 Q165,308 170,328" stroke="#C87840" stroke-width="2" fill="none" opacity="0.5"/>
+    <path d="M225,290 Q235,308 230,328" stroke="#C87840" stroke-width="2" fill="none" opacity="0.5"/>
+    
+    <!-- Jowls -->
+    <path d="M110,270 Q95,295 105,320" stroke="#D08048" stroke-width="15" fill="none" opacity="0.3"/>
+    <path d="M290,270 Q305,295 295,320" stroke="#D08048" stroke-width="15" fill="none" opacity="0.3"/>
+    
+    <!-- Chin -->
+    <ellipse cx="200" cy="365" rx="25" ry="8" fill="#C87840" opacity="0.25"/>
+    
+    <!-- Expression mouths - simple lines only -->
+    <path id="mouth-neutral" d="M162,330 Q200,326 238,330" stroke="#906058" stroke-width="3" fill="none" opacity="1"/>
+    <path id="mouth-happy" d="M160,330 Q200,345 240,330" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
+    <path id="mouth-sad" d="M165,340 Q200,325 235,340" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
+    <path id="mouth-angry" d="M165,335 Q200,325 235,335" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
+    <ellipse id="mouth-surprised" cx="200" cy="338" rx="15" ry="12" fill="#5d4037" opacity="0"/>
+    <path id="mouth-smug" d="M165,332 Q195,340 235,330" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
+    
+    <!-- Mouth open for speaking -->
+    <ellipse id="mouth-open" cx="200" cy="338" rx="18" ry="10" fill="#5d4037" opacity="0"/>
+  </g>
+  
+  <!-- EYEBROWS - On top of everything -->
+  <g id="eyebrows">
+    <path id="brow-left-border" d="M95,188 Q130,178 165,186" stroke="#E89050" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path id="brow-left" d="M95,188 Q130,178 165,186" stroke="#C0A060" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path id="brow-right-border" d="M235,186 Q270,178 305,188" stroke="#E89050" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path id="brow-right" d="M235,186 Q270,178 305,188" stroke="#C0A060" stroke-width="8" fill="none" stroke-linecap="round"/>
+  </g>
+  
+</svg>
