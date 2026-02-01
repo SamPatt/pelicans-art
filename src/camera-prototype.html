@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Camera System Prototype</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+      padding: 10px;
+    }
+    
+    /* Portrait viewport - 9:16 aspect ratio */
+    #viewport {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 9 / 16;
+      max-height: 90vh;
+      background: #000;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    
+    /* On mobile, take full width */
+    @media (max-width: 500px) {
+      #viewport {
+        max-width: 100%;
+        border-radius: 0;
+      }
+    }
+    
+    /* Stage lives in world coordinates (0-100) */
+    #stage {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s ease-out;
+      will-change: transform;
+    }
+    
+    /* Background fills stage */
+    #background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #87CEEB 0%, #87CEEB 60%, #228B22 60%, #228B22 100%);
+    }
+    
+    /* Characters positioned by world x-coordinate */
+    .character {
+      position: absolute;
+      bottom: 15%;
+      height: 35%;
+      width: auto;
+      transition: left 1s ease-in-out, opacity 0.3s;
+      transform: translateX(-50%); /* center on x position */
+    }
+    
+    .character.flipped {
+      transform: translateX(-50%) scaleX(-1);
+    }
+    
+    /* Debug overlay */
+    #debug {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      color: #0f0;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 12px;
+      border-radius: 4px;
+      z-index: 1000;
+    }
+    
+    /* Controls */
+    #controls {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 400px;
+    }
+    
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      background: #4a4a6a;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    button:hover {
+      background: #5a5a8a;
+    }
+    
+    button.active {
+      background: #7a7aaa;
+    }
+    
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      align-items: center;
+    }
+    
+    .control-label {
+      color: #888;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div id="debug">
+    Camera: x=50, zoom=1<br>
+    Follow: none
+  </div>
+  
+  <div id="viewport">
+    <div id="stage">
+      <div id="background"></div>
+      <!-- Characters will be added here -->
+    </div>
+  </div>
+  
+  <div id="controls">
+    <div class="control-group">
+      <span class="control-label">Shots</span>
+      <div style="display:flex; gap:4px; flex-wrap:wrap; justify-content:center;">
+        <button onclick="shot('wide')">Wide</button>
+        <button onclick="shot('two-shot')">Two Shot</button>
+        <button onclick="shot('closeup', 'pelican')">CU Pelican</button>
+        <button onclick="shot('closeup', 'cat')">CU Cat</button>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <span class="control-label">Camera</span>
+      <div style="display:flex; gap:4px;">
+        <button onclick="camera.follow='pelican'; updateCamera()">Follow Pelican</button>
+        <button onclick="camera.follow='cat'; updateCamera()">Follow Cat</button>
+        <button onclick="camera.follow=null; updateCamera()">Unfollow</button>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <span class="control-label">Move Characters</span>
+      <div style="display:flex; gap:4px;">
+        <button onclick="moveCharacter('pelican', 20)">Pelican → Left</button>
+        <button onclick="moveCharacter('pelican', 50)">Pelican → Center</button>
+        <button onclick="moveCharacter('pelican', 80)">Pelican → Right</button>
+      </div>
+    </div>
+    
+    <div class="control-group">
+      <span class="control-label">Test Sequence</span>
+      <button onclick="runTestSequence()">▶ Run Demo</button>
+    </div>
+  </div>
+
+  <script>
+    // === STATE ===
+    const characters = {
+      pelican: { x: 30, sprite: 'pelican-front', el: null },
+      cat: { x: 70, sprite: 'cat-front', el: null }
+    };
+    
+    const camera = {
+      x: 50,      // 0-100, where camera is pointing
+      zoom: 1,    // 1 = see full width, 2 = see half width, etc.
+      follow: null // character name to track, or null
+    };
+    
+    // === SHOT PRESETS ===
+    const shotPresets = {
+      'wide': { zoom: 1, frameBoth: true },
+      'two-shot': { zoom: 1.4, frameBoth: true },
+      'closeup': { zoom: 2.2 },
+      'extreme-closeup': { zoom: 3 },
+      'medium': { zoom: 1.6 }
+    };
+    
+    // === CAMERA MATH ===
+    function updateCamera() {
+      const stage = document.getElementById('stage');
+      
+      // If following a character, update camera.x to their position
+      if (camera.follow && characters[camera.follow]) {
+        camera.x = characters[camera.follow].x;
+      }
+      
+      // Calculate transform
+      // We want camera.x (in world coords 0-100) to appear at viewport center
+      // At zoom=1, world 0-100 maps to viewport 0-100%
+      // At zoom=2, world 0-100 maps to viewport 0-200%, so we see half
+      
+      // Offset needed: how far to shift so camera.x lands at center (50%)
+      // If camera.x=50 and zoom=1, no shift needed
+      // If camera.x=25 and zoom=1, shift right by 25%
+      // If camera.x=25 and zoom=2, shift right by 25% * 2 = 50%
+      
+      const offsetPercent = (50 - camera.x) * camera.zoom;
+      
+      stage.style.transformOrigin = '0 0';
+      stage.style.transform = `translateX(${offsetPercent}%) scale(${camera.zoom})`;
+      
+      updateDebug();
+    }
+    
+    function updateDebug() {
+      const debug = document.getElementById('debug');
+      debug.innerHTML = `Camera: x=${camera.x.toFixed(0)}, zoom=${camera.zoom.toFixed(1)}<br>Follow: ${camera.follow || 'none'}`;
+    }
+    
+    // === SHOT COMMANDS ===
+    function shot(type, who = null) {
+      const preset = shotPresets[type];
+      if (!preset) return;
+      
+      camera.zoom = preset.zoom;
+      
+      if (preset.frameBoth) {
+        // Center between both characters
+        const xs = Object.values(characters).map(c => c.x);
+        camera.x = (Math.min(...xs) + Math.max(...xs)) / 2;
+        camera.follow = null;
+      } else if (who && characters[who]) {
+        // Frame specific character
+        camera.x = characters[who].x;
+        camera.follow = who; // optionally track them
+      }
+      
+      updateCamera();
+    }
+    
+    // === CHARACTER COMMANDS ===
+    function moveCharacter(name, toX, duration = 1) {
+      const char = characters[name];
+      if (!char || !char.el) return;
+      
+      char.x = toX;
+      char.el.style.left = `${toX}%`;
+      
+      // If camera is following this character, update camera
+      if (camera.follow === name) {
+        updateCamera();
+      }
+    }
+    
+    function createCharacter(name, sprite, x) {
+      const stage = document.getElementById('stage');
+      const el = document.createElement('img');
+      el.className = 'character';
+      el.src = `sprites/${sprite}.svg`;
+      el.style.left = `${x}%`;
+      el.id = `char-${name}`;
+      stage.appendChild(el);
+      
+      characters[name] = { x, sprite, el };
+    }
+    
+    // === INIT ===
+    function init() {
+      createCharacter('pelican', 'pelican-front', 30);
+      createCharacter('cat', 'cat-front', 70);
+      updateCamera();
+      
+      // Set up follow tracking with animation frame
+      function trackFollow() {
+        if (camera.follow && characters[camera.follow]) {
+          const targetX = characters[camera.follow].x;
+          if (Math.abs(camera.x - targetX) > 0.1) {
+            updateCamera();
+          }
+        }
+        requestAnimationFrame(trackFollow);
+      }
+      trackFollow();
+    }
+    
+    // === TEST SEQUENCE ===
+    async function runTestSequence() {
+      const delay = ms => new Promise(r => setTimeout(r, ms));
+      
+      // Reset
+      moveCharacter('pelican', 30);
+      moveCharacter('cat', 70);
+      shot('wide');
+      await delay(1000);
+      
+      // Closeup on pelican
+      shot('closeup', 'pelican');
+      await delay(1500);
+      
+      // Closeup on cat (shot-reverse-shot)
+      shot('closeup', 'cat');
+      await delay(1500);
+      
+      // Back to two-shot
+      shot('two-shot');
+      await delay(1000);
+      
+      // Pelican walks to center, camera follows
+      camera.follow = 'pelican';
+      camera.zoom = 1.6;
+      updateCamera();
+      await delay(300);
+      moveCharacter('pelican', 50, 2);
+      await delay(2000);
+      
+      // Camera holds, pelican continues
+      camera.follow = null;
+      await delay(300);
+      moveCharacter('pelican', 80, 2);
+      await delay(2000);
+      
+      // Wide to end
+      shot('wide');
+    }
+    
+    // Start
+    init();
+  </script>
+</body>
+</html>
