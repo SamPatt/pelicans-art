@@ -1,51 +1,49 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
   <g id="body">
     <!-- White shirt -->
-    <rect x="32" y="78" width="36" height="72" fill="#ffffff"/>
+    <rect x="32" y="75" width="36" height="75" fill="#ffffff"/>
     <!-- Black vest -->
-    <path d="M32 78 L40 78 L40 130 L32 130 Z" fill="#1a1a1a"/>
-    <path d="M60 78 L68 78 L68 130 L60 130 Z" fill="#1a1a1a"/>
-    <path d="M40 78 L50 90 L60 78" fill="#1a1a1a"/>
+    <path d="M32 75 L40 75 L40 130 L32 130 Z" fill="#1a1a1a"/>
+    <path d="M60 75 L68 75 L68 130 L60 130 Z" fill="#1a1a1a"/>
+    <path d="M40 75 L50 88 L60 75" fill="#1a1a1a"/>
     <!-- Vest buttons -->
     <circle cx="50" cy="100" r="2" fill="#d4af37"/>
     <circle cx="50" cy="115" r="2" fill="#d4af37"/>
     <!-- Bow tie -->
-    <rect x="46" y="75" width="8" height="6" fill="#1a1a1a"/>
-    <polygon points="42,78 46,75 46,81" fill="#1a1a1a"/>
-    <polygon points="58,78 54,75 54,81" fill="#1a1a1a"/>
+    <rect x="46" y="72" width="8" height="6" fill="#1a1a1a"/>
+    <polygon points="42,75 46,72 46,78" fill="#1a1a1a"/>
+    <polygon points="58,75 54,72 54,78" fill="#1a1a1a"/>
     <!-- Arms -->
-    <rect x="22" y="80" width="10" height="35" fill="#ffffff"/>
-    <rect x="68" y="80" width="10" height="35" fill="#ffffff"/>
-    <ellipse cx="27" cy="118" rx="6" ry="5" fill="#ffcc80"/>
-    <ellipse cx="73" cy="118" rx="6" ry="5" fill="#ffcc80"/>
+    <rect x="22" y="78" width="10" height="35" fill="#ffffff"/>
+    <rect x="68" y="78" width="10" height="35" fill="#ffffff"/>
+    <ellipse cx="27" cy="116" rx="6" ry="5" fill="#ffcc80"/>
+    <ellipse cx="73" cy="116" rx="6" ry="5" fill="#ffcc80"/>
   </g>
   <g id="head-top">
     <!-- Hair - slicked back -->
-    <ellipse cx="50" cy="35" rx="20" ry="14" fill="#2d2d2d"/>
+    <ellipse cx="50" cy="32" rx="20" ry="14" fill="#2d2d2d"/>
     <!-- Face -->
-    <ellipse cx="50" cy="50" rx="18" ry="22" fill="#ffcc80"/>
+    <ellipse cx="50" cy="48" rx="18" ry="22" fill="#ffcc80"/>
     <!-- Eyes -->
-    <ellipse id="eye-left-white" cx="43" cy="48" rx="4" ry="3" fill="#ffffff"/>
-    <ellipse id="eye-right-white" cx="57" cy="48" rx="4" ry="3" fill="#ffffff"/>
-    <circle id="eye-left-pupil" class="pupil" cx="43" cy="48" r="1.5" fill="#2d2d2d"/>
-    <circle id="eye-right-pupil" class="pupil" cx="57" cy="48" r="1.5" fill="#2d2d2d"/>
+    <ellipse id="eye-left-white" cx="43" cy="45" rx="4" ry="3" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="57" cy="45" rx="4" ry="3" fill="#ffffff"/>
+    <circle id="eye-left-pupil" class="pupil" cx="43" cy="45" r="1.5" fill="#2d2d2d"/>
+    <circle id="eye-right-pupil" class="pupil" cx="57" cy="45" r="1.5" fill="#2d2d2d"/>
     <!-- Eye highlights -->
-    <circle id="eye-left-highlight" cx="42" cy="47" r="1" fill="#fff" opacity="0"/>
-    <circle id="eye-right-highlight" cx="56" cy="47" r="1" fill="#fff" opacity="0"/>
-    <!-- Eyebrows - slightly arched, professional -->
-    <path id="brow-left-border" d="M38 44 Q43 42 48 44" stroke="#ffcc80" stroke-width="2" fill="none"/>
-    <path id="brow-left" d="M38 42 Q43 40 48 42" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
-    <path id="brow-right-border" d="M52 44 Q57 42 62 44" stroke="#ffcc80" stroke-width="2" fill="none"/>
-    <path id="brow-right" d="M52 42 Q57 40 62 42" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
-    <!-- Small mustache -->
-    <path d="M44 58 Q50 61 56 58" stroke="#2d2d2d" stroke-width="2" fill="none"/>
+    <circle id="eye-left-highlight" cx="42" cy="44" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="56" cy="44" r="1" fill="#fff" opacity="0"/>
+    <!-- Eyebrows -->
+    <path id="brow-left-border" d="M38 41 Q43 39 48 41" stroke="#ffcc80" stroke-width="2" fill="none"/>
+    <path id="brow-left" d="M38 39 Q43 37 48 39" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
+    <path id="brow-right-border" d="M52 41 Q57 39 62 41" stroke="#ffcc80" stroke-width="2" fill="none"/>
+    <path id="brow-right" d="M52 39 Q57 37 62 39" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
     <!-- Nose -->
-    <ellipse cx="50" cy="54" rx="2" ry="2.5" fill="#ffb74d"/>
+    <ellipse cx="50" cy="52" rx="2" ry="2.5" fill="#ffb74d"/>
   </g>
   <g id="head-bottom">
-    <!-- Mouth closed - slight smile -->
-    <path id="mouth-closed" d="M45 64 Q50 67 55 64" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+    <!-- Mouth closed -->
+    <path id="mouth-closed" d="M45 62 Q50 65 55 62" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
     <!-- Mouth open -->
-    <ellipse id="mouth-open" cx="50" cy="65" rx="4" ry="3" fill="#5d4037" opacity="0"/>
+    <ellipse id="mouth-open" cx="50" cy="63" rx="4" ry="3" fill="#5d4037" opacity="0"/>
   </g>
 </svg>
