@@ -643,8 +643,11 @@
       const cached = await getCachedAudio(cacheKey);
       if (cached) return cached;
       
+      // Add slight pause at start to prevent TTS cutoff on first word
+      const paddedText = '... ' + text;
+      
       const formData = new FormData();
-      formData.append('text', text);
+      formData.append('text', paddedText);
       formData.append('voice_url', voice);
       const res = await fetch('/tts/tts', { method: 'POST', body: formData });
       if (!res.ok) throw new Error('TTS failed');
@@ -1048,7 +1051,9 @@
               currentSpeaker = null;
             };
             
-            cached.audio.play();
+            // Reset audio position and play with small delay to prevent cutoff
+            cached.audio.currentTime = 0;
+            cached.audio.play().catch(e => console.warn('Audio play failed:', e));
           }
           break;
           
