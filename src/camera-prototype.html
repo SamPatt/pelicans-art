@@ -266,9 +266,22 @@
     }
     
     // === SHOT COMMANDS ===
-    function shot(type, who = null) {
+    function shot(type, who = null, hardCut = true) {
       const preset = shotPresets[type];
       if (!preset) return;
+      
+      const stage = document.getElementById('stage');
+      
+      // Cancel any ongoing camera animation
+      if (cameraAnimation) {
+        cancelAnimationFrame(cameraAnimation);
+        cameraAnimation = null;
+      }
+      
+      // For hard cuts, temporarily disable transition
+      if (hardCut) {
+        stage.style.transition = 'none';
+      }
       
       camera.zoom = preset.zoom;
       
@@ -290,6 +303,13 @@
       }
       
       updateCamera();
+      
+      // Re-enable transition after the cut
+      if (hardCut) {
+        // Force reflow to apply the instant change
+        stage.offsetHeight;
+        stage.style.transition = 'transform 0.6s ease-out';
+      }
     }
     
     // === FOLLOW COMMANDS ===
