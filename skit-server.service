@@ -1,0 +1,14 @@
+[Unit]
+Description=AI Improv Theater Static File Server
+After=network.target
+
+[Service]
+Type=simple
+User=openclaw
+WorkingDirectory=/home/openclaw/.openclaw/workspace/projects/ai-improv-theater/src
+ExecStart=/usr/bin/python3 -m http.server 8080
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

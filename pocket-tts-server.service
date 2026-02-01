@@ -1,0 +1,15 @@
+[Unit]
+Description=Pocket TTS Server for AI Improv Theater
+After=network.target
+
+[Service]
+Type=simple
+User=openclaw
+WorkingDirectory=/home/openclaw/.openclaw/workspace/projects/ai-improv-theater
+ExecStart=/home/openclaw/.openclaw/workspace/projects/ai-improv-theater/venv/bin/pocket-tts serve --port 8001 --host 127.0.0.1
+Restart=on-failure
+RestartSec=5
+Environment=HOME=/home/openclaw
+
+[Install]
+WantedBy=multi-user.target
