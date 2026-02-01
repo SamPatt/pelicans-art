@@ -264,43 +264,167 @@
           yarn: { sprite: "yarn", x: "50%", y: "40%" }
         },
         script: [
-          // Jogger enters
+          // Jogger enters happy
           { t: 0.5, do: "enter", who: "jogger", from: "left" },
+          { t: 0.5, do: "emote", who: "jogger", emotion: "happy" },
           { t: 1, do: "look", who: "jogger", at: "audience" },
           { t: 2, do: "say", who: "jogger", line: "What a beautiful day for a jog!", target: "audience" },
           
-          // Cat enters dramatically
+          // Cat enters, jogger gets surprised
           { t: 5, do: "enter", who: "cat", from: "right" },
+          { t: 5, do: "emote", who: "cat", emotion: "neutral" },
           { t: 5.5, do: "look", who: "jogger", at: "right" },
+          { t: 5.5, do: "emote", who: "jogger", emotion: "surprised" },
           { t: 6, do: "say", who: "jogger", line: "What the... is that a giant cat?!", target: "cat" },
           
-          // Cat responds
+          // Cat responds smugly
+          { t: 9, do: "emote", who: "cat", emotion: "smug" },
           { t: 9, do: "say", who: "cat", line: "I prefer the term 'adequately sized'.", target: "jogger" },
+          { t: 12, do: "emote", who: "jogger", emotion: "surprised" },
           { t: 12, do: "say", who: "jogger", line: "You can talk?!", target: "cat" },
+          { t: 14, do: "emote", who: "cat", emotion: "smug" },
           { t: 14, do: "say", who: "cat", line: "You can jog? In this economy?", target: "jogger" },
           
-          // Yarn appears
+          // Yarn appears - cat gets excited
           { t: 17, do: "spawn", what: "yarn" },
           { t: 17, do: "look", who: "cat", at: "up" },
+          { t: 17, do: "emote", who: "cat", emotion: "surprised" },
           { t: 17.5, do: "say", who: "cat", line: "Is that... yarn?", target: "audience" },
           { t: 20, do: "look", who: "jogger", at: "up" },
+          { t: 20, do: "emote", who: "jogger", emotion: "worried" },
           { t: 20.5, do: "say", who: "jogger", line: "Where did that come from?", target: "cat" },
           
-          // Cat gets distracted
+          // Cat gets obsessed
+          { t: 23, do: "emote", who: "cat", emotion: "excited" },
           { t: 23, do: "say", who: "cat", line: "I must... I must have it.", target: "audience" },
           { t: 25.5, do: "despawn", what: "yarn" },
+          { t: 25.5, do: "emote", who: "cat", emotion: "sad" },
+          { t: 26, do: "emote", who: "cat", emotion: "angry" },
           { t: 26, do: "say", who: "cat", line: "NO! MY YARN!", target: "audience" },
           
-          // Jogger slowly backs away - demonstrates turn and depth
+          // Jogger backs away worried
+          { t: 28.5, do: "emote", who: "jogger", emotion: "worried" },
           { t: 28.5, do: "say", who: "jogger", line: "I'm just gonna... go.", target: "cat" },
           { t: 30, do: "turn", who: "jogger", to: "back" },
           { t: 30.5, do: "move", who: "jogger", to: "mid" },
           { t: 31, do: "look", who: "cat", at: "up" },
           { t: 32, do: "move", who: "jogger", to: "far" },
+          { t: 33, do: "emote", who: "cat", emotion: "angry" },
           { t: 33, do: "say", who: "cat", line: "Bring back my yarn!", target: "audience" }
         ]
       }
     };
+
+    // Emotion configurations for animation
+    const EMOTIONS = {
+      neutral: {
+        eyeWhite: { ry: 7, cy: 52 },      // cat defaults
+        eyeWhiteHuman: { ry: 3, cy: 46 }, // human defaults
+        pupil: { ry: 5, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 46 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        browLeftHuman: "M37 40 Q43 38 49 40",
+        browRightHuman: "M51 40 Q57 38 63 40",
+        mouth: "M50 65 L46 70 M50 65 L54 70",
+        mouthHuman: "M44 67 Q50 70 56 67",
+        highlight: 0
+      },
+      happy: {
+        eyeWhite: { ry: 5, cy: 50 },
+        eyeWhiteHuman: { ry: 2, cy: 45 },
+        pupil: { ry: 4, cy: 50 },
+        pupilHuman: { r: 1.5, cy: 45 },
+        browLeft: "M30 42 Q40 38 48 42",
+        browRight: "M52 42 Q60 38 70 42",
+        browLeftHuman: "M37 38 Q43 34 49 38",
+        browRightHuman: "M51 38 Q57 34 63 38",
+        mouth: "M44 66 Q50 72 56 66",
+        mouthHuman: "M42 65 Q50 72 58 65",
+        highlight: 0
+      },
+      sad: {
+        eyeWhite: { ry: 6, cy: 54 },
+        eyeWhiteHuman: { ry: 3, cy: 48 },
+        pupil: { ry: 5, cy: 55 },
+        pupilHuman: { r: 1.5, cy: 49 },
+        browLeft: "M30 40 L48 46",
+        browRight: "M52 46 L70 40",
+        browLeftHuman: "M37 38 L49 44",
+        browRightHuman: "M51 44 L63 38",
+        mouth: "M44 70 Q50 65 56 70",
+        mouthHuman: "M44 70 Q50 64 56 70",
+        highlight: 0
+      },
+      angry: {
+        eyeWhite: { ry: 5, cy: 52 },
+        eyeWhiteHuman: { ry: 2.5, cy: 46 },
+        pupil: { ry: 4, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 46 },
+        browLeft: "M30 48 L48 42",
+        browRight: "M52 42 L70 48",
+        browLeftHuman: "M37 44 L49 38",
+        browRightHuman: "M51 38 L63 44",
+        mouth: "M44 68 L56 68",
+        mouthHuman: "M44 68 L56 68",
+        highlight: 0
+      },
+      surprised: {
+        eyeWhite: { ry: 9, cy: 52 },
+        eyeWhiteHuman: { ry: 5, cy: 46 },
+        pupil: { ry: 6, cy: 52 },
+        pupilHuman: { r: 2, cy: 46 },
+        browLeft: "M30 38 Q40 34 48 38",
+        browRight: "M52 38 Q60 34 70 38",
+        browLeftHuman: "M37 34 Q43 28 49 34",
+        browRightHuman: "M51 34 Q57 28 63 34",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
+        mouthHuman: "M46 66 Q50 72 54 66",
+        highlight: 1
+      },
+      excited: {
+        eyeWhite: { ry: 9, cy: 50 },
+        eyeWhiteHuman: { ry: 5, cy: 44 },
+        pupil: { ry: 6, cy: 50 },
+        pupilHuman: { r: 2, cy: 44 },
+        browLeft: "M30 38 Q40 32 48 38",
+        browRight: "M52 38 Q60 32 70 38",
+        browLeftHuman: "M37 32 Q43 26 49 32",
+        browRightHuman: "M51 32 Q57 26 63 32",
+        mouth: "M42 64 Q50 74 58 64",
+        mouthHuman: "M40 64 Q50 76 60 64",
+        highlight: 1
+      },
+      worried: {
+        eyeWhite: { ry: 7, cy: 53 },
+        eyeWhiteHuman: { ry: 3.5, cy: 47 },
+        pupil: { ry: 5, cy: 54 },
+        pupilHuman: { r: 1.5, cy: 48 },
+        browLeft: "M30 42 L48 46",
+        browRight: "M52 44 Q60 40 70 44",
+        browLeftHuman: "M37 40 L49 46",
+        browRightHuman: "M51 44 Q57 38 63 44",
+        mouth: "M44 68 Q48 66 50 68 Q52 70 56 68",
+        mouthHuman: "M44 68 Q48 66 50 68 Q52 70 56 68",
+        highlight: 0
+      },
+      smug: {
+        eyeWhite: { ry: 4, cy: 52 },
+        eyeWhiteHuman: { ry: 2, cy: 46 },
+        pupil: { ry: 3, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 46 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 42 Q60 38 70 44",
+        browLeftHuman: "M37 42 Q43 40 49 42",
+        browRightHuman: "M51 40 Q57 34 63 40",
+        mouth: "M44 67 Q52 72 58 66",
+        mouthHuman: "M44 67 Q54 73 60 66",
+        highlight: 0
+      }
+    };
+
+    // Track current emotion per character
+    let characterEmotions = { left: 'neutral', right: 'neutral' };
 
     let audioContext, analyser, dataArray;
     let currentScript = null;
@@ -343,6 +467,98 @@
       charEl.classList.remove('facing-left', 'facing-right');
       if (target === 'left') charEl.classList.add('facing-right');
       if (target === 'right') charEl.classList.add('facing-left');
+    }
+
+    function setEmotion(charId, emotion, durationMs = 300) {
+      const config = EMOTIONS[emotion];
+      if (!config) return;
+      
+      const charEl = document.getElementById(`char-${charId}`);
+      if (!charEl) return;
+      
+      // Detect if human or cat based on sprite
+      const sprite = charEl.dataset.sprite || '';
+      const isHuman = sprite === 'person' || sprite === 'trump';
+      
+      // Get elements
+      const eyeLeftWhite = charEl.querySelector('#eye-left-white');
+      const eyeRightWhite = charEl.querySelector('#eye-right-white');
+      const eyeLeftPupil = charEl.querySelector('#eye-left-pupil');
+      const eyeRightPupil = charEl.querySelector('#eye-right-pupil');
+      const browLeft = charEl.querySelector('#brow-left');
+      const browRight = charEl.querySelector('#brow-right');
+      const browLeftBorder = charEl.querySelector('#brow-left-border');
+      const browRightBorder = charEl.querySelector('#brow-right-border');
+      const mouthClosed = charEl.querySelector('#mouth-closed');
+      const highlightLeft = charEl.querySelector('#eye-left-highlight');
+      const highlightRight = charEl.querySelector('#eye-right-highlight');
+      
+      // Apply CSS transition
+      const transitionStyle = `all ${durationMs}ms ease-out`;
+      
+      // Animate eyes
+      if (eyeLeftWhite && eyeRightWhite) {
+        const eyeConfig = isHuman ? config.eyeWhiteHuman : config.eyeWhite;
+        [eyeLeftWhite, eyeRightWhite].forEach(el => {
+          el.style.transition = transitionStyle;
+          if (eyeConfig.ry) el.setAttribute('ry', eyeConfig.ry);
+          if (eyeConfig.cy) el.setAttribute('cy', eyeConfig.cy);
+        });
+      }
+      
+      // Animate pupils
+      if (eyeLeftPupil && eyeRightPupil) {
+        const pupilConfig = isHuman ? config.pupilHuman : config.pupil;
+        [eyeLeftPupil, eyeRightPupil].forEach(el => {
+          el.style.transition = transitionStyle;
+          if (pupilConfig.ry) el.setAttribute('ry', pupilConfig.ry);
+          if (pupilConfig.r) el.setAttribute('r', pupilConfig.r);
+          if (pupilConfig.cy) el.setAttribute('cy', pupilConfig.cy);
+        });
+      }
+      
+      // Animate eyebrows (path swap with fade)
+      if (browLeft) {
+        const newPath = isHuman ? config.browLeftHuman : config.browLeft;
+        browLeft.style.transition = transitionStyle;
+        browLeft.setAttribute('d', newPath);
+      }
+      if (browRight) {
+        const newPath = isHuman ? config.browRightHuman : config.browRight;
+        browRight.style.transition = transitionStyle;
+        browRight.setAttribute('d', newPath);
+      }
+      // Update borders to match (offset by 2px)
+      if (browLeftBorder && isHuman) {
+        const basePath = config.browLeftHuman;
+        // Shift Y coordinates down by 2 for border
+        const borderPath = basePath.replace(/(\d+)\s+(\d+)/g, (m, x, y) => `${x} ${parseInt(y) + 2}`);
+        browLeftBorder.setAttribute('d', borderPath);
+      }
+      if (browRightBorder && isHuman) {
+        const basePath = config.browRightHuman;
+        const borderPath = basePath.replace(/(\d+)\s+(\d+)/g, (m, x, y) => `${x} ${parseInt(y) + 2}`);
+        browRightBorder.setAttribute('d', borderPath);
+      }
+      
+      // Animate mouth
+      if (mouthClosed) {
+        const newPath = isHuman ? config.mouthHuman : config.mouth;
+        mouthClosed.style.transition = transitionStyle;
+        mouthClosed.setAttribute('d', newPath);
+      }
+      
+      // Highlights for surprised/excited
+      if (highlightLeft && highlightRight) {
+        highlightLeft.style.transition = transitionStyle;
+        highlightRight.style.transition = transitionStyle;
+        highlightLeft.setAttribute('opacity', config.highlight);
+        highlightRight.setAttribute('opacity', config.highlight);
+      }
+      
+      // Track current emotion
+      characterEmotions[charId] = emotion;
+      console.log(`${charId} emotion: ${emotion}`);
     }
 
     async function init() {
@@ -446,9 +662,10 @@
         await loadSprite(`char-${char.position}`, char.sprite, initialView);
       }
       
-      // Default: look at each other
+      // Default: look at each other, reset emotions
       setEyeDirection('left', 'right');
       setEyeDirection('right', 'left');
+      characterEmotions = { left: 'neutral', right: 'neutral' };
       
       // Set up characters initial positions
       Object.entries(currentScript.cast).forEach(([charName, char]) => {
@@ -601,6 +818,10 @@
             if (beat.to !== 'near') { // near is default, no class needed
               charEl.classList.add(`depth-${beat.to}`);
             }
+          } else if (beat.do === 'emote') {
+            // Change character emotion with animation
+            const char = currentScript.cast[beat.who];
+            setEmotion(char.position, beat.emotion, beat.duration || 300);
           }
         }
       });
