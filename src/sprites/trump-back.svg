@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Suit from behind -->
+    <rect x="30" y="60" width="40" height="50" rx="5" fill="#1a237e"/>
+    <rect x="35" y="110" width="12" height="40" fill="#1a237e"/>
+    <rect x="53" y="110" width="12" height="40" fill="#1a237e"/>
+    <!-- Collar -->
+    <rect x="38" y="55" width="24" height="10" fill="#fff"/>
+  </g>
+  <g id="head-top">
+    <!-- Head from behind -->
+    <ellipse cx="50" cy="35" rx="22" ry="25" fill="#ffcc80"/>
+    <!-- Hair from behind - blonde/orange -->
+    <ellipse cx="50" cy="25" rx="20" ry="15" fill="#ffab00"/>
+    <path d="M30 30 Q50 15 70 30" fill="#ffab00"/>
+  </g>
+  <g id="head-bottom">
+  </g>
+</svg>
