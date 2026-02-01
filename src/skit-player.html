@@ -115,17 +115,21 @@
     /* Zoom levels for closeup shots */
     #shot-closeup-left .character,
     #shot-closeup-right .character {
-      transition: transform 0.8s ease-in-out, top 0.8s ease-in-out, left 0.8s ease-in-out;
-      transform-origin: top center;
+      transition: transform 0.8s ease-in-out;
+      transform-origin: 50% 30%; /* Center on face area */
     }
     .character.zoom-full {
-      transform: scale(1);
+      transform: scale(1) translateX(0) translateY(0);
     }
     .character.zoom-medium {
-      transform: scale(1.5);
+      transform: scale(1.5) translateY(10%);
     }
     .character.zoom-face {
-      transform: scale(2.2);
+      transform: scale(2.5) translateY(15%) translateX(5%);
+    }
+    /* Right character zoom needs opposite X adjustment */
+    #shot-closeup-right .character.zoom-face {
+      transform: scale(2.5) translateY(15%) translateX(-5%);
     }
     
     /* Closeup caption - centered at bottom */
@@ -470,10 +474,11 @@
           { t: 15.5, do: "zoom", who: "waiter", level: "face" },
           { t: 15.5, do: "say", who: "waiter", line: "Lucky Charms. Magically delicious.", target: "woman" },
           
-          // Woman confused
+          // Woman confused - zoom to face
           { t: 19, do: "shot", type: "closeup", who: "woman" },
           { t: 19, do: "emote", who: "woman", emotion: "worried" },
-          { t: 19, do: "say", who: "woman", line: "The... the cereal?", target: "waiter" },
+          { t: 19.5, do: "zoom", who: "woman", level: "face" },
+          { t: 19.5, do: "say", who: "woman", line: "The... the cereal?", target: "waiter" },
           
           // Waiter doubles down
           { t: 22, do: "shot", type: "closeup", who: "waiter" },
