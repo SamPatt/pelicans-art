@@ -153,8 +153,8 @@
     <div class="control-group">
       <span class="control-label">Camera</span>
       <div style="display:flex; gap:4px;">
-        <button onclick="camera.follow='pelican'; updateCamera()">Follow Pelican</button>
-        <button onclick="camera.follow='cat'; updateCamera()">Follow Cat</button>
+        <button onclick="followCharacter('pelican')">Follow Pelican</button>
+        <button onclick="followCharacter('cat')">Follow Cat</button>
         <button onclick="camera.follow=null; updateCamera()">Unfollow</button>
       </div>
     </div>
@@ -185,7 +185,7 @@
     
     const camera = {
       x: 50,      // 0-100, where camera is pointing horizontally
-      y: 70,      // 0-100, where camera is pointing vertically (0=top, 100=bottom)
+      y: 50,      // 0-100, where camera is pointing vertically (0=top, 100=bottom)
       zoom: 1,    // 1 = see full width, 2 = see half width, etc.
       follow: null // character name to track, or null
     };
@@ -207,23 +207,41 @@
       const marginX = 50 / camera.zoom;
       const marginY = 50 / camera.zoom;
       
-      // For Y, account for portrait aspect ratio (9:16)
-      // Vertical view is taller relative to stage, so we need more margin
-      const aspectRatio = 16 / 9;
-      const marginYAdjusted = marginY * aspectRatio;
-      
       camera.x = Math.max(marginX, Math.min(100 - marginX, camera.x));
-      camera.y = Math.max(marginYAdjusted, Math.min(100 - marginYAdjusted, camera.y));
+      camera.y = Math.max(marginY, Math.min(100 - marginY, camera.y));
+    }
+    
+    // Animate camera position over time
+    let cameraAnimation = null;
+    function animateCameraTo(targetX, targetY, duration = 1000) {
+      if (cameraAnimation) cancelAnimationFrame(cameraAnimation);
+      
+      const startX = camera.x;
+      const startY = camera.y;
+      const startTime = performance.now();
+      
+      function tick(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const ease = 1 - Math.pow(1 - t, 3);
+        
+        camera.x = startX + (targetX - startX) * ease;
+        camera.y = startY + (targetY - startY) * ease;
+        updateCamera();
+        
+        if (t < 1) {
+          cameraAnimation = requestAnimationFrame(tick);
+        }
+      }
+      cameraAnimation = requestAnimationFrame(tick);
     }
     
     function updateCamera() {
       const stage = document.getElementById('stage');
       
-      // If following a character, update camera position to their position
-      if (camera.follow && characters[camera.follow]) {
-        camera.x = characters[camera.follow].x;
-        camera.y = characters[camera.follow].y;
-      }
+      // Note: when following, camera.x/y are updated by animateCameraTo, not here
+      // This prevents snapping - the animation handles smooth movement
       
       // Clamp camera to avoid showing edges
       clampCamera();
@@ -274,17 +292,30 @@
       updateCamera();
     }
     
+    // === FOLLOW COMMANDS ===
+    function followCharacter(name) {
+      const char = characters[name];
+      if (!char) return;
+      camera.follow = name;
+      // Animate to character's current position
+      animateCameraTo(char.x, char.y, 600);
+    }
+    
     // === CHARACTER COMMANDS ===
     function moveCharacter(name, toX, duration = 1) {
       const char = characters[name];
       if (!char || !char.el) return;
       
+      // Set CSS transition duration to match
+      char.el.style.transition = `left ${duration}s ease-in-out, opacity 0.3s`;
+      
+      const oldX = char.x;
       char.x = toX;
       char.el.style.left = `${toX}%`;
       
-      // If camera is following this character, update camera
+      // If camera is following this character, animate camera to match
       if (camera.follow === name) {
-        updateCamera();
+        animateCameraTo(toX, char.y, duration * 1000);
       }
     }
     
@@ -343,19 +374,16 @@
       await delay(1000);
       
       // Pelican walks to center, camera follows
-      camera.follow = 'pelican';
       camera.zoom = 1.6;
-      camera.y = 70;
-      updateCamera();
-      await delay(300);
+      followCharacter('pelican');
+      await delay(600);
       moveCharacter('pelican', 50, 2);
-      await delay(2000);
+      await delay(2200);
       
-      // Camera holds, pelican continues
+      // Camera holds, pelican continues through frame
       camera.follow = null;
-      await delay(300);
       moveCharacter('pelican', 80, 2);
-      await delay(2000);
+      await delay(2200);
       
       // Wide to end
       shot('wide');
