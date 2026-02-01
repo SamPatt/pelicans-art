@@ -76,9 +76,29 @@
     
     .character.offscreen { opacity: 0; pointer-events: none; }
     
-    /* Speaking animation */
-    .character.speaking { animation: speak-bounce 0.15s infinite alternate; }
-    @keyframes speak-bounce { to { transform: translateX(-50%) translateY(-2px); } }
+    /* Speaking animation - head bob */
+    .character.speaking svg #head-top,
+    .character.speaking svg #head-bottom {
+      animation: speak-bob 0.15s infinite alternate;
+    }
+    @keyframes speak-bob {
+      to { transform: translateY(-1px); }
+    }
+    
+    /* Mouth open/closed for lip sync */
+    .character.speaking svg #mouth-open { opacity: 1 !important; }
+    .character.speaking svg #mouth-closed { opacity: 0 !important; }
+    
+    /* Eye direction via pupil transform */
+    .character svg .pupil { transition: transform 0.15s ease-out; }
+    .character.look-left svg .pupil { transform: translateX(-1.5px); }
+    .character.look-right svg .pupil { transform: translateX(1.5px); }
+    .character.look-up svg .pupil { transform: translateY(-1.5px); }
+    .character.look-down svg .pupil { transform: translateY(1.5px); }
+    
+    /* Character facing direction */
+    .character.facing-left { transform: translateX(-50%) scaleX(-1); }
+    .character.facing-right { transform: translateX(-50%) scaleX(1); }
     
     /* SVG emotion transitions */
     .character svg * {
@@ -296,6 +316,32 @@
       if (!char) return;
       const svgText = await loadSprite(char.sprite, view);
       char.el.innerHTML = svgText;
+    }
+    
+    function setEyeDirection(charName, direction) {
+      const char = characters[charName];
+      if (!char || !char.el) return;
+      
+      char.el.classList.remove('look-left', 'look-right', 'look-up', 'look-down');
+      if (['left', 'right', 'up', 'down'].includes(direction)) {
+        char.el.classList.add(`look-${direction}`);
+      }
+    }
+    
+    function setFacing(charName, direction) {
+      const char = characters[charName];
+      if (!char || !char.el) return;
+      
+      char.el.classList.remove('facing-left', 'facing-right');
+      if (direction === 'left') char.el.classList.add('facing-left');
+      if (direction === 'right') char.el.classList.add('facing-right');
+    }
+    
+    function getAmplitude() {
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      return sum / dataArray.length;
     }
     
     function moveCharacter(name, toX, duration = 1) {
@@ -667,6 +713,15 @@
       camera.x = 50; camera.y = 50; camera.zoom = 1; camera.follow = null;
       updateCamera();
       
+      // Set initial eye directions - characters look at each other
+      const charNames = Object.keys(characters);
+      if (charNames.length >= 2) {
+        const [char1, char2] = charNames;
+        const char1LooksRight = characters[char2].x > characters[char1].x;
+        setEyeDirection(char1, char1LooksRight ? 'right' : 'left');
+        setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
+      }
+      
       // Generate audio
       document.getElementById('status').textContent = 'Generating audio...';
       document.getElementById('playBtn').disabled = true;
@@ -708,14 +763,19 @@
     
     function stop() {
       isPlaying = false;
+      currentSpeaker = null;
       if (animationId) cancelAnimationFrame(animationId);
       document.getElementById('playBtn').textContent = '▶ Play';
       document.getElementById('caption').classList.remove('visible');
-      Object.values(characters).forEach(c => c.el.classList.remove('speaking'));
+      Object.values(characters).forEach(c => {
+        c.el.classList.remove('speaking', 'look-left', 'look-right', 'look-up', 'look-down');
+      });
       audioCache.forEach(({ audio }) => { audio.pause(); audio.currentTime = 0; });
     }
     
     let currentSpeaker = null;
+    let peakAmp = 50;
+    let openDuration = 0;
     
     function animate() {
       if (!isPlaying) return;
@@ -736,13 +796,23 @@
         }
       });
       
-      // Lip sync
+      // Lip sync based on audio amplitude
       if (currentSpeaker && characters[currentSpeaker]) {
-        analyser.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-        const amp = sum / dataArray.length;
-        // TODO: animate mouth based on amplitude
+        const rawAmp = getAmplitude();
+        peakAmp = Math.max(peakAmp * 0.995, rawAmp, 30);
+        const normalizedAmp = rawAmp / peakAmp;
+        
+        // Threshold for mouth open
+        const threshold = 0.25;
+        if (normalizedAmp > threshold) {
+          openDuration++;
+          // Occasional dips for more natural movement
+          const dip = openDuration > 3 && Math.random() < 0.15;
+          characters[currentSpeaker].el.classList.toggle('speaking', !dip);
+        } else {
+          openDuration = 0;
+          characters[currentSpeaker].el.classList.remove('speaking');
+        }
       }
       
       animationId = requestAnimationFrame(animate);
@@ -766,13 +836,29 @@
               characters[currentSpeaker].el.classList.remove('speaking');
             }
             
+            // Set up eye contact - speaker looks at other character
+            const charNames = Object.keys(characters);
+            const otherChar = charNames.find(n => n !== beat.who);
+            if (otherChar) {
+              // Determine relative positions for eye direction
+              const speakerX = characters[beat.who].x;
+              const otherX = characters[otherChar].x;
+              const speakerLooksRight = otherX > speakerX;
+              const otherLooksRight = speakerX > otherX;
+              
+              setEyeDirection(beat.who, speakerLooksRight ? 'right' : 'left');
+              setEyeDirection(otherChar, otherLooksRight ? 'right' : 'left');
+            }
+            
             // Start speaking
             currentSpeaker = beat.who;
-            characters[beat.who].el.classList.add('speaking');
+            peakAmp = 50; // Reset peak for new speaker
+            openDuration = 0;
             
             cached.audio.onended = () => {
               characters[beat.who]?.el.classList.remove('speaking');
               document.getElementById('caption').classList.remove('visible');
+              currentSpeaker = null;
             };
             
             cached.audio.play();
@@ -798,6 +884,31 @@
         case 'follow':
           if (beat.who) followCharacter(beat.who);
           else camera.follow = null;
+          break;
+          
+        case 'look':
+          // Handle look directions
+          let lookDir = beat.at;
+          if (beat.at === 'audience') {
+            // Look away from center (toward camera)
+            lookDir = characters[beat.who].x < 50 ? 'left' : 'right';
+          } else if (beat.at === 'other') {
+            // Look at other character
+            const charNames = Object.keys(characters);
+            const other = charNames.find(n => n !== beat.who);
+            if (other) {
+              lookDir = characters[other].x > characters[beat.who].x ? 'right' : 'left';
+            }
+          }
+          setEyeDirection(beat.who, lookDir);
+          break;
+          
+        case 'turn':
+          setCharacterView(beat.who, beat.to);
+          break;
+          
+        case 'face':
+          setFacing(beat.who, beat.dir);
           break;
       }
     }
