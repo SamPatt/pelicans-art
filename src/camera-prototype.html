@@ -210,15 +210,16 @@
         camera.y = characters[camera.follow].y;
       }
       
-      // Calculate transform
-      // We want camera point (x, y) in world coords to appear at viewport center
-      // Offset = (viewport_center - camera_point) * zoom
+      // Transform approach:
+      // 1. Set transform-origin to the camera target point
+      // 2. Translate to move that point to viewport center
+      // 3. Scale around that point
       
-      const offsetX = (50 - camera.x) * camera.zoom;
-      const offsetY = (50 - camera.y) * camera.zoom;
+      const tx = 50 - camera.x;  // how much to shift horizontally
+      const ty = 50 - camera.y;  // how much to shift vertically
       
-      stage.style.transformOrigin = '0 0';
-      stage.style.transform = `translate(${offsetX}%, ${offsetY}%) scale(${camera.zoom})`;
+      stage.style.transformOrigin = `${camera.x}% ${camera.y}%`;
+      stage.style.transform = `translate(${tx}%, ${ty}%) scale(${camera.zoom})`;
       
       updateDebug();
     }
