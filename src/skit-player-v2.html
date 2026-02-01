@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI Improv Theater v2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: system-ui, sans-serif;
+      color: #eee;
+      padding: 10px;
+    }
+    
+    h1 { color: #e94560; font-size: 18px; margin-bottom: 10px; }
+    
+    /* Portrait viewport - 9:16 aspect ratio */
+    #viewport {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 9 / 16;
+      max-height: 85vh;
+      background: #000;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    
+    @media (max-width: 500px) {
+      body { padding: 5px; }
+      h1 { font-size: 14px; margin-bottom: 5px; }
+      #viewport { max-width: 100%; border-radius: 0; max-height: 75vh; }
+    }
+    
+    /* Stage in world coordinates */
+    #stage {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s ease-out;
+      will-change: transform;
+    }
+    
+    #background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* Characters positioned by world x-coordinate */
+    .character {
+      position: absolute;
+      bottom: 12%;
+      height: 40%;
+      width: auto;
+      transition: left 1s ease-in-out, opacity 0.3s;
+      transform: translateX(-50%);
+    }
+    
+    .character.flipped {
+      transform: translateX(-50%) scaleX(-1);
+    }
+    
+    .character.offscreen { opacity: 0; pointer-events: none; }
+    
+    /* Speaking animation */
+    .character.speaking { animation: speak-bounce 0.15s infinite alternate; }
+    @keyframes speak-bounce { to { transform: translateX(-50%) translateY(-2px); } }
+    
+    /* Captions */
+    #caption {
+      position: absolute;
+      bottom: 5%;
+      left: 5%;
+      right: 5%;
+      background: rgba(0,0,0,0.8);
+      color: #fff;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+    #caption.visible { opacity: 1; }
+    
+    /* Controls */
+    #controls {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 400px;
+    }
+    
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 4px;
+      background: #4a4a6a;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #5a5a8a; }
+    button.active { background: #e94560; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    #status {
+      margin-top: 10px;
+      color: #888;
+      font-size: 12px;
+    }
+    
+    #debug {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.8);
+      color: #0f0;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎭 AI Improv Theater</h1>
+  
+  <div id="debug"></div>
+  
+  <div id="viewport">
+    <div id="stage">
+      <img id="background" src="backgrounds/restaurant.svg" alt="">
+    </div>
+    <div id="caption"></div>
+  </div>
+  
+  <div id="controls">
+    <button id="playBtn" onclick="togglePlay()" disabled>▶ Play</button>
+    <button onclick="loadSkit('luckyCharms')" class="active">Lucky Charms</button>
+  </div>
+  
+  <div id="status">Loading...</div>
+
+  <script>
+    // === STATE ===
+    const characters = {};
+    const camera = { x: 50, y: 50, zoom: 1, follow: null };
+    let currentSkit = null;
+    let isPlaying = false;
+    let startTime = 0;
+    let animationId = null;
+    let triggeredBeats = new Set();
+    let audioContext, analyser, dataArray;
+    const audioCache = new Map();
+    
+    // === SHOT PRESETS ===
+    const shotPresets = {
+      'wide': { zoom: 1, y: 50, frameBoth: true },
+      'two-shot': { zoom: 1.4, y: 60, frameBoth: true },
+      'closeup': { zoom: 2.2 },
+      'extreme-closeup': { zoom: 3 },
+      'medium': { zoom: 1.6 }
+    };
+    
+    // === CAMERA SYSTEM ===
+    let cameraAnimation = null;
+    
+    function clampCamera() {
+      const marginX = 50 / camera.zoom;
+      const marginY = 50 / camera.zoom;
+      camera.x = Math.max(marginX, Math.min(100 - marginX, camera.x));
+      camera.y = Math.max(marginY, Math.min(100 - marginY, camera.y));
+    }
+    
+    function updateCamera() {
+      const stage = document.getElementById('stage');
+      clampCamera();
+      const tx = 50 - camera.x;
+      const ty = 50 - camera.y;
+      stage.style.transformOrigin = `${camera.x}% ${camera.y}%`;
+      stage.style.transform = `translate(${tx}%, ${ty}%) scale(${camera.zoom})`;
+    }
+    
+    function animateCameraTo(targetX, targetY, duration = 1000) {
+      if (cameraAnimation) cancelAnimationFrame(cameraAnimation);
+      const startX = camera.x, startY = camera.y;
+      const startTime = performance.now();
+      
+      function tick(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        camera.x = startX + (targetX - startX) * ease;
+        camera.y = startY + (targetY - startY) * ease;
+        updateCamera();
+        if (t < 1) cameraAnimation = requestAnimationFrame(tick);
+      }
+      cameraAnimation = requestAnimationFrame(tick);
+    }
+    
+    function shot(type, who = null, hardCut = true) {
+      const preset = shotPresets[type];
+      if (!preset) return;
+      
+      const stage = document.getElementById('stage');
+      if (cameraAnimation) { cancelAnimationFrame(cameraAnimation); cameraAnimation = null; }
+      
+      if (hardCut) stage.style.transition = 'none';
+      
+      camera.zoom = preset.zoom;
+      
+      if (preset.frameBoth) {
+        const chars = Object.values(characters);
+        if (chars.length) {
+          camera.x = chars.reduce((sum, c) => sum + c.x, 0) / chars.length;
+          camera.y = preset.y || 50;
+        }
+        camera.follow = null;
+      } else if (who && characters[who]) {
+        camera.x = characters[who].x;
+        camera.y = characters[who].y;
+        camera.follow = who;
+      }
+      
+      updateCamera();
+      
+      if (hardCut) {
+        stage.offsetHeight; // force reflow
+        stage.style.transition = 'transform 0.6s ease-out';
+      }
+    }
+    
+    function followCharacter(name) {
+      if (!characters[name]) return;
+      camera.follow = name;
+      animateCameraTo(characters[name].x, characters[name].y, 600);
+    }
+    
+    // === CHARACTER SYSTEM ===
+    async function createCharacter(name, config) {
+      const stage = document.getElementById('stage');
+      const el = document.createElement('img');
+      el.className = 'character' + (config.startOffscreen ? ' offscreen' : '');
+      el.id = `char-${name}`;
+      el.dataset.sprite = config.sprite;
+      el.dataset.voice = config.voice;
+      el.style.left = `${config.x}%`;
+      
+      // Load sprite
+      const spritePath = `sprites/${config.sprite}-front.svg`;
+      el.src = spritePath;
+      
+      stage.appendChild(el);
+      
+      characters[name] = {
+        x: config.x,
+        y: 67, // character center
+        sprite: config.sprite,
+        voice: config.voice,
+        el: el
+      };
+    }
+    
+    function moveCharacter(name, toX, duration = 1) {
+      const char = characters[name];
+      if (!char) return;
+      
+      char.el.style.transition = `left ${duration}s ease-in-out, opacity 0.3s`;
+      char.x = toX;
+      char.el.style.left = `${toX}%`;
+      
+      if (camera.follow === name) {
+        animateCameraTo(toX, char.y, duration * 1000);
+      }
+    }
+    
+    function enterCharacter(name, from, toX) {
+      const char = characters[name];
+      if (!char) return;
+      
+      // Start offscreen
+      char.el.style.transition = 'none';
+      char.el.style.left = from === 'left' ? '-20%' : '120%';
+      char.el.classList.remove('offscreen');
+      char.el.offsetHeight; // reflow
+      
+      // Animate in
+      char.el.style.transition = 'left 1s ease-out, opacity 0.3s';
+      char.x = toX;
+      char.el.style.left = `${toX}%`;
+    }
+    
+    function exitCharacter(name, to) {
+      const char = characters[name];
+      if (!char) return;
+      char.el.style.left = to === 'left' ? '-20%' : '120%';
+    }
+    
+    // === EMOTION SYSTEM ===
+    const EMOTIONS = {
+      neutral: {
+        eyeWhite: { ry: 3, cy: 42 },
+        pupil: { r: 1.5, cy: 42 },
+        browLeft: "M37 36 Q43 34 49 36",
+        browRight: "M51 36 Q57 34 63 36",
+        mouth: "M46 52 Q50 55 54 52",
+        highlight: 0
+      },
+      happy: {
+        eyeWhite: { ry: 2, cy: 41 },
+        pupil: { r: 1.5, cy: 41 },
+        browLeft: "M37 34 Q43 31 49 34",
+        browRight: "M51 34 Q57 31 63 34",
+        mouth: "M44 52 Q50 58 56 52",
+        highlight: 0
+      },
+      sad: {
+        eyeWhite: { ry: 3, cy: 44 },
+        pupil: { r: 1.5, cy: 45 },
+        browLeft: "M37 34 L49 40",
+        browRight: "M51 40 L63 34",
+        mouth: "M46 56 Q50 52 54 56",
+        highlight: 0
+      },
+      angry: {
+        eyeWhite: { ry: 2.5, cy: 42 },
+        pupil: { r: 1.5, cy: 42 },
+        browLeft: "M37 40 L49 34",
+        browRight: "M51 34 L63 40",
+        mouth: "M46 54 L54 54",
+        highlight: 0
+      },
+      surprised: {
+        eyeWhite: { ry: 5, cy: 42 },
+        pupil: { r: 2, cy: 42 },
+        browLeft: "M37 30 Q43 26 49 30",
+        browRight: "M51 30 Q57 26 63 30",
+        mouth: "M47 52 Q50 58 53 52",
+        highlight: 1
+      },
+      excited: {
+        eyeWhite: { ry: 5, cy: 40 },
+        pupil: { r: 2, cy: 40 },
+        browLeft: "M37 28 Q43 24 49 28",
+        browRight: "M51 28 Q57 24 63 28",
+        mouth: "M44 52 Q50 60 56 52",
+        highlight: 1
+      },
+      worried: {
+        eyeWhite: { ry: 3.5, cy: 43 },
+        pupil: { r: 1.5, cy: 44 },
+        browLeft: "M37 32 L49 38",
+        browRight: "M51 38 L63 32",
+        mouth: "M46 56 Q50 53 54 56",
+        highlight: 0
+      },
+      smug: {
+        eyeWhite: { ry: 2, cy: 42 },
+        pupil: { r: 1.5, cy: 42 },
+        browLeft: "M37 36 Q43 32 49 38",
+        browRight: "M51 38 Q57 32 63 36",
+        mouth: "M46 52 Q50 56 54 54",
+        highlight: 0
+      },
+      tired: {
+        eyeWhite: { ry: 1.5, cy: 44 },
+        pupil: { r: 1, cy: 44 },
+        browLeft: "M37 38 Q43 36 49 38",
+        browRight: "M51 38 Q57 36 63 38",
+        mouth: "M46 54 Q50 52 54 54",
+        highlight: 0
+      }
+    };
+    
+    function setEmotion(charName, emotion) {
+      const char = characters[charName];
+      if (!char || !char.el) return;
+      
+      const config = EMOTIONS[emotion];
+      if (!config) return;
+      
+      const el = char.el;
+      const eyeLeftWhite = el.querySelector('#eye-left-white');
+      const eyeRightWhite = el.querySelector('#eye-right-white');
+      const eyeLeftPupil = el.querySelector('#eye-left-pupil');
+      const eyeRightPupil = el.querySelector('#eye-right-pupil');
+      const browLeft = el.querySelector('#brow-left');
+      const browRight = el.querySelector('#brow-right');
+      const mouthClosed = el.querySelector('#mouth-closed');
+      const highlightLeft = el.querySelector('#eye-left-highlight');
+      const highlightRight = el.querySelector('#eye-right-highlight');
+      
+      if (eyeLeftWhite) { eyeLeftWhite.setAttribute('ry', config.eyeWhite.ry); eyeLeftWhite.setAttribute('cy', config.eyeWhite.cy); }
+      if (eyeRightWhite) { eyeRightWhite.setAttribute('ry', config.eyeWhite.ry); eyeRightWhite.setAttribute('cy', config.eyeWhite.cy); }
+      if (eyeLeftPupil) { eyeLeftPupil.setAttribute('r', config.pupil.r); eyeLeftPupil.setAttribute('cy', config.pupil.cy); }
+      if (eyeRightPupil) { eyeRightPupil.setAttribute('r', config.pupil.r); eyeRightPupil.setAttribute('cy', config.pupil.cy); }
+      if (browLeft) browLeft.setAttribute('d', config.browLeft);
+      if (browRight) browRight.setAttribute('d', config.browRight);
+      if (mouthClosed) mouthClosed.setAttribute('d', config.mouth);
+      if (highlightLeft) highlightLeft.setAttribute('opacity', config.highlight);
+      if (highlightRight) highlightRight.setAttribute('opacity', config.highlight);
+    }
+    
+    // === AUDIO SYSTEM ===
+    const AUDIO_CACHE_NAME = 'skit-audio-cache-v2';
+    
+    async function openAudioCache() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(AUDIO_CACHE_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (e) => {
+          e.target.result.createObjectStore('audio', { keyPath: 'key' });
+        };
+      });
+    }
+    
+    async function getCachedAudio(key) {
+      try {
+        const db = await openAudioCache();
+        return new Promise((resolve) => {
+          const tx = db.transaction('audio', 'readonly');
+          const request = tx.objectStore('audio').get(key);
+          request.onsuccess = () => resolve(request.result?.blob);
+          request.onerror = () => resolve(null);
+        });
+      } catch { return null; }
+    }
+    
+    async function setCachedAudio(key, blob) {
+      try {
+        const db = await openAudioCache();
+        const tx = db.transaction('audio', 'readwrite');
+        tx.objectStore('audio').put({ key, blob, ts: Date.now() });
+      } catch (e) { console.warn('Cache write failed:', e); }
+    }
+    
+    async function generateAudio(text, voice) {
+      const cacheKey = `${voice}:${text}`;
+      const cached = await getCachedAudio(cacheKey);
+      if (cached) return cached;
+      
+      const formData = new FormData();
+      formData.append('text', text);
+      formData.append('voice_url', voice);
+      const res = await fetch('/tts/tts', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('TTS failed');
+      const blob = await res.blob();
+      await setCachedAudio(cacheKey, blob);
+      return blob;
+    }
+    
+    // === SKITS ===
+    const skits = {
+      luckyCharms: {
+        meta: { title: "Lucky Charms", duration: 45 },
+        stage: { background: "restaurant" },
+        cast: {
+          waiter: { x: 30, sprite: "waiter", voice: "jean" },
+          woman: { x: 70, sprite: "girl", voice: "cosette" }
+        },
+        script: [
+          // Opening - wide shot
+          { t: 0.5, do: "shot", type: "wide" },
+          { t: 0.5, do: "emote", who: "waiter", emotion: "happy" },
+          { t: 0.5, do: "emote", who: "woman", emotion: "neutral" },
+          
+          // Waiter approaches
+          { t: 1, do: "shot", type: "closeup", who: "waiter" },
+          { t: 1, do: "say", who: "waiter", line: "Good evening, madam. May I tell you about our special tonight?" },
+          
+          // Woman responds
+          { t: 5, do: "shot", type: "closeup", who: "woman" },
+          { t: 5, do: "emote", who: "woman", emotion: "happy" },
+          { t: 5, do: "say", who: "woman", line: "Oh yes, please!" },
+          
+          // Waiter excited
+          { t: 8, do: "shot", type: "closeup", who: "waiter" },
+          { t: 8, do: "emote", who: "waiter", emotion: "excited" },
+          { t: 8, do: "say", who: "waiter", line: "Tonight we have something truly magical." },
+          
+          // Woman intrigued
+          { t: 12, do: "shot", type: "closeup", who: "woman" },
+          { t: 12, do: "emote", who: "woman", emotion: "surprised" },
+          { t: 12, do: "say", who: "woman", line: "Magical? In a restaurant?" },
+          
+          // Waiter reveals
+          { t: 15, do: "shot", type: "extreme-closeup", who: "waiter" },
+          { t: 15, do: "emote", who: "waiter", emotion: "happy" },
+          { t: 15.5, do: "say", who: "waiter", line: "Lucky Charms. Magically delicious." },
+          
+          // Woman confused
+          { t: 19, do: "shot", type: "extreme-closeup", who: "woman" },
+          { t: 19, do: "emote", who: "woman", emotion: "worried" },
+          { t: 19.5, do: "say", who: "woman", line: "The... the cereal?" },
+          
+          // Waiter doubles down
+          { t: 23, do: "shot", type: "closeup", who: "waiter" },
+          { t: 23, do: "emote", who: "waiter", emotion: "smug" },
+          { t: 23, do: "say", who: "waiter", line: "Imported directly from General Mills." },
+          
+          // Woman skeptical
+          { t: 27, do: "shot", type: "closeup", who: "woman" },
+          { t: 27, do: "emote", who: "woman", emotion: "angry" },
+          { t: 27, do: "say", who: "woman", line: "Sir, this is a five star restaurant." },
+          
+          // Waiter defensive
+          { t: 31, do: "shot", type: "closeup", who: "waiter" },
+          { t: 31, do: "emote", who: "waiter", emotion: "worried" },
+          { t: 31, do: "say", who: "waiter", line: "Yes, and it has five different marshmallow shapes." },
+          
+          // Woman done
+          { t: 35, do: "shot", type: "closeup", who: "woman" },
+          { t: 35, do: "emote", who: "woman", emotion: "tired" },
+          { t: 35, do: "say", who: "woman", line: "I'd like to speak to the manager." },
+          
+          // Waiter final pitch
+          { t: 39, do: "shot", type: "closeup", who: "waiter" },
+          { t: 39, do: "emote", who: "waiter", emotion: "excited" },
+          { t: 39, do: "say", who: "waiter", line: "He's also a leprechaun. You'll love him." },
+          
+          // End wide shot
+          { t: 43, do: "shot", type: "wide" }
+        ]
+      }
+    };
+    
+    // === PLAYBACK ===
+    async function loadSkit(name) {
+      const skit = skits[name];
+      if (!skit) return;
+      
+      currentSkit = skit;
+      triggeredBeats = new Set();
+      audioCache.clear();
+      
+      // Clear stage
+      const stage = document.getElementById('stage');
+      stage.querySelectorAll('.character').forEach(el => el.remove());
+      Object.keys(characters).forEach(k => delete characters[k]);
+      
+      // Set background
+      document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg`;
+      
+      // Create characters
+      for (const [name, config] of Object.entries(skit.cast)) {
+        await createCharacter(name, config);
+      }
+      
+      // Reset camera
+      camera.x = 50; camera.y = 50; camera.zoom = 1; camera.follow = null;
+      updateCamera();
+      
+      // Generate audio
+      document.getElementById('status').textContent = 'Generating audio...';
+      document.getElementById('playBtn').disabled = true;
+      
+      const sayActions = skit.script.filter(b => b.do === 'say');
+      for (let i = 0; i < sayActions.length; i++) {
+        const beat = sayActions[i];
+        const char = characters[beat.who];
+        document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
+        
+        try {
+          const blob = await generateAudio(beat.line, char.voice);
+          const audio = new Audio(URL.createObjectURL(blob));
+          const source = audioContext.createMediaElementSource(audio);
+          source.connect(analyser);
+          audioCache.set(`${beat.t}-${beat.who}`, { audio, beat, charName: beat.who });
+        } catch (e) {
+          console.error('TTS error:', e);
+        }
+      }
+      
+      document.getElementById('status').textContent = 'Ready!';
+      document.getElementById('playBtn').disabled = false;
+    }
+    
+    function togglePlay() {
+      if (isPlaying) stop();
+      else play();
+    }
+    
+    function play() {
+      if (audioContext.state === 'suspended') audioContext.resume();
+      isPlaying = true;
+      startTime = performance.now();
+      triggeredBeats = new Set();
+      document.getElementById('playBtn').textContent = '⏸ Pause';
+      animate();
+    }
+    
+    function stop() {
+      isPlaying = false;
+      if (animationId) cancelAnimationFrame(animationId);
+      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('caption').classList.remove('visible');
+      Object.values(characters).forEach(c => c.el.classList.remove('speaking'));
+      audioCache.forEach(({ audio }) => { audio.pause(); audio.currentTime = 0; });
+    }
+    
+    let currentSpeaker = null;
+    
+    function animate() {
+      if (!isPlaying) return;
+      
+      const elapsed = (performance.now() - startTime) / 1000;
+      
+      if (elapsed > currentSkit.meta.duration) {
+        stop();
+        return;
+      }
+      
+      // Process beats
+      currentSkit.script.forEach(beat => {
+        const key = `${beat.t}-${beat.do}-${beat.who || ''}`;
+        if (elapsed >= beat.t && !triggeredBeats.has(key)) {
+          triggeredBeats.add(key);
+          processBeat(beat);
+        }
+      });
+      
+      // Lip sync
+      if (currentSpeaker && characters[currentSpeaker]) {
+        analyser.getByteFrequencyData(dataArray);
+        let sum = 0;
+        for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+        const amp = sum / dataArray.length;
+        // TODO: animate mouth based on amplitude
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    }
+    
+    function processBeat(beat) {
+      switch (beat.do) {
+        case 'shot':
+          shot(beat.type, beat.who);
+          break;
+          
+        case 'say':
+          const cached = audioCache.get(`${beat.t}-${beat.who}`);
+          if (cached) {
+            // Show caption
+            document.getElementById('caption').textContent = beat.line;
+            document.getElementById('caption').classList.add('visible');
+            
+            // Stop previous speaker animation
+            if (currentSpeaker && characters[currentSpeaker]) {
+              characters[currentSpeaker].el.classList.remove('speaking');
+            }
+            
+            // Start speaking
+            currentSpeaker = beat.who;
+            characters[beat.who].el.classList.add('speaking');
+            
+            cached.audio.onended = () => {
+              characters[beat.who]?.el.classList.remove('speaking');
+              document.getElementById('caption').classList.remove('visible');
+            };
+            
+            cached.audio.play();
+          }
+          break;
+          
+        case 'emote':
+          setEmotion(beat.who, beat.emotion);
+          break;
+          
+        case 'move':
+          moveCharacter(beat.who, beat.to, beat.duration || 1);
+          break;
+          
+        case 'enter':
+          enterCharacter(beat.who, beat.from, beat.to);
+          break;
+          
+        case 'exit':
+          exitCharacter(beat.who, beat.to);
+          break;
+          
+        case 'follow':
+          if (beat.who) followCharacter(beat.who);
+          else camera.follow = null;
+          break;
+      }
+    }
+    
+    // === INIT ===
+    async function init() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.connect(audioContext.destination);
+      
+      await loadSkit('luckyCharms');
+    }
+    
+    init();
+  </script>
+</body>
+</html>
