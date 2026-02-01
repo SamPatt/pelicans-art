@@ -208,6 +208,7 @@
   <div id="controls">
     <button id="playBtn" onclick="togglePlay()" disabled>▶ Play</button>
     <button onclick="loadSkit('luckyCharms')" class="active">Lucky Charms</button>
+    <button onclick="loadSkit('spaceWall')">Space Wall</button>
   </div>
   
   <div id="status">Loading...</div>
@@ -746,6 +747,87 @@
           { t: 49, do: "look", who: "leprechaun", at: "right" },
           { t: 49, do: "say", who: "leprechaun", line: "What?" },
           { t: 49.5, do: "look", who: "leprechaun", at: "right" }
+        ]
+      },
+      spaceWall: {
+        meta: { title: "The Space Wall", duration: 55 },
+        stage: { background: "space" },
+        cast: {
+          trump: { x: 70, sprite: "trump", voice: "https://openclaw-vps.tail4abd9a.ts.net/skit/audio/trump_voice.wav" },
+          alien: { x: -20, sprite: "alien-green", voice: "cosette", startOffscreen: true }
+        },
+        script: [
+          // Trump alone in space, looking important
+          { t: 0.5, do: "shot", type: "closeup", who: "trump" },
+          { t: 0.5, do: "emote", who: "trump", emotion: "smug" },
+          { t: 1, do: "say", who: "trump", line: "Space. The final frontier. And frankly, it needs a wall." },
+          
+          // Alien enters
+          { t: 5, do: "shot", type: "wide" },
+          { t: 5, do: "enter", who: "alien", from: "left", to: 30 },
+          { t: 5.5, do: "emote", who: "alien", emotion: "neutral" },
+          
+          // Trump notices
+          { t: 6, do: "shot", type: "closeup", who: "trump" },
+          { t: 6, do: "emote", who: "trump", emotion: "surprised" },
+          { t: 6.5, do: "say", who: "trump", line: "Whoa! An alien! Tremendous! Are you here legally?" },
+          
+          // Alien confused
+          { t: 10, do: "shot", type: "closeup", who: "alien" },
+          { t: 10, do: "emote", who: "alien", emotion: "surprised" },
+          { t: 10.5, do: "say", who: "alien", line: "Legally? We have traveled forty thousand light years." },
+          
+          // Trump negotiating
+          { t: 14, do: "shot", type: "closeup", who: "trump" },
+          { t: 14, do: "emote", who: "trump", emotion: "smug" },
+          { t: 14.5, do: "say", who: "trump", line: "Forty thousand? That's a lot of miles. You're gonna need a visa." },
+          
+          // Alien increasingly confused
+          { t: 18, do: "shot", type: "closeup", who: "alien" },
+          { t: 18, do: "emote", who: "alien", emotion: "worried" },
+          { t: 18.5, do: "say", who: "alien", line: "We do not use your primitive currency systems." },
+          
+          // Trump excited about deal
+          { t: 22, do: "shot", type: "closeup", who: "trump" },
+          { t: 22, do: "emote", who: "trump", emotion: "excited" },
+          { t: 22.5, do: "say", who: "trump", line: "No currency? Even better! You're gonna help me build the wall!" },
+          
+          // Alien intrigued
+          { t: 26, do: "shot", type: "closeup", who: "alien" },
+          { t: 26, do: "emote", who: "alien", emotion: "surprised" },
+          { t: 26.5, do: "say", who: "alien", line: "Wall? What wall? There is nothing here but void." },
+          
+          // Trump explaining
+          { t: 30, do: "shot", type: "closeup", who: "trump" },
+          { t: 30, do: "emote", who: "trump", emotion: "happy" },
+          { t: 30.5, do: "say", who: "trump", line: "Exactly! We need to keep the void out. It's pouring in!" },
+          
+          // Alien trying to comprehend
+          { t: 34, do: "shot", type: "closeup", who: "alien" },
+          { t: 34, do: "emote", who: "alien", emotion: "worried" },
+          { t: 34.5, do: "say", who: "alien", line: "Your species confuses us greatly." },
+          
+          // Trump making the deal
+          { t: 38, do: "shot", type: "closeup", who: "trump" },
+          { t: 38, do: "emote", who: "trump", emotion: "smug" },
+          { t: 38.5, do: "say", who: "trump", line: "Look, I wrote a book. The Art of the Deal. Best seller. You should read it." },
+          
+          // Alien had enough
+          { t: 43, do: "shot", type: "closeup", who: "alien" },
+          { t: 43, do: "emote", who: "alien", emotion: "angry" },
+          { t: 43.5, do: "say", who: "alien", line: "We are leaving. This planet was a mistake." },
+          
+          // Wide shot - alien exits
+          { t: 47, do: "shot", type: "wide" },
+          { t: 47, do: "exit", who: "alien", to: "left" },
+          
+          // Trump alone, satisfied
+          { t: 49, do: "shot", type: "closeup", who: "trump" },
+          { t: 49, do: "emote", who: "trump", emotion: "smug" },
+          { t: 49.5, do: "say", who: "trump", line: "Another successful negotiation. Nobody negotiates like me." },
+          
+          // End wide
+          { t: 53, do: "shot", type: "wide" }
         ]
       }
     };

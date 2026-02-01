@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Alien Comparison</title>
+  <style>
+    body { 
+      background: #1a1a2e; 
+      color: #fff; 
+      font-family: sans-serif; 
+      display: flex; 
+      flex-direction: column;
+      align-items: center; 
+      padding: 40px;
+      gap: 20px;
+    }
+    h1 { color: #e94560; }
+    .container {
+      display: flex;
+      gap: 60px;
+      justify-content: center;
+    }
+    .card {
+      text-align: center;
+      background: #2a2a4e;
+      padding: 30px;
+      border-radius: 12px;
+    }
+    .card img {
+      width: 200px;
+      height: 300px;
+    }
+    .card h2 {
+      margin-top: 20px;
+      color: #76ff03;
+    }
+    .card p {
+      color: #aaa;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pick Your Alien</h1>
+  
+  <div class="container">
+    <div class="card">
+      <img src="sprites/alien-front.svg" alt="Grey Alien">
+      <h2>Grey Alien</h2>
+      <p>Classic "grey" style<br>Thin body, big head<br>Green glowing pupils</p>
+    </div>
+    
+    <div class="card">
+      <img src="sprites/alien-green-front.svg" alt="Green Alien">
+      <h2>Green Alien</h2>
+      <p>Geometric style<br>Rounder, friendlier<br>Light green pupils</p>
+    </div>
+  </div>
+  
+  <p style="margin-top: 40px; color: #888;">Tell me which one you want for the Space Wall skit!</p>
+</body>
+</html>
