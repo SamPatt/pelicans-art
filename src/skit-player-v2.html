@@ -536,7 +536,7 @@
     };
     
     // Human sprites list for emotion detection
-    const HUMAN_SPRITES = ['person', 'girl', 'waiter', 'trump'];
+    const HUMAN_SPRITES = ['person', 'girl', 'waiter', 'trump', 'leprechaun'];
     
     function setEmotion(charName, emotion) {
       const char = characters[charName];
@@ -649,11 +649,12 @@
     // === SKITS ===
     const skits = {
       luckyCharms: {
-        meta: { title: "Lucky Charms", duration: 45 },
+        meta: { title: "Lucky Charms", duration: 52 },
         stage: { background: "restaurant" },
         cast: {
           waiter: { x: 30, sprite: "waiter", voice: "jean" },
-          woman: { x: 70, sprite: "girl", voice: "cosette" }
+          woman: { x: 70, sprite: "girl", voice: "cosette" },
+          leprechaun: { x: -20, sprite: "leprechaun", voice: "marius", startOffscreen: true }
         },
         script: [
           // Opening - wide shot
@@ -710,13 +711,24 @@
           { t: 35, do: "emote", who: "woman", emotion: "tired" },
           { t: 35, do: "say", who: "woman", line: "I'd like to speak to the manager." },
           
-          // Waiter final pitch
-          { t: 39, do: "shot", type: "closeup", who: "waiter" },
-          { t: 39, do: "emote", who: "waiter", emotion: "excited" },
-          { t: 39, do: "say", who: "waiter", line: "He's also a leprechaun. You'll love him." },
+          // Wide shot - waiter frowns
+          { t: 39, do: "shot", type: "wide" },
+          { t: 39, do: "emote", who: "waiter", emotion: "sad" },
+          
+          // Waiter looks right and exits
+          { t: 40, do: "look", who: "waiter", at: "right" },
+          { t: 40.5, do: "exit", who: "waiter", to: "right" },
+          
+          // Leprechaun enters from left
+          { t: 43, do: "enter", who: "leprechaun", from: "left", to: 30 },
+          { t: 43, do: "emote", who: "leprechaun", emotion: "happy" },
+          
+          // Leprechaun introduces himself
+          { t: 45, do: "shot", type: "closeup", who: "leprechaun" },
+          { t: 45, do: "say", who: "leprechaun", line: "Can I help you?" },
           
           // End wide shot
-          { t: 43, do: "shot", type: "wide" }
+          { t: 49, do: "shot", type: "wide" }
         ]
       }
     };
