@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Body -->
+    <ellipse cx="50" cy="110" rx="28" ry="35" fill="#e0e0e0"/>
+    <!-- Wings (folded, seen from back) -->
+    <ellipse cx="30" cy="105" rx="15" ry="30" fill="#bdbdbd"/>
+    <ellipse cx="70" cy="105" rx="15" ry="30" fill="#bdbdbd"/>
+    <!-- Wing tips (darker) -->
+    <ellipse cx="25" cy="128" rx="8" ry="12" fill="#424242"/>
+    <ellipse cx="75" cy="128" rx="8" ry="12" fill="#424242"/>
+    <!-- Wing feather details -->
+    <path d="M20 95 Q30 100 25 115" stroke="#9e9e9e" stroke-width="1" fill="none"/>
+    <path d="M80 95 Q70 100 75 115" stroke="#9e9e9e" stroke-width="1" fill="none"/>
+    <!-- Tail feathers -->
+    <ellipse cx="50" cy="142" rx="12" ry="6" fill="#bdbdbd"/>
+    <ellipse cx="45" cy="144" rx="5" ry="4" fill="#9e9e9e"/>
+    <ellipse cx="55" cy="144" rx="5" ry="4" fill="#9e9e9e"/>
+    <!-- Feet (peeking out) -->
+    <ellipse cx="40" cy="146" rx="6" ry="3" fill="#ffb300"/>
+    <ellipse cx="60" cy="146" rx="6" ry="3" fill="#ffb300"/>
+  </g>
+  <g id="head-top">
+    <!-- Neck (back) -->
+    <ellipse cx="50" cy="75" rx="10" ry="18" fill="#e0e0e0"/>
+    <!-- Head (back view) -->
+    <ellipse cx="50" cy="45" rx="16" ry="14" fill="#e0e0e0"/>
+    <!-- Head crest/tuft (more visible from back) -->
+    <path d="M42 28 Q50 18 58 28" stroke="#bdbdbd" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M45 32 Q50 24 55 32" stroke="#9e9e9e" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Bill tip (just visible from behind) -->
+    <path d="M44 52 Q50 58 56 52" fill="#ffb300"/>
+  </g>
+</svg>
