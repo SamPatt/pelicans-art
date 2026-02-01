@@ -112,6 +112,22 @@
       left: 35%;
     }
     
+    /* Zoom levels for closeup shots */
+    #shot-closeup-left .character,
+    #shot-closeup-right .character {
+      transition: transform 0.8s ease-in-out, top 0.8s ease-in-out, left 0.8s ease-in-out;
+      transform-origin: top center;
+    }
+    .character.zoom-full {
+      transform: scale(1);
+    }
+    .character.zoom-medium {
+      transform: scale(1.5);
+    }
+    .character.zoom-face {
+      transform: scale(2.2);
+    }
+    
     /* Closeup caption - centered at bottom */
     .caption.closeup {
       position: absolute;
@@ -448,10 +464,11 @@
           { t: 12, do: "emote", who: "woman", emotion: "surprised" },
           { t: 12, do: "say", who: "woman", line: "Magical? In a restaurant?", target: "waiter" },
           
-          // Waiter reveals
+          // Waiter reveals - zoom in on face
           { t: 15, do: "shot", type: "closeup", who: "waiter" },
           { t: 15, do: "emote", who: "waiter", emotion: "happy" },
-          { t: 15, do: "say", who: "waiter", line: "Lucky Charms. Magically delicious.", target: "woman" },
+          { t: 15.5, do: "zoom", who: "waiter", level: "face" },
+          { t: 15.5, do: "say", who: "waiter", line: "Lucky Charms. Magically delicious.", target: "woman" },
           
           // Woman confused
           { t: 19, do: "shot", type: "closeup", who: "woman" },
@@ -646,6 +663,11 @@
     function switchShot(shotType, who = null) {
       // Hide all shots
       document.querySelectorAll('.shot-stage').forEach(el => el.style.display = 'none');
+      
+      // Reset zoom on all closeup characters
+      document.querySelectorAll('.character').forEach(el => {
+        el.classList.remove('zoom-full', 'zoom-medium', 'zoom-face');
+      });
       
       // Show the requested shot
       if (shotType === 'wide') {
@@ -1095,6 +1117,15 @@
             // Change character to a specific pose/variant (e.g., "flop")
             const char = currentScript.cast[beat.who];
             loadSprite(`char-${char.position}`, char.sprite, beat.pose);
+          } else if (beat.do === 'zoom') {
+            // Zoom on character in closeup shot
+            const char = currentScript.cast[beat.who];
+            const pos = char.position;
+            const closeupChar = document.getElementById(`char-closeup-${pos}`);
+            if (closeupChar) {
+              closeupChar.classList.remove('zoom-full', 'zoom-medium', 'zoom-face');
+              closeupChar.classList.add(`zoom-${beat.level || 'full'}`);
+            }
           }
         }
       });
