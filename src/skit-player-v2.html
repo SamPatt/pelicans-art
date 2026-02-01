@@ -97,10 +97,10 @@
     
     /* Mouth animation for lip sync - smooth scaling */
     .character svg #mouth-open {
-      transition: ry 0.05s ease-out, rx 0.05s ease-out, opacity 0.02s;
+      transition: ry 0.05s ease-out, rx 0.05s ease-out, opacity 0.15s ease-out;
     }
     .character svg #mouth-closed {
-      transition: opacity 0.05s;
+      transition: opacity 0.25s ease-in, d 0.2s ease-out;
     }
     
     /* Eye direction via pupil transform */
@@ -855,10 +855,10 @@
           if (normalizedAmp > threshold) {
             openDuration++;
             
-            // Scale mouth opening based on amplitude (min 1, max 6 for ry)
-            const mouthScale = 1 + (normalizedAmp - threshold) * 6;
-            const mouthRy = Math.min(6, Math.max(1, mouthScale));
-            const mouthRx = 3 + (normalizedAmp - threshold) * 3; // width also scales slightly
+            // Scale mouth opening based on amplitude (min 1, max 4 for ry)
+            const mouthScale = 1 + (normalizedAmp - threshold) * 4;
+            const mouthRy = Math.min(4, Math.max(1, mouthScale));
+            const mouthRx = 3 + (normalizedAmp - threshold) * 2; // width also scales slightly
             
             mouthOpen.setAttribute('ry', mouthRy.toFixed(1));
             mouthOpen.setAttribute('rx', mouthRx.toFixed(1));
@@ -922,8 +922,16 @@
                 charEl.classList.remove('speaking');
                 const mouthOpen = charEl.querySelector('#mouth-open');
                 const mouthClosed = charEl.querySelector('#mouth-closed');
-                if (mouthOpen) { mouthOpen.setAttribute('opacity', '0'); mouthOpen.setAttribute('ry', '3'); }
-                if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+                // Smoothly close mouth - ry first, then opacity
+                if (mouthOpen) {
+                  mouthOpen.setAttribute('ry', '1');
+                  mouthOpen.setAttribute('rx', '2');
+                  // Delay the opacity fade to allow size transition
+                  setTimeout(() => {
+                    mouthOpen.setAttribute('opacity', '0');
+                    if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+                  }, 100);
+                }
               }
               document.getElementById('caption').classList.remove('visible');
               currentSpeaker = null;
