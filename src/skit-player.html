@@ -90,15 +90,23 @@
       opacity: 1;
     }
     
-    /* Closeup shot character - centered and LARGE (short-form video style) */
+    /* Closeup shot character - HUGE (short-form video style, fills half the frame) */
     .character.closeup-center {
       position: absolute;
-      bottom: -10%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 70%;
-      max-width: 560px;
+      bottom: -20%;
+      width: 120%;
+      max-width: none;
       height: auto;
+    }
+    /* Left character closeup - positioned on left side */
+    #shot-closeup-left .character.closeup-center {
+      left: -15%;
+      right: auto;
+    }
+    /* Right character closeup - positioned on right side */
+    #shot-closeup-right .character.closeup-center {
+      right: -15%;
+      left: auto;
     }
     
     /* Closeup caption - centered at bottom */
