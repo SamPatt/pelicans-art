@@ -176,9 +176,11 @@
 
   <script>
     // === STATE ===
+    // Character y is center of character (0=top, 100=bottom)
+    // With bottom:15% and height:35%, character center is roughly at y=67
     const characters = {
-      pelican: { x: 30, sprite: 'pelican-front', el: null },
-      cat: { x: 70, sprite: 'cat-front', el: null }
+      pelican: { x: 30, y: 67, sprite: 'pelican-front', el: null },
+      cat: { x: 70, y: 67, sprite: 'cat-front', el: null }
     };
     
     const camera = {
@@ -202,9 +204,10 @@
     function updateCamera() {
       const stage = document.getElementById('stage');
       
-      // If following a character, update camera.x to their position
+      // If following a character, update camera position to their position
       if (camera.follow && characters[camera.follow]) {
         camera.x = characters[camera.follow].x;
+        camera.y = characters[camera.follow].y;
       }
       
       // Calculate transform
@@ -231,17 +234,22 @@
       if (!preset) return;
       
       camera.zoom = preset.zoom;
-      camera.y = preset.y || 50;
       
       if (preset.frameBoth) {
         // Center between both characters
         const xs = Object.values(characters).map(c => c.x);
+        const ys = Object.values(characters).map(c => c.y);
         camera.x = (Math.min(...xs) + Math.max(...xs)) / 2;
+        camera.y = (Math.min(...ys) + Math.max(...ys)) / 2;
         camera.follow = null;
       } else if (who && characters[who]) {
-        // Frame specific character
+        // Frame on specific character's actual position
         camera.x = characters[who].x;
-        camera.follow = who; // optionally track them
+        camera.y = characters[who].y;
+        camera.follow = who;
+      } else {
+        // Fallback to preset y
+        camera.y = preset.y || 50;
       }
       
       updateCamera();
@@ -261,7 +269,7 @@
       }
     }
     
-    function createCharacter(name, sprite, x) {
+    function createCharacter(name, sprite, x, y = 67) {
       const stage = document.getElementById('stage');
       const el = document.createElement('img');
       el.className = 'character';
@@ -270,7 +278,8 @@
       el.id = `char-${name}`;
       stage.appendChild(el);
       
-      characters[name] = { x, sprite, el };
+      // y=67 is default character center (bottom:15% + height:35%/2)
+      characters[name] = { x, y, sprite, el };
     }
     
     // === INIT ===
