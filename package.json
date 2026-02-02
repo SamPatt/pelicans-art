@@ -1,0 +1,27 @@
+{
+  "name": "ai-improv-theater",
+  "version": "1.0.0",
+  "description": "AIs perform absurdist comedy skits with crude 2D graphics and generated voices.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://x-access-token:REMOVED_REVOKED_GITHUB_TOKEN@github.com/HistorAI/ai-improv-theater.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HistorAI/ai-improv-theater/issues"
+  },
+  "homepage": "https://github.com/HistorAI/ai-improv-theater#readme",
+  "dependencies": {
+    "form-data": "^4.0.5",
+    "node-fetch": "^3.3.2"
+  }
+}
