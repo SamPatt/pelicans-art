@@ -609,7 +609,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v2.1</span>
+    <span style="color:#666;">v2.2</span>
   </div>
 
   <script>
@@ -1468,11 +1468,10 @@
       const ctx = canvas.getContext('2d');
       
       // Clear
-      ctx.fillStyle = '#0d0d1a';
+      ctx.fillStyle = '#1a1a2e';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Calculate source region from original image coordinates
-      // faceData coords are relative to preview canvas, need to map to original image
       const scaleX = uploadedImage.width / faceData.canvasWidth;
       const scaleY = uploadedImage.height / faceData.canvasHeight;
       
@@ -1481,36 +1480,38 @@
       const srcW = faceData.width * scaleX;
       const srcH = faceData.height * scaleY;
       
-      // Draw face centered at top of preview, maintaining aspect ratio
+      // Draw face crop preview - larger and centered
+      const maxW = 250, maxH = 300;
       const aspectRatio = srcW / srcH;
-      let destW = 150;
+      let destW = maxW;
       let destH = destW / aspectRatio;
-      if (destH > 180) {
-        destH = 180;
+      if (destH > maxH) {
+        destH = maxH;
         destW = destH * aspectRatio;
       }
-      const destX = (300 - destW) / 2;
+      const destX = (canvas.width - destW) / 2;
+      const destY = (canvas.height - destH) / 2 - 20;
       
-      ctx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, destX, 20, destW, destH);
-      
-      // Draw body placeholder
-      ctx.fillStyle = '#4ecdc4';
+      // Draw with rounded corners effect
+      ctx.save();
       ctx.beginPath();
-      ctx.ellipse(150, 280, 60, 100, 0, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.roundRect(destX, destY, destW, destH, 10);
+      ctx.clip();
+      ctx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
+      ctx.restore();
       
-      // Draw guide lines
+      // Border around crop
       ctx.strokeStyle = '#e94560';
-      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(75, 160); // Mouth line
-      ctx.lineTo(225, 160);
+      ctx.roundRect(destX, destY, destW, destH, 10);
       ctx.stroke();
-      ctx.setLineDash([]);
       
-      ctx.fillStyle = '#e94560';
-      ctx.font = '12px sans-serif';
-      ctx.fillText('← Drag to adjust mouth position', 230, 164);
+      // Label
+      ctx.fillStyle = '#888';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('This region will be used for your sprite', canvas.width/2, canvas.height - 20);
     }
     
     function autoDetectFace() {
