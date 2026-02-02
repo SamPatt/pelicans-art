@@ -54,6 +54,11 @@
       cursor: not-allowed;
     }
     
+    .toolbar-divider {
+      color: #444;
+      margin: 0 5px;
+    }
+    
     /* Main layout */
     .main {
       display: flex;
@@ -382,6 +387,11 @@
       <button id="btn-new">📄 New</button>
       <button id="btn-upload-photo">📷 Photo Sprite</button>
       <button id="btn-random">🎲 Random</button>
+      <span class="toolbar-divider">|</span>
+      <button id="btn-add-rect" title="Add Rectangle">▭</button>
+      <button id="btn-add-ellipse" title="Add Ellipse">⬭</button>
+      <button id="btn-add-circle" title="Add Circle">○</button>
+      <span class="toolbar-divider">|</span>
       <button id="btn-undo" disabled>↩️ Undo</button>
       <button id="btn-redo" disabled>↪️ Redo</button>
       <button id="btn-save">💾 Save</button>
@@ -1224,12 +1234,113 @@
       updateStatus('Photo sprite created! Adjust the mask and features as needed.');
     }
     
+    // === ADD SHAPES ===
+    function addShape(type) {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) {
+        updateStatus('Load a sprite first');
+        return;
+      }
+      
+      saveState();
+      
+      const svgNS = 'http://www.w3.org/2000/svg';
+      let newEl;
+      
+      if (type === 'rect') {
+        newEl = document.createElementNS(svgNS, 'rect');
+        newEl.setAttribute('x', '40');
+        newEl.setAttribute('y', '60');
+        newEl.setAttribute('width', '20');
+        newEl.setAttribute('height', '20');
+        newEl.setAttribute('fill', '#e94560');
+      } else if (type === 'ellipse') {
+        newEl = document.createElementNS(svgNS, 'ellipse');
+        newEl.setAttribute('cx', '50');
+        newEl.setAttribute('cy', '70');
+        newEl.setAttribute('rx', '15');
+        newEl.setAttribute('ry', '10');
+        newEl.setAttribute('fill', '#4ecdc4');
+      } else if (type === 'circle') {
+        newEl = document.createElementNS(svgNS, 'circle');
+        newEl.setAttribute('cx', '50');
+        newEl.setAttribute('cy', '70');
+        newEl.setAttribute('r', '10');
+        newEl.setAttribute('fill', '#ffd93d');
+      }
+      
+      if (newEl) {
+        // Add to a body group if exists, otherwise to svg root
+        const bodyGroup = svg.querySelector('#body');
+        if (bodyGroup) {
+          bodyGroup.appendChild(newEl);
+        } else {
+          svg.appendChild(newEl);
+        }
+        
+        // Setup interaction
+        newEl.style.cursor = 'pointer';
+        newEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectElement(newEl);
+        });
+        
+        buildElementTree();
+        selectElement(newEl);
+        updateSpriteSource();
+        updateStatus(`Added ${type}`);
+      }
+    }
+    
+    function createNewSprite() {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Add body elements here -->
+  </g>
+  <g id="head-top">
+    <!-- Face -->
+    <ellipse cx="50" cy="42" rx="16" ry="18" fill="#fce4d4"/>
+    <!-- Eyes -->
+    <ellipse id="eye-left-white" cx="42" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="58" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#2d2d2d"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#2d2d2d"/>
+    <circle id="eye-left-highlight" cx="41" cy="41" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="57" cy="41" r="1" fill="#fff" opacity="0"/>
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M37 36 Q42 34 47 36" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
+    <path id="brow-right" d="M53 36 Q58 34 63 36" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="head-bottom">
+    <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
+    <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
+  </g>
+</svg>`;
+      
+      currentSprite = svg;
+      currentSpriteName = 'new-sprite';
+      
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      renderSprite();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      updateStatus('Created new sprite template');
+    }
+    
     // === INIT ===
     document.getElementById('btn-undo').onclick = undo;
     document.getElementById('btn-redo').onclick = redo;
     document.getElementById('btn-save').onclick = saveSprite;
     document.getElementById('btn-random').onclick = createRandomCharacter;
     document.getElementById('btn-upload-photo').onclick = openPhotoModal;
+    document.getElementById('btn-new').onclick = createNewSprite;
+    document.getElementById('btn-add-rect').onclick = () => addShape('rect');
+    document.getElementById('btn-add-ellipse').onclick = () => addShape('ellipse');
+    document.getElementById('btn-add-circle').onclick = () => addShape('circle');
     
     loadSpriteList();
     loadSprite('girl'); // Load default
