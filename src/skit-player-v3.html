@@ -63,6 +63,7 @@
       width: auto;
       transition: left 1s ease-in-out, opacity 0.3s;
       transform: translateX(-50%);
+      transform-origin: bottom center;
     }
     
     .character svg {
@@ -117,13 +118,12 @@
     .character.blinking svg #eye-right-pupil,
     .character.blinking svg #eye-left-highlight,
     .character.blinking svg #eye-right-highlight {
-      transform: scaleY(0.1);
-      transition: transform 0.05s;
+      opacity: 0 !important;
     }
     
     /* Character facing direction */
-    .character.facing-left { transform: translateX(-50%) scaleX(-1) scale(var(--char-scale, 1)); }
-    .character.facing-right { transform: translateX(-50%) scaleX(1) scale(var(--char-scale, 1)); }
+    .character.facing-left { transform: translateX(-50%) scaleX(calc(-1 * var(--char-scale, 1))) scaleY(var(--char-scale, 1)); }
+    .character.facing-right { transform: translateX(-50%) scaleX(var(--char-scale, 1)) scaleY(var(--char-scale, 1)); }
     
     /* SVG emotion transitions - specific elements only */
     .character svg #eye-left-white,
