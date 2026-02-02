@@ -110,6 +110,17 @@
     .character.look-up svg .pupil { transform: translateY(-1.5px); }
     .character.look-down svg .pupil { transform: translateY(1.5px); }
     
+    /* Blinking */
+    .character.blinking svg #eye-left-white,
+    .character.blinking svg #eye-right-white,
+    .character.blinking svg #eye-left-pupil,
+    .character.blinking svg #eye-right-pupil,
+    .character.blinking svg #eye-left-highlight,
+    .character.blinking svg #eye-right-highlight {
+      transform: scaleY(0.1);
+      transition: transform 0.05s;
+    }
+    
     /* Character facing direction */
     .character.facing-left { transform: translateX(-50%) scaleX(-1) scale(var(--char-scale, 1)); }
     .character.facing-right { transform: translateX(-50%) scaleX(1) scale(var(--char-scale, 1)); }
@@ -409,6 +420,48 @@
       char.el.classList.remove('facing-left', 'facing-right');
       if (direction === 'left') char.el.classList.add('facing-left');
       if (direction === 'right') char.el.classList.add('facing-right');
+    }
+    
+    // Blinking system
+    const blinkTimers = new Map();
+    
+    function blink(charName) {
+      const char = characters[charName];
+      if (!char || !char.el) return;
+      
+      char.el.classList.add('blinking');
+      setTimeout(() => {
+        char.el.classList.remove('blinking');
+      }, 100);
+    }
+    
+    function startBlinking(charName) {
+      stopBlinking(charName);
+      const scheduleNext = () => {
+        const delay = 6000 + Math.random() * 3000; // 6-9 seconds
+        const timer = setTimeout(() => {
+          if (characters[charName]) {
+            blink(charName);
+            scheduleNext();
+          }
+        }, delay);
+        blinkTimers.set(charName, timer);
+      };
+      // Start with a random initial delay
+      setTimeout(scheduleNext, Math.random() * 3000);
+    }
+    
+    function stopBlinking(charName) {
+      const timer = blinkTimers.get(charName);
+      if (timer) {
+        clearTimeout(timer);
+        blinkTimers.delete(charName);
+      }
+    }
+    
+    function stopAllBlinking() {
+      blinkTimers.forEach((timer) => clearTimeout(timer));
+      blinkTimers.clear();
     }
     
     function getAmplitude() {
@@ -1355,6 +1408,9 @@
       // Check if skit uses sequential mode (first beat has no 't' property)
       sequentialMode = currentSkit.script.length > 0 && currentSkit.script[0].t === undefined;
       
+      // Start blinking for all characters
+      Object.keys(characters).forEach(name => startBlinking(name));
+      
       document.getElementById('playBtn').textContent = '⏸ Pause';
       
       if (sequentialMode) {
@@ -1368,11 +1424,12 @@
       currentSpeaker = null;
       peakAmp = 50;
       openDuration = 0;
+      stopAllBlinking();
       if (animationId) cancelAnimationFrame(animationId);
       document.getElementById('playBtn').textContent = '▶ Play';
       document.getElementById('caption').classList.remove('visible');
       Object.values(characters).forEach(c => {
-        c.el.classList.remove('speaking', 'look-left', 'look-right', 'look-up', 'look-down');
+        c.el.classList.remove('speaking', 'look-left', 'look-right', 'look-up', 'look-down', 'blinking');
         // Reset mouth state
         const mouthOpen = c.el.querySelector('#mouth-open');
         const mouthClosed = c.el.querySelector('#mouth-closed');
@@ -1532,25 +1589,8 @@
               });
             }
             
-            // Set up eye contact - all visible characters look at speaker
-            const speakerX = characters[beat.who]?.x;
-            if (speakerX !== undefined) {
-              for (const [name, char] of Object.entries(characters)) {
-                if (!char.el || char.el.classList.contains('offscreen')) continue;
-                if (name === beat.who) {
-                  // Speaker looks at the main other character (first visible non-speaker)
-                  const other = Object.entries(characters).find(([n, c]) => 
-                    n !== name && c.el && !c.el.classList.contains('offscreen')
-                  );
-                  if (other) {
-                    setEyeDirection(name, other[1].x > speakerX ? 'right' : 'left');
-                  }
-                } else {
-                  // Listeners look at speaker
-                  setEyeDirection(name, speakerX > char.x ? 'right' : 'left');
-                }
-              }
-            }
+            // Eye contact is now handled by explicit 'look' commands in the script
+            // This keeps eyes stable instead of moving around
             
             // Start speaking
             currentSpeaker = beat.who;

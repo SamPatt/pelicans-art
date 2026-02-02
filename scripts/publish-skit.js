@@ -17,10 +17,14 @@ const skits = {
       leprechaun: { x: -20, sprite: "leprechaun", voice: "marius", startOffscreen: true, scale: 0.6 }
     },
     script: [
+      // Setup - everyone looking at each other
       { do: "shot", type: "wide" },
+      { do: "look", who: "waiter", at: "right" },
+      { do: "look", who: "woman", at: "left" },
       { do: "emote", who: "waiter", emotion: "happy" },
       { do: "emote", who: "woman", emotion: "neutral" },
       { do: "pause", duration: 1 },
+      // Dialogue - eyes stay fixed on conversation partner
       { do: "shot", type: "closeup", who: "waiter" },
       { do: "say", who: "waiter", line: "Good evening, madam. May I tell you about our special tonight?" },
       { do: "shot", type: "closeup", who: "woman" },
@@ -50,25 +54,25 @@ const skits = {
       { do: "shot", type: "closeup", who: "woman" },
       { do: "emote", who: "woman", emotion: "tired" },
       { do: "say", who: "woman", line: "I'd like to speak to the manager." },
+      // Waiter exits
       { do: "shot", type: "wide" },
       { do: "emote", who: "waiter", emotion: "sad" },
       { do: "pause", duration: 0.5 },
       { do: "look", who: "waiter", at: "left" },
       { do: "exit", who: "waiter", to: "left" },
       { do: "pause", duration: 1 },
+      // Leprechaun enters - woman looks at leprechaun now
       { do: "enter", who: "leprechaun", from: "left", to: 30 },
       { do: "emote", who: "leprechaun", emotion: "happy" },
       { do: "look", who: "leprechaun", at: "right" },
+      { do: "look", who: "woman", at: "left" },
       { do: "emote", who: "woman", emotion: "surprised" },
       { do: "pause", duration: 0.5 },
       { do: "shot", type: "closeup", who: "leprechaun" },
-      { do: "look", who: "leprechaun", at: "right" },
       { do: "say", who: "leprechaun", line: "Can I help you?" },
       { do: "shot", type: "wide" },
-      { do: "look", who: "leprechaun", at: "right" },
       { do: "emote", who: "woman", emotion: "angry" },
       { do: "pause", duration: 0.5 },
-      { do: "look", who: "leprechaun", at: "right" },
       { do: "say", who: "leprechaun", line: "What?" },
       { do: "pause", duration: 1 }
     ]
