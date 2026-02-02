@@ -1375,6 +1375,180 @@
     
     let bgRemovalPipeline = null;
     
+    // Keep only the largest connected component (flood fill)
+    function keepLargestComponent(mask, width, height) {
+      const visited = new Uint8Array(mask.length);
+      const components = [];
+      
+      // Find all connected components using flood fill
+      for (let i = 0; i < mask.length; i++) {
+        if (mask[i] > 128 && !visited[i]) {
+          const component = [];
+          const stack = [i];
+          
+          while (stack.length > 0) {
+            const idx = stack.pop();
+            if (visited[idx] || mask[idx] <= 128) continue;
+            
+            visited[idx] = 1;
+            component.push(idx);
+            
+            const x = idx % width;
+            const y = Math.floor(idx / width);
+            
+            // 4-connected neighbors
+            if (x > 0) stack.push(idx - 1);
+            if (x < width - 1) stack.push(idx + 1);
+            if (y > 0) stack.push(idx - width);
+            if (y < height - 1) stack.push(idx + width);
+          }
+          
+          if (component.length > 0) {
+            components.push(component);
+          }
+        }
+      }
+      
+      // Find largest component
+      let largest = [];
+      for (const comp of components) {
+        if (comp.length > largest.length) largest = comp;
+      }
+      
+      // Create new mask with only largest component
+      const result = new Uint8Array(mask.length);
+      for (const idx of largest) {
+        result[idx] = mask[idx];
+      }
+      
+      return result;
+    }
+    
+    // Create smooth head-shaped mask using face landmarks
+    function createSmoothHeadMask(width, height, landmarks, scaleX, scaleY, edgeBlur = 20) {
+      if (!landmarks || !landmarks.jawline) return null;
+      
+      const mask = new Uint8Array(width * height);
+      
+      // Get key points scaled to image coords
+      const jaw = landmarks.jawline.map(p => ({ x: p.x * scaleX, y: p.y * scaleY }));
+      
+      // Find chin (bottom of jaw)
+      const chinY = Math.max(...jaw.map(p => p.y));
+      
+      // Use eyes for better horizontal centering (jaws stick out too much)
+      let centerX, faceWidth;
+      if (landmarks.leftEye && landmarks.rightEye) {
+        const leftEyeX = landmarks.leftEye.reduce((s, p) => s + p.x * scaleX, 0) / landmarks.leftEye.length;
+        const rightEyeX = landmarks.rightEye.reduce((s, p) => s + p.x * scaleX, 0) / landmarks.rightEye.length;
+        centerX = (leftEyeX + rightEyeX) / 2;
+        faceWidth = Math.abs(rightEyeX - leftEyeX) * 2.8; // Eyes are ~35% of face width
+      } else {
+        const minX = Math.min(...jaw.map(p => p.x));
+        const maxX = Math.max(...jaw.map(p => p.x));
+        centerX = (minX + maxX) / 2;
+        faceWidth = maxX - minX;
+      }
+      
+      // Estimate forehead (above eyebrows) - extend MORE for hair
+      const browY = landmarks.leftEyebrow ? 
+        Math.min(...landmarks.leftEyebrow.map(p => p.y * scaleY)) : 
+        jaw[0].y;
+      const faceHeight = chinY - browY;
+      const foreheadY = browY - faceHeight * 0.75; // More room for hair (was 0.5)
+      
+      // Create ellipse parameters
+      const centerY = (foreheadY + chinY) / 2;
+      const radiusX = faceWidth / 2 * 1.1; // Based on eye-derived width
+      const radiusY = (chinY - foreheadY) / 2 * 1.02;
+      
+      // Fill ellipse with soft edges
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = y * width + x;
+          
+          // Distance from ellipse edge (negative = inside, positive = outside)
+          const dx = (x - centerX) / radiusX;
+          const dy = (y - centerY) / radiusY;
+          const dist = Math.sqrt(dx * dx + dy * dy) - 1; // -1 to 0 inside, 0+ outside
+          
+          if (dist < 0) {
+            // Inside ellipse
+            mask[idx] = 255;
+          } else if (dist < edgeBlur / Math.min(radiusX, radiusY)) {
+            // Soft edge
+            const alpha = 1 - (dist * Math.min(radiusX, radiusY) / edgeBlur);
+            mask[idx] = Math.round(255 * Math.max(0, alpha));
+          }
+        }
+      }
+      
+      return mask;
+    }
+    
+    // Blend segmentation mask with smooth head shape
+    function blendWithHeadShape(segMask, headMask, width, height) {
+      if (!headMask) return segMask;
+      
+      const result = new Uint8Array(segMask.length);
+      
+      for (let i = 0; i < segMask.length; i++) {
+        // Use intersection: pixel must be in BOTH masks
+        // But weight toward the smooth head shape
+        const seg = segMask[i];
+        const head = headMask[i];
+        
+        // Blend: mostly follow head shape, but use seg to trim where needed
+        result[i] = Math.min(seg, head);
+      }
+      
+      return result;
+    }
+    
+    // Feather mask edges using gaussian-like blur on the alpha channel
+    function featherMaskEdges(mask, width, height, radius = 5) {
+      // First pass: horizontal blur
+      const temp = new Float32Array(mask.length);
+      const result = new Uint8Array(mask.length);
+      
+      // Create gaussian-ish weights
+      const weights = [];
+      let weightSum = 0;
+      for (let i = -radius; i <= radius; i++) {
+        const w = Math.exp(-(i * i) / (2 * (radius / 2) * (radius / 2)));
+        weights.push(w);
+        weightSum += w;
+      }
+      // Normalize
+      for (let i = 0; i < weights.length; i++) weights[i] /= weightSum;
+      
+      // Horizontal pass
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          let sum = 0;
+          for (let i = -radius; i <= radius; i++) {
+            const nx = Math.max(0, Math.min(width - 1, x + i));
+            sum += mask[y * width + nx] * weights[i + radius];
+          }
+          temp[y * width + x] = sum;
+        }
+      }
+      
+      // Vertical pass
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          let sum = 0;
+          for (let i = -radius; i <= radius; i++) {
+            const ny = Math.max(0, Math.min(height - 1, y + i));
+            sum += temp[ny * width + x] * weights[i + radius];
+          }
+          result[y * width + x] = Math.round(Math.max(0, Math.min(255, sum)));
+        }
+      }
+      
+      return result;
+    }
+    
     async function removeBackground(imageSource) {
       const log = document.getElementById('bg-log');
       log.value = ''; // Clear log
@@ -1504,13 +1678,40 @@
         }
         
         // Count non-zero pixels
-        const nonZero = combinedMask.filter(v => v > 0).length;
+        let nonZero = combinedMask.filter(v => v > 0).length;
         bgLog(`Combined mask: ${nonZero} foreground pixels (${(nonZero / combinedMask.length * 100).toFixed(1)}%)`);
         
-        // Apply combined mask as alpha
+        // Keep only largest connected component (removes floating islands)
+        bgLog('Removing disconnected regions...');
+        let processedMask = keepLargestComponent(combinedMask, img.width, img.height);
+        nonZero = processedMask.filter(v => v > 0).length;
+        bgLog(`After cleanup: ${nonZero} pixels (${(nonZero / processedMask.length * 100).toFixed(1)}%)`);
+        
+        // Create smooth head shape and blend with segmentation
+        if (faceLandmarks && faceLandmarks.jawline) {
+          bgLog('Creating smooth head shape...');
+          const scaleX = img.width / faceData.canvasWidth;
+          const scaleY = img.height / faceData.canvasHeight;
+          const headMask = createSmoothHeadMask(img.width, img.height, faceLandmarks, scaleX, scaleY, 30);
+          
+          if (headMask) {
+            bgLog('Blending with head shape...');
+            processedMask = blendWithHeadShape(processedMask, headMask, img.width, img.height);
+            nonZero = processedMask.filter(v => v > 0).length;
+            bgLog(`After shape blend: ${nonZero} pixels`);
+          }
+        }
+        
+        // Feather/smooth the mask edges to reduce jaggedness
+        // Use larger radius for high-res images (scale with image size)
+        const blurRadius = Math.max(5, Math.round(Math.min(img.width, img.height) / 150));
+        bgLog(`Smoothing mask edges (radius: ${blurRadius})...`);
+        const smoothedMask = featherMaskEdges(processedMask, img.width, img.height, blurRadius);
+        
+        // Apply smoothed mask as alpha
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < combinedMask.length; i++) {
-          imageData.data[i * 4 + 3] = combinedMask[i];
+        for (let i = 0; i < smoothedMask.length; i++) {
+          imageData.data[i * 4 + 3] = smoothedMask[i];
         }
         
         ctx.putImageData(imageData, 0, 0);
@@ -1878,9 +2079,7 @@
         }
       }
       
-      // Calculate source region from faceData
-      const scaleX = uploadedImage.width / faceData.canvasWidth;
-      const scaleY = uploadedImage.height / faceData.canvasHeight;
+      // Calculate source region from faceData (reusing scaleX/scaleY from above)
       const srcX = faceData.x * scaleX;
       const srcY = faceData.y * scaleY;
       const srcW = faceData.width * scaleX;
@@ -1891,8 +2090,9 @@
       const faceDataUrl = faceCanvas.toDataURL('image/png');
       
       // Calculate mouth position from landmarks
-      // Face image in sprite: y=5 to y=70 (height 65), x=10 to x=90 (width 80)
-      let spriteMouthY = 55; // Default near bottom of face
+      // Face image in sprite: rendered with 'meet' so actual size is ~80x80 starting at y=0
+      // faceCanvas is 200x200, so mouth Y maps directly
+      let spriteMouthY = 65; // Default near lower part of face
       
       if (faceLandmarks && faceLandmarks.outerLips && faceLandmarks.outerLips.length > 0) {
         const lips = faceLandmarks.outerLips;
@@ -1901,32 +2101,37 @@
         // Convert canvas coords to relative position within faceData bounds (0 to 1)
         const relY = (avgLipY - faceData.y) / faceData.height;
         
-        // Map to sprite face area (y=5 to y=70)
-        spriteMouthY = 5 + relY * 65;
+        // faceCanvas is 200x200, rendered into ~80x80 sprite area
+        // relY represents position within the cropped face region
+        // Scale to sprite: 80 * relY, but faceData includes hair space above
+        // Add offset to account for hair space (typically ~20-30% of faceData is above actual face)
+        spriteMouthY = 80 * relY + 10; // Add 10 units to push down
         
-        // Clamp to reasonable range (lower half of face)
-        spriteMouthY = Math.max(45, Math.min(65, spriteMouthY));
+        // Clamp to reasonable range (should be in lower third of face)
+        spriteMouthY = Math.max(55, Math.min(75, spriteMouthY));
+        
+        console.log('Mouth Y calc:', { avgLipY, faceDataY: faceData.y, faceDataH: faceData.height, relY, spriteMouthY });
       }
       
       // Sprite with proper connected proportions
-      // Head: y=2 to y=72 (height 70), Body starts at y=70
+      // Head: y=0 to y=80 (height 80 for taller face area), Body starts at y=75
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
   <g id="body">
-    <!-- Body connects to head at y=70 -->
-    <ellipse cx="50" cy="105" rx="15" ry="30" fill="#4ecdc4"/>
+    <!-- Body connects to head at y=75 -->
+    <ellipse cx="50" cy="108" rx="15" ry="30" fill="#4ecdc4"/>
     <!-- Arms -->
-    <ellipse cx="33" cy="100" rx="4" ry="11" fill="${skinColor}"/>
-    <ellipse cx="67" cy="100" rx="4" ry="11" fill="${skinColor}"/>
+    <ellipse cx="33" cy="103" rx="4" ry="11" fill="${skinColor}"/>
+    <ellipse cx="67" cy="103" rx="4" ry="11" fill="${skinColor}"/>
     <!-- Hands -->
-    <circle cx="33" cy="113" r="3" fill="${skinColor}"/>
-    <circle cx="67" cy="113" r="3" fill="${skinColor}"/>
+    <circle cx="33" cy="116" r="3" fill="${skinColor}"/>
+    <circle cx="67" cy="116" r="3" fill="${skinColor}"/>
     <!-- Legs -->
-    <ellipse cx="43" cy="137" rx="4" ry="9" fill="${skinColor}"/>
-    <ellipse cx="57" cy="137" rx="4" ry="9" fill="${skinColor}"/>
+    <ellipse cx="43" cy="140" rx="4" ry="9" fill="${skinColor}"/>
+    <ellipse cx="57" cy="140" rx="4" ry="9" fill="${skinColor}"/>
   </g>
   <g id="head-top">
-    <!-- Photo face - overlaps body slightly for seamless connection -->
-    <image href="${faceDataUrl}" x="10" y="2" width="80" height="70" preserveAspectRatio="xMidYMid slice"/>
+    <!-- Photo face - taller area to avoid cutting off head, uses 'meet' to show full face -->
+    <image href="${faceDataUrl}" x="5" y="0" width="90" height="80" preserveAspectRatio="xMidYMid meet"/>
     <!-- Invisible eye elements for emotion system -->
     <ellipse id="eye-left-white" cx="35" cy="30" rx="1" ry="1" fill="transparent"/>
     <ellipse id="eye-right-white" cx="65" cy="30" rx="1" ry="1" fill="transparent"/>
@@ -1938,11 +2143,11 @@
     <path id="brow-right" d="M58 24 Q65 22 72 24" stroke="transparent" stroke-width="1" fill="none"/>
   </g>
   <g id="head-bottom">
-    <!-- Small mouth mask - skin colored, just covers mouth area -->
-    <ellipse cx="50" cy="${spriteMouthY}" rx="8" ry="4" fill="${skinColor}"/>
-    <!-- Animated mouth -->
-    <path id="mouth-closed" d="M44 ${spriteMouthY} Q50 ${spriteMouthY + 3} 56 ${spriteMouthY}" stroke="#9a6a6a" stroke-width="1.5" fill="none"/>
-    <ellipse id="mouth-open" cx="50" cy="70" rx="10" ry="6" fill="#5a3a3a" opacity="0"/>
+    <!-- Tiny mouth mask - just enough to hide real mouth for animation -->
+    <ellipse cx="50" cy="${spriteMouthY}" rx="6" ry="3" fill="${skinColor}"/>
+    <!-- Animated mouth - open mouth uses same Y position -->
+    <path id="mouth-closed" d="M46 ${spriteMouthY} Q50 ${spriteMouthY + 2} 54 ${spriteMouthY}" stroke="#8a5a5a" stroke-width="1.5" fill="none"/>
+    <ellipse id="mouth-open" cx="50" cy="${spriteMouthY}" rx="5" ry="3" fill="#4a2a2a" opacity="0"/>
   </g>
 </svg>`;
       
