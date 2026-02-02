@@ -223,7 +223,8 @@
     <button id="captionBtn" onclick="toggleCaptions()">CC</button>
     <button onclick="loadSkit('luckyCharms')" class="active">Lucky Charms</button>
     <button onclick="loadSkit('spaceWall')">Space Wall</button>
-    <button onclick="loadSkit('trump_alien_seq')">Trump/Alien (Sequential)</button>
+    <button onclick="loadSkit('trump_alien_seq')">Trump/Alien (Seq)</button>
+    <button onclick="loadSkit('theInterview')">The Interview</button>
   </div>
   
   <div id="status">Loading...</div>
@@ -993,6 +994,81 @@
           { do: "say", who: "alien", line: "We do not understand this question." },
           
           { do: "shot", type: "wide" }
+        ]
+      },
+      
+      // The Interview - cat boss, nobody acknowledges it
+      theInterview: {
+        meta: { title: "The Interview", duration: 120 },
+        stage: { background: "office" },
+        cast: {
+          candidate: { x: 30, sprite: "person", voice: "jean" },
+          cat: { x: 70, sprite: "cat", voice: "cosette" }
+        },
+        script: [
+          // Opening - wide shot, candidate nervous
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "candidate", emotion: "worried" },
+          { do: "emote", who: "cat", emotion: "neutral" },
+          { do: "pause", duration: 1 },
+          
+          // Candidate opens
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "happy" },
+          { do: "say", who: "candidate", line: "Thank you for meeting with me today." },
+          
+          // Cat responds
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "neutral" },
+          { do: "say", who: "cat", line: "Meow." },
+          
+          // Candidate answers "question"
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "happy" },
+          { do: "say", who: "candidate", line: "Great question! My biggest strength is attention to detail." },
+          
+          // Cat gets aggressive
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "angry" },
+          { do: "say", who: "cat", line: "HISSSSS!" },
+          
+          // Candidate backtracks
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "worried" },
+          { do: "say", who: "candidate", line: "Fair point. I'm also very adaptable." },
+          
+          // Cat excited
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "excited" },
+          { do: "say", who: "cat", line: "Meow meow! Purrrrr." },
+          
+          // Candidate confused but playing along
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "surprised" },
+          { do: "say", who: "candidate", line: "A ball of yarn? Is this a negotiation tactic?" },
+          
+          // Wide shot - candidate considers
+          { do: "shot", type: "wide" },
+          { do: "pause", duration: 0.5 },
+          
+          // Candidate commits
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "smug" },
+          { do: "say", who: "candidate", line: "Alright. I'll play ball." },
+          
+          // Cat very happy
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "happy" },
+          { do: "say", who: "cat", line: "MEOW!" },
+          
+          // Candidate seals the deal
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "happy" },
+          { do: "say", who: "candidate", line: "I accept your offer." },
+          
+          // Final wide
+          { do: "shot", type: "wide" },
+          { do: "pause", duration: 1 }
         ]
       }
     };

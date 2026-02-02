@@ -186,6 +186,32 @@ Building tension, then release through laughter.
 
 ---
 
+## Script Modes
+
+### Sequential Mode (Recommended)
+Omit all `t` (timestamp) values. The player auto-advances after each audio completes.
+
+```json
+{ "do": "say", "who": "bob", "line": "Hello!" },
+{ "do": "say", "who": "alice", "line": "Hi there!" }
+```
+
+**Pros:** No timing math, natural pacing, adjusts to TTS duration automatically.
+
+### Timed Mode (Legacy)
+Include `t` values (seconds from start). Use for precise choreography.
+
+```json
+{ "t": 0, "do": "say", "who": "bob", "line": "Hello!" },
+{ "t": 3, "do": "say", "who": "alice", "line": "Hi there!" }
+```
+
+**Cons:** Hard to get right, TTS duration varies, requires manual adjustment.
+
+**Use sequential mode unless you need precise multi-track timing.**
+
+---
+
 ## Quick Reference: Sketch Checklist
 
 - [ ] Clear premise (explainable in one sentence)
