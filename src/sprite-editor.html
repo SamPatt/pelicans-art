@@ -49,6 +49,22 @@
         width: 100%;
         border-left: none;
         border-top: 1px solid #0f3460;
+        min-height: 200px;
+        padding-bottom: 20px;
+      }
+      
+      /* Make properties panel sticky on mobile */
+      .panel-right .property-group {
+        padding: 8px;
+      }
+      
+      .panel-right .property-row {
+        flex-wrap: wrap;
+      }
+      
+      .panel-right .property-row label {
+        width: 100%;
+        margin-bottom: 4px;
       }
       
       .element-tree {
@@ -886,22 +902,31 @@
       updateSpriteSource();
     }
     
-    // === DRAGGING ===
+    // === DRAGGING (mouse + touch) ===
     function setupDragging(el) {
       const svg = document.querySelector('#svg-canvas svg');
       
       el.addEventListener('mousedown', startDrag);
+      el.addEventListener('touchstart', startDrag, { passive: false });
+      
+      function getEventCoords(e) {
+        if (e.touches && e.touches.length > 0) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      }
       
       function startDrag(e) {
-        if (e.button !== 0) return;
+        if (e.button && e.button !== 0) return;
         e.preventDefault();
         
         saveState();
         isDragging = true;
         
+        const coords = getEventCoords(e);
         const pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
+        pt.x = coords.x;
+        pt.y = coords.y;
         const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
         
         dragStart = { x: svgPt.x, y: svgPt.y };
@@ -909,14 +934,18 @@
         
         document.addEventListener('mousemove', drag);
         document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchmove', drag, { passive: false });
+        document.addEventListener('touchend', endDrag);
       }
       
       function drag(e) {
         if (!isDragging) return;
+        e.preventDefault();
         
+        const coords = getEventCoords(e);
         const pt = svg.createSVGPoint();
-        pt.x = e.clientX;
-        pt.y = e.clientY;
+        pt.x = coords.x;
+        pt.y = coords.y;
         const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
         
         const dx = svgPt.x - dragStart.x;
@@ -930,6 +959,8 @@
         isDragging = false;
         document.removeEventListener('mousemove', drag);
         document.removeEventListener('mouseup', endDrag);
+        document.removeEventListener('touchmove', drag);
+        document.removeEventListener('touchend', endDrag);
         updateSpriteSource();
       }
     }
@@ -1386,6 +1417,34 @@
         ctx.fillStyle = '#4ecca3';
         ctx.font = '12px sans-serif';
         ctx.fillText('mouth', faceData.x + faceData.width + 5, mouthY + 4);
+        
+        // Add touch/click handlers for adjusting face region
+        canvas.onclick = canvas.ontouchend = (e) => {
+          e.preventDefault();
+          const rect = canvas.getBoundingClientRect();
+          const touch = e.changedTouches ? e.changedTouches[0] : e;
+          const x = touch.clientX - rect.left;
+          const y = touch.clientY - rect.top;
+          
+          // Recenter face region on tap
+          faceData.x = Math.max(0, x - faceData.width / 2);
+          faceData.y = Math.max(0, y - faceData.height / 2);
+          
+          // Keep within bounds
+          faceData.x = Math.min(faceData.x, canvas.width - faceData.width);
+          faceData.y = Math.min(faceData.y, canvas.height - faceData.height);
+          
+          // Redraw
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          ctx.strokeStyle = '#e94560';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([8, 4]);
+          ctx.strokeRect(faceData.x, faceData.y, faceData.width, faceData.height);
+          ctx.setLineDash([]);
+          
+          document.getElementById('face-status').textContent = 'Tap to reposition. Press Generate when ready.';
+        };
         
         // Show step 2
         setTimeout(() => {
