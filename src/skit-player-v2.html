@@ -247,10 +247,9 @@
     let audioContext, analyser, dataArray;
     const audioCache = new Map();
     
-    // Single reusable audio element for mobile compatibility
-    let sharedAudio = null;
-    let sharedGainNode = null;
-    let sharedSource = null;
+    // Web Audio API buffers for mobile compatibility
+    let currentSourceNode = null;
+    let currentGainNode = null;
     
     // === SHOT PRESETS ===
     const shotPresets = {
@@ -1304,7 +1303,7 @@
           setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
         }
         
-        // Store pre-baked audio data URLs (don't create Audio elements yet - mobile issues)
+        // Decode audio into AudioBuffers (mobile-friendly)
         audioCache.clear();
         const sayActions = skit.script.filter(b => b.do === 'say');
         const beatIndexMap = new Map();
@@ -1318,17 +1317,29 @@
           const audioData = skit.assets?.audio?.[`line-${i}`];
           
           if (audioData) {
-            document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
-            const cacheKey = beat.t !== undefined 
-              ? `${beat.t}-${beat.who}` 
-              : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
-            // Store data URL and volume, create Audio on demand for mobile compatibility
-            audioCache.set(cacheKey, { 
-              audioSrc: audioData, 
-              beat, 
-              charName: beat.who, 
-              volume: char.volume !== undefined ? char.volume : 1.0 
-            });
+            document.getElementById('status').textContent = `Decoding audio ${i+1}/${sayActions.length}...`;
+            try {
+              // Convert data URL to ArrayBuffer and decode
+              const base64 = audioData.split(',')[1];
+              const binaryString = atob(base64);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let j = 0; j < binaryString.length; j++) {
+                bytes[j] = binaryString.charCodeAt(j);
+              }
+              const audioBuffer = await audioContext.decodeAudioData(bytes.buffer.slice(0));
+              
+              const cacheKey = beat.t !== undefined 
+                ? `${beat.t}-${beat.who}` 
+                : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+              audioCache.set(cacheKey, { 
+                buffer: audioBuffer,
+                beat, 
+                charName: beat.who, 
+                volume: char.volume !== undefined ? char.volume : 1.0 
+              });
+            } catch (e) {
+              console.warn(`Failed to decode audio ${i}:`, e);
+            }
           }
         }
         
@@ -1450,9 +1461,9 @@
           cached.audio.currentTime = 0; 
         }
       });
-      if (sharedAudio) {
-        sharedAudio.pause();
-        sharedAudio.currentTime = 0;
+      if (currentSourceNode) {
+        try { currentSourceNode.stop(); } catch(e) {}
+        currentSourceNode = null;
       }
     }
     
@@ -1616,38 +1627,15 @@
             peakAmp = 50; // Reset peak for new speaker
             openDuration = 0;
             
-            // Get or create audio element
-            let audioEl;
-            let needsLoad = false;
-            if (cached.audio) {
-              // Old-style: pre-created Audio element
-              audioEl = cached.audio;
-            } else if (cached.audioSrc) {
-              // New-style: create/reuse shared audio for mobile compatibility
-              if (!sharedAudio) {
-                sharedAudio = new Audio();
-                sharedSource = audioContext.createMediaElementSource(sharedAudio);
-                sharedGainNode = audioContext.createGain();
-                sharedSource.connect(sharedGainNode);
-                sharedGainNode.connect(analyser);
-              }
-              sharedAudio.src = cached.audioSrc;
-              sharedGainNode.gain.value = cached.volume || 1.0;
-              audioEl = sharedAudio;
-              needsLoad = true;
-            }
-            
-            audioEl.onended = () => {
+            const onAudioEnd = () => {
               const charEl = characters[beat.who]?.el;
               if (charEl) {
                 charEl.classList.remove('speaking');
                 const mouthOpen = charEl.querySelector('#mouth-open');
                 const mouthClosed = charEl.querySelector('#mouth-closed');
-                // Smoothly close mouth - ry first, then opacity
                 if (mouthOpen) {
                   mouthOpen.setAttribute('ry', '1');
                   mouthOpen.setAttribute('rx', '2');
-                  // Delay the opacity fade to allow size transition
                   setTimeout(() => {
                     mouthOpen.setAttribute('opacity', '0');
                     if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
@@ -1656,37 +1644,38 @@
               }
               document.getElementById('caption').classList.remove('visible');
               currentSpeaker = null;
-              
-              // Call completion callback for sequential mode
-              if (onComplete) {
-                setTimeout(onComplete, 200); // Small delay between lines
-              }
+              currentSourceNode = null;
+              if (onComplete) setTimeout(onComplete, 200);
             };
             
-            // Play audio (wait for load if needed)
-            const playAudio = () => {
-              audioEl.currentTime = 0;
-              audioEl.play().catch(e => {
+            // Stop any current audio
+            if (currentSourceNode) {
+              try { currentSourceNode.stop(); } catch(e) {}
+            }
+            
+            if (cached.buffer) {
+              // New-style: AudioBuffer (mobile-friendly)
+              const sourceNode = audioContext.createBufferSource();
+              sourceNode.buffer = cached.buffer;
+              const gainNode = audioContext.createGain();
+              gainNode.gain.value = cached.volume || 1.0;
+              sourceNode.connect(gainNode);
+              gainNode.connect(analyser);
+              sourceNode.onended = onAudioEnd;
+              sourceNode.start(0);
+              currentSourceNode = sourceNode;
+              currentGainNode = gainNode;
+            } else if (cached.audio) {
+              // Old-style: Audio element (for live TTS)
+              cached.audio.onended = onAudioEnd;
+              cached.audio.currentTime = 0;
+              cached.audio.play().catch(e => {
                 console.warn('Audio play failed:', e);
-                // On mobile, audio may fail - still advance after a delay
-                document.getElementById('caption').classList.remove('visible');
-                currentSpeaker = null;
-                if (onComplete) setTimeout(onComplete, 1500);
+                onAudioEnd();
               });
-            };
-            
-            if (needsLoad) {
-              audioEl.oncanplaythrough = () => {
-                audioEl.oncanplaythrough = null; // Clear handler
-                playAudio();
-              };
-              audioEl.load();
-              // Fallback timeout in case canplaythrough doesn't fire
-              setTimeout(() => {
-                if (audioEl.readyState >= 3) playAudio();
-              }, 500);
             } else {
-              playAudio();
+              // No audio - skip after brief delay
+              setTimeout(onAudioEnd, 1500);
             }
           } else {
             // No audio cached - show caption briefly and continue
