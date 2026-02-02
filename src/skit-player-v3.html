@@ -96,13 +96,17 @@
       transform: rotate(8deg);
     }
     
-    /* Photo sprite jaw puppet animation */
+    /* Photo sprite animations */
     .character svg[data-photo-sprite] #head-bottom {
-      transition: transform 0.08s ease-out;
+      transition: transform 0.15s ease-out;
       /* transform-origin is set inline based on pivot point */
     }
     .character svg[data-photo-sprite] #head-top {
-      /* Upper face stays fixed for photo sprites */
+      transition: transform 0.25s ease-out;
+    }
+    .character svg[data-photo-sprite] #face-upper {
+      transition: transform 0.25s ease-out;
+      transform-origin: center 70%; /* Transform from lower part of upper face */
     }
     
     /* Mouth animation for lip sync - smooth scaling */
@@ -728,38 +732,75 @@
       const isHuman = HUMAN_SPRITES.includes(char.sprite);
       const isTrumpV3 = char.sprite === 'trump-v3';
       
-      // Handle photo sprite emotions (jaw puppet style)
+      // Handle photo sprite emotions (warp-style transforms + jaw puppet)
       if (isPhotoSprite) {
+        const headTop = el.querySelector('#head-top');
         const headBottom = el.querySelector('#head-bottom');
         const mouthOpen = el.querySelector('#mouth-open');
+        const faceUpper = el.querySelector('#face-upper');
         
-        if (headBottom) {
-          // Surprised/scared = wide open jaw
-          if (emotion === 'surprised' || emotion === 'scared') {
-            headBottom.style.transform = 'rotate(12deg)';
+        // Reset transforms
+        if (headTop) headTop.style.transform = '';
+        if (headBottom) headBottom.style.transform = '';
+        if (faceUpper) faceUpper.style.transform = '';
+        if (mouthOpen) {
+          mouthOpen.setAttribute('ry', '1');
+          mouthOpen.setAttribute('opacity', '0');
+        }
+        
+        // Apply emotion-specific transforms
+        switch (emotion) {
+          case 'happy':
+            // Slight squint (scale down eyes area vertically)
+            if (faceUpper) faceUpper.style.transform = 'scaleY(0.97)';
+            break;
+            
+          case 'sad':
+            // Inner brows raised - tilt upper face slightly
+            if (headTop) headTop.style.transform = 'perspective(100px) rotateX(3deg)';
+            break;
+            
+          case 'angry':
+            // Brows lowered/furrowed - compress upper face, tense jaw
+            if (faceUpper) faceUpper.style.transform = 'scaleY(0.95) translateY(2px)';
+            if (headBottom) headBottom.style.transform = 'rotate(2deg)';
             if (mouthOpen) {
-              mouthOpen.setAttribute('ry', '4');
+              mouthOpen.setAttribute('ry', '1.5');
+              mouthOpen.setAttribute('opacity', '0.7');
+            }
+            break;
+            
+          case 'surprised':
+          case 'scared':
+            // Eyes wide, brows raised, jaw drops
+            if (faceUpper) faceUpper.style.transform = 'scaleY(1.03) translateY(-2px)';
+            if (headBottom) headBottom.style.transform = 'rotate(12deg)';
+            if (mouthOpen) {
+              mouthOpen.setAttribute('ry', '5');
               mouthOpen.setAttribute('rx', '10');
               mouthOpen.setAttribute('opacity', '1');
             }
-          }
-          // Angry = tense, slightly open
-          else if (emotion === 'angry') {
-            headBottom.style.transform = 'rotate(3deg)';
-            if (mouthOpen) {
-              mouthOpen.setAttribute('ry', '1.5');
-              mouthOpen.setAttribute('opacity', '0.8');
-            }
-          }
-          // Happy/default = closed
-          else {
-            headBottom.style.transform = 'rotate(0deg)';
-            if (mouthOpen) {
-              mouthOpen.setAttribute('ry', '1');
-              mouthOpen.setAttribute('opacity', '0');
-            }
-          }
+            break;
+            
+          case 'thinking':
+            // Slight asymmetric look
+            if (headTop) headTop.style.transform = 'rotate(-2deg)';
+            break;
+            
+          case 'smug':
+            // Slight squint, knowing look
+            if (faceUpper) faceUpper.style.transform = 'scaleY(0.96)';
+            if (headTop) headTop.style.transform = 'rotate(3deg)';
+            break;
+            
+          case 'tired':
+            // Droopy, heavy lids
+            if (faceUpper) faceUpper.style.transform = 'scaleY(0.93) translateY(3px)';
+            break;
+            
+          // neutral and others - default (no transform)
         }
+        
         console.log(`${charName} emotion: ${emotion} (photo-sprite)`);
         return;
       }
