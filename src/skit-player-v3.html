@@ -111,8 +111,8 @@
     .character.look-down svg .pupil { transform: translateY(1.5px); }
     
     /* Character facing direction */
-    .character.facing-left { transform: translateX(-50%) scaleX(-1); }
-    .character.facing-right { transform: translateX(-50%) scaleX(1); }
+    .character.facing-left { transform: translateX(-50%) scaleX(-1) scale(var(--char-scale, 1)); }
+    .character.facing-right { transform: translateX(-50%) scaleX(1) scale(var(--char-scale, 1)); }
     
     /* SVG emotion transitions - specific elements only */
     .character svg #eye-left-white,
@@ -1313,7 +1313,7 @@
       };
       
       div.style.left = config.x + '%';
-      div.style.transform = `translateX(-50%) scale(${scale})`;
+      div.style.setProperty('--char-scale', scale);
       
       if (config.startOffscreen) {
         div.classList.add('offscreen');
@@ -1532,18 +1532,24 @@
               });
             }
             
-            // Set up eye contact - speaker looks at other character
-            const charNames = Object.keys(characters);
-            const otherChar = charNames.find(n => n !== beat.who);
-            if (otherChar) {
-              // Determine relative positions for eye direction
-              const speakerX = characters[beat.who].x;
-              const otherX = characters[otherChar].x;
-              const speakerLooksRight = otherX > speakerX;
-              const otherLooksRight = speakerX > otherX;
-              
-              setEyeDirection(beat.who, speakerLooksRight ? 'right' : 'left');
-              setEyeDirection(otherChar, otherLooksRight ? 'right' : 'left');
+            // Set up eye contact - all visible characters look at speaker
+            const speakerX = characters[beat.who]?.x;
+            if (speakerX !== undefined) {
+              for (const [name, char] of Object.entries(characters)) {
+                if (!char.el || char.el.classList.contains('offscreen')) continue;
+                if (name === beat.who) {
+                  // Speaker looks at the main other character (first visible non-speaker)
+                  const other = Object.entries(characters).find(([n, c]) => 
+                    n !== name && c.el && !c.el.classList.contains('offscreen')
+                  );
+                  if (other) {
+                    setEyeDirection(name, other[1].x > speakerX ? 'right' : 'left');
+                  }
+                } else {
+                  // Listeners look at speaker
+                  setEyeDirection(name, speakerX > char.x ? 'right' : 'left');
+                }
+              }
             }
             
             // Start speaking
