@@ -1,16 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
   <g id="body">
     <!-- Suit jacket -->
-    <rect x="30" y="85" width="40" height="65" rx="3" fill="#1a237e"/>
-    <!-- Shoulders -->
-    <ellipse cx="30" cy="90" rx="8" ry="12" fill="#1a237e"/>
-    <ellipse cx="70" cy="90" rx="8" ry="12" fill="#1a237e"/>
+    <rect x="32" y="85" width="36" height="65" rx="3" fill="#1a237e"/>
     <!-- Shirt/tie -->
-    <polygon points="50,85 42,150 58,150" fill="#ffffff"/>
+    <polygon points="50,85 43,150 57,150" fill="#ffffff"/>
     <polygon points="50,85 46,150 54,150" fill="#c62828"/>
     <!-- Lapels -->
-    <polygon points="42,85 30,100 42,105" fill="#0d1442"/>
-    <polygon points="58,85 70,100 58,105" fill="#0d1442"/>
+    <polygon points="44,85 32,100 44,105" fill="#0d1442"/>
+    <polygon points="56,85 68,100 56,105" fill="#0d1442"/>
     <!-- Neck -->
     <rect x="44" y="75" width="12" height="12" fill="#ffcc80"/>
   </g>
