@@ -149,7 +149,7 @@
     },
     {
       "do": "pause",
-      "duration": 0.5
+      "duration": 2
     },
     {
       "do": "shot",

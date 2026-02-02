@@ -59,9 +59,9 @@
     <!-- Orange beard -->
     <path d="M35 58 Q50 75 65 58" fill="#ff6f00"/>
     <path d="M38 62 Q50 78 62 62" fill="#e65100"/>
-    <!-- Mouth closed (hidden in beard) -->
-    <path id="mouth-closed" d="M45 60 Q50 63 55 60" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
-    <!-- Mouth open -->
-    <ellipse id="mouth-open" cx="50" cy="61" rx="4" ry="3" fill="#5d4037" opacity="0"/>
+    <!-- Mouth closed (smile) - positioned consistently -->
+    <path id="mouth-closed" d="M45 58 Q50 62 55 58" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+    <!-- Mouth open - same position as closed -->
+    <ellipse id="mouth-open" cx="50" cy="59" rx="4" ry="3" fill="#5d4037" opacity="0"/>
   </g>
 </svg>

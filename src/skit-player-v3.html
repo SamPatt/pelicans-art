@@ -344,8 +344,10 @@
     }
     
     // === CHARACTER SYSTEM ===
+    const CACHE_BUSTER = Date.now();
+    
     async function loadSprite(spriteName, view = 'front') {
-      const spritePath = `sprites/${spriteName}-${view}.svg`;
+      const spritePath = `sprites/${spriteName}-${view}.svg?v=${CACHE_BUSTER}`;
       const response = await fetch(spritePath);
       const svgText = await response.text();
       return svgText;
@@ -1075,7 +1077,7 @@
       Object.keys(characters).forEach(k => delete characters[k]);
       
       // Set background
-      document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg`;
+      document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg?v=${CACHE_BUSTER}`;
       
       // Create characters
       for (const [name, config] of Object.entries(skit.cast)) {
@@ -1163,12 +1165,12 @@
       const sprites = {};
       for (const spriteName of spriteNames) {
         try {
-          const frontResp = await fetch(`sprites/${spriteName}-front.svg`);
+          const frontResp = await fetch(`sprites/${spriteName}-front.svg?v=${CACHE_BUSTER}`);
           const frontSvg = await frontResp.text();
           sprites[`${spriteName}-front`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(frontSvg)));
           
           // Try back sprite too
-          const backResp = await fetch(`sprites/${spriteName}-back.svg`);
+          const backResp = await fetch(`sprites/${spriteName}-back.svg?v=${CACHE_BUSTER}`);
           if (backResp.ok) {
             const backSvg = await backResp.text();
             sprites[`${spriteName}-back`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(backSvg)));
@@ -1181,7 +1183,7 @@
       // Load and encode background
       const backgrounds = {};
       try {
-        const bgResp = await fetch(`backgrounds/${backgroundName}.svg`);
+        const bgResp = await fetch(`backgrounds/${backgroundName}.svg?v=${CACHE_BUSTER}`);
         const bgSvg = await bgResp.text();
         backgrounds[backgroundName] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(bgSvg)));
       } catch (e) {
@@ -1257,7 +1259,7 @@
         if (skit.assets?.backgrounds?.[bgName]) {
           document.getElementById('background').src = skit.assets.backgrounds[bgName];
         } else {
-          document.getElementById('background').src = `backgrounds/${bgName}.svg`;
+          document.getElementById('background').src = `backgrounds/${bgName}.svg?v=${CACHE_BUSTER}`;
         }
         
         // Create characters with embedded sprites
