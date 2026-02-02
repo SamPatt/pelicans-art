@@ -1,0 +1,210 @@
+{
+  "meta": {
+    "title": "Photo Sprite Face Test",
+    "duration": 60
+  },
+  "stage": {
+    "background": "office"
+  },
+  "cast": {
+    "photoGuy": {
+      "x": 35,
+      "sprite": "photo-1770039820962",
+      "voice": "marius",
+      "volume": 1.2
+    },
+    "cat": {
+      "x": 70,
+      "sprite": "cat",
+      "voice": "cosette"
+    }
+  },
+  "script": [
+    {
+      "do": "shot",
+      "type": "wide"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "neutral"
+    },
+    {
+      "do": "emote",
+      "who": "cat",
+      "emotion": "neutral"
+    },
+    {
+      "do": "pause",
+      "duration": 1
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "photoGuy"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "happy"
+    },
+    {
+      "do": "say",
+      "who": "photoGuy",
+      "line": "Hello! Testing the new photo-based sprite system. Look at my beautiful face!"
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "cat"
+    },
+    {
+      "do": "emote",
+      "who": "cat",
+      "emotion": "surprised"
+    },
+    {
+      "do": "say",
+      "who": "cat",
+      "line": "Meow! You look... strangely realistic."
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "photoGuy"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "worried"
+    },
+    {
+      "do": "say",
+      "who": "photoGuy",
+      "line": "Does this worried expression work? The eyebrows should move!"
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "cat"
+    },
+    {
+      "do": "emote",
+      "who": "cat",
+      "emotion": "neutral"
+    },
+    {
+      "do": "say",
+      "who": "cat",
+      "line": "Your face is doing... something. I think?"
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "photoGuy"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "angry"
+    },
+    {
+      "do": "say",
+      "who": "photoGuy",
+      "line": "Now I'm ANGRY! Grrrr! Fear my furrowed brow!"
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "cat"
+    },
+    {
+      "do": "emote",
+      "who": "cat",
+      "emotion": "worried"
+    },
+    {
+      "do": "say",
+      "who": "cat",
+      "line": "Okay okay, calm down there, photo man."
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "photoGuy"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "sad"
+    },
+    {
+      "do": "say",
+      "who": "photoGuy",
+      "line": "Sorry... I just get emotional sometimes. Being a test subject is hard."
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "cat"
+    },
+    {
+      "do": "emote",
+      "who": "cat",
+      "emotion": "happy"
+    },
+    {
+      "do": "say",
+      "who": "cat",
+      "line": "There there. Your face warping is very impressive!"
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "photoGuy"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "excited"
+    },
+    {
+      "do": "say",
+      "who": "photoGuy",
+      "line": "Really?! YESSS! The photo sprite system WORKS!"
+    },
+    {
+      "do": "shot",
+      "type": "closeup",
+      "who": "photoGuy"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "smug"
+    },
+    {
+      "do": "say",
+      "who": "photoGuy",
+      "line": "I knew it would. I'm kind of a big deal."
+    },
+    {
+      "do": "shot",
+      "type": "wide"
+    },
+    {
+      "do": "emote",
+      "who": "cat",
+      "emotion": "neutral"
+    },
+    {
+      "do": "emote",
+      "who": "photoGuy",
+      "emotion": "happy"
+    },
+    {
+      "do": "pause",
+      "duration": 2
+    }
+  ]
+}

@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Sprite Test</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 { text-align: center; margin-bottom: 20px; }
+    
+    .container {
+      display: flex;
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .sprite-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #16213e;
+      border-radius: 12px;
+      padding: 20px;
+      min-height: 500px;
+    }
+    
+    #sprite-wrapper {
+      transform: scale(3);
+      transform-origin: center center;
+    }
+    
+    .controls {
+      width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .control-group {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    
+    .control-group h3 {
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: #888;
+      text-transform: uppercase;
+    }
+    
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    button {
+      background: #0f3460;
+      border: none;
+      color: #eee;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #1a5f7a;
+    }
+    
+    button.active {
+      background: #e94560;
+    }
+    
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    
+    .slider-row label {
+      width: 100px;
+      font-size: 13px;
+    }
+    
+    .slider-row input[type="range"] {
+      flex: 1;
+    }
+    
+    .slider-row span {
+      width: 50px;
+      text-align: right;
+      font-size: 12px;
+      color: #888;
+    }
+    
+    #status {
+      text-align: center;
+      padding: 10px;
+      background: #16213e;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #888;
+    }
+
+    /* Jaw puppet animation for speaking */
+    #sprite-wrapper.speaking svg #head-bottom {
+      animation: jawPuppet 0.15s ease-in-out infinite alternate;
+    }
+    
+    @keyframes jawPuppet {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(8deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Photo Sprite Test</h1>
+  
+  <div class="container">
+    <div class="sprite-container">
+      <div id="sprite-wrapper"></div>
+    </div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <h3>Emotions (from skit-player-v3)</h3>
+        <div class="buttons" id="emotion-buttons">
+          <button data-emotion="neutral" class="active">Neutral</button>
+          <button data-emotion="happy">Happy</button>
+          <button data-emotion="sad">Sad</button>
+          <button data-emotion="angry">Angry</button>
+          <button data-emotion="surprised">Surprised</button>
+          <button data-emotion="thinking">Thinking</button>
+          <button data-emotion="smug">Smug</button>
+          <button data-emotion="tired">Tired</button>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <h3>Speaking (Jaw Puppet)</h3>
+        <div class="buttons">
+          <button id="speak-toggle">Start Speaking Animation</button>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <h3>Manual Jaw Control</h3>
+        <div class="slider-row">
+          <label>Jaw Rotation</label>
+          <input type="range" id="jaw-rotate" min="0" max="15" value="0" step="0.5">
+          <span id="jaw-rotate-val">0°</span>
+        </div>
+        <div class="slider-row">
+          <label>Mouth Hole RY</label>
+          <input type="range" id="mouth-ry" min="1" max="8" value="1" step="0.5">
+          <span id="mouth-ry-val">1</span>
+        </div>
+        <div class="slider-row">
+          <label>Mouth Opacity</label>
+          <input type="range" id="mouth-opacity" min="0" max="1" value="0" step="0.1">
+          <span id="mouth-opacity-val">0</span>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <h3>Face Upper Transform</h3>
+        <div class="slider-row">
+          <label>Scale Y</label>
+          <input type="range" id="face-scale-y" min="0.9" max="1.1" value="1" step="0.01">
+          <span id="face-scale-y-val">1</span>
+        </div>
+        <div class="slider-row">
+          <label>Translate Y</label>
+          <input type="range" id="face-translate-y" min="-5" max="5" value="0" step="0.5">
+          <span id="face-translate-y-val">0px</span>
+        </div>
+      </div>
+      
+      <div id="status">Loading sprite...</div>
+    </div>
+  </div>
+
+  <script>
+    const wrapper = document.getElementById('sprite-wrapper');
+    const status = document.getElementById('status');
+    let isSpeaking = false;
+
+    // Load the sprite
+    async function loadSprite() {
+      try {
+        const resp = await fetch('sprites/photo-1770039820962-front.svg');
+        if (!resp.ok) throw new Error('Failed to load sprite');
+        const svgText = await resp.text();
+        wrapper.innerHTML = svgText;
+        
+        const svg = wrapper.querySelector('svg');
+        if (svg) {
+          console.log('SVG loaded');
+          console.log('  photo-sprite:', svg.dataset.photoSprite);
+          console.log('  pivot-y:', svg.dataset.pivotY);
+          
+          // Log elements found
+          const headTop = wrapper.querySelector('#head-top');
+          const headBottom = wrapper.querySelector('#head-bottom');
+          const faceUpper = wrapper.querySelector('#face-upper');
+          const mouthOpen = wrapper.querySelector('#mouth-open');
+          
+          console.log('  #head-top:', headTop ? 'found' : 'MISSING');
+          console.log('  #head-bottom:', headBottom ? 'found' : 'MISSING');
+          console.log('  #face-upper:', faceUpper ? 'found' : 'MISSING');
+          console.log('  #mouth-open:', mouthOpen ? 'found' : 'MISSING');
+          
+          status.textContent = 'Sprite loaded! Try the controls.';
+        }
+      } catch (err) {
+        status.textContent = 'Error: ' + err.message;
+        console.error(err);
+      }
+    }
+
+    // Apply emotion (matches skit-player-v3 logic)
+    function applyEmotion(emotion) {
+      const headTop = wrapper.querySelector('#head-top');
+      const headBottom = wrapper.querySelector('#head-bottom');
+      const faceUpper = wrapper.querySelector('#face-upper');
+      const mouthOpen = wrapper.querySelector('#mouth-open');
+      
+      // Reset transforms
+      if (headTop) headTop.style.transform = '';
+      if (headBottom) headBottom.style.transform = '';
+      if (faceUpper) faceUpper.style.transform = '';
+      if (mouthOpen) {
+        mouthOpen.setAttribute('ry', '1');
+        mouthOpen.setAttribute('opacity', '0');
+      }
+      
+      // Reset manual sliders
+      document.getElementById('jaw-rotate').value = 0;
+      document.getElementById('jaw-rotate-val').textContent = '0°';
+      document.getElementById('mouth-ry').value = 1;
+      document.getElementById('mouth-ry-val').textContent = '1';
+      document.getElementById('mouth-opacity').value = 0;
+      document.getElementById('mouth-opacity-val').textContent = '0';
+      document.getElementById('face-scale-y').value = 1;
+      document.getElementById('face-scale-y-val').textContent = '1';
+      document.getElementById('face-translate-y').value = 0;
+      document.getElementById('face-translate-y-val').textContent = '0px';
+      
+      // Apply emotion-specific transforms (from skit-player-v3)
+      switch (emotion) {
+        case 'happy':
+          // Slight squint (scale down eyes area vertically)
+          if (faceUpper) faceUpper.style.transform = 'scaleY(0.97)';
+          document.getElementById('face-scale-y').value = 0.97;
+          document.getElementById('face-scale-y-val').textContent = '0.97';
+          break;
+          
+        case 'sad':
+          // Inner brows raised - tilt upper face slightly
+          if (headTop) headTop.style.transform = 'perspective(100px) rotateX(3deg)';
+          break;
+          
+        case 'angry':
+          // Brows lowered/furrowed - compress upper face, tense jaw
+          if (faceUpper) faceUpper.style.transform = 'scaleY(0.95) translateY(2px)';
+          if (headBottom) headBottom.style.transform = 'rotate(2deg)';
+          if (mouthOpen) {
+            mouthOpen.setAttribute('ry', '1.5');
+            mouthOpen.setAttribute('opacity', '0.7');
+          }
+          document.getElementById('face-scale-y').value = 0.95;
+          document.getElementById('face-scale-y-val').textContent = '0.95';
+          document.getElementById('face-translate-y').value = 2;
+          document.getElementById('face-translate-y-val').textContent = '2px';
+          document.getElementById('jaw-rotate').value = 2;
+          document.getElementById('jaw-rotate-val').textContent = '2°';
+          document.getElementById('mouth-ry').value = 1.5;
+          document.getElementById('mouth-ry-val').textContent = '1.5';
+          document.getElementById('mouth-opacity').value = 0.7;
+          document.getElementById('mouth-opacity-val').textContent = '0.7';
+          break;
+          
+        case 'surprised':
+          // Eyes wide, brows raised, jaw drops
+          if (faceUpper) faceUpper.style.transform = 'scaleY(1.03) translateY(-2px)';
+          if (headBottom) headBottom.style.transform = 'rotate(12deg)';
+          if (mouthOpen) {
+            mouthOpen.setAttribute('ry', '5');
+            mouthOpen.setAttribute('rx', '10');
+            mouthOpen.setAttribute('opacity', '1');
+          }
+          document.getElementById('face-scale-y').value = 1.03;
+          document.getElementById('face-scale-y-val').textContent = '1.03';
+          document.getElementById('face-translate-y').value = -2;
+          document.getElementById('face-translate-y-val').textContent = '-2px';
+          document.getElementById('jaw-rotate').value = 12;
+          document.getElementById('jaw-rotate-val').textContent = '12°';
+          document.getElementById('mouth-ry').value = 5;
+          document.getElementById('mouth-ry-val').textContent = '5';
+          document.getElementById('mouth-opacity').value = 1;
+          document.getElementById('mouth-opacity-val').textContent = '1';
+          break;
+          
+        case 'thinking':
+          // Slight asymmetric look
+          if (headTop) headTop.style.transform = 'rotate(-2deg)';
+          break;
+          
+        case 'smug':
+          // Slight squint, knowing look
+          if (faceUpper) faceUpper.style.transform = 'scaleY(0.96)';
+          if (headTop) headTop.style.transform = 'rotate(3deg)';
+          document.getElementById('face-scale-y').value = 0.96;
+          document.getElementById('face-scale-y-val').textContent = '0.96';
+          break;
+          
+        case 'tired':
+          // Droopy, heavy lids
+          if (faceUpper) faceUpper.style.transform = 'scaleY(0.93) translateY(3px)';
+          document.getElementById('face-scale-y').value = 0.93;
+          document.getElementById('face-scale-y-val').textContent = '0.93';
+          document.getElementById('face-translate-y').value = 3;
+          document.getElementById('face-translate-y-val').textContent = '3px';
+          break;
+      }
+      
+      status.textContent = `Emotion: ${emotion}`;
+    }
+
+    // Emotion buttons
+    document.querySelectorAll('#emotion-buttons button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#emotion-buttons button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyEmotion(btn.dataset.emotion);
+      });
+    });
+
+    // Speaking toggle (jaw puppet animation)
+    document.getElementById('speak-toggle').addEventListener('click', (e) => {
+      isSpeaking = !isSpeaking;
+      wrapper.classList.toggle('speaking', isSpeaking);
+      e.target.textContent = isSpeaking ? 'Stop Speaking Animation' : 'Start Speaking Animation';
+      e.target.classList.toggle('active', isSpeaking);
+      
+      // Also show mouth when speaking
+      const mouthOpen = wrapper.querySelector('#mouth-open');
+      if (mouthOpen) {
+        if (isSpeaking) {
+          mouthOpen.setAttribute('opacity', '1');
+          mouthOpen.setAttribute('ry', '3');
+        } else {
+          mouthOpen.setAttribute('opacity', '0');
+          mouthOpen.setAttribute('ry', '1');
+        }
+      }
+    });
+
+    // Manual jaw rotation
+    document.getElementById('jaw-rotate').addEventListener('input', (e) => {
+      const val = e.target.value;
+      document.getElementById('jaw-rotate-val').textContent = val + '°';
+      const headBottom = wrapper.querySelector('#head-bottom');
+      if (headBottom) {
+        headBottom.style.transform = `rotate(${val}deg)`;
+      }
+    });
+    
+    // Manual mouth hole ry
+    document.getElementById('mouth-ry').addEventListener('input', (e) => {
+      const val = e.target.value;
+      document.getElementById('mouth-ry-val').textContent = val;
+      const mouthOpen = wrapper.querySelector('#mouth-open');
+      if (mouthOpen) {
+        mouthOpen.setAttribute('ry', val);
+      }
+    });
+    
+    // Manual mouth opacity
+    document.getElementById('mouth-opacity').addEventListener('input', (e) => {
+      const val = e.target.value;
+      document.getElementById('mouth-opacity-val').textContent = val;
+      const mouthOpen = wrapper.querySelector('#mouth-open');
+      if (mouthOpen) {
+        mouthOpen.setAttribute('opacity', val);
+      }
+    });
+    
+    // Face upper scale Y
+    document.getElementById('face-scale-y').addEventListener('input', (e) => {
+      const scaleY = e.target.value;
+      const translateY = document.getElementById('face-translate-y').value;
+      document.getElementById('face-scale-y-val').textContent = scaleY;
+      const faceUpper = wrapper.querySelector('#face-upper');
+      if (faceUpper) {
+        faceUpper.style.transform = `scaleY(${scaleY}) translateY(${translateY}px)`;
+      }
+    });
+    
+    // Face upper translate Y
+    document.getElementById('face-translate-y').addEventListener('input', (e) => {
+      const translateY = e.target.value;
+      const scaleY = document.getElementById('face-scale-y').value;
+      document.getElementById('face-translate-y-val').textContent = translateY + 'px';
+      const faceUpper = wrapper.querySelector('#face-upper');
+      if (faceUpper) {
+        faceUpper.style.transform = `scaleY(${scaleY}) translateY(${translateY}px)`;
+      }
+    });
+
+    // Init
+    loadSprite();
+  </script>
+</body>
+</html>
