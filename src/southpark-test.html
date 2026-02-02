@@ -189,8 +189,8 @@
     }
     
     async function init() {
-      await loadSprite('char-left', 'sprites/trump.svg');
-      await loadSprite('char-right', 'sprites/trump.svg');
+      await loadSprite('char-left', 'sprites/trump/front.svg');
+      await loadSprite('char-right', 'sprites/trump/front.svg');
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       analyser = audioContext.createAnalyser();
       analyser.fftSize = 256;

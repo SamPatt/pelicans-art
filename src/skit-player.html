@@ -730,7 +730,7 @@
 
     async function loadSprite(elementId, spriteName, view = 'front') {
       // Try specific view first, fall back to base sprite
-      let res = await fetch(`sprites/${spriteName}-${view}.svg`);
+      let res = await fetch(`sprites/${spriteName}/${view}.svg`);
       if (!res.ok) {
         res = await fetch(`sprites/${spriteName}.svg`);
       }

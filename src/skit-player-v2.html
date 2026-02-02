@@ -335,7 +335,7 @@
     
     // === CHARACTER SYSTEM ===
     async function loadSprite(spriteName, view = 'front') {
-      const spritePath = `sprites/${spriteName}-${view}.svg`;
+      const spritePath = `sprites/${spriteName}/${view}.svg`;
       const response = await fetch(spritePath);
       const svgText = await response.text();
       return svgText;
@@ -1188,12 +1188,12 @@
       const sprites = {};
       for (const spriteName of spriteNames) {
         try {
-          const frontResp = await fetch(`sprites/${spriteName}-front.svg`);
+          const frontResp = await fetch(`sprites/${spriteName}/front.svg`);
           const frontSvg = await frontResp.text();
           sprites[`${spriteName}-front`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(frontSvg)));
           
           // Try back sprite too
-          const backResp = await fetch(`sprites/${spriteName}-back.svg`);
+          const backResp = await fetch(`sprites/${spriteName}/back.svg`);
           if (backResp.ok) {
             const backSvg = await backResp.text();
             sprites[`${spriteName}-back`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(backSvg)));

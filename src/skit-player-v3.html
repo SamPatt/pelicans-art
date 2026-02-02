@@ -360,7 +360,7 @@
     const CACHE_BUSTER = Date.now();
     
     async function loadSprite(spriteName, view = 'front') {
-      const spritePath = `sprites/${spriteName}-${view}.svg?v=${CACHE_BUSTER}`;
+      const spritePath = `sprites/${spriteName}/${view}.svg?v=${CACHE_BUSTER}`;
       const response = await fetch(spritePath);
       const svgText = await response.text();
       return svgText;
@@ -1253,12 +1253,12 @@
       const sprites = {};
       for (const spriteName of spriteNames) {
         try {
-          const frontResp = await fetch(`sprites/${spriteName}-front.svg?v=${CACHE_BUSTER}`);
+          const frontResp = await fetch(`sprites/${spriteName}/front.svg?v=${CACHE_BUSTER}`);
           const frontSvg = await frontResp.text();
           sprites[`${spriteName}-front`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(frontSvg)));
           
           // Try back sprite too
-          const backResp = await fetch(`sprites/${spriteName}-back.svg?v=${CACHE_BUSTER}`);
+          const backResp = await fetch(`sprites/${spriteName}/back.svg?v=${CACHE_BUSTER}`);
           if (backResp.ok) {
             const backSvg = await backResp.text();
             sprites[`${spriteName}-back`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(backSvg)));
