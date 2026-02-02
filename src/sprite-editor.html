@@ -6,7 +6,9 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>SkitKit Sprite Editor v2</title>
+  <title>SkitKit Sprite Editor v3</title>
+  <!-- Face API for landmark detection -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
@@ -609,7 +611,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v2.3</span>
+    <span style="color:#666;">v3.0</span>
   </div>
 
   <script>
@@ -1350,6 +1352,29 @@
     // === PHOTO SPRITE ===
     let uploadedImage = null;
     let faceData = null;
+    let faceLandmarks = null;
+    let faceApiLoaded = false;
+    
+    async function loadFaceApiModels() {
+      if (faceApiLoaded) return true;
+      
+      document.getElementById('face-status').textContent = 'Loading face detection models...';
+      
+      try {
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL)
+        ]);
+        faceApiLoaded = true;
+        console.log('Face API models loaded');
+        return true;
+      } catch (e) {
+        console.error('Failed to load face-api models:', e);
+        document.getElementById('face-status').textContent = 'Model load failed, using manual mode';
+        return false;
+      }
+    }
     
     function openPhotoModal() {
       document.getElementById('photo-modal').style.display = 'flex';
@@ -1385,70 +1410,100 @@
         canvas.width = Math.round(img.width * scale);
         canvas.height = Math.round(img.height * scale);
         
-        // Store for later calculations
         previewCanvasSize = { width: canvas.width, height: canvas.height };
-        
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        // Attempt basic face detection (placeholder - would use face-api.js)
-        document.getElementById('face-status').textContent = 'Face detected! Tap to adjust, then generate.';
+        // Try to load face-api and detect face
+        const modelsLoaded = await loadFaceApiModels();
         
-        // Simple heuristic: assume face is in upper-center third
-        faceData = {
-          x: canvas.width * 0.25,
-          y: canvas.height * 0.05,
-          width: canvas.width * 0.5,
-          height: canvas.height * 0.55,
-          canvasWidth: canvas.width,
-          canvasHeight: canvas.height
-        };
-        
-        // Draw face rectangle
-        ctx.strokeStyle = '#e94560';
-        ctx.lineWidth = 3;
-        ctx.setLineDash([8, 4]);
-        ctx.strokeRect(faceData.x, faceData.y, faceData.width, faceData.height);
-        ctx.setLineDash([]);
-        
-        // Draw center crosshair for mouth position
-        const mouthY = faceData.y + faceData.height * 0.75;
-        ctx.strokeStyle = '#4ecca3';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(faceData.x + 10, mouthY);
-        ctx.lineTo(faceData.x + faceData.width - 10, mouthY);
-        ctx.stroke();
-        ctx.fillStyle = '#4ecca3';
-        ctx.font = '12px sans-serif';
-        ctx.fillText('mouth', faceData.x + faceData.width + 5, mouthY + 4);
-        
-        // Add touch/click handlers for adjusting face region
-        canvas.onclick = canvas.ontouchend = (e) => {
-          e.preventDefault();
-          const rect = canvas.getBoundingClientRect();
-          const touch = e.changedTouches ? e.changedTouches[0] : e;
-          const x = touch.clientX - rect.left;
-          const y = touch.clientY - rect.top;
+        if (modelsLoaded) {
+          document.getElementById('face-status').textContent = 'Detecting face...';
           
-          // Recenter face region on tap
-          faceData.x = Math.max(0, x - faceData.width / 2);
-          faceData.y = Math.max(0, y - faceData.height / 2);
-          
-          // Keep within bounds
-          faceData.x = Math.min(faceData.x, canvas.width - faceData.width);
-          faceData.y = Math.min(faceData.y, canvas.height - faceData.height);
-          
-          // Redraw
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          ctx.strokeStyle = '#e94560';
-          ctx.lineWidth = 3;
-          ctx.setLineDash([8, 4]);
-          ctx.strokeRect(faceData.x, faceData.y, faceData.width, faceData.height);
-          ctx.setLineDash([]);
-          
-          document.getElementById('face-status').textContent = 'Tap to reposition. Press Generate when ready.';
-        };
+          try {
+            // Detect face with landmarks
+            const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions())
+              .withFaceLandmarks(true);
+            
+            if (detection) {
+              const box = detection.detection.box;
+              const landmarks = detection.landmarks;
+              
+              // Store face bounding box
+              faceData = {
+                x: box.x,
+                y: box.y,
+                width: box.width,
+                height: box.height,
+                canvasWidth: canvas.width,
+                canvasHeight: canvas.height
+              };
+              
+              // Store landmark positions (scaled to canvas)
+              const positions = landmarks.positions;
+              faceLandmarks = {
+                // Jawline: 0-16
+                jawline: positions.slice(0, 17),
+                // Right eyebrow: 17-21
+                rightEyebrow: positions.slice(17, 22),
+                // Left eyebrow: 22-26
+                leftEyebrow: positions.slice(22, 27),
+                // Nose: 27-35
+                nose: positions.slice(27, 36),
+                // Right eye: 36-41
+                rightEye: positions.slice(36, 42),
+                // Left eye: 42-47
+                leftEye: positions.slice(42, 48),
+                // Outer lips: 48-59
+                outerLips: positions.slice(48, 60),
+                // Inner lips: 60-67
+                innerLips: positions.slice(60, 68)
+              };
+              
+              // Draw face box
+              ctx.strokeStyle = '#e94560';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(box.x, box.y, box.width, box.height);
+              
+              // Draw eye points (cyan)
+              ctx.fillStyle = '#4ecdc4';
+              [...faceLandmarks.rightEye, ...faceLandmarks.leftEye].forEach(pt => {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+              });
+              
+              // Draw mouth points (green)
+              ctx.fillStyle = '#4ecca3';
+              faceLandmarks.outerLips.forEach(pt => {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+              });
+              
+              // Draw jawline (yellow)
+              ctx.strokeStyle = '#ffd93d';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              faceLandmarks.jawline.forEach((pt, i) => {
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+              });
+              ctx.stroke();
+              
+              document.getElementById('face-status').textContent = '✓ Face detected! Eyes (cyan), mouth (green), jawline (yellow)';
+              
+            } else {
+              document.getElementById('face-status').textContent = 'No face detected. Using manual mode.';
+              setManualFaceData(canvas);
+            }
+          } catch (e) {
+            console.error('Face detection error:', e);
+            document.getElementById('face-status').textContent = 'Detection failed. Using manual mode.';
+            setManualFaceData(canvas);
+          }
+        } else {
+          setManualFaceData(canvas);
+        }
         
         // Show step 2
         setTimeout(() => {
@@ -1459,6 +1514,18 @@
       };
       
       img.src = URL.createObjectURL(file);
+    }
+    
+    function setManualFaceData(canvas) {
+      faceData = {
+        x: canvas.width * 0.2,
+        y: canvas.height * 0.05,
+        width: canvas.width * 0.6,
+        height: canvas.height * 0.7,
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height
+      };
+      faceLandmarks = null;
     }
     
     function drawEditCanvas() {
