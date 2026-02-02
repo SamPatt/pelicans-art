@@ -9,11 +9,7 @@
   <title>SkitKit Sprite Editor v3</title>
   <!-- Face API for landmark detection -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-  <!-- Background removal -->
-  <script type="module">
-    import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm';
-    window.imglyRemoveBackground = imglyRemoveBackground;
-  </script>
+  <!-- Background removal loaded dynamically -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
@@ -620,7 +616,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.4</span>
+    <span style="color:#666;">v3.5</span>
   </div>
 
   <script>
@@ -1377,6 +1373,8 @@
       status.textContent = msg;
     }
     
+    let bgRemovalModule = null;
+    
     async function removeBackground(imageSource) {
       const log = document.getElementById('bg-log');
       log.value = ''; // Clear log
@@ -1384,22 +1382,22 @@
       bgLog('Initializing background removal...');
       
       try {
-        // Wait for module to be available
-        let attempts = 0;
-        while (typeof window.imglyRemoveBackground === 'undefined' && attempts < 10) {
-          bgLog(`Waiting for module... attempt ${attempts + 1}/10`);
-          await new Promise(resolve => setTimeout(resolve, 500));
-          attempts++;
+        // Dynamic import of the module
+        if (!bgRemovalModule) {
+          bgLog('Loading background removal module via dynamic import...');
+          const module = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm');
+          bgRemovalModule = module.removeBackground || module.default;
+          bgLog(`Module loaded: ${typeof bgRemovalModule}`);
         }
         
-        if (typeof window.imglyRemoveBackground === 'undefined') {
-          throw new Error('Background removal module failed to load after 10 attempts');
+        if (!bgRemovalModule) {
+          throw new Error('Failed to get removeBackground function from module');
         }
         
-        bgLog('Module loaded! Starting background removal...');
+        bgLog('Starting background removal...');
         bgLog(`Image source type: ${imageSource.constructor.name}, size: ${imageSource.size} bytes`);
         
-        const blob = await window.imglyRemoveBackground(imageSource, {
+        const blob = await bgRemovalModule(imageSource, {
           model: 'small',
           progress: (key, current, total) => {
             const pct = Math.round((current / total) * 100);
