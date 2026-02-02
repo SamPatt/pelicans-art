@@ -1000,8 +1000,10 @@
         return;
       }
       
-      // For now, download as file
-      // In production, would save to server
+      // Save to localStorage
+      saveToLocalStorage();
+      
+      // Download as file
       const blob = new Blob([currentSprite], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1010,8 +1012,66 @@
       a.click();
       URL.revokeObjectURL(url);
       
-      updateStatus(`Downloaded: ${currentSpriteName}-front.svg`);
+      updateStatus(`Saved & downloaded: ${currentSpriteName}-front.svg`);
     }
+    
+    function saveToLocalStorage() {
+      if (!currentSpriteName || !currentSprite) return;
+      
+      const saved = JSON.parse(localStorage.getItem('skitkit-sprites') || '{}');
+      saved[currentSpriteName] = {
+        svg: currentSprite,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('skitkit-sprites', JSON.stringify(saved));
+    }
+    
+    function loadLocalSprites() {
+      const saved = JSON.parse(localStorage.getItem('skitkit-sprites') || '{}');
+      const list = document.getElementById('sprite-list');
+      
+      // Add divider and local sprites
+      const localSprites = Object.keys(saved);
+      if (localSprites.length > 0) {
+        const divider = document.createElement('div');
+        divider.style.cssText = 'padding:5px 10px;color:#666;font-size:0.8em;border-top:1px solid #0f3460;margin-top:5px;';
+        divider.textContent = '💾 Saved Locally';
+        list.appendChild(divider);
+        
+        for (const name of localSprites) {
+          const item = document.createElement('div');
+          item.className = 'sprite-item';
+          item.innerHTML = `<span class="icon">📝</span> ${name}`;
+          item.onclick = () => loadLocalSprite(name);
+          list.appendChild(item);
+        }
+      }
+    }
+    
+    function loadLocalSprite(name) {
+      const saved = JSON.parse(localStorage.getItem('skitkit-sprites') || '{}');
+      if (!saved[name]) return;
+      
+      currentSpriteName = name;
+      currentSprite = saved[name].svg;
+      
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.toggle('active', item.textContent.includes(name));
+      });
+      
+      renderSprite();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      updateStatus(`Loaded local sprite: ${name}`);
+    }
+    
+    // Auto-save every 30 seconds
+    setInterval(() => {
+      if (currentSpriteName && currentSprite) {
+        saveToLocalStorage();
+      }
+    }, 30000);
     
     // === UTILITY ===
     function updateStatus(msg) {
@@ -1570,6 +1630,7 @@
     };
     
     loadSpriteList();
+    loadLocalSprites();
     loadSprite('girl'); // Load default
   </script>
 </body>
