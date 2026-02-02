@@ -132,23 +132,36 @@
       transition: none !important;
     }
     
-    /* Captions */
+    /* Captions - TikTok/Shorts style */
     #caption {
       position: absolute;
       bottom: 5%;
       left: 5%;
       right: 5%;
-      background: rgba(0,0,0,0.8);
       color: #fff;
       padding: 10px 15px;
-      border-radius: 8px;
-      font-size: 14px;
+      font-family: 'Arial Black', 'Helvetica Bold', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
       text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: opacity 0.15s;
       z-index: 100;
+      /* Black outline for readability */
+      text-shadow: 
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         0px -2px 0 #000,
+         0px  2px 0 #000,
+        -2px  0px 0 #000,
+         2px  0px 0 #000;
     }
     #caption.visible { opacity: 1; }
+    body.captions-off #caption { display: none; }
     
     /* Controls */
     #controls {
@@ -193,7 +206,7 @@
     }
   </style>
 </head>
-<body>
+<body class="captions-off">
   <h1>🎭 AI Improv Theater</h1>
   
   <div id="debug"></div>
@@ -207,6 +220,7 @@
   
   <div id="controls">
     <button id="playBtn" onclick="togglePlay()" disabled>▶ Play</button>
+    <button id="captionBtn" onclick="toggleCaptions()">CC</button>
     <button onclick="loadSkit('luckyCharms')" class="active">Lucky Charms</button>
     <button onclick="loadSkit('spaceWall')">Space Wall</button>
     <button onclick="loadSkit('trump_alien_seq')">Trump/Alien (Sequential)</button>
@@ -1065,6 +1079,12 @@
     function togglePlay() {
       if (isPlaying) stop();
       else play();
+    }
+    
+    function toggleCaptions() {
+      document.body.classList.toggle('captions-off');
+      const btn = document.getElementById('captionBtn');
+      btn.classList.toggle('active');
     }
     
     // Sequential playback state
