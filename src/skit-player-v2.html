@@ -247,6 +247,11 @@
     let audioContext, analyser, dataArray;
     const audioCache = new Map();
     
+    // Single reusable audio element for mobile compatibility
+    let sharedAudio = null;
+    let sharedGainNode = null;
+    let sharedSource = null;
+    
     // === SHOT PRESETS ===
     const shotPresets = {
       'wide': { zoom: 1, y: 50, frameBoth: true },
@@ -1299,10 +1304,9 @@
           setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
         }
         
-        // Load pre-baked audio
+        // Store pre-baked audio data URLs (don't create Audio elements yet - mobile issues)
         audioCache.clear();
         const sayActions = skit.script.filter(b => b.do === 'say');
-        let seqIndex = 0;
         const beatIndexMap = new Map();
         skit.script.forEach((b, idx) => {
           if (b.do === 'say') beatIndexMap.set(b, idx);
@@ -1315,17 +1319,16 @@
           
           if (audioData) {
             document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
-            const audio = new Audio(audioData);
-            const source = audioContext.createMediaElementSource(audio);
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
-            source.connect(gainNode);
-            gainNode.connect(analyser);
-            
             const cacheKey = beat.t !== undefined 
               ? `${beat.t}-${beat.who}` 
               : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
-            audioCache.set(cacheKey, { audio, beat, charName: beat.who, gainNode });
+            // Store data URL and volume, create Audio on demand for mobile compatibility
+            audioCache.set(cacheKey, { 
+              audioSrc: audioData, 
+              beat, 
+              charName: beat.who, 
+              volume: char.volume !== undefined ? char.volume : 1.0 
+            });
           }
         }
         
@@ -1441,7 +1444,16 @@
         if (mouthOpen) { mouthOpen.setAttribute('opacity', '0'); mouthOpen.setAttribute('ry', '3'); }
         if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
       });
-      audioCache.forEach(({ audio }) => { audio.pause(); audio.currentTime = 0; });
+      audioCache.forEach((cached) => { 
+        if (cached.audio) {
+          cached.audio.pause(); 
+          cached.audio.currentTime = 0; 
+        }
+      });
+      if (sharedAudio) {
+        sharedAudio.pause();
+        sharedAudio.currentTime = 0;
+      }
     }
     
     let currentSpeaker = null;
@@ -1604,7 +1616,26 @@
             peakAmp = 50; // Reset peak for new speaker
             openDuration = 0;
             
-            cached.audio.onended = () => {
+            // Get or create audio element
+            let audioEl;
+            if (cached.audio) {
+              // Old-style: pre-created Audio element
+              audioEl = cached.audio;
+            } else if (cached.audioSrc) {
+              // New-style: create/reuse shared audio for mobile compatibility
+              if (!sharedAudio) {
+                sharedAudio = new Audio();
+                sharedSource = audioContext.createMediaElementSource(sharedAudio);
+                sharedGainNode = audioContext.createGain();
+                sharedSource.connect(sharedGainNode);
+                sharedGainNode.connect(analyser);
+              }
+              sharedAudio.src = cached.audioSrc;
+              sharedGainNode.gain.value = cached.volume || 1.0;
+              audioEl = sharedAudio;
+            }
+            
+            audioEl.onended = () => {
               const charEl = characters[beat.who]?.el;
               if (charEl) {
                 charEl.classList.remove('speaking');
@@ -1630,9 +1661,9 @@
               }
             };
             
-            // Reset audio position and play with small delay to prevent cutoff
-            cached.audio.currentTime = 0;
-            cached.audio.play().catch(e => {
+            // Reset audio position and play
+            audioEl.currentTime = 0;
+            audioEl.play().catch(e => {
               console.warn('Audio play failed:', e);
               // On mobile, audio may fail - still advance after a delay
               document.getElementById('caption').classList.remove('visible');
