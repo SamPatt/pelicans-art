@@ -2233,35 +2233,42 @@
       faceCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 0, 0, 200, 200);
       const faceDataUrl = faceCanvas.toDataURL('image/png');
       
-      // Calculate mouth position from landmarks
-      // Face image in sprite: rendered with 'meet' so actual size is ~80x80 starting at y=0
-      // faceCanvas is 200x200, so mouth Y maps directly
-      let spriteMouthY = 65; // Default near lower part of face
-      
-      if (faceLandmarks && faceLandmarks.outerLips && faceLandmarks.outerLips.length > 0) {
-        const lips = faceLandmarks.outerLips;
-        const avgLipY = lips.reduce((sum, p) => sum + p.y, 0) / lips.length;
-        
-        // Convert canvas coords to relative position within faceData bounds (0 to 1)
-        const relY = (avgLipY - faceData.y) / faceData.height;
-        
-        // faceCanvas is 200x200, rendered into ~80x80 sprite area
-        // relY represents position within the cropped face region
-        // Scale to sprite: 80 * relY, but faceData includes hair space above
-        // Add offset to account for hair space (typically ~20-30% of faceData is above actual face)
-        spriteMouthY = 80 * relY + 10; // Add 10 units to push down
-        
-        // Clamp to reasonable range (should be in lower third of face)
-        spriteMouthY = Math.max(55, Math.min(75, spriteMouthY));
-        
-        console.log('Mouth Y calc:', { avgLipY, faceDataY: faceData.y, faceDataH: faceData.height, relY, spriteMouthY });
+      // Calculate jaw pivot Y in source coordinates (between lips)
+      let pivotRelY = 0.65; // Default relative position
+      if (faceLandmarks && faceLandmarks.outerLips && faceLandmarks.outerLips.length >= 12) {
+        const topLip = faceLandmarks.outerLips[3]; // Top center (index 51)
+        const bottomLip = faceLandmarks.outerLips[9]; // Bottom center (index 57)
+        const pivotY = (topLip.y + bottomLip.y) / 2;
+        pivotRelY = (pivotY - faceData.y) / faceData.height;
       }
       
-      // Sprite with proper connected proportions
-      // Head: y=0 to y=80 (height 80 for taller face area), Body starts at y=75
-      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+      // Create upper face canvas (above pivot)
+      const upperCanvas = document.createElement('canvas');
+      upperCanvas.width = 200;
+      const upperHeight = Math.round(200 * pivotRelY);
+      upperCanvas.height = upperHeight;
+      const upperCtx = upperCanvas.getContext('2d');
+      upperCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH * pivotRelY, 0, 0, 200, upperHeight);
+      const upperDataUrl = upperCanvas.toDataURL('image/png');
+      
+      // Create lower face canvas (below pivot)
+      const lowerCanvas = document.createElement('canvas');
+      lowerCanvas.width = 200;
+      const lowerHeight = 200 - upperHeight;
+      lowerCanvas.height = lowerHeight;
+      const lowerCtx = lowerCanvas.getContext('2d');
+      lowerCtx.drawImage(uploadedImage, srcX, srcY + srcH * pivotRelY, srcW, srcH * (1 - pivotRelY), 0, 0, 200, lowerHeight);
+      const lowerDataUrl = lowerCanvas.toDataURL('image/png');
+      
+      // Calculate dimensions in sprite coordinates
+      const spriteUpperHeight = Math.round(80 * pivotRelY);
+      const spriteLowerHeight = 80 - spriteUpperHeight;
+      
+      // Sprite with split face for jaw puppet animation
+      // Upper face stays fixed, lower face rotates for talking
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150" data-photo-sprite="true" data-pivot-y="${spriteUpperHeight}">
   <g id="body">
-    <!-- Body connects to head at y=75 -->
+    <!-- Body -->
     <ellipse cx="50" cy="108" rx="15" ry="30" fill="#4ecdc4"/>
     <!-- Arms -->
     <ellipse cx="33" cy="103" rx="4" ry="11" fill="${skinColor}"/>
@@ -2274,24 +2281,14 @@
     <ellipse cx="57" cy="140" rx="4" ry="9" fill="${skinColor}"/>
   </g>
   <g id="head-top">
-    <!-- Photo face - taller area to avoid cutting off head, uses 'meet' to show full face -->
-    <image href="${faceDataUrl}" x="5" y="0" width="90" height="80" preserveAspectRatio="xMidYMid meet"/>
-    <!-- Invisible eye elements for emotion system -->
-    <ellipse id="eye-left-white" cx="35" cy="30" rx="1" ry="1" fill="transparent"/>
-    <ellipse id="eye-right-white" cx="65" cy="30" rx="1" ry="1" fill="transparent"/>
-    <circle id="eye-left-pupil" class="pupil" cx="35" cy="30" r="0.5" fill="transparent"/>
-    <circle id="eye-right-pupil" class="pupil" cx="65" cy="30" r="0.5" fill="transparent"/>
-    <circle id="eye-left-highlight" cx="35" cy="30" r="0.5" fill="transparent" opacity="0"/>
-    <circle id="eye-right-highlight" cx="65" cy="30" r="0.5" fill="transparent" opacity="0"/>
-    <path id="brow-left" d="M28 24 Q35 22 42 24" stroke="transparent" stroke-width="1" fill="none"/>
-    <path id="brow-right" d="M58 24 Q65 22 72 24" stroke="transparent" stroke-width="1" fill="none"/>
+    <!-- Upper face (fixed) -->
+    <image id="face-upper" href="${upperDataUrl}" x="5" y="0" width="90" height="${spriteUpperHeight}" preserveAspectRatio="xMidYMid meet"/>
   </g>
-  <g id="head-bottom">
-    <!-- Tiny mouth mask - just enough to hide real mouth for animation -->
-    <ellipse cx="50" cy="${spriteMouthY}" rx="6" ry="3" fill="${skinColor}"/>
-    <!-- Animated mouth - open mouth uses same Y position -->
-    <path id="mouth-closed" d="M46 ${spriteMouthY} Q50 ${spriteMouthY + 2} 54 ${spriteMouthY}" stroke="#8a5a5a" stroke-width="1.5" fill="none"/>
-    <ellipse id="mouth-open" cx="50" cy="${spriteMouthY}" rx="5" ry="3" fill="#4a2a2a" opacity="0"/>
+  <g id="head-bottom" style="transform-origin: 50px ${spriteUpperHeight}px;">
+    <!-- Lower face (rotates for talking) -->
+    <image id="face-lower" href="${lowerDataUrl}" x="5" y="${spriteUpperHeight}" width="90" height="${spriteLowerHeight}" preserveAspectRatio="xMidYMid meet"/>
+    <!-- Mouth hole (appears when open) -->
+    <ellipse id="mouth-open" cx="50" cy="${spriteUpperHeight + 2}" rx="8" ry="1" fill="#2a0a0a" opacity="0"/>
   </g>
 </svg>`;
       

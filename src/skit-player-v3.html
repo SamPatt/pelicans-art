@@ -77,23 +77,32 @@
     
     .character.offscreen { opacity: 0; pointer-events: none; }
     
-    /* Head rotation when speaking - transform from chin area */
-    .character svg #head-top,
-    .character svg #head-bottom {
+    /* Head rotation when speaking - transform from chin area (regular sprites) */
+    .character svg:not([data-photo-sprite]) #head-top,
+    .character svg:not([data-photo-sprite]) #head-bottom {
       transition: transform 0.05s ease-out;
       transform-origin: 50% 55px;
     }
     
-    /* Left-side character tilts head left when speaking */
-    .character.pos-left.speaking svg #head-top,
-    .character.pos-left.speaking svg #head-bottom {
+    /* Left-side character tilts head left when speaking (regular sprites) */
+    .character.pos-left.speaking svg:not([data-photo-sprite]) #head-top,
+    .character.pos-left.speaking svg:not([data-photo-sprite]) #head-bottom {
       transform: rotate(-8deg);
     }
     
-    /* Right-side character tilts head right when speaking */
-    .character.pos-right.speaking svg #head-top,
-    .character.pos-right.speaking svg #head-bottom {
+    /* Right-side character tilts head right when speaking (regular sprites) */
+    .character.pos-right.speaking svg:not([data-photo-sprite]) #head-top,
+    .character.pos-right.speaking svg:not([data-photo-sprite]) #head-bottom {
       transform: rotate(8deg);
+    }
+    
+    /* Photo sprite jaw puppet animation */
+    .character svg[data-photo-sprite] #head-bottom {
+      transition: transform 0.08s ease-out;
+      /* transform-origin is set inline based on pivot point */
+    }
+    .character svg[data-photo-sprite] #head-top {
+      /* Upper face stays fixed for photo sprites */
     }
     
     /* Mouth animation for lip sync - smooth scaling */
@@ -1528,37 +1537,70 @@
         const normalizedAmp = rawAmp / peakAmp; // 0 to 1
         
         const charEl = characters[currentSpeaker].el;
-        const mouthOpen = charEl.querySelector('#mouth-open');
-        const mouthClosed = charEl.querySelector('#mouth-closed');
+        const svg = charEl.querySelector('svg');
+        const isPhotoSprite = svg && svg.dataset.photoSprite === 'true';
         
-        if (mouthOpen && mouthClosed) {
-          // Threshold for mouth movement - requires both normalized and raw amplitude
-          const threshold = 0.25;
-          const minRawAmp = 15; // Minimum raw amplitude to avoid triggering on silence
+        // Threshold for mouth movement
+        const threshold = 0.25;
+        const minRawAmp = 15;
+        const isOpen = normalizedAmp > threshold && rawAmp > minRawAmp;
+        
+        if (isPhotoSprite) {
+          // Photo sprite: use jaw puppet animation
+          const headBottom = charEl.querySelector('#head-bottom');
+          const mouthOpen = charEl.querySelector('#mouth-open');
           
-          if (normalizedAmp > threshold && rawAmp > minRawAmp) {
-            openDuration++;
-            
-            // Scale mouth opening based on amplitude (min 1, max 4 for ry)
-            const mouthScale = 1 + (normalizedAmp - threshold) * 4;
-            const mouthRy = Math.min(4, Math.max(1, mouthScale));
-            const mouthRx = 3 + (normalizedAmp - threshold) * 2; // width also scales slightly
-            
-            mouthOpen.setAttribute('ry', mouthRy.toFixed(1));
-            mouthOpen.setAttribute('rx', mouthRx.toFixed(1));
-            mouthOpen.setAttribute('opacity', '1');
-            mouthClosed.setAttribute('opacity', '0');
-            
-            // Head tilt when speaking
-            charEl.classList.add('speaking');
-          } else {
-            openDuration = 0;
-            // Smoothly return to closed - let CSS transition handle it
-            mouthOpen.setAttribute('ry', '1');
-            mouthOpen.setAttribute('rx', '2');
-            mouthOpen.setAttribute('opacity', '0');
-            mouthClosed.setAttribute('opacity', '1');
-            charEl.classList.remove('speaking');
+          if (headBottom) {
+            if (isOpen) {
+              openDuration++;
+              // Rotate jaw based on amplitude (max ~10 degrees)
+              const angle = Math.min(10, (normalizedAmp - threshold) * 15);
+              headBottom.style.transform = `rotate(${angle}deg)`;
+              
+              // Show mouth hole
+              if (mouthOpen) {
+                const holeSize = 1 + angle * 0.3;
+                mouthOpen.setAttribute('ry', holeSize.toFixed(1));
+                mouthOpen.setAttribute('opacity', '1');
+              }
+              charEl.classList.add('speaking');
+            } else {
+              openDuration = 0;
+              headBottom.style.transform = 'rotate(0deg)';
+              if (mouthOpen) {
+                mouthOpen.setAttribute('ry', '1');
+                mouthOpen.setAttribute('opacity', '0');
+              }
+              charEl.classList.remove('speaking');
+            }
+          }
+        } else {
+          // Regular sprite: use SVG mouth elements
+          const mouthOpen = charEl.querySelector('#mouth-open');
+          const mouthClosed = charEl.querySelector('#mouth-closed');
+          
+          if (mouthOpen && mouthClosed) {
+            if (isOpen) {
+              openDuration++;
+              
+              // Scale mouth opening based on amplitude
+              const mouthScale = 1 + (normalizedAmp - threshold) * 4;
+              const mouthRy = Math.min(4, Math.max(1, mouthScale));
+              const mouthRx = 3 + (normalizedAmp - threshold) * 2;
+              
+              mouthOpen.setAttribute('ry', mouthRy.toFixed(1));
+              mouthOpen.setAttribute('rx', mouthRx.toFixed(1));
+              mouthOpen.setAttribute('opacity', '1');
+              mouthClosed.setAttribute('opacity', '0');
+              charEl.classList.add('speaking');
+            } else {
+              openDuration = 0;
+              mouthOpen.setAttribute('ry', '1');
+              mouthOpen.setAttribute('rx', '2');
+              mouthOpen.setAttribute('opacity', '0');
+              mouthClosed.setAttribute('opacity', '1');
+              charEl.classList.remove('speaking');
+            }
           }
         }
       }
