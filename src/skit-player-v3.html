@@ -1682,7 +1682,16 @@
       dataArray = new Uint8Array(analyser.frequencyBinCount);
       analyser.connect(audioContext.destination);
       
-      await loadSkit('luckyCharms');
+      // Check for URL parameter to auto-load published skit
+      const params = new URLSearchParams(window.location.search);
+      const skitParam = params.get('skit');
+      
+      if (skitParam) {
+        // Load pre-generated published skit
+        await loadFromUrl(`published/${skitParam}.json`);
+      } else {
+        await loadSkit('luckyCharms');
+      }
     }
     
     init();
