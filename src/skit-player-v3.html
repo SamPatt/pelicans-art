@@ -442,11 +442,13 @@
       // Start offscreen
       char.el.style.transition = 'none';
       char.el.style.left = from === 'left' ? '-20%' : '120%';
+      char.el.style.opacity = '0';
       char.el.classList.remove('offscreen');
       char.el.offsetHeight; // reflow
       
       // Animate in
       char.el.style.transition = 'left 1s ease-out, opacity 0.3s';
+      char.el.style.opacity = '1';
       char.x = toX;
       char.el.style.left = `${toX}%`;
     }
@@ -1314,13 +1316,15 @@
       div.style.transform = `translateX(-50%) scale(${scale})`;
       
       if (config.startOffscreen) {
-        div.style.display = 'none';
+        div.classList.add('offscreen');
       }
       
       // Auto-face toward center
       if (config.x > 50) {
-        div.style.transform = `translateX(-50%) scaleX(-1) scale(${scale})`;
+        div.classList.add('facing-left');
         characters[name].flipped = true;
+      } else {
+        div.classList.add('facing-right');
       }
     }
     
