@@ -778,10 +778,149 @@
       }
     });
     
+    // === RANDOM CHARACTER GENERATOR ===
+    const SKIN_TONES = ['#fce4d4', '#f5d0b5', '#d4a574', '#c68642', '#8d5524', '#5c3a21'];
+    const HAIR_COLORS = ['#1a1a1a', '#2d2d2d', '#4a3728', '#8b4513', '#d4a574', '#ffd700', '#ff6b35', '#e94560', '#4ecdc4', '#9b59b6'];
+    const CLOTHES_COLORS = ['#e94560', '#4ecdc4', '#ffd93d', '#6c5ce7', '#00b894', '#fd79a8', '#0984e3', '#e17055', '#636e72', '#2d3436'];
+    const BODY_TYPES = ['slim', 'average', 'wide'];
+    const HAIR_STYLES = ['short', 'medium', 'long', 'bald', 'spiky', 'ponytail'];
+    
+    function randomChoice(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+    
+    function randomRange(min, max) {
+      return min + Math.random() * (max - min);
+    }
+    
+    function generateRandomCharacter() {
+      const skin = randomChoice(SKIN_TONES);
+      const hair = randomChoice(HAIR_COLORS);
+      const clothes = randomChoice(CLOTHES_COLORS);
+      const bodyType = randomChoice(BODY_TYPES);
+      const hairStyle = randomChoice(HAIR_STYLES);
+      const isFemale = Math.random() > 0.5;
+      
+      // Body width based on type
+      const bodyWidth = bodyType === 'slim' ? 15 : bodyType === 'average' ? 20 : 25;
+      
+      // Generate SVG
+      let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Body -->`;
+      
+      if (isFemale) {
+        // Feminine body shape
+        svg += `
+    <path d="M${50-bodyWidth} 65 Q${50-bodyWidth-5} 80 ${50-bodyWidth+2} 95 Q${50-bodyWidth-2} 110 ${50-bodyWidth+5} 130 L${50-bodyWidth+8} 130 Q50 115 ${50+bodyWidth-8} 130 L${50+bodyWidth-5} 130 Q${50+bodyWidth+2} 110 ${50+bodyWidth-2} 95 Q${50+bodyWidth+5} 80 ${50+bodyWidth} 65 Q${50+10} 60 50 60 Q${50-10} 60 ${50-bodyWidth} 65" fill="${clothes}"/>`;
+      } else {
+        // Masculine body shape  
+        svg += `
+    <rect x="${50-bodyWidth}" y="62" width="${bodyWidth*2}" height="55" rx="3" fill="${clothes}"/>`;
+      }
+      
+      svg += `
+    <!-- Arms -->
+    <ellipse cx="${50-bodyWidth-7}" cy="82" rx="5" ry="14" fill="${skin}"/>
+    <ellipse cx="${50+bodyWidth+7}" cy="82" rx="5" ry="14" fill="${skin}"/>
+    <!-- Hands -->
+    <ellipse cx="${50-bodyWidth-7}" cy="98" rx="4" ry="3" fill="${skin}"/>
+    <ellipse cx="${50+bodyWidth+7}" cy="98" rx="4" ry="3" fill="${skin}"/>
+    <!-- Legs -->
+    <ellipse cx="43" cy="138" rx="5" ry="10" fill="${skin}"/>
+    <ellipse cx="57" cy="138" rx="5" ry="10" fill="${skin}"/>
+  </g>
+  <g id="head-top">`;
+      
+      // Hair back layer
+      if (hairStyle !== 'bald') {
+        svg += `
+    <!-- Hair back -->
+    <ellipse cx="50" cy="36" rx="22" ry="24" fill="${hair}"/>`;
+        
+        // Hair style variations
+        if (hairStyle === 'long' || hairStyle === 'ponytail') {
+          svg += `
+    <path d="M28 36 Q24 50 26 75 Q28 90 32 95" stroke="${hair}" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M72 36 Q76 50 74 75 Q72 90 68 95" stroke="${hair}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+        } else if (hairStyle === 'medium') {
+          svg += `
+    <path d="M28 36 Q24 50 28 65" stroke="${hair}" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M72 36 Q76 50 72 65" stroke="${hair}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+        } else if (hairStyle === 'spiky') {
+          svg += `
+    <path d="M35 20 L38 12 L42 22" fill="${hair}"/>
+    <path d="M45 18 L50 8 L55 18" fill="${hair}"/>
+    <path d="M58 20 L62 12 L65 22" fill="${hair}"/>`;
+        }
+        
+        if (hairStyle === 'ponytail') {
+          svg += `
+    <ellipse cx="50" cy="18" rx="8" ry="6" fill="${hair}"/>
+    <path d="M50 24 Q55 40 50 60" stroke="${hair}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+        }
+      }
+      
+      svg += `
+    <!-- Face -->
+    <ellipse cx="50" cy="42" rx="16" ry="18" fill="${skin}"/>
+    <!-- Blush -->
+    <ellipse cx="38" cy="46" rx="3" ry="2" fill="#ffb6b6" opacity="0.5"/>
+    <ellipse cx="62" cy="46" rx="3" ry="2" fill="#ffb6b6" opacity="0.5"/>
+    <!-- Eyes -->
+    <ellipse id="eye-left-white" cx="42" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="58" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#2d2d2d"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#2d2d2d"/>
+    <!-- Eye highlights -->
+    <circle id="eye-left-highlight" cx="41" cy="41" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="57" cy="41" r="1" fill="#fff" opacity="0"/>
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M37 36 Q42 34 47 36" stroke="${hair}" stroke-width="1.5" fill="none"/>
+    <path id="brow-right" d="M53 36 Q58 34 63 36" stroke="${hair}" stroke-width="1.5" fill="none"/>
+    <!-- Nose -->
+    <ellipse cx="50" cy="48" rx="2" ry="2" fill="${adjustColor(skin, -20)}"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Mouth -->
+    <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
+    <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
+  </g>
+</svg>`;
+      
+      return svg;
+    }
+    
+    function adjustColor(hex, amount) {
+      // Simple brightness adjustment
+      const num = parseInt(hex.slice(1), 16);
+      const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+      const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amount));
+      const b = Math.max(0, Math.min(255, (num & 0xff) + amount));
+      return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+    }
+    
+    function createRandomCharacter() {
+      const svg = generateRandomCharacter();
+      currentSprite = svg;
+      currentSpriteName = 'random-' + Date.now();
+      
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      renderSprite();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      updateStatus('Generated random character');
+    }
+    
     // === INIT ===
     document.getElementById('btn-undo').onclick = undo;
     document.getElementById('btn-redo').onclick = redo;
     document.getElementById('btn-save').onclick = saveSprite;
+    document.getElementById('btn-random').onclick = createRandomCharacter;
     
     loadSpriteList();
     loadSprite('girl'); // Load default
