@@ -616,7 +616,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.5</span>
+    <span style="color:#666;">v3.6</span>
   </div>
 
   <script>
@@ -1373,39 +1373,100 @@
       status.textContent = msg;
     }
     
-    let bgRemovalModule = null;
+    let bgRemovalPipeline = null;
     
     async function removeBackground(imageSource) {
       const log = document.getElementById('bg-log');
       log.value = ''; // Clear log
       
-      bgLog('Initializing background removal...');
+      bgLog('Initializing background removal with Transformers.js...');
       
       try {
-        // Dynamic import of the module
-        if (!bgRemovalModule) {
-          bgLog('Loading background removal module via dynamic import...');
-          const module = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm');
-          bgRemovalModule = module.removeBackground || module.default;
-          bgLog(`Module loaded: ${typeof bgRemovalModule}`);
+        // Dynamic import Transformers.js
+        if (!bgRemovalPipeline) {
+          bgLog('Loading Transformers.js library...');
+          const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
+          
+          // Configure for browser
+          env.allowLocalModels = false;
+          env.useBrowserCache = true;
+          
+          bgLog('Loading segmentation model (first time ~10MB)...');
+          bgRemovalPipeline = await pipeline('image-segmentation', 'Xenova/segformer_b2_clothes', {
+            progress_callback: (progress) => {
+              if (progress.status === 'downloading') {
+                const pct = Math.round((progress.loaded / progress.total) * 100) || 0;
+                bgLog(`Downloading: ${progress.file} ${pct}%`);
+              }
+            }
+          });
+          bgLog('Model loaded!');
         }
         
-        if (!bgRemovalModule) {
-          throw new Error('Failed to get removeBackground function from module');
-        }
+        bgLog('Processing image...');
         
-        bgLog('Starting background removal...');
-        bgLog(`Image source type: ${imageSource.constructor.name}, size: ${imageSource.size} bytes`);
-        
-        const blob = await bgRemovalModule(imageSource, {
-          model: 'small',
-          progress: (key, current, total) => {
-            const pct = Math.round((current / total) * 100);
-            bgLog(`${key}: ${pct}% (${current}/${total})`);
-          }
+        // Convert blob to data URL for the model
+        const dataUrl = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(imageSource);
         });
         
-        bgLog(`Success! Output blob size: ${blob.size} bytes`);
+        // Run segmentation
+        const result = await bgRemovalPipeline(dataUrl);
+        bgLog(`Segmentation complete, found ${result.length} segments`);
+        
+        // Find the person/face mask
+        const personMask = result.find(r => 
+          r.label.toLowerCase().includes('background') === false
+        ) || result[0];
+        
+        if (!personMask || !personMask.mask) {
+          throw new Error('No foreground segment found');
+        }
+        
+        bgLog('Creating transparent image...');
+        
+        // Apply mask to create transparent PNG
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = dataUrl;
+        });
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        // Get image data and apply mask
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const maskImg = new Image();
+        await new Promise((resolve, reject) => {
+          maskImg.onload = resolve;
+          maskImg.onerror = reject;
+          maskImg.src = personMask.mask;
+        });
+        
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = canvas.width;
+        maskCanvas.height = canvas.height;
+        const maskCtx = maskCanvas.getContext('2d');
+        maskCtx.drawImage(maskImg, 0, 0, canvas.width, canvas.height);
+        const maskData = maskCtx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Apply mask as alpha
+        for (let i = 0; i < imageData.data.length; i += 4) {
+          imageData.data[i + 3] = maskData.data[i]; // Use red channel as alpha
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        bgLog(`Success! Output: ${blob.size} bytes`);
+        
         processedImageBlob = blob;
         bgRemovalReady = true;
         return blob;
