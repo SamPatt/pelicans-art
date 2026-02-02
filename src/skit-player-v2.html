@@ -1450,6 +1450,11 @@
     
     // Process next beat in sequential mode
     function processNextSequentialBeat() {
+      // Resume audio context on mobile (may be suspended)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
       if (!isPlaying || sequentialIndex >= currentSkit.script.length) {
         if (sequentialIndex >= currentSkit.script.length) {
           stop();
@@ -1627,7 +1632,13 @@
             
             // Reset audio position and play with small delay to prevent cutoff
             cached.audio.currentTime = 0;
-            cached.audio.play().catch(e => console.warn('Audio play failed:', e));
+            cached.audio.play().catch(e => {
+              console.warn('Audio play failed:', e);
+              // On mobile, audio may fail - still advance after a delay
+              document.getElementById('caption').classList.remove('visible');
+              currentSpeaker = null;
+              if (onComplete) setTimeout(onComplete, 1500);
+            });
           } else {
             // No audio cached - show caption briefly and continue
             document.getElementById('caption').textContent = beat.line;
