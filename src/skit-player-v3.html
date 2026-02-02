@@ -874,14 +874,17 @@
           
           // Leprechaun introduces himself
           { do: "shot", type: "closeup", who: "leprechaun" },
+          { do: "look", who: "leprechaun", at: "right" },
           { do: "say", who: "leprechaun", line: "Can I help you?" },
           
           // Back to wide - woman annoyed
           { do: "shot", type: "wide" },
+          { do: "look", who: "leprechaun", at: "right" },
           { do: "emote", who: "woman", emotion: "angry" },
           { do: "pause", duration: 0.5 },
           
           // Leprechaun says What?
+          { do: "look", who: "leprechaun", at: "right" },
           { do: "say", who: "leprechaun", line: "What?" },
           { do: "pause", duration: 1 }
         ]
