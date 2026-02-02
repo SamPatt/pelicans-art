@@ -701,7 +701,14 @@
         svg.setAttribute('height', baseSize * 1.5 * (zoomLevel / 100));
       }
       document.getElementById('zoom-level').textContent = zoomLevel + '%';
+      
+      // Update resize handles if element is selected
+      if (selectedElement) {
+        createResizeHandles(selectedElement);
+      }
     }
+    
+    // Scroll wheel zoom - initialized after DOM ready
     
     // === SPRITE LIST ===
     let characterList = [];
@@ -937,13 +944,13 @@
     // === RESIZE HANDLES ===
     function getElementScreenBBox(el) {
       try {
-        const container = document.querySelector('.canvas-container');
-        const containerRect = container.getBoundingClientRect();
+        const svgCanvas = document.getElementById('svg-canvas');
+        const canvasRect = svgCanvas.getBoundingClientRect();
         const elRect = el.getBoundingClientRect();
         
         return {
-          x: elRect.left - containerRect.left,
-          y: elRect.top - containerRect.top,
+          x: elRect.left - canvasRect.left,
+          y: elRect.top - canvasRect.top,
           width: elRect.width,
           height: elRect.height
         };
@@ -962,7 +969,10 @@
         return;
       }
       
-      const container = document.querySelector('.canvas-container');
+      // Add handles to the svg-canvas div so they're positioned relative to the SVG
+      const svgCanvas = document.getElementById('svg-canvas');
+      svgCanvas.style.position = 'relative'; // Ensure positioning context
+      
       const handles = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
       
       handles.forEach(pos => {
@@ -985,7 +995,7 @@
         handle.style.left = (hx - 5) + 'px';
         handle.style.top = (hy - 5) + 'px';
         
-        container.appendChild(handle);
+        svgCanvas.appendChild(handle);
         setupResizeHandle(handle, el, pos);
       });
     }
@@ -2858,6 +2868,17 @@
     loadSpriteList();
     loadLocalSprites();
     selectCharacter('cat'); // Load default
+    
+    // Scroll wheel zoom
+    document.querySelector('.canvas-container').addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        zoomLevel = Math.min(400, zoomLevel + 10);
+      } else {
+        zoomLevel = Math.max(50, zoomLevel - 10);
+      }
+      applyZoom();
+    }, { passive: false });
   </script>
 </body>
 </html>
