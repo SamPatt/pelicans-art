@@ -71,7 +71,7 @@ Visit `http://localhost:8080`
 | `exit` | who, to (left/right) | Walk off to offscreen |
 
 ### Emotions
-`neutral`, `happy`, `sad`, `angry`, `shocked`, `confused`, `distressed`
+`neutral`, `happy`, `sad`, `angry`, `surprised`, `worried`, `tired`, `excited`, `smug`
 
 ## Voice Setup
 
@@ -82,6 +82,30 @@ Uses Pocket TTS with these voice assignments:
 - `cosette` — female (cat)
 
 Available voices: alba, marius, javert, jean, fantine, cosette, eponine, azelma
+
+### Voice Cloning
+
+Pass a URL to a reference audio file instead of a voice name:
+```json
+{
+  "trump": { "x": 70, "sprite": "trump", "voice": "https://example.com/audio/trump_reference.wav" }
+}
+```
+
+Tips for reference audio:
+- 15-30 seconds of clear speech
+- Minimal background noise
+- `.wav` format preferred
+
+### Emotional Delivery
+
+Pocket TTS has no emotion controls — use text and punctuation to impact delivery:
+
+- **Exaggerate with caps:** "WHAT?!" vs "what"
+- **Punctuation matters:** exclamation marks, ellipses, question marks
+- **Word choice:** "tremendous" vs "good", "absolutely" vs "yes"
+
+This works fairly well. The visual emotions (sprite faces) handle expression; the voice follows the energy of the text.
 
 ## Project Status
 
