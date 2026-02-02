@@ -616,7 +616,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v4.0</span>
+    <span style="color:#666;">v4.1</span>
   </div>
 
   <script>
@@ -1836,18 +1836,47 @@
       faceCanvas.height = 200;
       const faceCtx = faceCanvas.getContext('2d');
       
-      // Sample skin color from face area
+      // Sample skin color from cheeks using landmarks if available
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = uploadedImage.width;
       tempCanvas.height = uploadedImage.height;
       const tempCtx = tempCanvas.getContext('2d');
       tempCtx.drawImage(uploadedImage, 0, 0);
       
-      // Sample from center of face
-      const sampleX = uploadedImage.width * 0.5;
-      const sampleY = uploadedImage.height * 0.4;
-      const pixel = tempCtx.getImageData(sampleX, sampleY, 1, 1).data;
-      const skinColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+      let skinColor = 'rgb(220, 180, 160)'; // Default fallback
+      const scaleX = uploadedImage.width / faceData.canvasWidth;
+      const scaleY = uploadedImage.height / faceData.canvasHeight;
+      
+      if (faceLandmarks && faceLandmarks.nose && faceLandmarks.nose.length > 0) {
+        // Sample from cheek areas (left and right of nose)
+        const noseX = faceLandmarks.nose[0].x * scaleX;
+        const noseY = faceLandmarks.nose[0].y * scaleY;
+        const samples = [
+          [noseX - 30 * scaleX, noseY], // Left cheek
+          [noseX + 30 * scaleX, noseY], // Right cheek
+        ];
+        let r = 0, g = 0, b = 0, count = 0;
+        for (const [sx, sy] of samples) {
+          if (sx > 0 && sy > 0 && sx < uploadedImage.width && sy < uploadedImage.height) {
+            const pixel = tempCtx.getImageData(Math.floor(sx), Math.floor(sy), 1, 1).data;
+            // Only use if it looks like skin (not too dark, not too saturated)
+            if (pixel[0] > 100 && pixel[1] > 60 && pixel[2] > 50) {
+              r += pixel[0]; g += pixel[1]; b += pixel[2]; count++;
+            }
+          }
+        }
+        if (count > 0) {
+          skinColor = `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
+        }
+      } else {
+        // Fallback: sample from face center
+        const sampleX = uploadedImage.width * 0.5;
+        const sampleY = uploadedImage.height * 0.35;
+        const pixel = tempCtx.getImageData(Math.floor(sampleX), Math.floor(sampleY), 1, 1).data;
+        if (pixel[0] > 80) { // Basic sanity check
+          skinColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        }
+      }
       
       // Calculate source region from faceData
       const scaleX = uploadedImage.width / faceData.canvasWidth;
@@ -1861,39 +1890,43 @@
       faceCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 0, 0, 200, 200);
       const faceDataUrl = faceCanvas.toDataURL('image/png');
       
-      // Calculate mouth position relative to face crop (0-100 scale for sprite)
-      // If we have landmarks, use them; otherwise estimate
-      let mouthY = 75; // Default: 75% down the face
-      if (faceLandmarks && faceLandmarks.outerLips) {
+      // Calculate mouth position from landmarks
+      // Face image in sprite: y=5 to y=70 (height 65), x=10 to x=90 (width 80)
+      let spriteMouthY = 55; // Default near bottom of face
+      
+      if (faceLandmarks && faceLandmarks.outerLips && faceLandmarks.outerLips.length > 0) {
         const lips = faceLandmarks.outerLips;
         const avgLipY = lips.reduce((sum, p) => sum + p.y, 0) / lips.length;
-        // Convert from canvas coords to face-crop relative (0-100)
+        
+        // Convert canvas coords to relative position within faceData bounds (0 to 1)
         const relY = (avgLipY - faceData.y) / faceData.height;
-        mouthY = Math.max(60, Math.min(90, relY * 100));
+        
+        // Map to sprite face area (y=5 to y=70)
+        spriteMouthY = 5 + relY * 65;
+        
+        // Clamp to reasonable range (lower half of face)
+        spriteMouthY = Math.max(45, Math.min(65, spriteMouthY));
       }
       
-      // Convert mouthY (% of face) to sprite coords
-      // Face is at y=5 to y=70 in sprite (height 65), so mouth at mouthY% of that
-      const spriteMouthY = 5 + (mouthY / 100) * 65;
-      
-      // Sprite with better proportions
+      // Sprite with proper connected proportions
+      // Head: y=2 to y=72 (height 70), Body starts at y=70
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
   <g id="body">
-    <!-- Body starts where head ends -->
-    <ellipse cx="50" cy="110" rx="16" ry="28" fill="#4ecdc4"/>
+    <!-- Body connects to head at y=70 -->
+    <ellipse cx="50" cy="105" rx="15" ry="30" fill="#4ecdc4"/>
     <!-- Arms -->
-    <ellipse cx="32" cy="105" rx="4" ry="10" fill="${skinColor}"/>
-    <ellipse cx="68" cy="105" rx="4" ry="10" fill="${skinColor}"/>
+    <ellipse cx="33" cy="100" rx="4" ry="11" fill="${skinColor}"/>
+    <ellipse cx="67" cy="100" rx="4" ry="11" fill="${skinColor}"/>
     <!-- Hands -->
-    <circle cx="32" cy="117" r="3" fill="${skinColor}"/>
-    <circle cx="68" cy="117" r="3" fill="${skinColor}"/>
+    <circle cx="33" cy="113" r="3" fill="${skinColor}"/>
+    <circle cx="67" cy="113" r="3" fill="${skinColor}"/>
     <!-- Legs -->
-    <ellipse cx="43" cy="138" rx="4" ry="8" fill="${skinColor}"/>
-    <ellipse cx="57" cy="138" rx="4" ry="8" fill="${skinColor}"/>
+    <ellipse cx="43" cy="137" rx="4" ry="9" fill="${skinColor}"/>
+    <ellipse cx="57" cy="137" rx="4" ry="9" fill="${skinColor}"/>
   </g>
   <g id="head-top">
-    <!-- Photo face - sized to fit above body -->
-    <image href="${faceDataUrl}" x="10" y="5" width="80" height="65" preserveAspectRatio="xMidYMid slice"/>
+    <!-- Photo face - overlaps body slightly for seamless connection -->
+    <image href="${faceDataUrl}" x="10" y="2" width="80" height="70" preserveAspectRatio="xMidYMid slice"/>
     <!-- Invisible eye elements for emotion system -->
     <ellipse id="eye-left-white" cx="35" cy="30" rx="1" ry="1" fill="transparent"/>
     <ellipse id="eye-right-white" cx="65" cy="30" rx="1" ry="1" fill="transparent"/>
@@ -1905,10 +1938,10 @@
     <path id="brow-right" d="M58 24 Q65 22 72 24" stroke="transparent" stroke-width="1" fill="none"/>
   </g>
   <g id="head-bottom">
-    <!-- Small mouth mask - skin colored, positioned by landmarks -->
-    <ellipse cx="50" cy="${spriteMouthY}" rx="12" ry="6" fill="${skinColor}"/>
+    <!-- Small mouth mask - skin colored, just covers mouth area -->
+    <ellipse cx="50" cy="${spriteMouthY}" rx="8" ry="4" fill="${skinColor}"/>
     <!-- Animated mouth -->
-    <path id="mouth-closed" d="M42 ${spriteMouthY} Q50 ${spriteMouthY + 4} 58 ${spriteMouthY}" stroke="#8b5a5a" stroke-width="1.5" fill="none"/>
+    <path id="mouth-closed" d="M44 ${spriteMouthY} Q50 ${spriteMouthY + 3} 56 ${spriteMouthY}" stroke="#9a6a6a" stroke-width="1.5" fill="none"/>
     <ellipse id="mouth-open" cx="50" cy="70" rx="10" ry="6" fill="#5a3a3a" opacity="0"/>
   </g>
 </svg>`;
