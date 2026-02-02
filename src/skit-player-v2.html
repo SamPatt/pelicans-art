@@ -789,7 +789,7 @@
     // === SKITS ===
     const skits = {
       luckyCharms: {
-        meta: { title: "Lucky Charms", duration: 52 },
+        meta: { title: "Lucky Charms", duration: 120 },
         stage: { background: "restaurant" },
         cast: {
           waiter: { x: 30, sprite: "waiter", voice: "jean" },
@@ -798,88 +798,89 @@
         },
         script: [
           // Opening - wide shot
-          { t: 0.5, do: "shot", type: "wide" },
-          { t: 0.5, do: "emote", who: "waiter", emotion: "happy" },
-          { t: 0.5, do: "emote", who: "woman", emotion: "neutral" },
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "waiter", emotion: "happy" },
+          { do: "emote", who: "woman", emotion: "neutral" },
+          { do: "pause", duration: 1 },
           
           // Waiter approaches
-          { t: 1, do: "shot", type: "closeup", who: "waiter" },
-          { t: 1, do: "say", who: "waiter", line: "Good evening, madam. May I tell you about our special tonight?" },
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "say", who: "waiter", line: "Good evening, madam. May I tell you about our special tonight?" },
           
           // Woman responds
-          { t: 5, do: "shot", type: "closeup", who: "woman" },
-          { t: 5, do: "emote", who: "woman", emotion: "happy" },
-          { t: 5, do: "say", who: "woman", line: "Oh yes, please!" },
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "happy" },
+          { do: "say", who: "woman", line: "Oh yes, please!" },
           
           // Waiter excited
-          { t: 8, do: "shot", type: "closeup", who: "waiter" },
-          { t: 8, do: "emote", who: "waiter", emotion: "excited" },
-          { t: 8, do: "say", who: "waiter", line: "Tonight we have something truly magical." },
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "excited" },
+          { do: "say", who: "waiter", line: "Tonight we have something truly magical." },
           
           // Woman intrigued
-          { t: 12, do: "shot", type: "closeup", who: "woman" },
-          { t: 12, do: "emote", who: "woman", emotion: "surprised" },
-          { t: 12, do: "say", who: "woman", line: "Magical? In a restaurant?" },
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "surprised" },
+          { do: "say", who: "woman", line: "Magical? In a restaurant?" },
           
           // Waiter reveals
-          { t: 15, do: "shot", type: "extreme-closeup", who: "waiter" },
-          { t: 15, do: "emote", who: "waiter", emotion: "happy" },
-          { t: 15.5, do: "say", who: "waiter", line: "Lucky Charms. Magically delicious." },
+          { do: "shot", type: "extreme-closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "happy" },
+          { do: "say", who: "waiter", line: "Lucky Charms. Magically delicious." },
           
           // Woman confused
-          { t: 19, do: "shot", type: "extreme-closeup", who: "woman" },
-          { t: 19, do: "emote", who: "woman", emotion: "worried" },
-          { t: 19.5, do: "say", who: "woman", line: "The... the cereal?" },
+          { do: "shot", type: "extreme-closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "worried" },
+          { do: "say", who: "woman", line: "The... the cereal?" },
           
           // Waiter doubles down
-          { t: 23, do: "shot", type: "closeup", who: "waiter" },
-          { t: 23, do: "emote", who: "waiter", emotion: "smug" },
-          { t: 23, do: "say", who: "waiter", line: "Imported directly from General Mills." },
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "smug" },
+          { do: "say", who: "waiter", line: "Imported directly from General Mills." },
           
           // Woman skeptical
-          { t: 27, do: "shot", type: "closeup", who: "woman" },
-          { t: 27, do: "emote", who: "woman", emotion: "angry" },
-          { t: 27, do: "say", who: "woman", line: "Sir, this is a five star restaurant." },
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "angry" },
+          { do: "say", who: "woman", line: "Sir, this is a five star restaurant." },
           
           // Waiter defensive
-          { t: 31, do: "shot", type: "closeup", who: "waiter" },
-          { t: 31, do: "emote", who: "waiter", emotion: "worried" },
-          { t: 31, do: "say", who: "waiter", line: "Yes, and it has five different marshmallow shapes." },
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "worried" },
+          { do: "say", who: "waiter", line: "Yes, and it has five different marshmallow shapes." },
           
           // Woman done
-          { t: 35, do: "shot", type: "closeup", who: "woman" },
-          { t: 35, do: "emote", who: "woman", emotion: "tired" },
-          { t: 35, do: "say", who: "woman", line: "I'd like to speak to the manager." },
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "tired" },
+          { do: "say", who: "woman", line: "I'd like to speak to the manager." },
           
           // Wide shot - waiter frowns
-          { t: 39, do: "shot", type: "wide" },
-          { t: 39, do: "emote", who: "waiter", emotion: "sad" },
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "waiter", emotion: "sad" },
+          { do: "pause", duration: 0.5 },
           
           // Waiter looks left and exits
-          { t: 40, do: "look", who: "waiter", at: "left" },
-          { t: 40.5, do: "exit", who: "waiter", to: "left" },
+          { do: "look", who: "waiter", at: "left" },
+          { do: "exit", who: "waiter", to: "left" },
+          { do: "pause", duration: 1 },
           
           // Leprechaun enters from left - woman surprised
-          { t: 43, do: "enter", who: "leprechaun", from: "left", to: 30 },
-          { t: 43, do: "emote", who: "leprechaun", emotion: "happy" },
-          { t: 43, do: "look", who: "leprechaun", at: "right" },
-          { t: 43, do: "emote", who: "woman", emotion: "surprised" },
+          { do: "enter", who: "leprechaun", from: "left", to: 30 },
+          { do: "emote", who: "leprechaun", emotion: "happy" },
+          { do: "look", who: "leprechaun", at: "right" },
+          { do: "emote", who: "woman", emotion: "surprised" },
+          { do: "pause", duration: 0.5 },
           
-          // Leprechaun introduces himself - short closeup
-          { t: 44.5, do: "shot", type: "closeup", who: "leprechaun" },
-          { t: 44.5, do: "say", who: "leprechaun", line: "Can I help you?" },
-          { t: 44.6, do: "look", who: "leprechaun", at: "right" },
+          // Leprechaun introduces himself
+          { do: "shot", type: "closeup", who: "leprechaun" },
+          { do: "say", who: "leprechaun", line: "Can I help you?" },
           
-          // Back to wide - woman annoyed, leprechaun keeps looking at her
-          { t: 47, do: "shot", type: "wide" },
-          { t: 47, do: "look", who: "leprechaun", at: "right" },
-          { t: 47.5, do: "emote", who: "woman", emotion: "angry" },
-          { t: 47.5, do: "look", who: "leprechaun", at: "right" },
+          // Back to wide - woman annoyed
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "woman", emotion: "angry" },
+          { do: "pause", duration: 0.5 },
           
-          // Leprechaun says What? - still looking at her
-          { t: 49, do: "look", who: "leprechaun", at: "right" },
-          { t: 49, do: "say", who: "leprechaun", line: "What?" },
-          { t: 49.5, do: "look", who: "leprechaun", at: "right" }
+          // Leprechaun says What?
+          { do: "say", who: "leprechaun", line: "What?" },
+          { do: "pause", duration: 1 }
         ]
       },
       spaceWall: {
