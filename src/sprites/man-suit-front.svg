@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Suit jacket -->
+    <rect x="30" y="85" width="40" height="65" rx="3" fill="#1a237e"/>
+    <!-- Shoulders -->
+    <ellipse cx="30" cy="90" rx="8" ry="12" fill="#1a237e"/>
+    <ellipse cx="70" cy="90" rx="8" ry="12" fill="#1a237e"/>
+    <!-- Shirt/tie -->
+    <polygon points="50,85 42,150 58,150" fill="#ffffff"/>
+    <polygon points="50,85 46,150 54,150" fill="#c62828"/>
+    <!-- Lapels -->
+    <polygon points="42,85 30,100 42,105" fill="#0d1442"/>
+    <polygon points="58,85 70,100 58,105" fill="#0d1442"/>
+    <!-- Neck -->
+    <rect x="44" y="75" width="12" height="12" fill="#ffcc80"/>
+  </g>
+  <g id="head-top">
+    <!-- Hair -->
+    <ellipse cx="50" cy="38" rx="24" ry="14" fill="#3e2723"/>
+    <!-- Head/face -->
+    <ellipse cx="50" cy="52" rx="22" ry="24" fill="#ffcc80"/>
+    <!-- Ears -->
+    <ellipse cx="28" cy="52" rx="5" ry="8" fill="#ffcc80"/>
+    <ellipse cx="72" cy="52" rx="5" ry="8" fill="#ffcc80"/>
+    <!-- Eye whites -->
+    <ellipse id="eye-left-white" cx="41" cy="50" rx="6" ry="5" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="59" cy="50" rx="6" ry="5" fill="#ffffff"/>
+    <!-- Pupils -->
+    <circle id="eye-left-pupil" class="pupil" cx="41" cy="50" r="2.5" fill="#000000"/>
+    <circle id="eye-right-pupil" class="pupil" cx="59" cy="50" r="2.5" fill="#000000"/>
+    <!-- Eye highlights (for excited/surprised) -->
+    <circle id="eye-left-highlight" cx="39" cy="48" r="1.5" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="57" cy="48" r="1.5" fill="#fff" opacity="0"/>
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M34 42 Q41 40 48 43" stroke="#3e2723" stroke-width="2.5" fill="none"/>
+    <path id="brow-right" d="M52 43 Q59 40 66 42" stroke="#3e2723" stroke-width="2.5" fill="none"/>
+    <!-- Nose -->
+    <ellipse cx="50" cy="58" rx="3" ry="4" fill="#ffb74d"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Chin area (part of face) -->
+    <ellipse cx="50" cy="68" rx="16" ry="10" fill="#ffcc80"/>
+    <!-- Mouth closed (slight smile) -->
+    <path id="mouth-closed" d="M43 68 Q50 72 57 68" stroke="#8d6e63" stroke-width="2" fill="none"/>
+    <!-- Mouth open -->
+    <ellipse id="mouth-open" cx="50" cy="70" rx="6" ry="4" fill="#c62828" opacity="0"/>
+  </g>
+</svg>
