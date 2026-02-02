@@ -98,10 +98,10 @@
     
     /* Mouth animation for lip sync - smooth scaling */
     .character svg #mouth-open {
-      transition: ry 0.05s ease-out, rx 0.05s ease-out, opacity 0.15s ease-out;
+      transition: ry 0.08s ease-out, rx 0.08s ease-out, opacity 0.1s ease-out;
     }
     .character svg #mouth-closed {
-      transition: opacity 0.25s ease-in, d 0.2s ease-out;
+      transition: opacity 0.15s ease-in, d 0.15s ease-out;
     }
     
     /* Eye direction via pupil transform */
@@ -1530,10 +1530,11 @@
         const mouthClosed = charEl.querySelector('#mouth-closed');
         
         if (mouthOpen && mouthClosed) {
-          // Threshold for any mouth movement
-          const threshold = 0.15;
+          // Threshold for mouth movement - requires both normalized and raw amplitude
+          const threshold = 0.25;
+          const minRawAmp = 15; // Minimum raw amplitude to avoid triggering on silence
           
-          if (normalizedAmp > threshold) {
+          if (normalizedAmp > threshold && rawAmp > minRawAmp) {
             openDuration++;
             
             // Scale mouth opening based on amplitude (min 1, max 4 for ry)
@@ -1550,6 +1551,9 @@
             charEl.classList.add('speaking');
           } else {
             openDuration = 0;
+            // Smoothly return to closed - let CSS transition handle it
+            mouthOpen.setAttribute('ry', '1');
+            mouthOpen.setAttribute('rx', '2');
             mouthOpen.setAttribute('opacity', '0');
             mouthClosed.setAttribute('opacity', '1');
             charEl.classList.remove('speaking');
