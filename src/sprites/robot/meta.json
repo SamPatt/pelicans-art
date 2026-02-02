@@ -1,0 +1,23 @@
+{
+  "name": "Robot",
+  "description": "A friendly helper robot",
+  "tags": ["robot", "machine", "sci-fi", "helper"],
+  "voice": {
+    "id": "marius",
+    "pitch": -0.3,
+    "speed": 0.95,
+    "volume": 1.2
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "primary": "#708090",
+    "secondary": "#4682b4",
+    "accent": "#00ff00"
+  },
+  "animation": {
+    "blinkInterval": 5,
+    "blinkDuration": 50,
+    "idleMovement": false,
+    "eyeTracking": true
+  }
+}

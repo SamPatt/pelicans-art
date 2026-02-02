@@ -1,0 +1,25 @@
+{
+  "name": "Waiter",
+  "description": "A restaurant server",
+  "tags": ["human", "service", "restaurant", "professional"],
+  "voice": {
+    "id": "jean",
+    "pitch": 0,
+    "speed": 1,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#deb887",
+    "hair": "#2f2f2f",
+    "primary": "#ffffff",
+    "secondary": "#1a1a1a",
+    "accent": "#b22222"
+  },
+  "animation": {
+    "blinkInterval": 4,
+    "blinkDuration": 150,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

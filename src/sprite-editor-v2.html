@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🎭 SkitKit Sprite Editor</title>
+  <style>
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-tertiary: #0f3460;
+      --accent: #e94560;
+      --accent-hover: #ff6b8a;
+      --success: #4ecca3;
+      --text: #eee;
+      --text-dim: #888;
+      --border-radius: 8px;
+      --touch-target: 44px;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    /* === HEADER === */
+    header {
+      background: var(--bg-secondary);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    
+    header h1 {
+      font-size: 1.2rem;
+      white-space: nowrap;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    /* === BUTTONS === */
+    button, .btn {
+      background: var(--bg-tertiary);
+      border: none;
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      font-size: 14px;
+      min-height: var(--touch-target);
+      min-width: var(--touch-target);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s, transform 0.1s;
+      user-select: none;
+    }
+    
+    button:hover { background: var(--accent); }
+    button:active { transform: scale(0.96); }
+    button.primary { background: var(--accent); }
+    button.primary:hover { background: var(--accent-hover); }
+    button.success { background: var(--success); color: #000; }
+    button.icon-only { padding: 10px; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    /* === MAIN LAYOUT === */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 60px);
+    }
+    
+    /* Desktop: side by side */
+    @media (min-width: 768px) {
+      .app-container {
+        flex-direction: row;
+      }
+    }
+    
+    /* === CHARACTER PICKER === */
+    .character-picker {
+      background: var(--bg-secondary);
+      padding: 12px;
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    
+    .character-picker::-webkit-scrollbar { display: none; }
+    
+    .char-thumb {
+      flex: 0 0 auto;
+      width: 60px;
+      height: 70px;
+      background: var(--bg-tertiary);
+      border-radius: var(--border-radius);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, transform 0.1s;
+    }
+    
+    .char-thumb:hover { border-color: var(--accent); }
+    .char-thumb:active { transform: scale(0.95); }
+    .char-thumb.selected { border-color: var(--success); }
+    
+    .char-thumb svg {
+      width: 40px;
+      height: 50px;
+    }
+    
+    .char-thumb span {
+      font-size: 10px;
+      color: var(--text-dim);
+      margin-top: 2px;
+      max-width: 56px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .char-thumb.add-new {
+      background: transparent;
+      border: 2px dashed var(--text-dim);
+    }
+    
+    .char-thumb.add-new:hover {
+      border-color: var(--accent);
+    }
+    
+    /* === EDITOR AREA === */
+    .editor-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    /* Variant tabs */
+    .variant-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 8px 12px;
+      background: var(--bg-secondary);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .variant-tab {
+      padding: 8px 16px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      color: var(--text-dim);
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 36px;
+    }
+    
+    .variant-tab.active {
+      background: var(--bg-primary);
+      color: var(--text);
+    }
+    
+    .variant-tab.add-variant {
+      background: transparent;
+      border: 1px dashed var(--text-dim);
+    }
+    
+    /* Canvas area */
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-primary);
+      position: relative;
+      overflow: hidden;
+      touch-action: none;
+    }
+    
+    #sprite-canvas {
+      background: #2a2a4a;
+      border-radius: var(--border-radius);
+      touch-action: none;
+    }
+    
+    /* === TOOL PANEL === */
+    .tool-panel {
+      background: var(--bg-secondary);
+      padding: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    
+    @media (min-width: 768px) {
+      .tool-panel {
+        width: 280px;
+        flex-direction: column;
+        flex-wrap: nowrap;
+        overflow-y: auto;
+        justify-content: flex-start;
+      }
+    }
+    
+    .tool-section {
+      background: var(--bg-tertiary);
+      border-radius: var(--border-radius);
+      padding: 12px;
+      width: 100%;
+    }
+    
+    .tool-section h3 {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    
+    .tool-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    
+    .tool-grid button {
+      padding: 8px;
+      font-size: 18px;
+    }
+    
+    /* Color picker */
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    
+    .color-row label {
+      flex: 1;
+      font-size: 13px;
+    }
+    
+    .color-row input[type="color"] {
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      background: transparent;
+    }
+    
+    /* Slider */
+    .slider-row {
+      margin-bottom: 10px;
+    }
+    
+    .slider-row label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    
+    .slider-row input[type="range"] {
+      width: 100%;
+      height: 8px;
+      -webkit-appearance: none;
+      background: var(--bg-primary);
+      border-radius: 4px;
+    }
+    
+    .slider-row input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    /* === TEST MODAL === */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    
+    .modal.open { display: flex; }
+    
+    .modal-content {
+      background: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid var(--bg-tertiary);
+      position: sticky;
+      top: 0;
+      background: var(--bg-secondary);
+    }
+    
+    .modal-header h2 {
+      font-size: 1.2rem;
+    }
+    
+    .modal-close {
+      background: transparent;
+      font-size: 24px;
+      padding: 4px 8px;
+      min-width: auto;
+      min-height: auto;
+    }
+    
+    .modal-body {
+      padding: 16px;
+    }
+    
+    /* === TEST PANEL CONTENT === */
+    .test-preview {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      background: var(--bg-primary);
+      border-radius: var(--border-radius);
+      margin-bottom: 16px;
+    }
+    
+    .test-preview svg {
+      width: 120px;
+      height: 180px;
+    }
+    
+    .emotion-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .emotion-btn {
+      padding: 12px 8px;
+      font-size: 12px;
+      flex-direction: column;
+    }
+    
+    .emotion-btn span {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    
+    .emotion-btn.active {
+      background: var(--accent);
+    }
+    
+    .voice-section {
+      margin-bottom: 16px;
+    }
+    
+    .voice-select {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: var(--border-radius);
+      color: var(--text);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .speak-row {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .speak-row input {
+      flex: 1;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border: none;
+      border-radius: var(--border-radius);
+      color: var(--text);
+      font-size: 14px;
+    }
+    
+    .variant-switch {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .variant-switch button {
+      flex: 1;
+    }
+    
+    .variant-switch button.active {
+      background: var(--success);
+      color: #000;
+    }
+    
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: var(--bg-tertiary);
+      border-radius: var(--border-radius);
+      margin-bottom: 8px;
+    }
+    
+    .toggle-row label {
+      font-size: 14px;
+    }
+    
+    /* Toggle switch */
+    .toggle {
+      width: 50px;
+      height: 28px;
+      background: var(--bg-primary);
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+    }
+    
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 24px;
+      height: 24px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+    
+    .toggle.on::after {
+      transform: translateX(22px);
+      background: var(--success);
+    }
+    
+    /* === LAYERS PANEL (Desktop) === */
+    @media (min-width: 768px) {
+      .layers-panel {
+        width: 200px;
+        background: var(--bg-secondary);
+        border-left: 1px solid var(--bg-tertiary);
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .layers-header {
+        padding: 12px;
+        border-bottom: 1px solid var(--bg-tertiary);
+        font-size: 12px;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+      
+      .layers-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px;
+      }
+      
+      .layer-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        background: var(--bg-tertiary);
+        border-radius: var(--border-radius);
+        margin-bottom: 4px;
+        cursor: pointer;
+      }
+      
+      .layer-item.selected {
+        border: 2px solid var(--accent);
+      }
+      
+      .layer-item .layer-icon {
+        width: 24px;
+        text-align: center;
+      }
+      
+      .layer-item .layer-name {
+        flex: 1;
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    
+    /* Hide layers on mobile */
+    @media (max-width: 767px) {
+      .layers-panel { display: none; }
+    }
+    
+    /* === LOADING === */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--text-dim);
+    }
+    
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--bg-tertiary);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* === UTILITY === */
+    .hidden { display: none !important; }
+    
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🎭 Sprite Editor</h1>
+  <div class="header-actions">
+    <button id="btn-test" class="primary">▶️ Test</button>
+    <button id="btn-save" class="success">💾</button>
+  </div>
+</header>
+
+<div class="character-picker" id="character-picker">
+  <div class="loading"><div class="spinner"></div></div>
+</div>
+
+<div class="app-container">
+  <div class="editor-area">
+    <div class="variant-tabs" id="variant-tabs">
+      <!-- Populated dynamically -->
+    </div>
+    
+    <div class="canvas-container">
+      <canvas id="sprite-canvas" width="300" height="400"></canvas>
+    </div>
+    
+    <div class="tool-panel">
+      <div class="tool-section">
+        <h3>Add Shape</h3>
+        <div class="tool-grid">
+          <button data-shape="rect" title="Rectangle">▭</button>
+          <button data-shape="ellipse" title="Ellipse">⬭</button>
+          <button data-shape="circle" title="Circle">●</button>
+          <button data-shape="triangle" title="Triangle">△</button>
+        </div>
+      </div>
+      
+      <div class="tool-section">
+        <h3>Colors</h3>
+        <div class="color-row">
+          <label>Fill</label>
+          <input type="color" id="color-fill" value="#4ecdc4">
+        </div>
+        <div class="color-row">
+          <label>Stroke</label>
+          <input type="color" id="color-stroke" value="#000000">
+        </div>
+        <div class="slider-row">
+          <label>Stroke Width <span id="stroke-val">2</span></label>
+          <input type="range" id="stroke-width" min="0" max="10" value="2">
+        </div>
+      </div>
+      
+      <div class="tool-section">
+        <h3>Actions</h3>
+        <div class="tool-grid">
+          <button id="btn-duplicate" title="Duplicate">⧉</button>
+          <button id="btn-delete" title="Delete">🗑️</button>
+          <button id="btn-up" title="Bring Forward">⬆</button>
+          <button id="btn-down" title="Send Back">⬇</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="layers-panel">
+    <div class="layers-header">Layers</div>
+    <div class="layers-list" id="layers-list">
+      <!-- Populated dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- Test Modal -->
+<div class="modal" id="test-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>🎭 Test Sprite</h2>
+      <button class="modal-close" id="close-test">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="test-preview" id="test-preview">
+        <!-- Sprite preview -->
+      </div>
+      
+      <div class="variant-switch" id="test-variants">
+        <!-- Variant buttons -->
+      </div>
+      
+      <h3 style="margin-bottom: 10px; font-size: 14px; color: var(--text-dim);">EMOTIONS</h3>
+      <div class="emotion-grid">
+        <button class="emotion-btn active" data-emotion="neutral"><span>😐</span>Neutral</button>
+        <button class="emotion-btn" data-emotion="happy"><span>😊</span>Happy</button>
+        <button class="emotion-btn" data-emotion="sad"><span>😢</span>Sad</button>
+        <button class="emotion-btn" data-emotion="angry"><span>😠</span>Angry</button>
+        <button class="emotion-btn" data-emotion="surprised"><span>😲</span>Surprise</button>
+        <button class="emotion-btn" data-emotion="thinking"><span>🤔</span>Think</button>
+        <button class="emotion-btn" data-emotion="smug"><span>😏</span>Smug</button>
+        <button class="emotion-btn" data-emotion="worried"><span>😰</span>Worried</button>
+      </div>
+      
+      <div class="voice-section">
+        <h3 style="margin-bottom: 10px; font-size: 14px; color: var(--text-dim);">VOICE</h3>
+        <select class="voice-select" id="voice-select">
+          <option value="alba">Alba (Female, Warm)</option>
+          <option value="cosette">Cosette (Female, Young)</option>
+          <option value="fantine">Fantine (Female, Mature)</option>
+          <option value="eponine">Eponine (Female, Edgy)</option>
+          <option value="azelma">Azelma (Female, Soft)</option>
+          <option value="marius">Marius (Male, Standard)</option>
+          <option value="jean">Jean (Male, Deep)</option>
+          <option value="javert">Javert (Male, Authoritative)</option>
+        </select>
+        <div class="speak-row">
+          <input type="text" id="speak-text" placeholder="Type something to say...">
+          <button id="btn-speak" class="primary">🔊</button>
+        </div>
+      </div>
+      
+      <div class="toggle-row">
+        <label>Eye Tracking</label>
+        <div class="toggle on" id="toggle-eyes"></div>
+      </div>
+      
+      <div class="toggle-row">
+        <label>Auto Blink</label>
+        <div class="toggle on" id="toggle-blink"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// === STATE ===
+const state = {
+  characters: [],
+  currentChar: null,
+  currentVariant: 'front',
+  currentMeta: null,
+  shapes: [],
+  selectedShape: null,
+  isDragging: false,
+  dragOffset: { x: 0, y: 0 }
+};
+
+// === ELEMENTS ===
+const canvas = document.getElementById('sprite-canvas');
+const ctx = canvas.getContext('2d');
+const charPicker = document.getElementById('character-picker');
+const variantTabs = document.getElementById('variant-tabs');
+const layersList = document.getElementById('layers-list');
+const testModal = document.getElementById('test-modal');
+const testPreview = document.getElementById('test-preview');
+const testVariants = document.getElementById('test-variants');
+
+// === INIT ===
+async function init() {
+  await loadCharacters();
+  setupEventListeners();
+  
+  // Select first character
+  if (state.characters.length > 0) {
+    selectCharacter(state.characters[0]);
+  }
+}
+
+// === LOAD CHARACTERS ===
+async function loadCharacters() {
+  try {
+    const resp = await fetch('sprites/index.json');
+    const data = await resp.json();
+    state.characters = data.characters;
+    renderCharacterPicker();
+  } catch (err) {
+    console.error('Failed to load characters:', err);
+    charPicker.innerHTML = '<div class="loading">Failed to load characters</div>';
+  }
+}
+
+function renderCharacterPicker() {
+  charPicker.innerHTML = '';
+  
+  for (const charName of state.characters) {
+    const thumb = document.createElement('div');
+    thumb.className = 'char-thumb';
+    thumb.dataset.char = charName;
+    thumb.innerHTML = `
+      <div style="font-size: 24px;">🎭</div>
+      <span>${charName}</span>
+    `;
+    thumb.onclick = () => selectCharacter(charName);
+    charPicker.appendChild(thumb);
+    
+    // Load thumbnail preview
+    loadCharacterThumb(charName, thumb);
+  }
+  
+  // Add "new character" button
+  const addBtn = document.createElement('div');
+  addBtn.className = 'char-thumb add-new';
+  addBtn.innerHTML = '<div style="font-size: 24px;">+</div><span>New</span>';
+  addBtn.onclick = createNewCharacter;
+  charPicker.appendChild(addBtn);
+}
+
+async function loadCharacterThumb(charName, thumbEl) {
+  try {
+    const resp = await fetch(`sprites/${charName}/front.svg`);
+    if (resp.ok) {
+      const svgText = await resp.text();
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgText, 'image/svg+xml');
+      const svg = doc.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '40');
+        svg.setAttribute('height', '50');
+        thumbEl.querySelector('div').replaceWith(svg);
+      }
+    }
+  } catch (err) {
+    // Keep placeholder
+  }
+}
+
+// === SELECT CHARACTER ===
+async function selectCharacter(charName) {
+  state.currentChar = charName;
+  
+  // Update picker selection
+  document.querySelectorAll('.char-thumb').forEach(t => {
+    t.classList.toggle('selected', t.dataset.char === charName);
+  });
+  
+  // Load meta
+  try {
+    const metaResp = await fetch(`sprites/${charName}/meta.json`);
+    state.currentMeta = await metaResp.json();
+  } catch (err) {
+    state.currentMeta = { name: charName };
+  }
+  
+  // Detect available variants
+  const variants = await detectVariants(charName);
+  renderVariantTabs(variants);
+  
+  // Load default variant
+  state.currentVariant = state.currentMeta.defaultVariant || 'front';
+  await loadVariant(charName, state.currentVariant);
+}
+
+async function detectVariants(charName) {
+  const possible = ['front', 'back', 'side', 'left', 'right'];
+  const found = [];
+  
+  for (const v of possible) {
+    try {
+      const resp = await fetch(`sprites/${charName}/${v}.svg`, { method: 'HEAD' });
+      if (resp.ok) found.push(v);
+    } catch (err) {}
+  }
+  
+  return found.length > 0 ? found : ['front'];
+}
+
+function renderVariantTabs(variants) {
+  variantTabs.innerHTML = '';
+  
+  for (const v of variants) {
+    const tab = document.createElement('button');
+    tab.className = 'variant-tab' + (v === state.currentVariant ? ' active' : '');
+    tab.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+    tab.onclick = () => {
+      state.currentVariant = v;
+      loadVariant(state.currentChar, v);
+      document.querySelectorAll('.variant-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    };
+    variantTabs.appendChild(tab);
+  }
+  
+  // Add variant button
+  const addTab = document.createElement('button');
+  addTab.className = 'variant-tab add-variant';
+  addTab.textContent = '+';
+  addTab.onclick = addNewVariant;
+  variantTabs.appendChild(addTab);
+}
+
+// === LOAD VARIANT (SVG) ===
+async function loadVariant(charName, variant) {
+  try {
+    const resp = await fetch(`sprites/${charName}/${variant}.svg`);
+    if (!resp.ok) throw new Error('Not found');
+    
+    const svgText = await resp.text();
+    parseSVGToShapes(svgText);
+    renderCanvas();
+    renderLayers();
+  } catch (err) {
+    console.error('Failed to load variant:', err);
+    state.shapes = [];
+    renderCanvas();
+  }
+}
+
+// === PARSE SVG ===
+function parseSVGToShapes(svgText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svg = doc.querySelector('svg');
+  
+  state.shapes = [];
+  
+  if (!svg) return;
+  
+  // Get all shape elements
+  const elements = svg.querySelectorAll('rect, ellipse, circle, path, polygon');
+  
+  elements.forEach((el, idx) => {
+    const shape = {
+      id: el.id || `shape-${idx}`,
+      type: el.tagName.toLowerCase(),
+      fill: el.getAttribute('fill') || '#ccc',
+      stroke: el.getAttribute('stroke') || 'none',
+      strokeWidth: parseFloat(el.getAttribute('stroke-width')) || 0
+    };
+    
+    if (shape.type === 'rect') {
+      shape.x = parseFloat(el.getAttribute('x')) || 0;
+      shape.y = parseFloat(el.getAttribute('y')) || 0;
+      shape.width = parseFloat(el.getAttribute('width')) || 20;
+      shape.height = parseFloat(el.getAttribute('height')) || 20;
+      shape.rx = parseFloat(el.getAttribute('rx')) || 0;
+    } else if (shape.type === 'ellipse') {
+      shape.cx = parseFloat(el.getAttribute('cx')) || 50;
+      shape.cy = parseFloat(el.getAttribute('cy')) || 50;
+      shape.rx = parseFloat(el.getAttribute('rx')) || 20;
+      shape.ry = parseFloat(el.getAttribute('ry')) || 20;
+    } else if (shape.type === 'circle') {
+      shape.cx = parseFloat(el.getAttribute('cx')) || 50;
+      shape.cy = parseFloat(el.getAttribute('cy')) || 50;
+      shape.r = parseFloat(el.getAttribute('r')) || 20;
+    }
+    
+    state.shapes.push(shape);
+  });
+}
+
+// === RENDER ===
+function renderCanvas() {
+  ctx.fillStyle = '#2a2a4a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Draw shapes
+  for (const shape of state.shapes) {
+    drawShape(shape);
+  }
+  
+  // Draw selection
+  if (state.selectedShape) {
+    drawSelection(state.selectedShape);
+  }
+}
+
+function drawShape(shape) {
+  ctx.fillStyle = shape.fill;
+  ctx.strokeStyle = shape.stroke;
+  ctx.lineWidth = shape.strokeWidth;
+  
+  ctx.beginPath();
+  
+  if (shape.type === 'rect') {
+    if (shape.rx > 0) {
+      roundRect(ctx, shape.x, shape.y, shape.width, shape.height, shape.rx);
+    } else {
+      ctx.rect(shape.x, shape.y, shape.width, shape.height);
+    }
+  } else if (shape.type === 'ellipse') {
+    ctx.ellipse(shape.cx, shape.cy, shape.rx, shape.ry, 0, 0, Math.PI * 2);
+  } else if (shape.type === 'circle') {
+    ctx.arc(shape.cx, shape.cy, shape.r, 0, Math.PI * 2);
+  }
+  
+  ctx.fill();
+  if (shape.strokeWidth > 0 && shape.stroke !== 'none') {
+    ctx.stroke();
+  }
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+}
+
+function drawSelection(shape) {
+  ctx.strokeStyle = '#e94560';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([5, 5]);
+  
+  ctx.beginPath();
+  if (shape.type === 'rect') {
+    ctx.rect(shape.x - 4, shape.y - 4, shape.width + 8, shape.height + 8);
+  } else if (shape.type === 'ellipse') {
+    ctx.ellipse(shape.cx, shape.cy, shape.rx + 4, shape.ry + 4, 0, 0, Math.PI * 2);
+  } else if (shape.type === 'circle') {
+    ctx.arc(shape.cx, shape.cy, shape.r + 4, 0, Math.PI * 2);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+function renderLayers() {
+  layersList.innerHTML = '';
+  
+  for (let i = state.shapes.length - 1; i >= 0; i--) {
+    const shape = state.shapes[i];
+    const item = document.createElement('div');
+    item.className = 'layer-item' + (state.selectedShape === shape ? ' selected' : '');
+    item.innerHTML = `
+      <span class="layer-icon">${getShapeIcon(shape.type)}</span>
+      <span class="layer-name">${shape.id}</span>
+    `;
+    item.onclick = () => {
+      state.selectedShape = shape;
+      renderCanvas();
+      renderLayers();
+    };
+    layersList.appendChild(item);
+  }
+}
+
+function getShapeIcon(type) {
+  const icons = { rect: '▭', ellipse: '⬭', circle: '●', path: '〰', polygon: '⬡' };
+  return icons[type] || '?';
+}
+
+// === EVENT LISTENERS ===
+function setupEventListeners() {
+  // Shape tools
+  document.querySelectorAll('[data-shape]').forEach(btn => {
+    btn.onclick = () => addShape(btn.dataset.shape);
+  });
+  
+  // Actions
+  document.getElementById('btn-duplicate').onclick = duplicateShape;
+  document.getElementById('btn-delete').onclick = deleteShape;
+  document.getElementById('btn-up').onclick = () => moveShape(1);
+  document.getElementById('btn-down').onclick = () => moveShape(-1);
+  document.getElementById('btn-save').onclick = saveSprite;
+  
+  // Test modal
+  document.getElementById('btn-test').onclick = openTestModal;
+  document.getElementById('close-test').onclick = () => testModal.classList.remove('open');
+  testModal.onclick = (e) => { if (e.target === testModal) testModal.classList.remove('open'); };
+  
+  // Colors
+  document.getElementById('color-fill').oninput = (e) => {
+    if (state.selectedShape) {
+      state.selectedShape.fill = e.target.value;
+      renderCanvas();
+    }
+  };
+  
+  document.getElementById('color-stroke').oninput = (e) => {
+    if (state.selectedShape) {
+      state.selectedShape.stroke = e.target.value;
+      renderCanvas();
+    }
+  };
+  
+  document.getElementById('stroke-width').oninput = (e) => {
+    document.getElementById('stroke-val').textContent = e.target.value;
+    if (state.selectedShape) {
+      state.selectedShape.strokeWidth = parseFloat(e.target.value);
+      renderCanvas();
+    }
+  };
+  
+  // Canvas interaction
+  setupCanvasInteraction();
+  
+  // Test modal interactions
+  setupTestModalInteractions();
+}
+
+function setupCanvasInteraction() {
+  const getPos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    if (e.touches) {
+      return {
+        x: (e.touches[0].clientX - rect.left) * scaleX,
+        y: (e.touches[0].clientY - rect.top) * scaleY
+      };
+    }
+    return {
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY
+    };
+  };
+  
+  const hitTest = (x, y) => {
+    // Reverse order (top shapes first)
+    for (let i = state.shapes.length - 1; i >= 0; i--) {
+      const s = state.shapes[i];
+      if (s.type === 'rect') {
+        if (x >= s.x && x <= s.x + s.width && y >= s.y && y <= s.y + s.height) return s;
+      } else if (s.type === 'ellipse') {
+        const dx = (x - s.cx) / s.rx;
+        const dy = (y - s.cy) / s.ry;
+        if (dx * dx + dy * dy <= 1) return s;
+      } else if (s.type === 'circle') {
+        const dx = x - s.cx;
+        const dy = y - s.cy;
+        if (dx * dx + dy * dy <= s.r * s.r) return s;
+      }
+    }
+    return null;
+  };
+  
+  const onStart = (e) => {
+    e.preventDefault();
+    const pos = getPos(e);
+    const hit = hitTest(pos.x, pos.y);
+    
+    if (hit) {
+      state.selectedShape = hit;
+      state.isDragging = true;
+      
+      if (hit.type === 'rect') {
+        state.dragOffset = { x: pos.x - hit.x, y: pos.y - hit.y };
+      } else {
+        state.dragOffset = { x: pos.x - hit.cx, y: pos.y - hit.cy };
+      }
+      
+      // Update color inputs
+      document.getElementById('color-fill').value = hit.fill || '#cccccc';
+      document.getElementById('color-stroke').value = hit.stroke === 'none' ? '#000000' : (hit.stroke || '#000000');
+      document.getElementById('stroke-width').value = hit.strokeWidth || 0;
+      document.getElementById('stroke-val').textContent = hit.strokeWidth || 0;
+    } else {
+      state.selectedShape = null;
+    }
+    
+    renderCanvas();
+    renderLayers();
+  };
+  
+  const onMove = (e) => {
+    if (!state.isDragging || !state.selectedShape) return;
+    e.preventDefault();
+    
+    const pos = getPos(e);
+    const shape = state.selectedShape;
+    
+    if (shape.type === 'rect') {
+      shape.x = pos.x - state.dragOffset.x;
+      shape.y = pos.y - state.dragOffset.y;
+    } else {
+      shape.cx = pos.x - state.dragOffset.x;
+      shape.cy = pos.y - state.dragOffset.y;
+    }
+    
+    renderCanvas();
+  };
+  
+  const onEnd = () => {
+    state.isDragging = false;
+  };
+  
+  // Mouse
+  canvas.addEventListener('mousedown', onStart);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onEnd);
+  canvas.addEventListener('mouseleave', onEnd);
+  
+  // Touch
+  canvas.addEventListener('touchstart', onStart, { passive: false });
+  canvas.addEventListener('touchmove', onMove, { passive: false });
+  canvas.addEventListener('touchend', onEnd);
+}
+
+// === SHAPE ACTIONS ===
+function addShape(type) {
+  const shape = {
+    id: `${type}-${Date.now()}`,
+    type: type,
+    fill: document.getElementById('color-fill').value,
+    stroke: document.getElementById('color-stroke').value,
+    strokeWidth: parseFloat(document.getElementById('stroke-width').value)
+  };
+  
+  if (type === 'rect') {
+    shape.x = 100;
+    shape.y = 150;
+    shape.width = 50;
+    shape.height = 50;
+    shape.rx = 0;
+  } else if (type === 'ellipse') {
+    shape.cx = 150;
+    shape.cy = 200;
+    shape.rx = 30;
+    shape.ry = 20;
+  } else if (type === 'circle') {
+    shape.cx = 150;
+    shape.cy = 200;
+    shape.r = 25;
+  } else if (type === 'triangle') {
+    // TODO: implement as polygon
+    shape.type = 'circle'; // fallback
+    shape.cx = 150;
+    shape.cy = 200;
+    shape.r = 25;
+  }
+  
+  state.shapes.push(shape);
+  state.selectedShape = shape;
+  renderCanvas();
+  renderLayers();
+}
+
+function duplicateShape() {
+  if (!state.selectedShape) return;
+  
+  const copy = JSON.parse(JSON.stringify(state.selectedShape));
+  copy.id = `${copy.type}-${Date.now()}`;
+  
+  if (copy.x !== undefined) { copy.x += 20; copy.y += 20; }
+  if (copy.cx !== undefined) { copy.cx += 20; copy.cy += 20; }
+  
+  state.shapes.push(copy);
+  state.selectedShape = copy;
+  renderCanvas();
+  renderLayers();
+}
+
+function deleteShape() {
+  if (!state.selectedShape) return;
+  
+  const idx = state.shapes.indexOf(state.selectedShape);
+  if (idx > -1) {
+    state.shapes.splice(idx, 1);
+    state.selectedShape = null;
+    renderCanvas();
+    renderLayers();
+  }
+}
+
+function moveShape(dir) {
+  if (!state.selectedShape) return;
+  
+  const idx = state.shapes.indexOf(state.selectedShape);
+  const newIdx = idx + dir;
+  
+  if (newIdx >= 0 && newIdx < state.shapes.length) {
+    state.shapes.splice(idx, 1);
+    state.shapes.splice(newIdx, 0, state.selectedShape);
+    renderCanvas();
+    renderLayers();
+  }
+}
+
+// === SAVE ===
+function saveSprite() {
+  const svg = generateSVG();
+  
+  // For now, download (later: save to server)
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${state.currentChar}-${state.currentVariant}.svg`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function generateSVG() {
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">\n`;
+  
+  for (const shape of state.shapes) {
+    const fill = `fill="${shape.fill}"`;
+    const stroke = shape.strokeWidth > 0 ? `stroke="${shape.stroke}" stroke-width="${shape.strokeWidth}"` : '';
+    
+    if (shape.type === 'rect') {
+      const rx = shape.rx > 0 ? `rx="${shape.rx}"` : '';
+      svg += `  <rect id="${shape.id}" x="${shape.x}" y="${shape.y}" width="${shape.width}" height="${shape.height}" ${rx} ${fill} ${stroke}/>\n`;
+    } else if (shape.type === 'ellipse') {
+      svg += `  <ellipse id="${shape.id}" cx="${shape.cx}" cy="${shape.cy}" rx="${shape.rx}" ry="${shape.ry}" ${fill} ${stroke}/>\n`;
+    } else if (shape.type === 'circle') {
+      svg += `  <circle id="${shape.id}" cx="${shape.cx}" cy="${shape.cy}" r="${shape.r}" ${fill} ${stroke}/>\n`;
+    }
+  }
+  
+  svg += '</svg>';
+  return svg;
+}
+
+// === TEST MODAL ===
+function openTestModal() {
+  testModal.classList.add('open');
+  loadTestPreview();
+}
+
+async function loadTestPreview() {
+  if (!state.currentChar) return;
+  
+  try {
+    const resp = await fetch(`sprites/${state.currentChar}/${state.currentVariant}.svg`);
+    const svgText = await resp.text();
+    testPreview.innerHTML = svgText;
+    
+    const svg = testPreview.querySelector('svg');
+    if (svg) {
+      svg.style.width = '120px';
+      svg.style.height = '180px';
+    }
+    
+    // Load variants into test panel
+    const variants = await detectVariants(state.currentChar);
+    testVariants.innerHTML = '';
+    for (const v of variants) {
+      const btn = document.createElement('button');
+      btn.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+      btn.className = v === state.currentVariant ? 'active' : '';
+      btn.onclick = async () => {
+        state.currentVariant = v;
+        testVariants.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        await loadTestPreview();
+      };
+      testVariants.appendChild(btn);
+    }
+    
+    // Set voice from meta
+    if (state.currentMeta?.voice?.id) {
+      document.getElementById('voice-select').value = state.currentMeta.voice.id;
+    }
+    
+  } catch (err) {
+    testPreview.innerHTML = '<div class="loading">Failed to load preview</div>';
+  }
+}
+
+function setupTestModalInteractions() {
+  // Emotions
+  document.querySelectorAll('.emotion-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyEmotion(btn.dataset.emotion);
+    };
+  });
+  
+  // Toggles
+  document.getElementById('toggle-eyes').onclick = function() {
+    this.classList.toggle('on');
+  };
+  
+  document.getElementById('toggle-blink').onclick = function() {
+    this.classList.toggle('on');
+  };
+  
+  // Speak
+  document.getElementById('btn-speak').onclick = speakText;
+}
+
+function applyEmotion(emotion) {
+  const svg = testPreview.querySelector('svg');
+  if (!svg) return;
+  
+  const eyes = svg.querySelectorAll('[id*="eye"], [id*="Eye"]');
+  const mouth = svg.querySelector('[id*="mouth"], [id*="Mouth"]');
+  const brows = svg.querySelectorAll('[id*="brow"], [id*="Brow"]');
+  
+  // Reset
+  eyes.forEach(e => e.style.transform = '');
+  brows.forEach(b => b.style.transform = '');
+  if (mouth) mouth.style.transform = '';
+  
+  // Apply emotion-specific transforms (simplified)
+  switch (emotion) {
+    case 'happy':
+      eyes.forEach(e => e.style.transform = 'scaleY(0.8)');
+      break;
+    case 'sad':
+      brows.forEach(b => b.style.transform = 'rotate(-10deg)');
+      break;
+    case 'angry':
+      brows.forEach(b => b.style.transform = 'rotate(10deg) translateY(2px)');
+      break;
+    case 'surprised':
+      eyes.forEach(e => e.style.transform = 'scaleY(1.3)');
+      brows.forEach(b => b.style.transform = 'translateY(-3px)');
+      break;
+  }
+}
+
+async function speakText() {
+  const text = document.getElementById('speak-text').value.trim();
+  if (!text) return;
+  
+  const voice = document.getElementById('voice-select').value;
+  const btn = document.getElementById('btn-speak');
+  
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  try {
+    // Call Pocket TTS API
+    const resp = await fetch('/tts/tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, voice })
+    });
+    
+    if (!resp.ok) throw new Error('TTS failed');
+    
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    
+    // Animate mouth while playing
+    audio.onplay = () => startTalkingAnimation();
+    audio.onended = () => {
+      stopTalkingAnimation();
+      URL.revokeObjectURL(url);
+    };
+    
+    audio.play();
+  } catch (err) {
+    console.error('TTS error:', err);
+    alert('Failed to generate speech');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔊';
+  }
+}
+
+let talkingInterval = null;
+
+function startTalkingAnimation() {
+  const svg = testPreview.querySelector('svg');
+  if (!svg) return;
+  
+  const mouth = svg.querySelector('[id*="mouth"], [id*="Mouth"]');
+  if (!mouth) return;
+  
+  let open = false;
+  talkingInterval = setInterval(() => {
+    open = !open;
+    mouth.style.transform = open ? 'scaleY(1.5)' : 'scaleY(1)';
+  }, 100);
+}
+
+function stopTalkingAnimation() {
+  if (talkingInterval) {
+    clearInterval(talkingInterval);
+    talkingInterval = null;
+  }
+  
+  const svg = testPreview.querySelector('svg');
+  if (!svg) return;
+  
+  const mouth = svg.querySelector('[id*="mouth"], [id*="Mouth"]');
+  if (mouth) mouth.style.transform = '';
+}
+
+// === NEW CHARACTER ===
+function createNewCharacter() {
+  const name = prompt('Character name (lowercase, no spaces):');
+  if (!name) return;
+  
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  
+  // For now, just add to list (would need server-side to create folder)
+  state.characters.push(safeName);
+  renderCharacterPicker();
+  selectCharacter(safeName);
+  
+  alert(`Created "${safeName}". Note: folder will be created when you save.`);
+}
+
+function addNewVariant() {
+  const name = prompt('Variant name (e.g., side, left, right):');
+  if (!name) return;
+  
+  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  state.currentVariant = safeName;
+  state.shapes = []; // Start fresh
+  renderCanvas();
+  
+  // Add tab
+  const tab = document.createElement('button');
+  tab.className = 'variant-tab active';
+  tab.textContent = safeName.charAt(0).toUpperCase() + safeName.slice(1);
+  variantTabs.querySelectorAll('.variant-tab').forEach(t => t.classList.remove('active'));
+  variantTabs.insertBefore(tab, variantTabs.querySelector('.add-variant'));
+}
+
+// === START ===
+init();
+</script>
+</body>
+</html>

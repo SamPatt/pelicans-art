@@ -1,0 +1,23 @@
+{
+  "name": "Green Alien",
+  "description": "A green extraterrestrial visitor",
+  "tags": ["alien", "sci-fi", "space", "fantasy"],
+  "voice": {
+    "id": "javert",
+    "pitch": -0.2,
+    "speed": 0.9,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "primary": "#32cd32",
+    "secondary": "#228b22",
+    "accent": "#ffff00"
+  },
+  "animation": {
+    "blinkInterval": 5,
+    "blinkDuration": 180,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

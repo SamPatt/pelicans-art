@@ -1,0 +1,25 @@
+{
+  "name": "Man in Suit",
+  "description": "A professional businessman",
+  "tags": ["human", "male", "professional", "business"],
+  "voice": {
+    "id": "marius",
+    "pitch": -0.1,
+    "speed": 0.95,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#deb887",
+    "hair": "#2f2f2f",
+    "primary": "#1a1a2e",
+    "secondary": "#ffffff",
+    "accent": "#b22222"
+  },
+  "animation": {
+    "blinkInterval": 4.5,
+    "blinkDuration": 150,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

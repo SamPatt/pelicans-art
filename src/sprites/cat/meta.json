@@ -1,0 +1,23 @@
+{
+  "name": "Cat",
+  "description": "A friendly orange tabby cat",
+  "tags": ["animal", "cat", "pet", "cute"],
+  "voice": {
+    "id": "cosette",
+    "pitch": 0.2,
+    "speed": 1.1,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "primary": "#f4a460",
+    "secondary": "#d2691e",
+    "accent": "#ffd700"
+  },
+  "animation": {
+    "blinkInterval": 3,
+    "blinkDuration": 100,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

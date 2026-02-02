@@ -1,0 +1,23 @@
+{
+  "name": "Alien",
+  "description": "A purple extraterrestrial visitor",
+  "tags": ["alien", "sci-fi", "space", "fantasy"],
+  "voice": {
+    "id": "alba",
+    "pitch": 0.4,
+    "speed": 1.2,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "primary": "#9370db",
+    "secondary": "#483d8b",
+    "accent": "#00ffff"
+  },
+  "animation": {
+    "blinkInterval": 6,
+    "blinkDuration": 200,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

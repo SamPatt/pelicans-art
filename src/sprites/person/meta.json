@@ -1,0 +1,23 @@
+{
+  "name": "Person",
+  "description": "A generic person character",
+  "tags": ["human", "person", "generic"],
+  "voice": {
+    "id": "jean",
+    "pitch": 0,
+    "speed": 1,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#deb887",
+    "hair": "#8b4513",
+    "primary": "#4169e1"
+  },
+  "animation": {
+    "blinkInterval": 4,
+    "blinkDuration": 150,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

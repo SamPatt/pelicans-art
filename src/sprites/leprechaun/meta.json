@@ -1,0 +1,25 @@
+{
+  "name": "Leprechaun",
+  "description": "A mischievous Irish leprechaun",
+  "tags": ["fantasy", "irish", "mythology", "magical"],
+  "voice": {
+    "id": "eponine",
+    "pitch": 0.3,
+    "speed": 1.1,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#ffe4c4",
+    "hair": "#ff4500",
+    "primary": "#228b22",
+    "secondary": "#ffd700",
+    "accent": "#000000"
+  },
+  "animation": {
+    "blinkInterval": 3,
+    "blinkDuration": 130,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

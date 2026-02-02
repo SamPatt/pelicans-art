@@ -1,0 +1,23 @@
+{
+  "name": "Pelican",
+  "description": "A coastal pelican bird",
+  "tags": ["animal", "bird", "pelican", "coastal"],
+  "voice": {
+    "id": "javert",
+    "pitch": 0.1,
+    "speed": 0.9,
+    "volume": 1.1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "primary": "#f5f5dc",
+    "secondary": "#ffa500",
+    "accent": "#4169e1"
+  },
+  "animation": {
+    "blinkInterval": 5,
+    "blinkDuration": 120,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

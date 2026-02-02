@@ -1,0 +1,23 @@
+{
+  "name": "Girl",
+  "description": "A young girl character",
+  "tags": ["human", "female", "young", "girl"],
+  "voice": {
+    "id": "fantine",
+    "pitch": 0.3,
+    "speed": 1.05,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#ffe4c4",
+    "hair": "#daa520",
+    "primary": "#ff69b4"
+  },
+  "animation": {
+    "blinkInterval": 3.5,
+    "blinkDuration": 140,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

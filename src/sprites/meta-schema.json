@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sprite Meta",
+  "description": "Metadata for a character sprite folder",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Display name for the character"
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of the character"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Searchable tags: human, animal, robot, fantasy, male, female, etc"
+    },
+    "voice": {
+      "type": "object",
+      "description": "Default voice settings for TTS",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Voice ID (alba, marius, javert, jean, fantine, cosette, eponine, azelma)"
+        },
+        "pitch": {
+          "type": "number",
+          "description": "Pitch adjustment (-1 to 1)",
+          "default": 0
+        },
+        "speed": {
+          "type": "number", 
+          "description": "Speed multiplier (0.5 to 2)",
+          "default": 1
+        },
+        "volume": {
+          "type": "number",
+          "description": "Volume multiplier (0 to 2)",
+          "default": 1
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Available variants (auto-detected from folder, but can specify order/preferred)"
+    },
+    "defaultVariant": {
+      "type": "string",
+      "description": "Which variant to show by default",
+      "default": "front"
+    },
+    "colors": {
+      "type": "object",
+      "description": "Color palette for consistency",
+      "properties": {
+        "skin": { "type": "string" },
+        "hair": { "type": "string" },
+        "primary": { "type": "string" },
+        "secondary": { "type": "string" },
+        "accent": { "type": "string" }
+      }
+    },
+    "animation": {
+      "type": "object",
+      "description": "Animation settings",
+      "properties": {
+        "blinkInterval": {
+          "type": "number",
+          "description": "Average seconds between blinks",
+          "default": 4
+        },
+        "blinkDuration": {
+          "type": "number",
+          "description": "Blink duration in ms",
+          "default": 150
+        },
+        "idleMovement": {
+          "type": "boolean",
+          "description": "Enable subtle idle movement",
+          "default": true
+        },
+        "eyeTracking": {
+          "type": "boolean",
+          "description": "Eyes follow cursor/touch",
+          "default": true
+        }
+      }
+    },
+    "created": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the sprite was created"
+    },
+    "modified": {
+      "type": "string", 
+      "format": "date-time",
+      "description": "Last modification time"
+    }
+  },
+  "required": ["name"]
+}
