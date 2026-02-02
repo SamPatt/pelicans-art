@@ -616,7 +616,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.8</span>
+    <span style="color:#666;">v3.9</span>
   </div>
 
   <script>
@@ -1419,11 +1419,11 @@
         // Log all segments found
         result.forEach((r, i) => bgLog(`Segment ${i}: ${r.label} (score: ${r.score?.toFixed(2) || 'N/A'})`));
         
-        // Find all foreground segments (face, hair, clothes - NOT background)
-        const foregroundLabels = ['face', 'skin', 'hair', 'upper', 'person', 'head', 'neck'];
+        // Find head segments only (face + hair, no clothes/body)
+        const headLabels = ['face', 'hair', 'head', 'skin', 'neck'];
         const foregroundSegments = result.filter(r => {
           const label = r.label.toLowerCase();
-          return !label.includes('background') && !label.includes('bag');
+          return headLabels.some(h => label.includes(h));
         });
         
         bgLog(`Found ${foregroundSegments.length} foreground segments: ${foregroundSegments.map(s => s.label).join(', ')}`);
