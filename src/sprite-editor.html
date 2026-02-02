@@ -7,9 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>SkitKit Sprite Editor v3</title>
-  <!-- Face API for landmark detection -->
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-  <!-- Background removal loaded dynamically -->
+  <!-- SVG Sprite Editor -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
@@ -592,7 +590,7 @@
   <div class="main">
     <!-- Left Panel: Sprite List -->
     <div class="panel-left">
-      <div class="panel-header">📁 Sprites</div>
+      <div class="panel-header">📁 Characters</div>
       <div class="sprite-list" id="sprite-list">
         <!-- Populated by JS -->
       </div>
@@ -600,6 +598,10 @@
     
     <!-- Center: Canvas -->
     <div class="panel-center">
+      <!-- Variant Tabs -->
+      <div class="variant-tabs" id="variant-tabs" style="display:flex;gap:4px;padding:8px;background:#16213e;border-bottom:1px solid #0f3460;">
+        <!-- Populated by JS -->
+      </div>
       <div class="zoom-controls">
         <button onclick="zoomIn()">🔍+</button>
         <span id="zoom-level">100%</span>
@@ -673,45 +675,135 @@
     }
     
     // === SPRITE LIST ===
-    const defaultSprites = [
-      'girl', 'waiter', 'leprechaun', 'man-suit', 'cat', 
-      'robot', 'alien', 'trump-v3', 'pelican'
-    ];
+    let characterList = [];
+    let currentVariant = 'front';
+    let currentVariants = ['front'];
     
     async function loadSpriteList() {
       const list = document.getElementById('sprite-list');
       list.innerHTML = '';
       
-      for (const name of defaultSprites) {
+      try {
+        const resp = await fetch('sprites/index.json');
+        const data = await resp.json();
+        characterList = data.characters;
+      } catch (e) {
+        characterList = ['cat', 'robot', 'person', 'girl', 'alien'];
+      }
+      
+      for (const name of characterList) {
         const item = document.createElement('div');
         item.className = 'sprite-item';
+        item.dataset.char = name;
         item.innerHTML = `<span class="icon">🎭</span> ${name}`;
-        item.onclick = () => loadSprite(name);
+        item.onclick = () => selectCharacter(name);
         list.appendChild(item);
       }
     }
     
-    async function loadSprite(name) {
+    async function selectCharacter(name) {
+      currentSpriteName = name;
+      
+      // Update UI
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.char === name);
+      });
+      
+      // Detect variants
+      currentVariants = await detectVariants(name);
+      renderVariantTabs();
+      
+      // Load default variant
+      currentVariant = currentVariants.includes('front') ? 'front' : currentVariants[0];
+      await loadVariant(name, currentVariant);
+    }
+    
+    async function detectVariants(charName) {
+      const possible = ['front', 'back', 'side', 'left', 'right', 'v2', 'v3', 'detailed', 'legacy'];
+      const found = [];
+      
+      await Promise.all(possible.map(async (v) => {
+        try {
+          const resp = await fetch(`sprites/${charName}/${v}.svg`, { method: 'HEAD' });
+          if (resp.ok) found.push(v);
+        } catch (e) {}
+      }));
+      
+      found.sort((a, b) => {
+        if (a === 'front') return -1;
+        if (b === 'front') return 1;
+        return a.localeCompare(b);
+      });
+      
+      return found.length > 0 ? found : ['front'];
+    }
+    
+    function renderVariantTabs() {
+      const tabs = document.getElementById('variant-tabs');
+      tabs.innerHTML = '';
+      
+      for (const v of currentVariants) {
+        const tab = document.createElement('button');
+        tab.style.cssText = 'padding:6px 12px;background:#0f3460;border:none;color:#eee;border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
+        if (v === currentVariant) tab.style.background = '#e94560';
+        tab.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+        tab.onclick = () => {
+          currentVariant = v;
+          loadVariant(currentSpriteName, v);
+          renderVariantTabs();
+        };
+        tabs.appendChild(tab);
+      }
+      
+      // Add new variant button
+      const addBtn = document.createElement('button');
+      addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed #888;color:#888;border-radius:4px;cursor:pointer;font-size:12px;';
+      addBtn.textContent = '+ New';
+      addBtn.onclick = addNewVariant;
+      tabs.appendChild(addBtn);
+    }
+    
+    async function loadVariant(charName, variant) {
       try {
-        const response = await fetch(`sprites/${name}-front.svg?v=${Date.now()}`);
+        const response = await fetch(`sprites/${charName}/${variant}.svg?v=${Date.now()}`);
         const svgText = await response.text();
         
-        currentSpriteName = name;
+        currentVariant = variant;
         currentSprite = svgText;
-        
-        // Update UI
-        document.querySelectorAll('.sprite-item').forEach((item, i) => {
-          item.classList.toggle('active', defaultSprites[i] === name);
-        });
         
         renderSprite();
         buildElementTree();
         clearSelection();
         resetHistory();
-        updateStatus(`Loaded: ${name}`);
+        updateStatus(`Loaded: ${charName}/${variant}`);
       } catch (e) {
-        updateStatus(`Error loading ${name}: ${e.message}`);
+        updateStatus(`Error loading ${charName}/${variant}: ${e.message}`);
       }
+    }
+    
+    function addNewVariant() {
+      const name = prompt('New variant name (e.g., side, left, angry):');
+      if (!name) return;
+      const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      currentVariant = safeName;
+      currentVariants.push(safeName);
+      
+      // Start with blank or copy current
+      if (confirm('Start with a copy of current sprite? (Cancel for blank)')) {
+        // Keep currentSprite as is
+      } else {
+        currentSprite = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150"></svg>`;
+      }
+      
+      renderVariantTabs();
+      renderSprite();
+      buildElementTree();
+      updateStatus(`New variant: ${safeName} (save to create file)`);
+    }
+    
+    // Legacy function for compatibility
+    async function loadSprite(name) {
+      await selectCharacter(name);
     }
     
     function renderSprite() {
@@ -1125,18 +1217,19 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${currentSpriteName}-front.svg`;
+      a.download = `${currentSpriteName}_${currentVariant}.svg`;
       a.click();
       URL.revokeObjectURL(url);
       
-      updateStatus(`Saved & downloaded: ${currentSpriteName}-front.svg`);
+      updateStatus(`Saved: ${currentSpriteName}/${currentVariant}.svg (download started)`);
     }
     
     function saveToLocalStorage() {
       if (!currentSpriteName || !currentSprite) return;
       
+      const key = `${currentSpriteName}/${currentVariant}`;
       const saved = JSON.parse(localStorage.getItem('skitkit-sprites') || '{}');
-      saved[currentSpriteName] = {
+      saved[key] = {
         svg: currentSprite,
         timestamp: Date.now()
       };
@@ -2504,7 +2597,7 @@
     
     loadSpriteList();
     loadLocalSprites();
-    loadSprite('girl'); // Load default
+    selectCharacter('cat'); // Load default
   </script>
 </body>
 </html>
