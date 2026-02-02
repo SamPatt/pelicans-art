@@ -172,13 +172,8 @@
     <!-- Chin -->
     <ellipse cx="200" cy="365" rx="25" ry="8" fill="#C87840" opacity="0.25"/>
     
-    <!-- Expression mouths - simple lines only -->
-    <path id="mouth-neutral" d="M162,330 Q200,326 238,330" stroke="#906058" stroke-width="3" fill="none" opacity="1"/>
-    <path id="mouth-happy" d="M160,330 Q200,345 240,330" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
-    <path id="mouth-sad" d="M165,340 Q200,325 235,340" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
-    <path id="mouth-angry" d="M165,335 Q200,325 235,335" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
-    <ellipse id="mouth-surprised" cx="200" cy="338" rx="15" ry="12" fill="#5d4037" opacity="0"/>
-    <path id="mouth-smug" d="M165,332 Q195,340 235,330" stroke="#906058" stroke-width="3" fill="none" opacity="0"/>
+    <!-- Mouth closed - single path that gets modified by emotion system -->
+    <path id="mouth-closed" d="M162,330 Q200,326 238,330" stroke="#906058" stroke-width="3" fill="none"/>
     
     <!-- Mouth open for speaking -->
     <ellipse id="mouth-open" cx="200" cy="338" rx="18" ry="10" fill="#5d4037" opacity="0"/>
