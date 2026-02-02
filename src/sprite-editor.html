@@ -460,6 +460,8 @@
             <button onclick="generatePhotoSprite()">✨ Generate</button>
           </div>
           <div id="bg-status" style="margin-top:10px;color:#4ecca3;font-size:0.9em;"></div>
+          <textarea id="bg-log" readonly style="width:100%;height:80px;margin-top:10px;background:#0d0d1a;color:#888;border:1px solid #333;font-size:0.75em;display:none;"></textarea>
+          <button id="copy-log-btn" style="display:none;margin-top:5px;font-size:0.75em;" onclick="navigator.clipboard.writeText(document.getElementById('bg-log').value)">📋 Copy Log</button>
         </div>
       </div>
     </div>
@@ -618,7 +620,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.3</span>
+    <span style="color:#666;">v3.4</span>
   </div>
 
   <script>
@@ -1365,43 +1367,54 @@
     let bgRemovalReady = false;
     let processedImageBlob = null;
     
-    async function removeBackground(imageSource) {
+    function bgLog(msg) {
+      const log = document.getElementById('bg-log');
       const status = document.getElementById('bg-status');
-      status.textContent = 'Initializing background removal...';
+      log.style.display = 'block';
+      document.getElementById('copy-log-btn').style.display = 'inline-block';
+      log.value += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+      log.scrollTop = log.scrollHeight;
+      status.textContent = msg;
+    }
+    
+    async function removeBackground(imageSource) {
+      const log = document.getElementById('bg-log');
+      log.value = ''; // Clear log
+      
+      bgLog('Initializing background removal...');
       
       try {
         // Wait for module to be available
         let attempts = 0;
         while (typeof window.imglyRemoveBackground === 'undefined' && attempts < 10) {
-          status.textContent = `Loading module... (${attempts + 1}/10)`;
+          bgLog(`Waiting for module... attempt ${attempts + 1}/10`);
           await new Promise(resolve => setTimeout(resolve, 500));
           attempts++;
         }
         
         if (typeof window.imglyRemoveBackground === 'undefined') {
-          throw new Error('Background removal module failed to load');
+          throw new Error('Background removal module failed to load after 10 attempts');
         }
         
-        status.textContent = 'Downloading AI model (~30MB first time)...';
+        bgLog('Module loaded! Starting background removal...');
+        bgLog(`Image source type: ${imageSource.constructor.name}, size: ${imageSource.size} bytes`);
         
         const blob = await window.imglyRemoveBackground(imageSource, {
-          model: 'small', // Use smaller model for faster download
+          model: 'small',
           progress: (key, current, total) => {
             const pct = Math.round((current / total) * 100);
-            if (key.startsWith('fetch:')) {
-              status.textContent = `Downloading model... ${pct}%`;
-            } else if (key === 'compute:inference') {
-              status.textContent = `Processing image... ${pct}%`;
-            }
+            bgLog(`${key}: ${pct}% (${current}/${total})`);
           }
         });
         
+        bgLog(`Success! Output blob size: ${blob.size} bytes`);
         processedImageBlob = blob;
         bgRemovalReady = true;
         return blob;
       } catch (e) {
+        bgLog(`ERROR: ${e.message}`);
+        bgLog(`Stack: ${e.stack}`);
         console.error('Background removal failed:', e);
-        status.textContent = `Error: ${e.message}`;
         return null;
       }
     }
