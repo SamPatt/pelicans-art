@@ -1,65 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
   <g id="body">
-    <!-- Body/dress -->
-    <ellipse cx="50" cy="95" rx="20" ry="40" fill="#7dd3dc"/>
+    <!-- Feminine body shape - hourglass -->
+    <path d="M35 65 Q30 80 33 95 Q30 110 38 130 L42 130 Q45 115 50 115 Q55 115 58 130 L62 130 Q70 110 67 95 Q70 80 65 65 Q58 60 50 60 Q42 60 35 65" fill="#7dd3dc"/>
+    <!-- Chest hint -->
+    <ellipse cx="43" cy="75" rx="6" ry="5" fill="#6bc5ce"/>
+    <ellipse cx="57" cy="75" rx="6" ry="5" fill="#6bc5ce"/>
     <!-- Arms -->
-    <ellipse cx="28" cy="85" rx="6" ry="14" fill="#fce4d4"/>
-    <ellipse cx="72" cy="85" rx="6" ry="14" fill="#fce4d4"/>
-    <!-- Legs hint -->
-    <ellipse cx="43" cy="132" rx="6" ry="10" fill="#fce4d4"/>
-    <ellipse cx="57" cy="132" rx="6" ry="10" fill="#fce4d4"/>
+    <ellipse cx="28" cy="80" rx="5" ry="12" fill="#fce4d4"/>
+    <ellipse cx="72" cy="80" rx="5" ry="12" fill="#fce4d4"/>
+    <!-- Hands -->
+    <ellipse cx="28" cy="94" rx="4" ry="3" fill="#fce4d4"/>
+    <ellipse cx="72" cy="94" rx="4" ry="3" fill="#fce4d4"/>
+    <!-- Legs -->
+    <ellipse cx="43" cy="138" rx="5" ry="10" fill="#fce4d4"/>
+    <ellipse cx="57" cy="138" rx="5" ry="10" fill="#fce4d4"/>
   </g>
   <g id="head-top">
-    <!-- Hair back layer (volume) -->
-    <ellipse cx="50" cy="36" rx="26" ry="28" fill="#3d2314"/>
-    <!-- Hair main shape -->
-    <ellipse cx="50" cy="38" rx="24" ry="26" fill="#5c3a21"/>
-    <!-- Hair highlight/shine -->
-    <ellipse cx="44" cy="28" rx="8" ry="6" fill="#7a4f2e" opacity="0.6"/>
-    <!-- Hair sides - layered strands for realism -->
-    <path d="M26 36 Q20 50 24 75 Q26 85 30 90" stroke="#5c3a21" stroke-width="14" fill="none" stroke-linecap="round"/>
-    <path d="M74 36 Q80 50 76 75 Q74 85 70 90" stroke="#5c3a21" stroke-width="14" fill="none" stroke-linecap="round"/>
-    <!-- Inner hair strands for depth -->
-    <path d="M28 40 Q24 55 27 78" stroke="#3d2314" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <path d="M72 40 Q76 55 73 78" stroke="#3d2314" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <!-- Hair highlight strands -->
-    <path d="M30 42 Q27 55 29 72" stroke="#7a4f2e" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
-    <path d="M70 42 Q73 55 71 72" stroke="#7a4f2e" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.5"/>
-    <!-- Wispy bangs -->
-    <path d="M34 32 Q38 38 36 42" stroke="#5c3a21" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <path d="M42 30 Q44 36 42 40" stroke="#5c3a21" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M58 30 Q56 36 58 40" stroke="#5c3a21" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M66 32 Q62 38 64 42" stroke="#5c3a21" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- Hair back -->
+    <ellipse cx="50" cy="36" rx="22" ry="24" fill="#5c3a21"/>
+    <!-- Hair sides - simple flowing -->
+    <path d="M28 36 Q24 50 26 70 Q28 80 32 85" stroke="#5c3a21" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M72 36 Q76 50 74 70 Q72 80 68 85" stroke="#5c3a21" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <!-- Hair highlight -->
+    <ellipse cx="44" cy="26" rx="6" ry="4" fill="#7a4f2e" opacity="0.5"/>
     <!-- Face -->
-    <ellipse cx="50" cy="44" rx="18" ry="20" fill="#fce4d4"/>
+    <ellipse cx="50" cy="42" rx="16" ry="18" fill="#fce4d4"/>
     <!-- Blush -->
-    <ellipse cx="36" cy="50" rx="4" ry="2" fill="#ffb6b6" opacity="0.5"/>
-    <ellipse cx="64" cy="50" rx="4" ry="2" fill="#ffb6b6" opacity="0.5"/>
-    <!-- Eyes -->
-    <ellipse id="eye-left-white" cx="42" cy="44" rx="4" ry="3" fill="#ffffff"/>
-    <ellipse id="eye-right-white" cx="58" cy="44" rx="4" ry="3" fill="#ffffff"/>
-    <circle id="eye-left-pupil" class="pupil" cx="42" cy="44" r="2" fill="#4a3728"/>
-    <circle id="eye-right-pupil" class="pupil" cx="58" cy="44" r="2" fill="#4a3728"/>
+    <ellipse cx="38" cy="46" rx="3" ry="2" fill="#ffb6b6" opacity="0.5"/>
+    <ellipse cx="62" cy="46" rx="3" ry="2" fill="#ffb6b6" opacity="0.5"/>
+    <!-- Eyes - matching human emotion coords -->
+    <ellipse id="eye-left-white" cx="42" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="58" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#4a3728"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#4a3728"/>
     <!-- Eye highlights -->
-    <circle id="eye-left-highlight" cx="41" cy="43" r="1" fill="#fff" opacity="0"/>
-    <circle id="eye-right-highlight" cx="57" cy="43" r="1" fill="#fff" opacity="0"/>
-    <!-- Eyelashes hint -->
-    <path d="M38 42 L37 40" stroke="#3d2314" stroke-width="0.5" fill="none"/>
-    <path d="M46 42 L47 40" stroke="#3d2314" stroke-width="0.5" fill="none"/>
-    <path d="M54 42 L53 40" stroke="#3d2314" stroke-width="0.5" fill="none"/>
-    <path d="M62 42 L63 40" stroke="#3d2314" stroke-width="0.5" fill="none"/>
+    <circle id="eye-left-highlight" cx="41" cy="41" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="57" cy="41" r="1" fill="#fff" opacity="0"/>
+    <!-- Eyelashes -->
+    <path d="M38 40 L37 38" stroke="#5c3a21" stroke-width="1" fill="none"/>
+    <path d="M46 40 L47 38" stroke="#5c3a21" stroke-width="1" fill="none"/>
+    <path d="M54 40 L53 38" stroke="#5c3a21" stroke-width="1" fill="none"/>
+    <path d="M62 40 L63 38" stroke="#5c3a21" stroke-width="1" fill="none"/>
     <!-- Eyebrows -->
-    <path id="brow-left-border" d="M37 40 Q42 38 47 40" stroke="#fce4d4" stroke-width="2" fill="none"/>
-    <path id="brow-left" d="M37 38 Q42 36 47 38" stroke="#4a3728" stroke-width="1.5" fill="none"/>
-    <path id="brow-right-border" d="M53 40 Q58 38 63 40" stroke="#fce4d4" stroke-width="2" fill="none"/>
-    <path id="brow-right" d="M53 38 Q58 36 63 38" stroke="#4a3728" stroke-width="1.5" fill="none"/>
+    <path id="brow-left" d="M37 36 Q42 34 47 36" stroke="#4a3728" stroke-width="1" fill="none"/>
+    <path id="brow-right" d="M53 36 Q58 34 63 36" stroke="#4a3728" stroke-width="1" fill="none"/>
     <!-- Small nose -->
-    <ellipse cx="50" cy="50" rx="2" ry="2.5" fill="#ebd5c5"/>
+    <ellipse cx="50" cy="48" rx="2" ry="2" fill="#ebd5c5"/>
   </g>
   <g id="head-bottom">
-    <!-- Mouth closed -->
-    <path id="mouth-closed" d="M46 56 Q50 59 54 56" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
-    <!-- Mouth open -->
-    <ellipse id="mouth-open" cx="50" cy="57" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
+    <!-- Mouth - matching human coords -->
+    <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
+    <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
   </g>
 </svg>
