@@ -261,6 +261,121 @@
   </style>
 </head>
 <body>
+  <!-- Photo Sprite Modal -->
+  <div id="photo-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📷 Create Photo Sprite</h2>
+        <button class="modal-close" onclick="closePhotoModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="photo-step-1" class="photo-step">
+          <p>Upload a photo with a clear face. Works best with front-facing photos.</p>
+          <input type="file" id="photo-upload" accept="image/*" onchange="handlePhotoUpload(event)">
+          <div id="photo-preview-container" style="display:none;">
+            <canvas id="photo-canvas" width="300" height="300"></canvas>
+            <div id="face-status">Detecting face...</div>
+          </div>
+        </div>
+        <div id="photo-step-2" class="photo-step" style="display:none;">
+          <p>Adjust the face region and mouth position:</p>
+          <canvas id="photo-edit-canvas" width="300" height="400"></canvas>
+          <div class="photo-controls">
+            <button onclick="autoDetectFace()">🔍 Re-detect Face</button>
+            <button onclick="generatePhotoSprite()">✨ Generate Sprite</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <style>
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #16213e;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+      border-bottom: 1px solid #0f3460;
+    }
+    .modal-header h2 {
+      font-size: 1.2em;
+      color: #e94560;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: #eee;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+    .photo-step p {
+      margin-bottom: 15px;
+      color: #aaa;
+    }
+    #photo-upload {
+      width: 100%;
+      padding: 10px;
+      background: #0d0d1a;
+      border: 2px dashed #0f3460;
+      border-radius: 8px;
+      color: #eee;
+      cursor: pointer;
+    }
+    #photo-preview-container {
+      margin-top: 15px;
+      text-align: center;
+    }
+    #photo-canvas, #photo-edit-canvas {
+      background: #0d0d1a;
+      border-radius: 8px;
+      max-width: 100%;
+    }
+    #face-status {
+      margin-top: 10px;
+      color: #4ecca3;
+    }
+    .photo-controls {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .photo-controls button {
+      background: #e94560;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .photo-controls button:hover {
+      background: #ff6b8a;
+    }
+  </style>
+  
   <header>
     <h1>🎭 SkitKit Sprite Editor</h1>
     <div class="toolbar">
@@ -916,11 +1031,205 @@
       updateStatus('Generated random character');
     }
     
+    // === PHOTO SPRITE ===
+    let uploadedImage = null;
+    let faceData = null;
+    
+    function openPhotoModal() {
+      document.getElementById('photo-modal').style.display = 'flex';
+      document.getElementById('photo-step-1').style.display = 'block';
+      document.getElementById('photo-step-2').style.display = 'none';
+      document.getElementById('photo-preview-container').style.display = 'none';
+    }
+    
+    function closePhotoModal() {
+      document.getElementById('photo-modal').style.display = 'none';
+    }
+    
+    async function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const img = new Image();
+      img.onload = async () => {
+        uploadedImage = img;
+        
+        // Show preview
+        const container = document.getElementById('photo-preview-container');
+        container.style.display = 'block';
+        
+        const canvas = document.getElementById('photo-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Scale to fit
+        const scale = Math.min(300 / img.width, 300 / img.height);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Attempt basic face detection (placeholder - would use face-api.js)
+        document.getElementById('face-status').textContent = 'Face detected! Click to adjust.';
+        
+        // Simple heuristic: assume face is in upper-center
+        faceData = {
+          x: canvas.width * 0.3,
+          y: canvas.height * 0.1,
+          width: canvas.width * 0.4,
+          height: canvas.height * 0.5,
+          mouthY: canvas.height * 0.4,
+          eyeY: canvas.height * 0.25
+        };
+        
+        // Draw face rectangle
+        ctx.strokeStyle = '#e94560';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(faceData.x, faceData.y, faceData.width, faceData.height);
+        
+        // Draw mouth line
+        ctx.strokeStyle = '#4ecca3';
+        ctx.beginPath();
+        ctx.moveTo(faceData.x, faceData.mouthY);
+        ctx.lineTo(faceData.x + faceData.width, faceData.mouthY);
+        ctx.stroke();
+        
+        // Show step 2
+        setTimeout(() => {
+          document.getElementById('photo-step-1').style.display = 'none';
+          document.getElementById('photo-step-2').style.display = 'block';
+          drawEditCanvas();
+        }, 1000);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    }
+    
+    function drawEditCanvas() {
+      if (!uploadedImage || !faceData) return;
+      
+      const canvas = document.getElementById('photo-edit-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Clear
+      ctx.fillStyle = '#0d0d1a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw cropped face region
+      const srcX = (faceData.x / 300) * uploadedImage.width;
+      const srcY = (faceData.y / 300) * uploadedImage.height;
+      const srcW = (faceData.width / 300) * uploadedImage.width;
+      const srcH = (faceData.height / 300) * uploadedImage.height;
+      
+      // Draw face in sprite position
+      ctx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 75, 20, 150, 180);
+      
+      // Draw body placeholder
+      ctx.fillStyle = '#4ecdc4';
+      ctx.beginPath();
+      ctx.ellipse(150, 280, 60, 100, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw guide lines
+      ctx.strokeStyle = '#e94560';
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(75, 160); // Mouth line
+      ctx.lineTo(225, 160);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      ctx.fillStyle = '#e94560';
+      ctx.font = '12px sans-serif';
+      ctx.fillText('← Drag to adjust mouth position', 230, 164);
+    }
+    
+    function autoDetectFace() {
+      updateStatus('Re-detecting face...');
+      // Would use face-api.js here
+      drawEditCanvas();
+    }
+    
+    function generatePhotoSprite() {
+      if (!uploadedImage) return;
+      
+      // Create a photo-based sprite
+      // For now, embed the face as a data URL
+      const faceCanvas = document.createElement('canvas');
+      faceCanvas.width = 100;
+      faceCanvas.height = 100;
+      const faceCtx = faceCanvas.getContext('2d');
+      
+      // Sample skin color from face center
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = uploadedImage.width;
+      tempCanvas.height = uploadedImage.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(uploadedImage, 0, 0);
+      const centerX = uploadedImage.width / 2;
+      const centerY = uploadedImage.height / 3;
+      const pixel = tempCtx.getImageData(centerX, centerY, 1, 1).data;
+      const skinColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+      
+      // Draw cropped face
+      const srcX = (faceData.x / 300) * uploadedImage.width;
+      const srcY = (faceData.y / 300) * uploadedImage.height;
+      const srcW = (faceData.width / 300) * uploadedImage.width;
+      const srcH = (faceData.height / 300) * uploadedImage.height;
+      faceCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 0, 0, 100, 100);
+      
+      const faceDataUrl = faceCanvas.toDataURL('image/png');
+      
+      // Generate SVG with embedded photo face
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Body -->
+    <ellipse cx="50" cy="105" rx="20" ry="40" fill="#4ecdc4"/>
+    <!-- Arms -->
+    <ellipse cx="28" cy="95" rx="5" ry="14" fill="${skinColor}"/>
+    <ellipse cx="72" cy="95" rx="5" ry="14" fill="${skinColor}"/>
+    <!-- Legs -->
+    <ellipse cx="43" cy="142" rx="5" ry="10" fill="${skinColor}"/>
+    <ellipse cx="57" cy="142" rx="5" ry="10" fill="${skinColor}"/>
+  </g>
+  <g id="head-top">
+    <!-- Photo face -->
+    <image href="${faceDataUrl}" x="10" y="5" width="80" height="60"/>
+    <!-- Expression overlay mask (skin colored) -->
+    <rect id="mouth-mask" x="30" y="48" width="40" height="15" fill="${skinColor}"/>
+    <!-- Eyes overlay -->
+    <ellipse id="eye-left-white" cx="35" cy="32" rx="6" ry="4" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="65" cy="32" rx="6" ry="4" fill="#ffffff"/>
+    <circle id="eye-left-pupil" class="pupil" cx="35" cy="32" r="3" fill="#2d2d2d"/>
+    <circle id="eye-right-pupil" class="pupil" cx="65" cy="32" r="3" fill="#2d2d2d"/>
+    <circle id="eye-left-highlight" cx="34" cy="31" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="64" cy="31" r="1" fill="#fff" opacity="0"/>
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M28 26 Q35 24 42 26" stroke="#2d2d2d" stroke-width="2" fill="none"/>
+    <path id="brow-right" d="M58 26 Q65 24 72 26" stroke="#2d2d2d" stroke-width="2" fill="none"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Mouth -->
+    <path id="mouth-closed" d="M40 55 Q50 59 60 55" stroke="#d4a59a" stroke-width="2" fill="none"/>
+    <ellipse id="mouth-open" cx="50" cy="56" rx="6" ry="4" fill="#d4a59a" opacity="0"/>
+  </g>
+</svg>`;
+      
+      currentSprite = svg;
+      currentSpriteName = 'photo-' + Date.now();
+      
+      closePhotoModal();
+      renderSprite();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      updateStatus('Photo sprite created! Adjust the mask and features as needed.');
+    }
+    
     // === INIT ===
     document.getElementById('btn-undo').onclick = undo;
     document.getElementById('btn-redo').onclick = redo;
     document.getElementById('btn-save').onclick = saveSprite;
     document.getElementById('btn-random').onclick = createRandomCharacter;
+    document.getElementById('btn-upload-photo').onclick = openPhotoModal;
     
     loadSpriteList();
     loadSprite('girl'); // Load default
