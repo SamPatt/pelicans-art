@@ -723,10 +723,48 @@
       if (!config) return;
       
       const el = char.el;
+      const svg = el.querySelector('svg');
+      const isPhotoSprite = svg && svg.dataset.photoSprite === 'true';
       const isHuman = HUMAN_SPRITES.includes(char.sprite);
       const isTrumpV3 = char.sprite === 'trump-v3';
       
-      // Get SVG elements
+      // Handle photo sprite emotions (jaw puppet style)
+      if (isPhotoSprite) {
+        const headBottom = el.querySelector('#head-bottom');
+        const mouthOpen = el.querySelector('#mouth-open');
+        
+        if (headBottom) {
+          // Surprised/scared = wide open jaw
+          if (emotion === 'surprised' || emotion === 'scared') {
+            headBottom.style.transform = 'rotate(12deg)';
+            if (mouthOpen) {
+              mouthOpen.setAttribute('ry', '4');
+              mouthOpen.setAttribute('rx', '10');
+              mouthOpen.setAttribute('opacity', '1');
+            }
+          }
+          // Angry = tense, slightly open
+          else if (emotion === 'angry') {
+            headBottom.style.transform = 'rotate(3deg)';
+            if (mouthOpen) {
+              mouthOpen.setAttribute('ry', '1.5');
+              mouthOpen.setAttribute('opacity', '0.8');
+            }
+          }
+          // Happy/default = closed
+          else {
+            headBottom.style.transform = 'rotate(0deg)';
+            if (mouthOpen) {
+              mouthOpen.setAttribute('ry', '1');
+              mouthOpen.setAttribute('opacity', '0');
+            }
+          }
+        }
+        console.log(`${charName} emotion: ${emotion} (photo-sprite)`);
+        return;
+      }
+      
+      // Get SVG elements for regular sprites
       const eyeLeftWhite = el.querySelector('#eye-left-white');
       const eyeRightWhite = el.querySelector('#eye-right-white');
       const eyeLeftPupil = el.querySelector('#eye-left-pupil');
