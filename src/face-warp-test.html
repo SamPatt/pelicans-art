@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Warp Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      padding: 20px;
+    }
+    h1 { color: #e94560; margin-bottom: 20px; }
+    .container { display: flex; gap: 20px; flex-wrap: wrap; }
+    .panel {
+      background: #16213e;
+      border-radius: 10px;
+      padding: 20px;
+    }
+    canvas {
+      background: #0d0d1a;
+      border-radius: 8px;
+      display: block;
+      margin-bottom: 10px;
+    }
+    input[type="file"] {
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #0d0d1a;
+      border: 2px dashed #0f3460;
+      border-radius: 8px;
+      color: #eee;
+      width: 100%;
+    }
+    .controls { margin-top: 15px; }
+    .control-group { margin-bottom: 15px; }
+    .control-group label { display: block; margin-bottom: 5px; color: #aaa; }
+    .control-group input[type="range"] { width: 100%; }
+    button {
+      background: #e94560;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    button:hover { background: #ff6b8a; }
+    .emotion-buttons { margin-top: 15px; }
+    .status { color: #4ecca3; margin: 10px 0; }
+    #debug { 
+      font-family: monospace; 
+      font-size: 12px; 
+      color: #888; 
+      max-height: 150px; 
+      overflow-y: auto;
+      background: #0d0d1a;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎭 Face Warp Test</h1>
+  
+  <div class="container">
+    <div class="panel">
+      <h3>Source Image</h3>
+      <input type="file" id="photo-upload" accept="image/*">
+      <canvas id="source-canvas" width="300" height="400"></canvas>
+      <div id="status" class="status">Upload a photo to begin</div>
+    </div>
+    
+    <div class="panel">
+      <h3>Warped Result</h3>
+      <canvas id="warp-canvas" width="300" height="400"></canvas>
+      <div class="emotion-buttons">
+        <button onclick="setEmotion('neutral')">😐 Neutral</button>
+        <button onclick="setEmotion('happy')">😊 Happy</button>
+        <button onclick="setEmotion('sad')">😢 Sad</button>
+        <button onclick="setEmotion('angry')">😠 Angry</button>
+        <button onclick="setEmotion('surprised')">😲 Surprised</button>
+        <button onclick="setEmotion('talking')">🗣️ Talking</button>
+      </div>
+      <div class="controls">
+        <div class="control-group">
+          <label>Mouth Open: <span id="mouth-val">0</span></label>
+          <input type="range" id="mouth-open" min="0" max="100" value="0" oninput="updateWarp()">
+        </div>
+        <div class="control-group">
+          <label>Smile: <span id="smile-val">0</span></label>
+          <input type="range" id="smile" min="-100" max="100" value="0" oninput="updateWarp()">
+        </div>
+        <div class="control-group">
+          <label>Brow Raise: <span id="brow-val">0</span></label>
+          <input type="range" id="brow-raise" min="-100" max="100" value="0" oninput="updateWarp()">
+        </div>
+        <div class="control-group">
+          <label>Eye Squint: <span id="squint-val">0</span></label>
+          <input type="range" id="eye-squint" min="0" max="100" value="0" oninput="updateWarp()">
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel" style="width: 100%; max-width: 640px;">
+      <h3>Debug</h3>
+      <label><input type="checkbox" id="show-mesh" onchange="updateWarp()"> Show mesh</label>
+      <label><input type="checkbox" id="show-points" onchange="updateWarp()"> Show landmarks</label>
+      <div id="debug"></div>
+    </div>
+  </div>
+
+  <script>
+    // State
+    let sourceImage = null;
+    let landmarks = null;
+    let neutralLandmarks = null; // Store original positions
+    let triangles = []; // Delaunay triangulation
+    
+    const sourceCanvas = document.getElementById('source-canvas');
+    const sourceCtx = sourceCanvas.getContext('2d');
+    const warpCanvas = document.getElementById('warp-canvas');
+    const warpCtx = warpCanvas.getContext('2d');
+    
+    // Load face-api models
+    async function loadModels() {
+      setStatus('Loading face detection models...');
+      const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL) // Full model for better accuracy
+      ]);
+      setStatus('Models loaded. Upload a photo.');
+    }
+    
+    function setStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+    
+    function debug(msg) {
+      const d = document.getElementById('debug');
+      d.innerHTML += msg + '<br>';
+      d.scrollTop = d.scrollHeight;
+    }
+    
+    // Handle photo upload
+    document.getElementById('photo-upload').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const img = new Image();
+      img.onload = async () => {
+        sourceImage = img;
+        
+        // Scale to fit canvas
+        const scale = Math.min(sourceCanvas.width / img.width, sourceCanvas.height / img.height);
+        const w = img.width * scale;
+        const h = img.height * scale;
+        const x = (sourceCanvas.width - w) / 2;
+        const y = (sourceCanvas.height - h) / 2;
+        
+        sourceCtx.fillStyle = '#0d0d1a';
+        sourceCtx.fillRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+        sourceCtx.drawImage(img, x, y, w, h);
+        
+        setStatus('Detecting face landmarks...');
+        
+        // Detect landmarks
+        const detection = await faceapi.detectSingleFace(sourceCanvas, new faceapi.TinyFaceDetectorOptions())
+          .withFaceLandmarks();
+        
+        if (!detection) {
+          setStatus('No face detected. Try another photo.');
+          return;
+        }
+        
+        // Store landmarks as array of {x, y}
+        landmarks = detection.landmarks.positions.map(p => ({ x: p.x, y: p.y }));
+        
+        // Add virtual forehead points (stay fixed when brows move)
+        landmarks = addForeheadPoints(landmarks);
+        neutralLandmarks = landmarks.map(p => ({ ...p })); // Deep copy
+        
+        debug(`Detected ${landmarks.length} landmarks (including forehead)`);
+        
+        // Create triangulation
+        createTriangulation();
+        
+        setStatus('Face detected! Try the emotion buttons.');
+        updateWarp();
+      };
+      img.src = URL.createObjectURL(file);
+    });
+    
+    // Create triangulation with virtual forehead points
+    function createTriangulation() {
+      triangles = [];
+      
+      // We'll add virtual forehead points (indices 68-77) that stay fixed
+      // These will be added to landmarks array after detection
+      
+      // Predefined triangles for 68-point face mesh + forehead
+      const faceTriangles = [
+        // Forehead region - connects fixed forehead points (68-77) to moving brow points (17-26)
+        // Left forehead
+        [68, 17, 18], [68, 69, 18], [69, 18, 19], [69, 70, 19], [70, 19, 20],
+        [70, 71, 20], [71, 20, 21], [71, 72, 21],
+        // Right forehead  
+        [72, 21, 22], [72, 73, 22], [73, 22, 23], [73, 74, 23], [74, 23, 24],
+        [74, 75, 24], [75, 24, 25], [75, 76, 25], [76, 25, 26], [76, 77, 26],
+        // Connect forehead points horizontally
+        [68, 69, 70], [70, 71, 72], [72, 73, 74], [74, 75, 76], [76, 77, 68],
+        
+        // Brow to eye connections
+        [17, 18, 36], [18, 36, 37], [18, 19, 37], [19, 37, 38], [19, 20, 38],
+        [20, 38, 39], [20, 21, 39], [21, 39, 27], [21, 22, 27],
+        [22, 27, 42], [22, 23, 42], [23, 42, 43], [23, 24, 43], [24, 43, 44],
+        [24, 25, 44], [25, 44, 45], [25, 26, 45],
+        
+        // Left eye region
+        [36, 37, 41], [37, 40, 41], [37, 38, 40], [38, 39, 40],
+        
+        // Right eye region  
+        [42, 43, 47], [43, 46, 47], [43, 44, 46], [44, 45, 46],
+        
+        // Nose region
+        [27, 28, 39], [28, 39, 40], [28, 29, 40], [29, 40, 31],
+        [27, 28, 42], [28, 42, 47], [28, 29, 47], [29, 47, 35],
+        [29, 30, 31], [30, 31, 32], [30, 32, 33], [30, 33, 34], [30, 34, 35], [29, 30, 35],
+        
+        // Mouth region
+        [31, 32, 48], [32, 48, 49], [32, 33, 49], [33, 49, 50], [33, 50, 51],
+        [33, 34, 51], [34, 51, 52], [34, 52, 53], [34, 35, 53], [35, 53, 54],
+        [48, 49, 60], [49, 60, 61], [49, 50, 61], [50, 61, 62], [50, 51, 62],
+        [51, 62, 63], [51, 52, 63], [52, 63, 64], [52, 53, 64], [53, 64, 65],
+        [53, 54, 65],
+        [60, 61, 67], [61, 62, 67], [62, 63, 66], [63, 64, 66], [64, 65, 66],
+        [60, 67, 59], [59, 67, 58], [58, 67, 66], [58, 66, 57], [57, 66, 65], [57, 65, 56],
+        [48, 60, 59], [54, 55, 65], [55, 56, 65],
+        
+        // Jaw/cheek connections
+        [0, 1, 36], [1, 36, 41], [1, 2, 41], [2, 41, 40], [2, 3, 40],
+        [3, 40, 31], [3, 4, 31], [4, 31, 48], [4, 5, 48], [5, 48, 59],
+        [5, 6, 59], [6, 59, 58], [6, 7, 58], [7, 58, 57], [7, 8, 57],
+        [16, 15, 45], [15, 45, 46], [15, 14, 46], [14, 46, 47], [14, 13, 47],
+        [13, 47, 35], [13, 12, 35], [12, 35, 54], [12, 11, 54], [11, 54, 55],
+        [11, 10, 55], [10, 55, 56], [10, 9, 56], [9, 56, 57], [9, 8, 57],
+        
+        // Connect brows to jaw edges
+        [0, 17, 36], [16, 26, 45],
+        [0, 68, 17], [16, 77, 26],
+      ];
+      
+      triangles = faceTriangles;
+      debug(`Created ${triangles.length} triangles`);
+    }
+    
+    // Add virtual forehead points above eyebrows
+    function addForeheadPoints(lm) {
+      // Eyebrow points are 17-26
+      // Add 10 forehead points (68-77) above them, spaced evenly
+      const browY = Math.min(...lm.slice(17, 27).map(p => p.y));
+      const foreheadY = browY - 40; // Fixed distance above brows
+      
+      const leftX = lm[17].x;
+      const rightX = lm[26].x;
+      const step = (rightX - leftX) / 9;
+      
+      for (let i = 0; i < 10; i++) {
+        lm.push({ x: leftX + step * i, y: foreheadY });
+      }
+      
+      return lm;
+    }
+    
+    // Emotion presets (offsets from neutral)
+    const emotions = {
+      neutral: {
+        mouthOpen: 0,
+        smile: 0,
+        browRaise: 0,
+        eyeSquint: 0
+      },
+      happy: {
+        mouthOpen: 20,
+        smile: 80,
+        browRaise: 10,
+        eyeSquint: 30
+      },
+      sad: {
+        mouthOpen: 10,
+        smile: -60,
+        browRaise: -30,
+        eyeSquint: 0
+      },
+      angry: {
+        mouthOpen: 20,
+        smile: -30,
+        browRaise: -50,
+        eyeSquint: 20
+      },
+      surprised: {
+        mouthOpen: 70,
+        smile: 0,
+        browRaise: 80,
+        eyeSquint: -30
+      },
+      talking: {
+        mouthOpen: 50,
+        smile: 10,
+        browRaise: 0,
+        eyeSquint: 0
+      }
+    };
+    
+    function setEmotion(name) {
+      const e = emotions[name];
+      document.getElementById('mouth-open').value = e.mouthOpen;
+      document.getElementById('smile').value = e.smile;
+      document.getElementById('brow-raise').value = e.browRaise;
+      document.getElementById('eye-squint').value = e.eyeSquint;
+      updateWarp();
+    }
+    
+    // Apply warp based on control values
+    function updateWarp() {
+      if (!landmarks || !neutralLandmarks) return;
+      
+      const mouthOpen = parseInt(document.getElementById('mouth-open').value);
+      const smile = parseInt(document.getElementById('smile').value);
+      const browRaise = parseInt(document.getElementById('brow-raise').value);
+      const eyeSquint = parseInt(document.getElementById('eye-squint').value);
+      
+      document.getElementById('mouth-val').textContent = mouthOpen;
+      document.getElementById('smile-val').textContent = smile;
+      document.getElementById('brow-val').textContent = browRaise;
+      document.getElementById('squint-val').textContent = eyeSquint;
+      
+      // Calculate warped landmarks
+      const warped = neutralLandmarks.map((p, i) => {
+        let dx = 0, dy = 0;
+        
+        // Forehead points (68-77) stay fixed - they anchor the skin stretching
+        if (i >= 68) {
+          return { x: p.x, y: p.y };
+        }
+        
+        // Mouth landmarks: 48-67
+        // Inner mouth: 60-67
+        if (i >= 48 && i <= 67) {
+          // Mouth open: move top lip up, bottom lip down
+          if (i >= 61 && i <= 63) { // Top inner lip
+            dy -= mouthOpen * 0.15;
+          } else if (i >= 65 && i <= 67 || i === 64) { // Bottom inner lip
+            dy += mouthOpen * 0.2;
+          } else if (i >= 49 && i <= 53) { // Top outer lip
+            dy -= mouthOpen * 0.08;
+          } else if (i >= 55 && i <= 59) { // Bottom outer lip  
+            dy += mouthOpen * 0.12;
+          }
+          
+          // Smile: raise corners
+          if (i === 48 || i === 60) { // Left corner
+            dx -= smile * 0.08;
+            dy -= smile * 0.1;
+          } else if (i === 54 || i === 64) { // Right corner
+            dx += smile * 0.08;
+            dy -= smile * 0.1;
+          }
+        }
+        
+        // Eyebrow landmarks: 17-26
+        if (i >= 17 && i <= 26) {
+          dy -= browRaise * 0.12;
+          // Inner brows move more for expressions
+          if (i >= 21 && i <= 22) {
+            dy -= browRaise * 0.05;
+          }
+        }
+        
+        // Eye landmarks: 36-47
+        if (i >= 36 && i <= 47) {
+          // Squint: move top eyelid down, bottom up
+          if (i === 37 || i === 38 || i === 43 || i === 44) { // Top lids
+            dy += eyeSquint * 0.05;
+          } else if (i === 40 || i === 41 || i === 46 || i === 47) { // Bottom lids
+            dy -= eyeSquint * 0.03;
+          }
+        }
+        
+        return { x: p.x + dx, y: p.y + dy };
+      });
+      
+      // Update current landmarks
+      landmarks = warped;
+      
+      // Render warped image
+      renderWarp();
+    }
+    
+    function renderWarp() {
+      if (!sourceImage || !landmarks || !triangles.length) return;
+      
+      // Calculate image transform (same as source)
+      const scale = Math.min(sourceCanvas.width / sourceImage.width, sourceCanvas.height / sourceImage.height);
+      const imgW = sourceImage.width * scale;
+      const imgH = sourceImage.height * scale;
+      const imgX = (sourceCanvas.width - imgW) / 2;
+      const imgY = (sourceCanvas.height - imgH) / 2;
+      
+      // Clear canvas and draw original image as base layer
+      warpCtx.fillStyle = '#0d0d1a';
+      warpCtx.fillRect(0, 0, warpCanvas.width, warpCanvas.height);
+      warpCtx.drawImage(sourceImage, imgX, imgY, imgW, imgH);
+      
+      // Draw simple mouth hole before warped triangles (only when significantly open)
+      const mouthOpen = parseInt(document.getElementById('mouth-open').value);
+      if (mouthOpen > 25) {
+        drawMouthHole(warpCtx, landmarks, mouthOpen);
+      }
+      
+      // Draw each warped triangle on top
+      for (const tri of triangles) {
+        const [i0, i1, i2] = tri;
+        if (i0 >= landmarks.length || i1 >= landmarks.length || i2 >= landmarks.length) continue;
+        
+        // Source triangle (neutral landmarks)
+        const src = [neutralLandmarks[i0], neutralLandmarks[i1], neutralLandmarks[i2]];
+        // Destination triangle (warped landmarks)
+        const dst = [landmarks[i0], landmarks[i1], landmarks[i2]];
+        
+        drawWarpedTriangle(sourceImage, src, dst, imgX, imgY, scale);
+      }
+      
+      // Draw debug overlays
+      if (document.getElementById('show-mesh').checked) {
+        drawMesh(warpCtx, landmarks, triangles, 'rgba(233, 69, 96, 0.3)');
+      }
+      if (document.getElementById('show-points').checked) {
+        drawLandmarks(warpCtx, landmarks, '#4ecca3');
+      }
+    }
+    
+    // Simple dark red mouth hole
+    function drawMouthHole(ctx, lm, openAmount) {
+      // Inner mouth points give better position
+      // 62 = top inner lip center, 66 = bottom inner lip center
+      const innerTop = lm[62];
+      const innerBottom = lm[66];
+      const left = lm[60];
+      const right = lm[64];
+      
+      const centerX = (left.x + right.x) / 2;
+      const centerY = (innerTop.y + innerBottom.y) / 2;
+      const width = (right.x - left.x) * 0.6;
+      const height = Math.max(3, (openAmount - 25) * 0.2); // Starts small, grows with openness
+      
+      // Dark reddish mouth interior
+      ctx.fillStyle = '#2d1515';
+      ctx.beginPath();
+      ctx.ellipse(centerX, centerY, width / 2, height / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    function drawWarpedTriangle(img, src, dst, offsetX, offsetY, scale) {
+      warpCtx.save();
+      
+      // Expand triangle slightly to hide seams (move each vertex away from center)
+      const cx = (dst[0].x + dst[1].x + dst[2].x) / 3;
+      const cy = (dst[0].y + dst[1].y + dst[2].y) / 3;
+      const expand = 0.5; // pixels to expand
+      const expandedDst = dst.map(p => ({
+        x: p.x + (p.x - cx) * expand / Math.sqrt((p.x-cx)**2 + (p.y-cy)**2 + 0.1),
+        y: p.y + (p.y - cy) * expand / Math.sqrt((p.x-cx)**2 + (p.y-cy)**2 + 0.1)
+      }));
+      
+      // Clip to expanded destination triangle
+      warpCtx.beginPath();
+      warpCtx.moveTo(expandedDst[0].x, expandedDst[0].y);
+      warpCtx.lineTo(expandedDst[1].x, expandedDst[1].y);
+      warpCtx.lineTo(expandedDst[2].x, expandedDst[2].y);
+      warpCtx.closePath();
+      warpCtx.clip();
+      
+      // Source points in canvas coordinates (where the texture comes from)
+      const s0 = src[0], s1 = src[1], s2 = src[2];
+      // Destination points in canvas coordinates (where to draw)
+      const d0 = dst[0], d1 = dst[1], d2 = dst[2];
+      
+      // Compute affine transform matrix that maps src triangle to dst triangle
+      // Using the standard 2D affine transform approach
+      const denom = (s0.x * (s1.y - s2.y) + s1.x * (s2.y - s0.y) + s2.x * (s0.y - s1.y));
+      if (Math.abs(denom) < 0.0001) {
+        warpCtx.restore();
+        return;
+      }
+      
+      // Matrix coefficients for transform: dst = M * src
+      const a = (d0.x * (s1.y - s2.y) + d1.x * (s2.y - s0.y) + d2.x * (s0.y - s1.y)) / denom;
+      const b = (d0.y * (s1.y - s2.y) + d1.y * (s2.y - s0.y) + d2.y * (s0.y - s1.y)) / denom;
+      const c = (d0.x * (s2.x - s1.x) + d1.x * (s0.x - s2.x) + d2.x * (s1.x - s0.x)) / denom;
+      const d = (d0.y * (s2.x - s1.x) + d1.y * (s0.x - s2.x) + d2.y * (s1.x - s0.x)) / denom;
+      const e = (d0.x * (s1.x*s2.y - s2.x*s1.y) + d1.x * (s2.x*s0.y - s0.x*s2.y) + d2.x * (s0.x*s1.y - s1.x*s0.y)) / denom;
+      const f = (d0.y * (s1.x*s2.y - s2.x*s1.y) + d1.y * (s2.x*s0.y - s0.x*s2.y) + d2.y * (s0.x*s1.y - s1.x*s0.y)) / denom;
+      
+      // Apply transform and draw the source image region
+      warpCtx.setTransform(a, b, c, d, e, f);
+      
+      // Draw the full canvas (transform will map it correctly)
+      // We're drawing what's on the source canvas which already has the image
+      warpCtx.drawImage(sourceCanvas, 0, 0);
+      
+      warpCtx.restore();
+    }
+    
+    function drawLandmarks(ctx, points, color) {
+      ctx.fillStyle = color;
+      for (let i = 0; i < points.length; i++) {
+        ctx.beginPath();
+        ctx.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    function drawMesh(ctx, points, tris, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1;
+      for (const tri of tris) {
+        const [i0, i1, i2] = tri;
+        if (i0 >= points.length || i1 >= points.length || i2 >= points.length) continue;
+        
+        ctx.beginPath();
+        ctx.moveTo(points[i0].x, points[i0].y);
+        ctx.lineTo(points[i1].x, points[i1].y);
+        ctx.lineTo(points[i2].x, points[i2].y);
+        ctx.closePath();
+        ctx.stroke();
+      }
+    }
+    
+    // Init
+    loadModels();
+  </script>
+</body>
+</html>
