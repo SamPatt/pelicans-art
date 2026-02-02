@@ -1618,6 +1618,7 @@
             
             // Get or create audio element
             let audioEl;
+            let needsLoad = false;
             if (cached.audio) {
               // Old-style: pre-created Audio element
               audioEl = cached.audio;
@@ -1633,6 +1634,7 @@
               sharedAudio.src = cached.audioSrc;
               sharedGainNode.gain.value = cached.volume || 1.0;
               audioEl = sharedAudio;
+              needsLoad = true;
             }
             
             audioEl.onended = () => {
@@ -1661,15 +1663,31 @@
               }
             };
             
-            // Reset audio position and play
-            audioEl.currentTime = 0;
-            audioEl.play().catch(e => {
-              console.warn('Audio play failed:', e);
-              // On mobile, audio may fail - still advance after a delay
-              document.getElementById('caption').classList.remove('visible');
-              currentSpeaker = null;
-              if (onComplete) setTimeout(onComplete, 1500);
-            });
+            // Play audio (wait for load if needed)
+            const playAudio = () => {
+              audioEl.currentTime = 0;
+              audioEl.play().catch(e => {
+                console.warn('Audio play failed:', e);
+                // On mobile, audio may fail - still advance after a delay
+                document.getElementById('caption').classList.remove('visible');
+                currentSpeaker = null;
+                if (onComplete) setTimeout(onComplete, 1500);
+              });
+            };
+            
+            if (needsLoad) {
+              audioEl.oncanplaythrough = () => {
+                audioEl.oncanplaythrough = null; // Clear handler
+                playAudio();
+              };
+              audioEl.load();
+              // Fallback timeout in case canplaythrough doesn't fire
+              setTimeout(() => {
+                if (audioEl.readyState >= 3) playAudio();
+              }, 500);
+            } else {
+              playAudio();
+            }
           } else {
             // No audio cached - show caption briefly and continue
             document.getElementById('caption').textContent = beat.line;
