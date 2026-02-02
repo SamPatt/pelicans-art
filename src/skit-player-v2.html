@@ -225,6 +225,11 @@
     <button onclick="loadSkit('spaceWall')">Space Wall</button>
     <button onclick="loadSkit('trump_alien_seq')">Trump/Alien (Seq)</button>
     <button onclick="loadSkit('theInterview')">The Interview</button>
+    <button id="publishBtn" onclick="publishCurrentSkit()">📦 Publish</button>
+  </div>
+  <div id="url-loader" style="margin-top: 10px;">
+    <input type="text" id="skitUrl" placeholder="Paste published skit URL..." style="width: 300px; padding: 5px;">
+    <button onclick="loadFromUrlInput()">Load</button>
   </div>
   
   <div id="status">Loading...</div>
@@ -234,6 +239,7 @@
     const characters = {};
     const camera = { x: 50, y: 50, zoom: 1, follow: null };
     let currentSkit = null;
+    let currentSkitName = null;
     let isPlaying = false;
     let startTime = 0;
     let animationId = null;
@@ -1079,6 +1085,7 @@
       if (!skit) return;
       
       currentSkit = skit;
+      currentSkitName = name;
       triggeredBeats = new Set();
       audioCache.clear();
       
@@ -1155,6 +1162,231 @@
       
       document.getElementById('status').textContent = 'Ready!';
       document.getElementById('playBtn').disabled = false;
+    }
+    
+    // === PUBLISH (export self-contained JSON) ===
+    async function publishSkit(name) {
+      const skit = skits[name];
+      if (!skit) return;
+      
+      document.getElementById('status').textContent = 'Publishing...';
+      
+      // Collect unique sprites and backgrounds needed
+      const spriteNames = new Set();
+      const backgroundName = skit.stage.background;
+      
+      for (const [charName, config] of Object.entries(skit.cast)) {
+        spriteNames.add(config.sprite);
+      }
+      
+      // Load and encode sprites
+      const sprites = {};
+      for (const spriteName of spriteNames) {
+        try {
+          const frontResp = await fetch(`sprites/${spriteName}-front.svg`);
+          const frontSvg = await frontResp.text();
+          sprites[`${spriteName}-front`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(frontSvg)));
+          
+          // Try back sprite too
+          const backResp = await fetch(`sprites/${spriteName}-back.svg`);
+          if (backResp.ok) {
+            const backSvg = await backResp.text();
+            sprites[`${spriteName}-back`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(backSvg)));
+          }
+        } catch (e) {
+          console.warn(`Failed to load sprite ${spriteName}:`, e);
+        }
+      }
+      
+      // Load and encode background
+      const backgrounds = {};
+      try {
+        const bgResp = await fetch(`backgrounds/${backgroundName}.svg`);
+        const bgSvg = await bgResp.text();
+        backgrounds[backgroundName] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(bgSvg)));
+      } catch (e) {
+        console.warn(`Failed to load background ${backgroundName}:`, e);
+      }
+      
+      // Generate and encode audio for each line
+      const audio = {};
+      const sayActions = skit.script.filter(b => b.do === 'say');
+      for (let i = 0; i < sayActions.length; i++) {
+        const beat = sayActions[i];
+        const char = skit.cast[beat.who];
+        document.getElementById('status').textContent = `Publishing audio ${i+1}/${sayActions.length}...`;
+        
+        try {
+          const blob = await generateAudio(beat.line, char.voice);
+          const reader = new FileReader();
+          const base64 = await new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          audio[`line-${i}`] = base64;
+        } catch (e) {
+          console.warn(`Failed to generate audio for line ${i}:`, e);
+        }
+      }
+      
+      // Build published skit
+      const published = {
+        meta: skit.meta,
+        stage: skit.stage,
+        cast: skit.cast,
+        script: skit.script,
+        assets: { sprites, backgrounds, audio }
+      };
+      
+      // Download as JSON
+      const json = JSON.stringify(published, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name}-published.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      document.getElementById('status').textContent = `Published! (${(json.length / 1024).toFixed(1)} KB)`;
+      console.log('Published skit size:', (json.length / 1024).toFixed(1), 'KB');
+      
+      return published;
+    }
+    
+    // === LOAD FROM URL (self-contained JSON) ===
+    async function loadFromUrl(url) {
+      document.getElementById('status').textContent = 'Loading from URL...';
+      document.getElementById('playBtn').disabled = true;
+      
+      try {
+        const resp = await fetch(url);
+        const skit = await resp.json();
+        
+        // Store assets for the custom loader
+        window.publishedAssets = skit.assets;
+        
+        // Clear stage
+        const stage = document.getElementById('stage');
+        stage.querySelectorAll('.character').forEach(el => el.remove());
+        Object.keys(characters).forEach(k => delete characters[k]);
+        
+        // Set background from embedded asset
+        const bgName = skit.stage.background;
+        if (skit.assets?.backgrounds?.[bgName]) {
+          document.getElementById('background').src = skit.assets.backgrounds[bgName];
+        } else {
+          document.getElementById('background').src = `backgrounds/${bgName}.svg`;
+        }
+        
+        // Create characters with embedded sprites
+        for (const [name, config] of Object.entries(skit.cast)) {
+          await createCharacterFromPublished(name, config, skit.assets);
+        }
+        
+        // Reset camera
+        camera.x = 50; camera.y = 50; camera.zoom = 1; camera.follow = null;
+        updateCamera();
+        
+        // Set initial eye directions
+        const charNames = Object.keys(characters);
+        if (charNames.length >= 2) {
+          const [char1, char2] = charNames;
+          const char1LooksRight = characters[char2].x > characters[char1].x;
+          setEyeDirection(char1, char1LooksRight ? 'right' : 'left');
+          setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
+        }
+        
+        // Load pre-baked audio
+        audioCache.clear();
+        const sayActions = skit.script.filter(b => b.do === 'say');
+        let seqIndex = 0;
+        const beatIndexMap = new Map();
+        skit.script.forEach((b, idx) => {
+          if (b.do === 'say') beatIndexMap.set(b, idx);
+        });
+        
+        for (let i = 0; i < sayActions.length; i++) {
+          const beat = sayActions[i];
+          const char = skit.cast[beat.who];
+          const audioData = skit.assets?.audio?.[`line-${i}`];
+          
+          if (audioData) {
+            document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
+            const audio = new Audio(audioData);
+            const source = audioContext.createMediaElementSource(audio);
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
+            source.connect(gainNode);
+            gainNode.connect(analyser);
+            
+            const cacheKey = beat.t !== undefined 
+              ? `${beat.t}-${beat.who}` 
+              : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+            audioCache.set(cacheKey, { audio, beat, charName: beat.who, gainNode });
+          }
+        }
+        
+        currentSkit = skit;
+        triggeredBeats = new Set();
+        
+        document.getElementById('status').textContent = 'Ready!';
+        document.getElementById('playBtn').disabled = false;
+        
+      } catch (e) {
+        console.error('Failed to load from URL:', e);
+        document.getElementById('status').textContent = 'Failed to load: ' + e.message;
+      }
+    }
+    
+    async function createCharacterFromPublished(name, config, assets) {
+      const spriteName = `${config.sprite}-front`;
+      let svgText;
+      
+      if (assets?.sprites?.[spriteName]) {
+        // Decode from base64 data URL
+        const dataUrl = assets.sprites[spriteName];
+        const base64 = dataUrl.split(',')[1];
+        svgText = decodeURIComponent(escape(atob(base64)));
+      } else {
+        svgText = await loadSprite(config.sprite, 'front');
+      }
+      
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+      const svg = svgDoc.documentElement;
+      
+      const div = document.createElement('div');
+      div.className = 'character';
+      div.id = `char-${name}`;
+      div.appendChild(svg);
+      document.getElementById('stage').appendChild(div);
+      
+      const scale = config.scale || 1;
+      characters[name] = {
+        el: div,
+        x: config.x,
+        y: 50,
+        scale: scale,
+        emotion: 'neutral',
+        sprite: config.sprite,
+        voice: config.voice,
+        volume: config.volume
+      };
+      
+      div.style.left = config.x + '%';
+      div.style.transform = `translateX(-50%) scale(${scale})`;
+      
+      if (config.startOffscreen) {
+        div.style.display = 'none';
+      }
+      
+      // Auto-face toward center
+      if (config.x > 50) {
+        div.style.transform = `translateX(-50%) scaleX(-1) scale(${scale})`;
+        characters[name].flipped = true;
+      }
     }
     
     function togglePlay() {
@@ -1452,6 +1684,22 @@
         case 'face':
           setFacing(beat.who, beat.dir);
           break;
+      }
+    }
+    
+    // === HELPERS ===
+    function publishCurrentSkit() {
+      if (currentSkitName) {
+        publishSkit(currentSkitName);
+      } else {
+        alert('No skit loaded to publish');
+      }
+    }
+    
+    function loadFromUrlInput() {
+      const url = document.getElementById('skitUrl').value.trim();
+      if (url) {
+        loadFromUrl(url);
       }
     }
     
