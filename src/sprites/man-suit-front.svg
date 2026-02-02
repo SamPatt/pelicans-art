@@ -38,11 +38,11 @@
     <ellipse cx="50" cy="58" rx="3" ry="4" fill="#ffb74d"/>
   </g>
   <g id="head-bottom">
-    <!-- Chin area (part of face) -->
-    <ellipse cx="50" cy="68" rx="16" ry="10" fill="#ffcc80"/>
+    <!-- Chin area (smaller, below nose) -->
+    <ellipse cx="50" cy="72" rx="12" ry="6" fill="#ffcc80"/>
     <!-- Mouth closed (slight smile) -->
-    <path id="mouth-closed" d="M43 68 Q50 72 57 68" stroke="#8d6e63" stroke-width="2" fill="none"/>
+    <path id="mouth-closed" d="M44 71 Q50 74 56 71" stroke="#8d6e63" stroke-width="2" fill="none"/>
     <!-- Mouth open -->
-    <ellipse id="mouth-open" cx="50" cy="70" rx="6" ry="4" fill="#c62828" opacity="0"/>
+    <ellipse id="mouth-open" cx="50" cy="72" rx="5" ry="3" fill="#c62828" opacity="0"/>
   </g>
 </svg>
