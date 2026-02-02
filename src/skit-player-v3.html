@@ -1302,7 +1302,7 @@
       characters[name] = {
         el: div,
         x: config.x,
-        y: 50,
+        y: 67,
         scale: scale,
         emotion: 'neutral',
         sprite: config.sprite,
@@ -1687,6 +1687,10 @@
       const skitParam = params.get('skit');
       
       if (skitParam) {
+        // Hide skit switcher and URL loader for published mode
+        document.querySelectorAll('#controls button:not(#playBtn):not(#captionBtn)').forEach(b => b.style.display = 'none');
+        document.getElementById('url-loader').style.display = 'none';
+        document.getElementById('publishBtn').style.display = 'none';
         // Load pre-generated published skit
         await loadFromUrl(`published/${skitParam}.json`);
       } else {
