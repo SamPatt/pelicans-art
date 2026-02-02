@@ -392,6 +392,10 @@
       <button id="btn-add-ellipse" title="Add Ellipse">⬭</button>
       <button id="btn-add-circle" title="Add Circle">○</button>
       <span class="toolbar-divider">|</span>
+      <button id="btn-duplicate" title="Duplicate (Ctrl+D)">⧉</button>
+      <button id="btn-bring-front" title="Bring to Front">⬆</button>
+      <button id="btn-send-back" title="Send to Back">⬇</button>
+      <span class="toolbar-divider">|</span>
       <button id="btn-undo" disabled>↩️ Undo</button>
       <button id="btn-redo" disabled>↪️ Redo</button>
       <button id="btn-save">💾 Save</button>
@@ -886,6 +890,9 @@
         } else if (e.key === 's') {
           e.preventDefault();
           saveSprite();
+        } else if (e.key === 'd') {
+          e.preventDefault();
+          duplicateSelected();
         }
       }
       
@@ -1234,6 +1241,73 @@
       updateStatus('Photo sprite created! Adjust the mask and features as needed.');
     }
     
+    // === LAYER OPERATIONS ===
+    function duplicateSelected() {
+      if (!selectedElement) {
+        updateStatus('Select an element to duplicate');
+        return;
+      }
+      
+      saveState();
+      const clone = selectedElement.cloneNode(true);
+      
+      // Offset the clone
+      const tag = clone.tagName.toLowerCase();
+      if (tag === 'rect') {
+        clone.setAttribute('x', parseFloat(clone.getAttribute('x') || 0) + 5);
+        clone.setAttribute('y', parseFloat(clone.getAttribute('y') || 0) + 5);
+      } else if (tag === 'ellipse' || tag === 'circle') {
+        clone.setAttribute('cx', parseFloat(clone.getAttribute('cx') || 0) + 5);
+        clone.setAttribute('cy', parseFloat(clone.getAttribute('cy') || 0) + 5);
+      }
+      
+      // Remove ID to avoid duplicates
+      if (clone.id) clone.removeAttribute('id');
+      
+      // Insert after selected
+      selectedElement.parentNode.insertBefore(clone, selectedElement.nextSibling);
+      
+      // Setup interaction
+      clone.style.cursor = 'pointer';
+      clone.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectElement(clone);
+      });
+      
+      buildElementTree();
+      selectElement(clone);
+      updateSpriteSource();
+      updateStatus('Element duplicated');
+    }
+    
+    function bringToFront() {
+      if (!selectedElement) {
+        updateStatus('Select an element first');
+        return;
+      }
+      
+      saveState();
+      const parent = selectedElement.parentNode;
+      parent.appendChild(selectedElement);
+      buildElementTree();
+      updateSpriteSource();
+      updateStatus('Brought to front');
+    }
+    
+    function sendToBack() {
+      if (!selectedElement) {
+        updateStatus('Select an element first');
+        return;
+      }
+      
+      saveState();
+      const parent = selectedElement.parentNode;
+      parent.insertBefore(selectedElement, parent.firstChild);
+      buildElementTree();
+      updateSpriteSource();
+      updateStatus('Sent to back');
+    }
+    
     // === ADD SHAPES ===
     function addShape(type) {
       const svg = document.querySelector('#svg-canvas svg');
@@ -1341,6 +1415,9 @@
     document.getElementById('btn-add-rect').onclick = () => addShape('rect');
     document.getElementById('btn-add-ellipse').onclick = () => addShape('ellipse');
     document.getElementById('btn-add-circle').onclick = () => addShape('circle');
+    document.getElementById('btn-duplicate').onclick = duplicateSelected;
+    document.getElementById('btn-bring-front').onclick = bringToFront;
+    document.getElementById('btn-send-back').onclick = sendToBack;
     
     loadSpriteList();
     loadSprite('girl'); // Load default
