@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SkitKit Sprite Editor</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* Header */
+    header {
+      background: #16213e;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #0f3460;
+    }
+    
+    header h1 {
+      font-size: 1.2em;
+      color: #e94560;
+    }
+    
+    .toolbar {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .toolbar button {
+      background: #0f3460;
+      border: none;
+      color: #eee;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    
+    .toolbar button:hover {
+      background: #e94560;
+    }
+    
+    .toolbar button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Main layout */
+    .main {
+      display: flex;
+      height: calc(100vh - 52px);
+    }
+    
+    /* Left panel - sprite list */
+    .panel-left {
+      width: 200px;
+      background: #16213e;
+      border-right: 1px solid #0f3460;
+      overflow-y: auto;
+    }
+    
+    .panel-header {
+      padding: 10px;
+      font-weight: bold;
+      border-bottom: 1px solid #0f3460;
+      font-size: 0.9em;
+      color: #e94560;
+    }
+    
+    .sprite-list {
+      padding: 5px;
+    }
+    
+    .sprite-item {
+      padding: 8px 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.85em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .sprite-item:hover {
+      background: #0f3460;
+    }
+    
+    .sprite-item.active {
+      background: #e94560;
+    }
+    
+    .sprite-item .icon {
+      font-size: 1.2em;
+    }
+    
+    /* Center - canvas area */
+    .panel-center {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0d0d1a;
+    }
+    
+    .canvas-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+      padding: 20px;
+    }
+    
+    #svg-canvas {
+      background: #2a2a4a;
+      border: 2px solid #0f3460;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    #svg-canvas svg {
+      display: block;
+    }
+    
+    /* Selection highlight */
+    .selected-element {
+      outline: 2px dashed #e94560;
+      outline-offset: 2px;
+    }
+    
+    /* Element tree */
+    .element-tree {
+      height: 150px;
+      background: #16213e;
+      border-top: 1px solid #0f3460;
+      overflow-y: auto;
+      font-size: 0.8em;
+    }
+    
+    .tree-item {
+      padding: 4px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    
+    .tree-item:hover {
+      background: #0f3460;
+    }
+    
+    .tree-item.selected {
+      background: #e94560;
+    }
+    
+    .tree-item .tag {
+      color: #4ecca3;
+    }
+    
+    .tree-item .id {
+      color: #ffd93d;
+    }
+    
+    .tree-indent {
+      display: inline-block;
+      width: 15px;
+    }
+    
+    /* Right panel - properties */
+    .panel-right {
+      width: 280px;
+      background: #16213e;
+      border-left: 1px solid #0f3460;
+      overflow-y: auto;
+    }
+    
+    .property-group {
+      padding: 10px;
+      border-bottom: 1px solid #0f3460;
+    }
+    
+    .property-group h3 {
+      font-size: 0.85em;
+      color: #e94560;
+      margin-bottom: 10px;
+    }
+    
+    .property-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      gap: 10px;
+    }
+    
+    .property-row label {
+      width: 60px;
+      font-size: 0.8em;
+      color: #aaa;
+    }
+    
+    .property-row input, .property-row select {
+      flex: 1;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      color: #eee;
+      padding: 5px 8px;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    
+    .property-row input[type="color"] {
+      width: 40px;
+      height: 28px;
+      padding: 2px;
+      cursor: pointer;
+    }
+    
+    .property-row input:focus, .property-row select:focus {
+      outline: none;
+      border-color: #e94560;
+    }
+    
+    .no-selection {
+      padding: 20px;
+      text-align: center;
+      color: #666;
+      font-size: 0.9em;
+    }
+    
+    /* Status bar */
+    .status-bar {
+      background: #0f3460;
+      padding: 5px 15px;
+      font-size: 0.8em;
+      color: #aaa;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    /* Drag handle overlay */
+    .drag-handles {
+      position: absolute;
+      pointer-events: none;
+    }
+    
+    .drag-handle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #e94560;
+      border: 1px solid #fff;
+      pointer-events: all;
+      cursor: move;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎭 SkitKit Sprite Editor</h1>
+    <div class="toolbar">
+      <button id="btn-new">📄 New</button>
+      <button id="btn-upload-photo">📷 Photo Sprite</button>
+      <button id="btn-random">🎲 Random</button>
+      <button id="btn-undo" disabled>↩️ Undo</button>
+      <button id="btn-redo" disabled>↪️ Redo</button>
+      <button id="btn-save">💾 Save</button>
+    </div>
+  </header>
+  
+  <div class="main">
+    <!-- Left Panel: Sprite List -->
+    <div class="panel-left">
+      <div class="panel-header">📁 Sprites</div>
+      <div class="sprite-list" id="sprite-list">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+    
+    <!-- Center: Canvas -->
+    <div class="panel-center">
+      <div class="canvas-container">
+        <div id="svg-canvas">
+          <!-- SVG loaded here -->
+        </div>
+      </div>
+      <div class="element-tree">
+        <div class="panel-header">🌳 Elements</div>
+        <div id="element-tree">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Panel: Properties -->
+    <div class="panel-right">
+      <div class="panel-header">⚙️ Properties</div>
+      <div id="properties-panel">
+        <div class="no-selection">Select an element to edit</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="status-bar">
+    <span id="status-left">Ready</span>
+    <span id="status-right">Undo: 0 | Redo: 0</span>
+  </div>
+
+  <script>
+    // === STATE ===
+    let currentSprite = null;
+    let currentSpriteName = null;
+    let selectedElement = null;
+    let undoStack = [];
+    let redoStack = [];
+    let isDragging = false;
+    let dragStart = { x: 0, y: 0 };
+    let elementStart = { x: 0, y: 0 };
+    
+    // === SPRITE LIST ===
+    const defaultSprites = [
+      'girl', 'waiter', 'leprechaun', 'man-suit', 'cat', 
+      'robot', 'alien', 'trump-v3', 'pelican'
+    ];
+    
+    async function loadSpriteList() {
+      const list = document.getElementById('sprite-list');
+      list.innerHTML = '';
+      
+      for (const name of defaultSprites) {
+        const item = document.createElement('div');
+        item.className = 'sprite-item';
+        item.innerHTML = `<span class="icon">🎭</span> ${name}`;
+        item.onclick = () => loadSprite(name);
+        list.appendChild(item);
+      }
+    }
+    
+    async function loadSprite(name) {
+      try {
+        const response = await fetch(`sprites/${name}-front.svg?v=${Date.now()}`);
+        const svgText = await response.text();
+        
+        currentSpriteName = name;
+        currentSprite = svgText;
+        
+        // Update UI
+        document.querySelectorAll('.sprite-item').forEach((item, i) => {
+          item.classList.toggle('active', defaultSprites[i] === name);
+        });
+        
+        renderSprite();
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+        updateStatus(`Loaded: ${name}`);
+      } catch (e) {
+        updateStatus(`Error loading ${name}: ${e.message}`);
+      }
+    }
+    
+    function renderSprite() {
+      const canvas = document.getElementById('svg-canvas');
+      canvas.innerHTML = currentSprite;
+      
+      // Scale up for editing
+      const svg = canvas.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '300');
+        svg.setAttribute('height', '450');
+        svg.style.cursor = 'default';
+        
+        // Add click handlers to all elements
+        svg.querySelectorAll('*').forEach(el => {
+          if (el.tagName !== 'g' && el.tagName !== 'svg') {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectElement(el);
+            });
+          }
+        });
+        
+        // Click on canvas background deselects
+        svg.addEventListener('click', (e) => {
+          if (e.target === svg) {
+            clearSelection();
+          }
+        });
+      }
+    }
+    
+    // === ELEMENT TREE ===
+    function buildElementTree() {
+      const tree = document.getElementById('element-tree');
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) {
+        tree.innerHTML = '<div class="no-selection">No sprite loaded</div>';
+        return;
+      }
+      
+      tree.innerHTML = '';
+      buildTreeRecursive(svg, tree, 0);
+    }
+    
+    function buildTreeRecursive(element, container, depth) {
+      const children = element.children;
+      for (const child of children) {
+        const item = document.createElement('div');
+        item.className = 'tree-item';
+        item.dataset.depth = depth;
+        
+        const indent = '<span class="tree-indent"></span>'.repeat(depth);
+        const tag = child.tagName.toLowerCase();
+        const id = child.id ? ` <span class="id">#${child.id}</span>` : '';
+        
+        item.innerHTML = `${indent}<span class="tag">&lt;${tag}&gt;</span>${id}`;
+        item.onclick = () => selectElement(child);
+        
+        container.appendChild(item);
+        
+        if (child.children.length > 0) {
+          buildTreeRecursive(child, container, depth + 1);
+        }
+      }
+    }
+    
+    // === SELECTION ===
+    function selectElement(el) {
+      clearSelection();
+      selectedElement = el;
+      el.classList.add('selected-element');
+      
+      // Highlight in tree
+      const tree = document.getElementById('element-tree');
+      const items = tree.querySelectorAll('.tree-item');
+      items.forEach(item => {
+        // Simple matching by tag and id
+        const hasId = el.id && item.innerHTML.includes(`#${el.id}`);
+        const matchesTag = item.innerHTML.includes(`<${el.tagName.toLowerCase()}>`);
+        if (hasId || (!el.id && matchesTag)) {
+          // This is approximate - could improve
+        }
+      });
+      
+      showProperties(el);
+      setupDragging(el);
+    }
+    
+    function clearSelection() {
+      if (selectedElement) {
+        selectedElement.classList.remove('selected-element');
+      }
+      selectedElement = null;
+      document.getElementById('properties-panel').innerHTML = 
+        '<div class="no-selection">Select an element to edit</div>';
+    }
+    
+    // === PROPERTIES PANEL ===
+    function showProperties(el) {
+      const panel = document.getElementById('properties-panel');
+      const tag = el.tagName.toLowerCase();
+      
+      let html = `
+        <div class="property-group">
+          <h3>${tag}${el.id ? ' #' + el.id : ''}</h3>
+        </div>
+      `;
+      
+      // Position properties based on element type
+      if (['rect', 'ellipse', 'circle', 'line', 'path', 'text'].includes(tag)) {
+        html += '<div class="property-group"><h3>Position</h3>';
+        
+        if (tag === 'rect') {
+          html += propertyRow('x', el.getAttribute('x') || '0');
+          html += propertyRow('y', el.getAttribute('y') || '0');
+          html += propertyRow('width', el.getAttribute('width') || '0');
+          html += propertyRow('height', el.getAttribute('height') || '0');
+          html += propertyRow('rx', el.getAttribute('rx') || '0');
+        } else if (tag === 'ellipse') {
+          html += propertyRow('cx', el.getAttribute('cx') || '0');
+          html += propertyRow('cy', el.getAttribute('cy') || '0');
+          html += propertyRow('rx', el.getAttribute('rx') || '0');
+          html += propertyRow('ry', el.getAttribute('ry') || '0');
+        } else if (tag === 'circle') {
+          html += propertyRow('cx', el.getAttribute('cx') || '0');
+          html += propertyRow('cy', el.getAttribute('cy') || '0');
+          html += propertyRow('r', el.getAttribute('r') || '0');
+        }
+        
+        html += '</div>';
+      }
+      
+      // Style properties
+      const fill = el.getAttribute('fill');
+      const stroke = el.getAttribute('stroke');
+      const strokeWidth = el.getAttribute('stroke-width');
+      const opacity = el.getAttribute('opacity');
+      
+      html += '<div class="property-group"><h3>Style</h3>';
+      if (fill !== null) html += colorRow('fill', fill);
+      if (stroke !== null) html += colorRow('stroke', stroke);
+      if (strokeWidth !== null) html += propertyRow('stroke-width', strokeWidth);
+      if (opacity !== null) html += propertyRow('opacity', opacity);
+      html += '</div>';
+      
+      // Transform
+      const transform = el.getAttribute('transform');
+      if (transform) {
+        html += '<div class="property-group"><h3>Transform</h3>';
+        html += `<div class="property-row"><label>value</label><input type="text" data-attr="transform" value="${transform}"></div>`;
+        html += '</div>';
+      }
+      
+      panel.innerHTML = html;
+      
+      // Add event listeners to inputs
+      panel.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', (e) => {
+          saveState();
+          const attr = e.target.dataset.attr;
+          selectedElement.setAttribute(attr, e.target.value);
+          updateSpriteSource();
+        });
+      });
+    }
+    
+    function propertyRow(attr, value) {
+      return `
+        <div class="property-row">
+          <label>${attr}</label>
+          <input type="text" data-attr="${attr}" value="${value}">
+        </div>
+      `;
+    }
+    
+    function colorRow(attr, value) {
+      // Convert named colors or values to hex for color picker
+      let hexValue = value;
+      if (value === 'none') hexValue = '#000000';
+      
+      return `
+        <div class="property-row">
+          <label>${attr}</label>
+          <input type="color" data-attr="${attr}" value="${hexValue}">
+          <input type="text" data-attr="${attr}" value="${value}" style="width: 80px;">
+        </div>
+      `;
+    }
+    
+    // === DRAGGING ===
+    function setupDragging(el) {
+      const svg = document.querySelector('#svg-canvas svg');
+      
+      el.addEventListener('mousedown', startDrag);
+      
+      function startDrag(e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        
+        saveState();
+        isDragging = true;
+        
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        
+        dragStart = { x: svgPt.x, y: svgPt.y };
+        elementStart = getElementPosition(el);
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', endDrag);
+      }
+      
+      function drag(e) {
+        if (!isDragging) return;
+        
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        
+        const dx = svgPt.x - dragStart.x;
+        const dy = svgPt.y - dragStart.y;
+        
+        setElementPosition(el, elementStart.x + dx, elementStart.y + dy);
+        showProperties(el); // Update property panel
+      }
+      
+      function endDrag() {
+        isDragging = false;
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', endDrag);
+        updateSpriteSource();
+      }
+    }
+    
+    function getElementPosition(el) {
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'rect') {
+        return { x: parseFloat(el.getAttribute('x')) || 0, y: parseFloat(el.getAttribute('y')) || 0 };
+      } else if (tag === 'ellipse' || tag === 'circle') {
+        return { x: parseFloat(el.getAttribute('cx')) || 0, y: parseFloat(el.getAttribute('cy')) || 0 };
+      } else if (tag === 'path') {
+        // For paths, we'd need to parse and modify the d attribute
+        // For now, use transform
+        return { x: 0, y: 0 };
+      }
+      return { x: 0, y: 0 };
+    }
+    
+    function setElementPosition(el, x, y) {
+      const tag = el.tagName.toLowerCase();
+      if (tag === 'rect') {
+        el.setAttribute('x', x.toFixed(1));
+        el.setAttribute('y', y.toFixed(1));
+      } else if (tag === 'ellipse' || tag === 'circle') {
+        el.setAttribute('cx', x.toFixed(1));
+        el.setAttribute('cy', y.toFixed(1));
+      } else if (tag === 'path') {
+        // Use transform for paths
+        el.setAttribute('transform', `translate(${x.toFixed(1)}, ${y.toFixed(1)})`);
+      }
+    }
+    
+    // === UNDO/REDO ===
+    function saveState() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+      
+      undoStack.push(svg.outerHTML);
+      redoStack = []; // Clear redo on new action
+      
+      if (undoStack.length > 50) undoStack.shift(); // Limit history
+      
+      updateUndoButtons();
+    }
+    
+    function undo() {
+      if (undoStack.length === 0) return;
+      
+      const svg = document.querySelector('#svg-canvas svg');
+      redoStack.push(svg.outerHTML);
+      
+      const previousState = undoStack.pop();
+      document.getElementById('svg-canvas').innerHTML = previousState;
+      
+      // Re-setup event listeners
+      renderSpriteFromCurrent();
+      buildElementTree();
+      clearSelection();
+      updateSpriteSource();
+      updateUndoButtons();
+      updateStatus('Undo');
+    }
+    
+    function redo() {
+      if (redoStack.length === 0) return;
+      
+      const svg = document.querySelector('#svg-canvas svg');
+      undoStack.push(svg.outerHTML);
+      
+      const nextState = redoStack.pop();
+      document.getElementById('svg-canvas').innerHTML = nextState;
+      
+      renderSpriteFromCurrent();
+      buildElementTree();
+      clearSelection();
+      updateSpriteSource();
+      updateUndoButtons();
+      updateStatus('Redo');
+    }
+    
+    function renderSpriteFromCurrent() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+      
+      svg.querySelectorAll('*').forEach(el => {
+        if (el.tagName !== 'g' && el.tagName !== 'svg') {
+          el.style.cursor = 'pointer';
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectElement(el);
+          });
+        }
+      });
+    }
+    
+    function updateUndoButtons() {
+      document.getElementById('btn-undo').disabled = undoStack.length === 0;
+      document.getElementById('btn-redo').disabled = redoStack.length === 0;
+      document.getElementById('status-right').textContent = 
+        `Undo: ${undoStack.length} | Redo: ${redoStack.length}`;
+    }
+    
+    function resetHistory() {
+      undoStack = [];
+      redoStack = [];
+      updateUndoButtons();
+    }
+    
+    // === SAVE ===
+    function updateSpriteSource() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+      
+      // Restore original size
+      const clone = svg.cloneNode(true);
+      clone.setAttribute('width', '100');
+      clone.setAttribute('height', '150');
+      clone.querySelectorAll('.selected-element').forEach(el => {
+        el.classList.remove('selected-element');
+      });
+      
+      currentSprite = clone.outerHTML;
+    }
+    
+    async function saveSprite() {
+      if (!currentSpriteName || !currentSprite) {
+        updateStatus('No sprite to save');
+        return;
+      }
+      
+      // For now, download as file
+      // In production, would save to server
+      const blob = new Blob([currentSprite], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentSpriteName}-front.svg`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      updateStatus(`Downloaded: ${currentSpriteName}-front.svg`);
+    }
+    
+    // === UTILITY ===
+    function updateStatus(msg) {
+      document.getElementById('status-left').textContent = msg;
+    }
+    
+    // === KEYBOARD SHORTCUTS ===
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
+        } else if (e.key === 'y') {
+          e.preventDefault();
+          redo();
+        } else if (e.key === 's') {
+          e.preventDefault();
+          saveSprite();
+        }
+      }
+      
+      // Delete selected element
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedElement && document.activeElement.tagName !== 'INPUT') {
+          e.preventDefault();
+          saveState();
+          selectedElement.remove();
+          clearSelection();
+          buildElementTree();
+          updateSpriteSource();
+          updateStatus('Element deleted');
+        }
+      }
+    });
+    
+    // === INIT ===
+    document.getElementById('btn-undo').onclick = undo;
+    document.getElementById('btn-redo').onclick = redo;
+    document.getElementById('btn-save').onclick = saveSprite;
+    
+    loadSpriteList();
+    loadSprite('girl'); // Load default
+  </script>
+</body>
+</html>
