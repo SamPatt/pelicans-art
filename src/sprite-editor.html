@@ -453,11 +453,27 @@
           <div class="photo-controls">
             <button onclick="autoDetectFace()">🔍 Re-detect</button>
             <button id="btn-remove-bg" onclick="startBackgroundRemoval()">🪄 Remove BG</button>
-            <button onclick="generatePhotoSprite()">✨ Generate</button>
+            <button onclick="goToAnimationPreview()">✨ Next: Preview</button>
           </div>
           <div id="bg-status" style="margin-top:10px;color:#4ecca3;font-size:0.9em;"></div>
           <textarea id="bg-log" readonly style="width:100%;height:80px;margin-top:10px;background:#0d0d1a;color:#888;border:1px solid #333;font-size:0.75em;display:none;"></textarea>
           <button id="copy-log-btn" style="display:none;margin-top:5px;font-size:0.75em;" onclick="navigator.clipboard.writeText(document.getElementById('bg-log').value)">📋 Copy Log</button>
+        </div>
+        <div id="photo-step-3" class="photo-step" style="display:none;">
+          <p>Preview talking animation:</p>
+          <canvas id="anim-preview-canvas" width="300" height="400"></canvas>
+          <div style="margin:10px 0;">
+            <label style="color:#aaa;font-size:0.9em;">Mouth Open: <span id="anim-mouth-val">0</span>%</label>
+            <input type="range" id="anim-mouth-slider" min="0" max="100" value="0" oninput="updateAnimPreview()" style="width:100%;">
+          </div>
+          <div class="photo-controls">
+            <button onclick="testTalkingAnim()">🗣️ Test Talking</button>
+            <button onclick="stopTalkingAnim()">⏹️ Stop</button>
+            <button onclick="generatePhotoSprite()" style="background:#4ecca3;">✨ Generate Sprite</button>
+          </div>
+          <div style="margin-top:10px;color:#888;font-size:0.85em;">
+            Jaw puppet animation will be used for talking in skits.
+          </div>
         </div>
       </div>
     </div>
@@ -1755,11 +1771,139 @@
       document.getElementById('photo-modal').style.display = 'flex';
       document.getElementById('photo-step-1').style.display = 'block';
       document.getElementById('photo-step-2').style.display = 'none';
+      document.getElementById('photo-step-3').style.display = 'none';
       document.getElementById('photo-preview-container').style.display = 'none';
+      stopTalkingAnim();
     }
     
     function closePhotoModal() {
       document.getElementById('photo-modal').style.display = 'none';
+      stopTalkingAnim();
+    }
+    
+    // Animation preview state
+    let animPreviewCtx = null;
+    let animInterval = null;
+    let processedFaceImage = null;
+    
+    function goToAnimationPreview() {
+      document.getElementById('photo-step-2').style.display = 'none';
+      document.getElementById('photo-step-3').style.display = 'block';
+      
+      // Store the current processed image for animation
+      processedFaceImage = uploadedImage;
+      
+      // Initialize animation canvas
+      const canvas = document.getElementById('anim-preview-canvas');
+      animPreviewCtx = canvas.getContext('2d');
+      
+      // Reset slider
+      document.getElementById('anim-mouth-slider').value = 0;
+      updateAnimPreview();
+    }
+    
+    function updateAnimPreview() {
+      const mouthOpen = parseInt(document.getElementById('anim-mouth-slider').value);
+      document.getElementById('anim-mouth-val').textContent = mouthOpen;
+      
+      if (!processedFaceImage || !faceLandmarks || !animPreviewCtx) return;
+      
+      renderJawPuppet(animPreviewCtx, processedFaceImage, faceLandmarks, faceData, mouthOpen);
+    }
+    
+    function renderJawPuppet(ctx, img, landmarks, faceBox, mouthOpen) {
+      const canvas = ctx.canvas;
+      
+      // Calculate image positioning (same as edit canvas)
+      const scaleX = img.width / faceBox.canvasWidth;
+      const scaleY = img.height / faceBox.canvasHeight;
+      const srcX = faceBox.x * scaleX;
+      const srcY = faceBox.y * scaleY;
+      const srcW = faceBox.width * scaleX;
+      const srcH = faceBox.height * scaleY;
+      
+      const maxW = 280, maxH = 350;
+      const aspectRatio = srcW / srcH;
+      let destW = maxW;
+      let destH = destW / aspectRatio;
+      if (destH > maxH) {
+        destH = maxH;
+        destW = destH * aspectRatio;
+      }
+      const destX = (canvas.width - destW) / 2;
+      const destY = (canvas.height - destH) / 2;
+      
+      // Scale landmarks to destination coordinates
+      const lmScale = destW / faceBox.width;
+      const scaledLandmarks = {
+        outerLips: landmarks.outerLips.map(p => ({
+          x: destX + (p.x - faceBox.x) * lmScale,
+          y: destY + (p.y - faceBox.y) * lmScale
+        }))
+      };
+      
+      // Pivot between lips
+      const topLip = scaledLandmarks.outerLips[3]; // Index 51 in full set = index 3 in outer lips
+      const bottomLip = scaledLandmarks.outerLips[9]; // Index 57 = index 9
+      const pivotY = (topLip.y + bottomLip.y) / 2;
+      
+      // Rotation angle
+      const angle = (mouthOpen / 100) * 12 * (Math.PI / 180);
+      
+      // Clear canvas
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw upper face (stays still)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, canvas.width, pivotY);
+      ctx.clip();
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
+      ctx.restore();
+      
+      // Draw lower face (rotates)
+      ctx.save();
+      const pivotX = destX + destW / 2;
+      ctx.translate(pivotX, pivotY);
+      ctx.rotate(angle);
+      ctx.translate(-pivotX, -pivotY);
+      ctx.beginPath();
+      ctx.rect(0, pivotY - 5, canvas.width, canvas.height - pivotY + 10);
+      ctx.clip();
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
+      ctx.restore();
+      
+      // Draw mouth interior
+      if (mouthOpen > 10) {
+        const mouthCenterX = (scaledLandmarks.outerLips[0].x + scaledLandmarks.outerLips[6].x) / 2;
+        const mouthWidth = Math.abs(scaledLandmarks.outerLips[6].x - scaledLandmarks.outerLips[0].x) * 0.7;
+        const gapHeight = Math.sin(angle) * (destY + destH - pivotY) * 0.3;
+        
+        ctx.fillStyle = '#1a0505';
+        ctx.beginPath();
+        ctx.ellipse(mouthCenterX, pivotY + gapHeight / 2, mouthWidth / 2, Math.max(2, gapHeight / 2), 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    function testTalkingAnim() {
+      stopTalkingAnim();
+      let frame = 0;
+      const patterns = [0, 35, 15, 55, 20, 45, 10, 60, 25, 40, 5, 50];
+      animInterval = setInterval(() => {
+        const val = patterns[frame % patterns.length];
+        document.getElementById('anim-mouth-slider').value = val;
+        updateAnimPreview();
+        frame++;
+      }, 100);
+    }
+    
+    function stopTalkingAnim() {
+      if (animInterval) {
+        clearInterval(animInterval);
+        animInterval = null;
+      }
     }
     
     let previewCanvasSize = { width: 300, height: 300 };
