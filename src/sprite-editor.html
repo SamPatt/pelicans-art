@@ -616,7 +616,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.9</span>
+    <span style="color:#666;">v4.0</span>
   </div>
 
   <script>
@@ -1830,35 +1830,26 @@
     function generatePhotoSprite() {
       if (!uploadedImage) return;
       
-      // Create face canvas - bigger for better quality
+      // Create face canvas
       const faceCanvas = document.createElement('canvas');
       faceCanvas.width = 200;
       faceCanvas.height = 200;
       const faceCtx = faceCanvas.getContext('2d');
       
-      // Sample skin color from cheek area
+      // Sample skin color from face area
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = uploadedImage.width;
       tempCanvas.height = uploadedImage.height;
       const tempCtx = tempCanvas.getContext('2d');
       tempCtx.drawImage(uploadedImage, 0, 0);
       
-      // Sample multiple points and average for better skin color
-      const samplePoints = [
-        [uploadedImage.width * 0.35, uploadedImage.height * 0.45],
-        [uploadedImage.width * 0.65, uploadedImage.height * 0.45],
-        [uploadedImage.width * 0.5, uploadedImage.height * 0.6]
-      ];
-      let r = 0, g = 0, b = 0;
-      for (const [sx, sy] of samplePoints) {
-        const pixel = tempCtx.getImageData(sx, sy, 1, 1).data;
-        r += pixel[0]; g += pixel[1]; b += pixel[2];
-      }
-      r = Math.round(r / 3); g = Math.round(g / 3); b = Math.round(b / 3);
-      const skinColor = `rgb(${r}, ${g}, ${b})`;
-      const skinHex = '#' + [r,g,b].map(x => x.toString(16).padStart(2,'0')).join('');
+      // Sample from center of face
+      const sampleX = uploadedImage.width * 0.5;
+      const sampleY = uploadedImage.height * 0.4;
+      const pixel = tempCtx.getImageData(sampleX, sampleY, 1, 1).data;
+      const skinColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
       
-      // Calculate source region
+      // Calculate source region from faceData
       const scaleX = uploadedImage.width / faceData.canvasWidth;
       const scaleY = uploadedImage.height / faceData.canvasHeight;
       const srcX = faceData.x * scaleX;
@@ -1866,45 +1857,58 @@
       const srcW = faceData.width * scaleX;
       const srcH = faceData.height * scaleY;
       
-      // Draw face filling the canvas
+      // Draw face filling canvas
       faceCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 0, 0, 200, 200);
       const faceDataUrl = faceCanvas.toDataURL('image/png');
       
-      // South Park style: BIG head, small body, use real photo eyes
-      // Only overlay mouth for lip sync animation
+      // Calculate mouth position relative to face crop (0-100 scale for sprite)
+      // If we have landmarks, use them; otherwise estimate
+      let mouthY = 75; // Default: 75% down the face
+      if (faceLandmarks && faceLandmarks.outerLips) {
+        const lips = faceLandmarks.outerLips;
+        const avgLipY = lips.reduce((sum, p) => sum + p.y, 0) / lips.length;
+        // Convert from canvas coords to face-crop relative (0-100)
+        const relY = (avgLipY - faceData.y) / faceData.height;
+        mouthY = Math.max(60, Math.min(90, relY * 100));
+      }
+      
+      // Convert mouthY (% of face) to sprite coords
+      // Face is at y=5 to y=70 in sprite (height 65), so mouth at mouthY% of that
+      const spriteMouthY = 5 + (mouthY / 100) * 65;
+      
+      // Sprite with better proportions
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
   <g id="body">
-    <!-- Small body (South Park style) -->
-    <ellipse cx="50" cy="115" rx="18" ry="30" fill="#4ecdc4"/>
+    <!-- Body starts where head ends -->
+    <ellipse cx="50" cy="110" rx="16" ry="28" fill="#4ecdc4"/>
     <!-- Arms -->
-    <ellipse cx="30" cy="110" rx="5" ry="12" fill="${skinColor}"/>
-    <ellipse cx="70" cy="110" rx="5" ry="12" fill="${skinColor}"/>
+    <ellipse cx="32" cy="105" rx="4" ry="10" fill="${skinColor}"/>
+    <ellipse cx="68" cy="105" rx="4" ry="10" fill="${skinColor}"/>
     <!-- Hands -->
-    <circle cx="30" cy="124" r="4" fill="${skinColor}"/>
-    <circle cx="70" cy="124" r="4" fill="${skinColor}"/>
+    <circle cx="32" cy="117" r="3" fill="${skinColor}"/>
+    <circle cx="68" cy="117" r="3" fill="${skinColor}"/>
     <!-- Legs -->
-    <ellipse cx="42" cy="143" rx="5" ry="8" fill="${skinColor}"/>
-    <ellipse cx="58" cy="143" rx="5" ry="8" fill="${skinColor}"/>
+    <ellipse cx="43" cy="138" rx="4" ry="8" fill="${skinColor}"/>
+    <ellipse cx="57" cy="138" rx="4" ry="8" fill="${skinColor}"/>
   </g>
   <g id="head-top">
-    <!-- BIG photo face - main feature -->
-    <image href="${faceDataUrl}" x="5" y="2" width="90" height="80" preserveAspectRatio="xMidYMid slice"/>
-    <!-- Invisible eye elements for emotion system compatibility -->
-    <ellipse id="eye-left-white" cx="35" cy="35" rx="1" ry="1" fill="transparent"/>
-    <ellipse id="eye-right-white" cx="65" cy="35" rx="1" ry="1" fill="transparent"/>
-    <circle id="eye-left-pupil" class="pupil" cx="35" cy="35" r="0.5" fill="transparent"/>
-    <circle id="eye-right-pupil" class="pupil" cx="65" cy="35" r="0.5" fill="transparent"/>
-    <circle id="eye-left-highlight" cx="35" cy="35" r="0.5" fill="transparent" opacity="0"/>
-    <circle id="eye-right-highlight" cx="65" cy="35" r="0.5" fill="transparent" opacity="0"/>
-    <!-- Invisible brows -->
-    <path id="brow-left" d="M30 28 Q35 26 40 28" stroke="transparent" stroke-width="1" fill="none"/>
-    <path id="brow-right" d="M60 28 Q65 26 70 28" stroke="transparent" stroke-width="1" fill="none"/>
+    <!-- Photo face - sized to fit above body -->
+    <image href="${faceDataUrl}" x="10" y="5" width="80" height="65" preserveAspectRatio="xMidYMid slice"/>
+    <!-- Invisible eye elements for emotion system -->
+    <ellipse id="eye-left-white" cx="35" cy="30" rx="1" ry="1" fill="transparent"/>
+    <ellipse id="eye-right-white" cx="65" cy="30" rx="1" ry="1" fill="transparent"/>
+    <circle id="eye-left-pupil" class="pupil" cx="35" cy="30" r="0.5" fill="transparent"/>
+    <circle id="eye-right-pupil" class="pupil" cx="65" cy="30" r="0.5" fill="transparent"/>
+    <circle id="eye-left-highlight" cx="35" cy="30" r="0.5" fill="transparent" opacity="0"/>
+    <circle id="eye-right-highlight" cx="65" cy="30" r="0.5" fill="transparent" opacity="0"/>
+    <path id="brow-left" d="M28 24 Q35 22 42 24" stroke="transparent" stroke-width="1" fill="none"/>
+    <path id="brow-right" d="M58 24 Q65 22 72 24" stroke="transparent" stroke-width="1" fill="none"/>
   </g>
   <g id="head-bottom">
-    <!-- Mouth mask over lower face for lip sync -->
-    <rect x="25" y="58" width="50" height="22" fill="${skinColor}"/>
-    <!-- Animated mouth drawn on top -->
-    <path id="mouth-closed" d="M35 68 Q50 74 65 68" stroke="#8b5a5a" stroke-width="2" fill="none"/>
+    <!-- Small mouth mask - skin colored, positioned by landmarks -->
+    <ellipse cx="50" cy="${spriteMouthY}" rx="12" ry="6" fill="${skinColor}"/>
+    <!-- Animated mouth -->
+    <path id="mouth-closed" d="M42 ${spriteMouthY} Q50 ${spriteMouthY + 4} 58 ${spriteMouthY}" stroke="#8b5a5a" stroke-width="1.5" fill="none"/>
     <ellipse id="mouth-open" cx="50" cy="70" rx="10" ry="6" fill="#5a3a3a" opacity="0"/>
   </g>
 </svg>`;
