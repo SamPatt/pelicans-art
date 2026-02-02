@@ -618,7 +618,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.2</span>
+    <span style="color:#666;">v3.3</span>
   </div>
 
   <script>
@@ -1366,30 +1366,42 @@
     let processedImageBlob = null;
     
     async function removeBackground(imageSource) {
-      document.getElementById('face-status').textContent = 'Removing background (first time downloads ~30MB model)...';
+      const status = document.getElementById('bg-status');
+      status.textContent = 'Initializing background removal...';
       
       try {
-        if (typeof window.imglyRemoveBackground === 'undefined') {
-          // Wait for module to load
-          await new Promise(resolve => setTimeout(resolve, 1000));
+        // Wait for module to be available
+        let attempts = 0;
+        while (typeof window.imglyRemoveBackground === 'undefined' && attempts < 10) {
+          status.textContent = `Loading module... (${attempts + 1}/10)`;
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
         }
         
+        if (typeof window.imglyRemoveBackground === 'undefined') {
+          throw new Error('Background removal module failed to load');
+        }
+        
+        status.textContent = 'Downloading AI model (~30MB first time)...';
+        
         const blob = await window.imglyRemoveBackground(imageSource, {
+          model: 'small', // Use smaller model for faster download
           progress: (key, current, total) => {
-            if (key === 'compute:inference') {
-              const pct = Math.round((current / total) * 100);
-              document.getElementById('face-status').textContent = `Removing background... ${pct}%`;
+            const pct = Math.round((current / total) * 100);
+            if (key.startsWith('fetch:')) {
+              status.textContent = `Downloading model... ${pct}%`;
+            } else if (key === 'compute:inference') {
+              status.textContent = `Processing image... ${pct}%`;
             }
           }
         });
         
         processedImageBlob = blob;
         bgRemovalReady = true;
-        document.getElementById('face-status').textContent = '✓ Background removed!';
         return blob;
       } catch (e) {
         console.error('Background removal failed:', e);
-        document.getElementById('face-status').textContent = 'Background removal failed, using original';
+        status.textContent = `Error: ${e.message}`;
         return null;
       }
     }
