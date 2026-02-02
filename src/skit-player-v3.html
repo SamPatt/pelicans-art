@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AI Improv Theater v2</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      background: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: system-ui, sans-serif;
+      color: #eee;
+      padding: 10px;
+    }
+    
+    h1 { color: #e94560; font-size: 18px; margin-bottom: 10px; }
+    
+    /* Portrait viewport - 9:16 aspect ratio */
+    #viewport {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 9 / 16;
+      max-height: 85vh;
+      background: #000;
+      overflow: hidden;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    
+    @media (max-width: 500px) {
+      body { padding: 5px; }
+      h1 { font-size: 14px; margin-bottom: 5px; }
+      #viewport { max-width: 100%; border-radius: 0; max-height: 75vh; }
+    }
+    
+    /* Stage in world coordinates */
+    #stage {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s ease-out;
+      will-change: transform;
+    }
+    
+    #background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* Characters positioned by world x-coordinate */
+    .character {
+      position: absolute;
+      bottom: 12%;
+      height: 40%;
+      width: auto;
+      transition: left 1s ease-in-out, opacity 0.3s;
+      transform: translateX(-50%);
+    }
+    
+    .character svg {
+      height: 100%;
+      width: auto;
+    }
+    
+    .character.flipped {
+      transform: translateX(-50%) scaleX(-1);
+    }
+    
+    .character.offscreen { opacity: 0; pointer-events: none; }
+    
+    /* Head rotation when speaking - transform from chin area */
+    .character svg #head-top,
+    .character svg #head-bottom {
+      transition: transform 0.05s ease-out;
+      transform-origin: 50% 55px;
+    }
+    
+    /* Left-side character tilts head left when speaking */
+    .character.pos-left.speaking svg #head-top,
+    .character.pos-left.speaking svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    
+    /* Right-side character tilts head right when speaking */
+    .character.pos-right.speaking svg #head-top,
+    .character.pos-right.speaking svg #head-bottom {
+      transform: rotate(8deg);
+    }
+    
+    /* Mouth animation for lip sync - smooth scaling */
+    .character svg #mouth-open {
+      transition: ry 0.05s ease-out, rx 0.05s ease-out, opacity 0.15s ease-out;
+    }
+    .character svg #mouth-closed {
+      transition: opacity 0.25s ease-in, d 0.2s ease-out;
+    }
+    
+    /* Eye direction via pupil transform */
+    .character svg .pupil { transition: transform 0.15s ease-out; }
+    .character.look-left svg .pupil { transform: translateX(-1.5px); }
+    .character.look-right svg .pupil { transform: translateX(1.5px); }
+    .character.look-up svg .pupil { transform: translateY(-1.5px); }
+    .character.look-down svg .pupil { transform: translateY(1.5px); }
+    
+    /* Character facing direction */
+    .character.facing-left { transform: translateX(-50%) scaleX(-1); }
+    .character.facing-right { transform: translateX(-50%) scaleX(1); }
+    
+    /* SVG emotion transitions - specific elements only */
+    .character svg #eye-left-white,
+    .character svg #eye-right-white,
+    .character svg #eye-left-pupil,
+    .character svg #eye-right-pupil,
+    .character svg #brow-left,
+    .character svg #brow-right,
+    .character svg #mouth-closed,
+    .character svg #eye-left-highlight,
+    .character svg #eye-right-highlight {
+      transition: all 0.25s ease-out;
+    }
+    
+    /* Mouth open/closed should NOT transition - instant for lip sync */
+    .character svg #mouth-open {
+      transition: none !important;
+    }
+    
+    /* Captions - TikTok/Shorts style */
+    #caption {
+      position: absolute;
+      bottom: 5%;
+      left: 5%;
+      right: 5%;
+      color: #fff;
+      padding: 10px 15px;
+      font-family: 'Arial Black', 'Helvetica Bold', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+      /* Black outline for readability */
+      text-shadow: 
+        -2px -2px 0 #000,
+         2px -2px 0 #000,
+        -2px  2px 0 #000,
+         2px  2px 0 #000,
+         0px -2px 0 #000,
+         0px  2px 0 #000,
+        -2px  0px 0 #000,
+         2px  0px 0 #000;
+    }
+    #caption.visible { opacity: 1; }
+    body.captions-off #caption { display: none; }
+    
+    /* Controls */
+    #controls {
+      margin-top: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 400px;
+    }
+    
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 4px;
+      background: #4a4a6a;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    button:hover { background: #5a5a8a; }
+    button.active { background: #e94560; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    #status {
+      margin-top: 10px;
+      color: #888;
+      font-size: 12px;
+    }
+    
+    #debug {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.8);
+      color: #0f0;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body class="captions-off">
+  <h1>🎭 AI Improv Theater</h1>
+  
+  <div id="debug"></div>
+  
+  <div id="viewport">
+    <div id="stage">
+      <img id="background" src="backgrounds/restaurant.svg" alt="">
+    </div>
+    <div id="caption"></div>
+  </div>
+  
+  <div id="controls">
+    <button id="playBtn" onclick="togglePlay()" disabled>▶ Play</button>
+    <button id="captionBtn" onclick="toggleCaptions()">CC</button>
+    <button onclick="loadSkit('luckyCharms')" class="active">Lucky Charms</button>
+    <button onclick="loadSkit('trumpAlien')">Trump/Alien</button>
+    <button onclick="loadSkit('theInterview')">The Interview</button>
+    <button id="publishBtn" onclick="publishCurrentSkit()">📦 Publish</button>
+  </div>
+  <div id="url-loader" style="margin-top: 10px;">
+    <input type="text" id="skitUrl" placeholder="Paste published skit URL..." style="width: 300px; padding: 5px;">
+    <button onclick="loadFromUrlInput()">Load</button>
+  </div>
+  
+  <div id="status">Loading...</div>
+
+  <script>
+    // === STATE ===
+    const characters = {};
+    const camera = { x: 50, y: 50, zoom: 1, follow: null };
+    let currentSkit = null;
+    let currentSkitName = null;
+    let isPlaying = false;
+    let startTime = 0;
+    let animationId = null;
+    let triggeredBeats = new Set();
+    let audioContext, analyser, dataArray;
+    const audioCache = new Map();
+    
+    // Web Audio API buffers for mobile compatibility
+    let currentSourceNode = null;
+    let currentGainNode = null;
+    
+    // === SHOT PRESETS ===
+    const shotPresets = {
+      'wide': { zoom: 1, y: 50, frameBoth: true },
+      'two-shot': { zoom: 1.4, y: 60, frameBoth: true },
+      'closeup': { zoom: 2.2 },
+      'extreme-closeup': { zoom: 3 },
+      'medium': { zoom: 1.6 }
+    };
+    
+    // === CAMERA SYSTEM ===
+    let cameraAnimation = null;
+    
+    function clampCamera() {
+      const marginX = 50 / camera.zoom;
+      const marginY = 50 / camera.zoom;
+      camera.x = Math.max(marginX, Math.min(100 - marginX, camera.x));
+      camera.y = Math.max(marginY, Math.min(100 - marginY, camera.y));
+    }
+    
+    function updateCamera() {
+      const stage = document.getElementById('stage');
+      clampCamera();
+      const tx = 50 - camera.x;
+      const ty = 50 - camera.y;
+      stage.style.transformOrigin = `${camera.x}% ${camera.y}%`;
+      stage.style.transform = `translate(${tx}%, ${ty}%) scale(${camera.zoom})`;
+    }
+    
+    function animateCameraTo(targetX, targetY, duration = 1000) {
+      if (cameraAnimation) cancelAnimationFrame(cameraAnimation);
+      const startX = camera.x, startY = camera.y;
+      const startTime = performance.now();
+      
+      function tick(now) {
+        const t = Math.min((now - startTime) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        camera.x = startX + (targetX - startX) * ease;
+        camera.y = startY + (targetY - startY) * ease;
+        updateCamera();
+        if (t < 1) cameraAnimation = requestAnimationFrame(tick);
+      }
+      cameraAnimation = requestAnimationFrame(tick);
+    }
+    
+    function shot(type, who = null, hardCut = true) {
+      const preset = shotPresets[type];
+      if (!preset) return;
+      
+      const stage = document.getElementById('stage');
+      if (cameraAnimation) { cancelAnimationFrame(cameraAnimation); cameraAnimation = null; }
+      
+      if (hardCut) stage.style.transition = 'none';
+      
+      camera.zoom = preset.zoom;
+      
+      if (preset.frameBoth) {
+        const chars = Object.values(characters);
+        if (chars.length) {
+          camera.x = chars.reduce((sum, c) => sum + c.x, 0) / chars.length;
+          camera.y = preset.y || 50;
+        }
+        camera.follow = null;
+      } else if (who && characters[who]) {
+        camera.x = characters[who].x;
+        camera.y = characters[who].y;
+        camera.follow = who;
+      }
+      
+      updateCamera();
+      
+      if (hardCut) {
+        stage.offsetHeight; // force reflow
+        stage.style.transition = 'transform 0.6s ease-out';
+      }
+    }
+    
+    function followCharacter(name) {
+      if (!characters[name]) return;
+      camera.follow = name;
+      animateCameraTo(characters[name].x, characters[name].y, 600);
+    }
+    
+    // === CHARACTER SYSTEM ===
+    async function loadSprite(spriteName, view = 'front') {
+      const spritePath = `sprites/${spriteName}-${view}.svg`;
+      const response = await fetch(spritePath);
+      const svgText = await response.text();
+      return svgText;
+    }
+    
+    async function createCharacter(name, config) {
+      const stage = document.getElementById('stage');
+      const el = document.createElement('div');
+      el.className = 'character' + (config.startOffscreen ? ' offscreen' : '');
+      el.id = `char-${name}`;
+      el.dataset.sprite = config.sprite;
+      el.dataset.voice = config.voice;
+      el.style.left = `${config.x}%`;
+      
+      // Add position class for head rotation direction
+      el.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
+      
+      // Apply scale if specified
+      if (config.scale) {
+        el.style.height = `${40 * config.scale}%`;
+      }
+      
+      // Load sprite as inline SVG
+      const svgText = await loadSprite(config.sprite, 'front');
+      el.innerHTML = svgText;
+      
+      stage.appendChild(el);
+      
+      characters[name] = {
+        x: config.x,
+        y: 67, // character center
+        sprite: config.sprite,
+        voice: config.voice,
+        scale: config.scale || 1,
+        el: el
+      };
+      
+      // Auto-face character toward center (left characters face right, right face left)
+      if (config.x < 50) {
+        el.classList.add('facing-right');
+      } else {
+        el.classList.add('facing-left');
+      }
+    }
+    
+    async function setCharacterView(name, view) {
+      const char = characters[name];
+      if (!char) return;
+      const svgText = await loadSprite(char.sprite, view);
+      char.el.innerHTML = svgText;
+    }
+    
+    function setEyeDirection(charName, direction) {
+      const char = characters[charName];
+      if (!char || !char.el) return;
+      
+      char.el.classList.remove('look-left', 'look-right', 'look-up', 'look-down');
+      if (['left', 'right', 'up', 'down'].includes(direction)) {
+        // Invert left/right for flipped (facing-left) characters
+        let actualDir = direction;
+        if (char.el.classList.contains('facing-left') && (direction === 'left' || direction === 'right')) {
+          actualDir = direction === 'left' ? 'right' : 'left';
+        }
+        char.el.classList.add(`look-${actualDir}`);
+      }
+    }
+    
+    function setFacing(charName, direction) {
+      const char = characters[charName];
+      if (!char || !char.el) return;
+      
+      char.el.classList.remove('facing-left', 'facing-right');
+      if (direction === 'left') char.el.classList.add('facing-left');
+      if (direction === 'right') char.el.classList.add('facing-right');
+    }
+    
+    function getAmplitude() {
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      return sum / dataArray.length;
+    }
+    
+    function moveCharacter(name, toX, duration = 1) {
+      const char = characters[name];
+      if (!char) return;
+      
+      char.el.style.transition = `left ${duration}s ease-in-out, opacity 0.3s`;
+      char.x = toX;
+      char.el.style.left = `${toX}%`;
+      
+      // Update position class for head rotation direction
+      char.el.classList.remove('pos-left', 'pos-right');
+      char.el.classList.add(toX < 50 ? 'pos-left' : 'pos-right');
+      
+      if (camera.follow === name) {
+        animateCameraTo(toX, char.y, duration * 1000);
+      }
+    }
+    
+    function enterCharacter(name, from, toX) {
+      const char = characters[name];
+      if (!char) return;
+      
+      // Start offscreen
+      char.el.style.transition = 'none';
+      char.el.style.left = from === 'left' ? '-20%' : '120%';
+      char.el.classList.remove('offscreen');
+      char.el.offsetHeight; // reflow
+      
+      // Animate in
+      char.el.style.transition = 'left 1s ease-out, opacity 0.3s';
+      char.x = toX;
+      char.el.style.left = `${toX}%`;
+    }
+    
+    function exitCharacter(name, to) {
+      const char = characters[name];
+      if (!char) return;
+      char.el.style.left = to === 'left' ? '-20%' : '120%';
+    }
+    
+    // === EMOTION SYSTEM ===
+    // Emotion configs for both cat-like and human sprites
+    const EMOTIONS = {
+      neutral: {
+        eyeWhite: { ry: 7, cy: 52 },
+        eyeWhiteHuman: { ry: 3, cy: 42 },
+        pupil: { ry: 5, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        browLeftHuman: "M37 36 Q43 34 49 36",
+        browRightHuman: "M51 36 Q57 34 63 36",
+        mouth: "M50 65 L46 70 M50 65 L54 70",
+        mouthHuman: "M46 52 Q50 55 54 52",
+        highlight: 0
+      },
+      happy: {
+        eyeWhite: { ry: 5, cy: 50 },
+        eyeWhiteHuman: { ry: 2, cy: 41 },
+        pupil: { ry: 4, cy: 50 },
+        pupilHuman: { r: 1.5, cy: 41 },
+        browLeft: "M30 42 Q40 38 48 42",
+        browRight: "M52 42 Q60 38 70 42",
+        browLeftHuman: "M37 34 Q43 31 49 34",
+        browRightHuman: "M51 34 Q57 31 63 34",
+        mouth: "M44 66 Q50 72 56 66",
+        mouthHuman: "M44 52 Q50 58 56 52",
+        highlight: 0
+      },
+      sad: {
+        eyeWhite: { ry: 6, cy: 54 },
+        eyeWhiteHuman: { ry: 3, cy: 44 },
+        pupil: { ry: 5, cy: 55 },
+        pupilHuman: { r: 1.5, cy: 45 },
+        browLeft: "M30 40 L48 46",
+        browRight: "M52 46 L70 40",
+        browLeftHuman: "M37 34 L49 40",
+        browRightHuman: "M51 40 L63 34",
+        mouth: "M44 70 Q50 65 56 70",
+        mouthHuman: "M46 56 Q50 52 54 56",
+        highlight: 0
+      },
+      angry: {
+        eyeWhite: { ry: 5, cy: 52 },
+        eyeWhiteHuman: { ry: 2.5, cy: 42 },
+        pupil: { ry: 4, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 48 L48 42",
+        browRight: "M52 42 L70 48",
+        browLeftHuman: "M37 40 L49 34",
+        browRightHuman: "M51 34 L63 40",
+        mouth: "M44 68 L56 68",
+        mouthHuman: "M46 54 L54 54",
+        highlight: 0
+      },
+      surprised: {
+        eyeWhite: { ry: 9, cy: 52 },
+        eyeWhiteHuman: { ry: 5, cy: 42 },
+        pupil: { ry: 6, cy: 52 },
+        pupilHuman: { r: 2, cy: 42 },
+        browLeft: "M30 38 Q40 34 48 38",
+        browRight: "M52 38 Q60 34 70 38",
+        browLeftHuman: "M37 30 Q43 26 49 30",
+        browRightHuman: "M51 30 Q57 26 63 30",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
+        mouthHuman: "M46 53 Q46 57 50 57 Q54 57 54 53 Q54 51 50 51 Q46 51 46 53",
+        highlight: 1
+      },
+      excited: {
+        eyeWhite: { ry: 9, cy: 50 },
+        eyeWhiteHuman: { ry: 5, cy: 40 },
+        pupil: { ry: 6, cy: 50 },
+        pupilHuman: { r: 2, cy: 40 },
+        browLeft: "M30 38 Q40 32 48 38",
+        browRight: "M52 38 Q60 32 70 38",
+        browLeftHuman: "M37 28 Q43 24 49 28",
+        browRightHuman: "M51 28 Q57 24 63 28",
+        mouth: "M42 64 Q50 74 58 64",
+        mouthHuman: "M44 52 Q50 60 56 52",
+        highlight: 1
+      },
+      worried: {
+        eyeWhite: { ry: 7, cy: 53 },
+        eyeWhiteHuman: { ry: 3.5, cy: 43 },
+        pupil: { ry: 5, cy: 54 },
+        pupilHuman: { r: 1.5, cy: 44 },
+        browLeft: "M30 42 L48 46",
+        browRight: "M52 46 L70 42",
+        browLeftHuman: "M37 32 L49 38",
+        browRightHuman: "M51 38 L63 32",
+        mouth: "M44 68 Q50 66 56 68",
+        mouthHuman: "M46 56 Q50 53 54 56",
+        highlight: 0
+      },
+      smug: {
+        eyeWhite: { ry: 5, cy: 52 },
+        eyeWhiteHuman: { ry: 2, cy: 42 },
+        pupil: { ry: 4, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 44 Q40 40 48 46",
+        browRight: "M52 46 Q60 40 70 44",
+        browLeftHuman: "M37 36 Q43 32 49 38",
+        browRightHuman: "M51 38 Q57 32 63 36",
+        mouth: "M44 66 Q50 70 56 68",
+        mouthHuman: "M46 52 Q50 56 54 54",
+        highlight: 0
+      },
+      tired: {
+        eyeWhite: { ry: 4, cy: 54 },
+        eyeWhiteHuman: { ry: 1.5, cy: 44 },
+        pupil: { ry: 3, cy: 55 },
+        pupilHuman: { r: 1, cy: 44 },
+        browLeft: "M30 46 Q40 44 48 46",
+        browRight: "M52 46 Q60 44 70 46",
+        browLeftHuman: "M37 38 Q43 36 49 38",
+        browRightHuman: "M51 38 Q57 36 63 38",
+        mouth: "M44 68 Q50 66 56 68",
+        mouthHuman: "M46 54 Q50 52 54 54",
+        highlight: 0
+      }
+    };
+    
+    // Human sprites list for emotion detection
+    const HUMAN_SPRITES = ['person', 'girl', 'waiter', 'trump', 'trump-v3', 'leprechaun'];
+    
+    // Trump-v3 specific emotion configs (different coordinates)
+    const TRUMP_V3_EMOTIONS = {
+      neutral: {
+        eyeWhite: { ry: 2, cy: 53 },
+        pupil: { ry: 1.75, cy: 53 },
+        browLeft: "M23.75,47 Q32.5,44.5 41.25,46.5",
+        browRight: "M58.75,46.5 Q67.5,44.5 76.25,47",
+        mouth: "M40.5,82.5 Q50,81.5 59.5,82.5"
+      },
+      happy: {
+        eyeWhite: { ry: 1.5, cy: 52 },
+        pupil: { ry: 1.5, cy: 52 },
+        browLeft: "M23.75,45 Q32.5,42.5 41.25,45",
+        browRight: "M58.75,45 Q67.5,42.5 76.25,45",
+        mouth: "M40,82 Q50,88 60,82"
+      },
+      sad: {
+        eyeWhite: { ry: 2, cy: 54 },
+        pupil: { ry: 1.75, cy: 54 },
+        browLeft: "M23.75,48 Q32.5,45 41.25,43",
+        browRight: "M58.75,43 Q67.5,45 76.25,48",
+        mouth: "M41,85 Q50,80 59,85"
+      },
+      angry: {
+        eyeWhite: { ry: 1.5, cy: 53 },
+        pupil: { ry: 1.5, cy: 53 },
+        browLeft: "M23.75,44 Q32.5,47 41.25,50",
+        browRight: "M58.75,50 Q67.5,47 76.25,44",
+        mouth: "M41,84 Q50,81 59,84"
+      },
+      surprised: {
+        eyeWhite: { ry: 3, cy: 53 },
+        pupil: { ry: 2.5, cy: 53 },
+        browLeft: "M23.75,42 Q32.5,39 41.25,42",
+        browRight: "M58.75,42 Q67.5,39 76.25,42",
+        mouth: "M45,82 Q45,87 50,87 Q55,87 55,82 Q55,80 50,80 Q45,80 45,82"
+      },
+      excited: {
+        eyeWhite: { ry: 3, cy: 52 },
+        pupil: { ry: 2.5, cy: 52 },
+        browLeft: "M23.75,42 Q32.5,38 41.25,42",
+        browRight: "M58.75,42 Q67.5,38 76.25,42",
+        mouth: "M40,82 Q50,90 60,82"
+      },
+      worried: {
+        eyeWhite: { ry: 2, cy: 54 },
+        pupil: { ry: 1.75, cy: 54 },
+        browLeft: "M23.75,45 Q32.5,48 41.25,46",
+        browRight: "M58.75,46 Q67.5,48 76.25,45",
+        mouth: "M42,84 Q50,82 58,84"
+      },
+      smug: {
+        eyeWhite: { ry: 1.5, cy: 53 },
+        pupil: { ry: 1.5, cy: 53 },
+        browLeft: "M23.75,46 Q32.5,44 41.25,48",
+        browRight: "M58.75,46 Q67.5,44 76.25,46",
+        mouth: "M40,82 Q50,86 60,83"
+      },
+      tired: {
+        eyeWhite: { ry: 1, cy: 54 },
+        pupil: { ry: 1, cy: 54 },
+        browLeft: "M23.75,48 Q32.5,47 41.25,48",
+        browRight: "M58.75,48 Q67.5,47 76.25,48",
+        mouth: "M42,84 Q50,82 58,84"
+      }
+    };
+    
+    function setEmotion(charName, emotion) {
+      const char = characters[charName];
+      if (!char || !char.el) return;
+      
+      const config = EMOTIONS[emotion];
+      if (!config) return;
+      
+      const el = char.el;
+      const isHuman = HUMAN_SPRITES.includes(char.sprite);
+      const isTrumpV3 = char.sprite === 'trump-v3';
+      
+      // Get SVG elements
+      const eyeLeftWhite = el.querySelector('#eye-left-white');
+      const eyeRightWhite = el.querySelector('#eye-right-white');
+      const eyeLeftPupil = el.querySelector('#eye-left-pupil');
+      const eyeRightPupil = el.querySelector('#eye-right-pupil');
+      const browLeft = el.querySelector('#brow-left');
+      const browRight = el.querySelector('#brow-right');
+      const mouthClosed = el.querySelector('#mouth-closed');
+      const highlightLeft = el.querySelector('#eye-left-highlight');
+      const highlightRight = el.querySelector('#eye-right-highlight');
+      
+      // Use trump-v3 specific configs if applicable
+      if (isTrumpV3 && TRUMP_V3_EMOTIONS[emotion]) {
+        const tv3 = TRUMP_V3_EMOTIONS[emotion];
+        if (eyeLeftWhite) { 
+          eyeLeftWhite.setAttribute('ry', tv3.eyeWhite.ry); 
+          eyeLeftWhite.setAttribute('cy', tv3.eyeWhite.cy); 
+        }
+        if (eyeRightWhite) { 
+          eyeRightWhite.setAttribute('ry', tv3.eyeWhite.ry); 
+          eyeRightWhite.setAttribute('cy', tv3.eyeWhite.cy); 
+        }
+        if (eyeLeftPupil) { 
+          eyeLeftPupil.setAttribute('ry', tv3.pupil.ry);
+          eyeLeftPupil.setAttribute('cy', tv3.pupil.cy); 
+        }
+        if (eyeRightPupil) { 
+          eyeRightPupil.setAttribute('ry', tv3.pupil.ry);
+          eyeRightPupil.setAttribute('cy', tv3.pupil.cy); 
+        }
+        if (browLeft) browLeft.setAttribute('d', tv3.browLeft);
+        if (browRight) browRight.setAttribute('d', tv3.browRight);
+        if (mouthClosed) mouthClosed.setAttribute('d', tv3.mouth);
+        if (highlightLeft) highlightLeft.setAttribute('opacity', config.highlight);
+        if (highlightRight) highlightRight.setAttribute('opacity', config.highlight);
+        console.log(`${charName} emotion: ${emotion} (trump-v3)`);
+        return;
+      }
+      
+      // Apply eye whites
+      const eyeConfig = isHuman ? config.eyeWhiteHuman : config.eyeWhite;
+      if (eyeLeftWhite) { 
+        eyeLeftWhite.setAttribute('ry', eyeConfig.ry); 
+        eyeLeftWhite.setAttribute('cy', eyeConfig.cy); 
+      }
+      if (eyeRightWhite) { 
+        eyeRightWhite.setAttribute('ry', eyeConfig.ry); 
+        eyeRightWhite.setAttribute('cy', eyeConfig.cy); 
+      }
+      
+      // Apply pupils
+      const pupilConfig = isHuman ? config.pupilHuman : config.pupil;
+      if (eyeLeftPupil) { 
+        if (pupilConfig.r) eyeLeftPupil.setAttribute('r', pupilConfig.r);
+        if (pupilConfig.ry) eyeLeftPupil.setAttribute('ry', pupilConfig.ry);
+        eyeLeftPupil.setAttribute('cy', pupilConfig.cy); 
+      }
+      if (eyeRightPupil) { 
+        if (pupilConfig.r) eyeRightPupil.setAttribute('r', pupilConfig.r);
+        if (pupilConfig.ry) eyeRightPupil.setAttribute('ry', pupilConfig.ry);
+        eyeRightPupil.setAttribute('cy', pupilConfig.cy); 
+      }
+      
+      // Apply eyebrows
+      if (browLeft) browLeft.setAttribute('d', isHuman ? config.browLeftHuman : config.browLeft);
+      if (browRight) browRight.setAttribute('d', isHuman ? config.browRightHuman : config.browRight);
+      
+      // Apply mouth
+      if (mouthClosed) mouthClosed.setAttribute('d', isHuman ? config.mouthHuman : config.mouth);
+      
+      // Apply highlights
+      if (highlightLeft) highlightLeft.setAttribute('opacity', config.highlight);
+      if (highlightRight) highlightRight.setAttribute('opacity', config.highlight);
+      
+      console.log(`${charName} emotion: ${emotion} (${isHuman ? 'human' : 'non-human'})`);
+    }
+    
+    // === AUDIO SYSTEM ===
+    const AUDIO_CACHE_NAME = 'skit-audio-cache-v2';
+    
+    async function openAudioCache() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(AUDIO_CACHE_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (e) => {
+          e.target.result.createObjectStore('audio', { keyPath: 'key' });
+        };
+      });
+    }
+    
+    async function getCachedAudio(key) {
+      try {
+        const db = await openAudioCache();
+        return new Promise((resolve) => {
+          const tx = db.transaction('audio', 'readonly');
+          const request = tx.objectStore('audio').get(key);
+          request.onsuccess = () => resolve(request.result?.blob);
+          request.onerror = () => resolve(null);
+        });
+      } catch { return null; }
+    }
+    
+    async function setCachedAudio(key, blob) {
+      try {
+        const db = await openAudioCache();
+        const tx = db.transaction('audio', 'readwrite');
+        tx.objectStore('audio').put({ key, blob, ts: Date.now() });
+      } catch (e) { console.warn('Cache write failed:', e); }
+    }
+    
+    async function generateAudio(text, voice) {
+      const cacheKey = `${voice}:${text}`;
+      const cached = await getCachedAudio(cacheKey);
+      if (cached) return cached;
+      
+      // Small comma pause to prevent TTS cutoff on first word
+      const paddedText = ', ' + text;
+      
+      const formData = new FormData();
+      formData.append('text', paddedText);
+      formData.append('voice_url', voice);
+      const res = await fetch('/tts/tts', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('TTS failed');
+      const blob = await res.blob();
+      await setCachedAudio(cacheKey, blob);
+      return blob;
+    }
+    
+    // === SKITS ===
+    const skits = {
+      luckyCharms: {
+        meta: { title: "Lucky Charms", duration: 120 },
+        stage: { background: "restaurant" },
+        cast: {
+          waiter: { x: 30, sprite: "waiter", voice: "jean" },
+          woman: { x: 70, sprite: "girl", voice: "cosette" },
+          leprechaun: { x: -20, sprite: "leprechaun", voice: "marius", startOffscreen: true, scale: 0.6 }
+        },
+        script: [
+          // Opening - wide shot
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "waiter", emotion: "happy" },
+          { do: "emote", who: "woman", emotion: "neutral" },
+          { do: "pause", duration: 1 },
+          
+          // Waiter approaches
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "say", who: "waiter", line: "Good evening, madam. May I tell you about our special tonight?" },
+          
+          // Woman responds
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "happy" },
+          { do: "say", who: "woman", line: "Oh yes, please!" },
+          
+          // Waiter excited
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "excited" },
+          { do: "say", who: "waiter", line: "Tonight we have something truly magical." },
+          
+          // Woman intrigued
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "surprised" },
+          { do: "say", who: "woman", line: "Magical? In a restaurant?" },
+          
+          // Waiter reveals
+          { do: "shot", type: "extreme-closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "happy" },
+          { do: "say", who: "waiter", line: "Lucky Charms. Magically delicious." },
+          
+          // Woman confused
+          { do: "shot", type: "extreme-closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "worried" },
+          { do: "say", who: "woman", line: "The... the cereal?" },
+          
+          // Waiter doubles down
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "smug" },
+          { do: "say", who: "waiter", line: "Imported directly from General Mills." },
+          
+          // Woman skeptical
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "angry" },
+          { do: "say", who: "woman", line: "Sir, this is a five star restaurant." },
+          
+          // Waiter defensive
+          { do: "shot", type: "closeup", who: "waiter" },
+          { do: "emote", who: "waiter", emotion: "worried" },
+          { do: "say", who: "waiter", line: "Yes, and it has five different marshmallow shapes." },
+          
+          // Woman done
+          { do: "shot", type: "closeup", who: "woman" },
+          { do: "emote", who: "woman", emotion: "tired" },
+          { do: "say", who: "woman", line: "I'd like to speak to the manager." },
+          
+          // Wide shot - waiter frowns
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "waiter", emotion: "sad" },
+          { do: "pause", duration: 0.5 },
+          
+          // Waiter looks left and exits
+          { do: "look", who: "waiter", at: "left" },
+          { do: "exit", who: "waiter", to: "left" },
+          { do: "pause", duration: 1 },
+          
+          // Leprechaun enters from left - woman surprised
+          { do: "enter", who: "leprechaun", from: "left", to: 30 },
+          { do: "emote", who: "leprechaun", emotion: "happy" },
+          { do: "look", who: "leprechaun", at: "right" },
+          { do: "emote", who: "woman", emotion: "surprised" },
+          { do: "pause", duration: 0.5 },
+          
+          // Leprechaun introduces himself
+          { do: "shot", type: "closeup", who: "leprechaun" },
+          { do: "say", who: "leprechaun", line: "Can I help you?" },
+          
+          // Back to wide - woman annoyed
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "woman", emotion: "angry" },
+          { do: "pause", duration: 0.5 },
+          
+          // Leprechaun says What?
+          { do: "say", who: "leprechaun", line: "What?" },
+          { do: "pause", duration: 1 }
+        ]
+      },
+      // Sequential skits only
+      trumpAlien: {
+        meta: { duration: 300 }, // Long duration, will stop when script ends
+        stage: { background: "space" },
+        cast: {
+          trump: { x: 70, sprite: "trump-v3", voice: "https://openclaw-vps.tail4abd9a.ts.net/skit/audio/trump_voice_reference.wav" },
+          alien: { x: -20, sprite: "alien-green", voice: "cosette", startOffscreen: true }
+        },
+        script: [
+          // No 't' values - plays sequentially, waits for audio to complete
+          { do: "shot", type: "closeup", who: "trump" },
+          { do: "emote", who: "trump", emotion: "smug" },
+          { do: "pause", duration: 1 },
+          { do: "say", who: "trump", line: "Space. The final frontier." },
+          
+          { do: "shot", type: "wide" },
+          { do: "enter", who: "alien", from: "left", to: 30 },
+          { do: "pause", duration: 1 },
+          
+          { do: "shot", type: "closeup", who: "trump" },
+          { do: "emote", who: "trump", emotion: "surprised" },
+          { do: "say", who: "trump", line: "Whoa! An alien!" },
+          
+          { do: "shot", type: "closeup", who: "alien" },
+          { do: "emote", who: "alien", emotion: "neutral" },
+          { do: "say", who: "alien", line: "Greetings, Earth creature." },
+          
+          { do: "shot", type: "closeup", who: "trump" },
+          { do: "emote", who: "trump", emotion: "smug" },
+          { do: "say", who: "trump", line: "Are you here legally?" },
+          
+          { do: "shot", type: "closeup", who: "alien" },
+          { do: "emote", who: "alien", emotion: "worried" },
+          { do: "say", who: "alien", line: "We do not understand this question." },
+          
+          { do: "shot", type: "wide" }
+        ]
+      },
+      
+      // The Interview - cat boss, nobody acknowledges it
+      theInterview: {
+        meta: { title: "The Interview", duration: 120 },
+        stage: { background: "office" },
+        cast: {
+          candidate: { x: 30, sprite: "man-suit", voice: "marius", volume: 1.3 },
+          cat: { x: 70, sprite: "cat", voice: "cosette" }
+        },
+        script: [
+          // Opening - wide shot
+          { do: "shot", type: "wide" },
+          { do: "emote", who: "candidate", emotion: "neutral" },
+          { do: "emote", who: "cat", emotion: "neutral" },
+          { do: "pause", duration: 1 },
+          
+          // Candidate opens
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "happy" },
+          { do: "say", who: "candidate", line: "Thank you for meeting with me today." },
+          
+          // Cat responds
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "neutral" },
+          { do: "say", who: "cat", line: "Meow." },
+          
+          // Candidate answers "question"
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "happy" },
+          { do: "say", who: "candidate", line: "Great question! My biggest strength is attention to detail." },
+          
+          // Cat gets aggressive
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "angry" },
+          { do: "say", who: "cat", line: "HISSSSS!" },
+          
+          // Candidate backtracks
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "worried" },
+          { do: "say", who: "candidate", line: "Fair point. I'm also very adaptable." },
+          
+          // Cat excited
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "excited" },
+          { do: "say", who: "cat", line: "Meow meow! Purrrrr." },
+          
+          // Candidate confused but playing along
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "worried" },
+          { do: "say", who: "candidate", line: "A ball of yarn? Is this... a negotiation tactic?" },
+          
+          // Wide shot - candidate considers
+          { do: "shot", type: "wide" },
+          { do: "pause", duration: 0.5 },
+          
+          // Candidate commits
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "smug" },
+          { do: "say", who: "candidate", line: "Alright. I'll play ball." },
+          
+          // Cat very happy
+          { do: "shot", type: "closeup", who: "cat" },
+          { do: "emote", who: "cat", emotion: "happy" },
+          { do: "say", who: "cat", line: "MEOW!" },
+          
+          // Candidate seals the deal
+          { do: "shot", type: "closeup", who: "candidate" },
+          { do: "emote", who: "candidate", emotion: "happy" },
+          { do: "say", who: "candidate", line: "I accept your offer." },
+          
+          // Final wide
+          { do: "shot", type: "wide" },
+          { do: "pause", duration: 1 }
+        ]
+      }
+    };
+    
+    // === PLAYBACK ===
+    async function loadSkit(name) {
+      const skit = skits[name];
+      if (!skit) return;
+      
+      currentSkit = skit;
+      currentSkitName = name;
+      triggeredBeats = new Set();
+      audioCache.clear();
+      
+      // Clear stage
+      const stage = document.getElementById('stage');
+      stage.querySelectorAll('.character').forEach(el => el.remove());
+      Object.keys(characters).forEach(k => delete characters[k]);
+      
+      // Set background
+      document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg`;
+      
+      // Create characters
+      for (const [name, config] of Object.entries(skit.cast)) {
+        await createCharacter(name, config);
+      }
+      
+      // Reset camera
+      camera.x = 50; camera.y = 50; camera.zoom = 1; camera.follow = null;
+      updateCamera();
+      
+      // Set initial eye directions - characters look at each other
+      const charNames = Object.keys(characters);
+      if (charNames.length >= 2) {
+        const [char1, char2] = charNames;
+        const char1LooksRight = characters[char2].x > characters[char1].x;
+        setEyeDirection(char1, char1LooksRight ? 'right' : 'left');
+        setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
+      }
+      
+      // Generate audio
+      document.getElementById('status').textContent = 'Generating audio...';
+      document.getElementById('playBtn').disabled = true;
+      
+      const sayActions = skit.script.filter(b => b.do === 'say');
+      // Build index map for sequential cache keys
+      let seqIndex = 0;
+      const beatIndexMap = new Map();
+      skit.script.forEach((b, idx) => {
+        if (b.do === 'say') {
+          beatIndexMap.set(b, idx);
+        }
+      });
+      
+      for (let i = 0; i < sayActions.length; i++) {
+        const beat = sayActions[i];
+        const char = characters[beat.who];
+        document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
+        
+        if (!char) {
+          console.warn(`Character "${beat.who}" not found in cast. Available: ${Object.keys(characters).join(', ')}`);
+          continue;
+        }
+        
+        try {
+          const blob = await generateAudio(beat.line, char.voice);
+          const audio = new Audio(URL.createObjectURL(blob));
+          const source = audioContext.createMediaElementSource(audio);
+          
+          // Use gain node for volume (allows > 1.0 boost)
+          const gainNode = audioContext.createGain();
+          gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
+          source.connect(gainNode);
+          gainNode.connect(analyser);
+          
+          // Use t-based key if available, otherwise use sequential index
+          const cacheKey = beat.t !== undefined 
+            ? `${beat.t}-${beat.who}` 
+            : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+          audioCache.set(cacheKey, { audio, beat, charName: beat.who, gainNode });
+        } catch (e) {
+          console.error('TTS error:', e);
+        }
+      }
+      
+      document.getElementById('status').textContent = 'Ready!';
+      document.getElementById('playBtn').disabled = false;
+    }
+    
+    // === PUBLISH (export self-contained JSON) ===
+    async function publishSkit(name) {
+      const skit = skits[name];
+      if (!skit) return;
+      
+      document.getElementById('status').textContent = 'Publishing...';
+      
+      // Collect unique sprites and backgrounds needed
+      const spriteNames = new Set();
+      const backgroundName = skit.stage.background;
+      
+      for (const [charName, config] of Object.entries(skit.cast)) {
+        spriteNames.add(config.sprite);
+      }
+      
+      // Load and encode sprites
+      const sprites = {};
+      for (const spriteName of spriteNames) {
+        try {
+          const frontResp = await fetch(`sprites/${spriteName}-front.svg`);
+          const frontSvg = await frontResp.text();
+          sprites[`${spriteName}-front`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(frontSvg)));
+          
+          // Try back sprite too
+          const backResp = await fetch(`sprites/${spriteName}-back.svg`);
+          if (backResp.ok) {
+            const backSvg = await backResp.text();
+            sprites[`${spriteName}-back`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(backSvg)));
+          }
+        } catch (e) {
+          console.warn(`Failed to load sprite ${spriteName}:`, e);
+        }
+      }
+      
+      // Load and encode background
+      const backgrounds = {};
+      try {
+        const bgResp = await fetch(`backgrounds/${backgroundName}.svg`);
+        const bgSvg = await bgResp.text();
+        backgrounds[backgroundName] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(bgSvg)));
+      } catch (e) {
+        console.warn(`Failed to load background ${backgroundName}:`, e);
+      }
+      
+      // Generate and encode audio for each line
+      const audio = {};
+      const sayActions = skit.script.filter(b => b.do === 'say');
+      for (let i = 0; i < sayActions.length; i++) {
+        const beat = sayActions[i];
+        const char = skit.cast[beat.who];
+        document.getElementById('status').textContent = `Publishing audio ${i+1}/${sayActions.length}...`;
+        
+        try {
+          const blob = await generateAudio(beat.line, char.voice);
+          const reader = new FileReader();
+          const base64 = await new Promise((resolve, reject) => {
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          audio[`line-${i}`] = base64;
+        } catch (e) {
+          console.warn(`Failed to generate audio for line ${i}:`, e);
+        }
+      }
+      
+      // Build published skit
+      const published = {
+        meta: skit.meta,
+        stage: skit.stage,
+        cast: skit.cast,
+        script: skit.script,
+        assets: { sprites, backgrounds, audio }
+      };
+      
+      // Download as JSON
+      const json = JSON.stringify(published, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${name}-published.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      document.getElementById('status').textContent = `Published! (${(json.length / 1024).toFixed(1)} KB)`;
+      console.log('Published skit size:', (json.length / 1024).toFixed(1), 'KB');
+      
+      return published;
+    }
+    
+    // === LOAD FROM URL (self-contained JSON) ===
+    async function loadFromUrl(url) {
+      document.getElementById('status').textContent = 'Loading from URL...';
+      document.getElementById('playBtn').disabled = true;
+      
+      try {
+        const resp = await fetch(url);
+        const skit = await resp.json();
+        
+        // Store assets for the custom loader
+        window.publishedAssets = skit.assets;
+        
+        // Clear stage
+        const stage = document.getElementById('stage');
+        stage.querySelectorAll('.character').forEach(el => el.remove());
+        Object.keys(characters).forEach(k => delete characters[k]);
+        
+        // Set background from embedded asset
+        const bgName = skit.stage.background;
+        if (skit.assets?.backgrounds?.[bgName]) {
+          document.getElementById('background').src = skit.assets.backgrounds[bgName];
+        } else {
+          document.getElementById('background').src = `backgrounds/${bgName}.svg`;
+        }
+        
+        // Create characters with embedded sprites
+        for (const [name, config] of Object.entries(skit.cast)) {
+          await createCharacterFromPublished(name, config, skit.assets);
+        }
+        
+        // Reset camera
+        camera.x = 50; camera.y = 50; camera.zoom = 1; camera.follow = null;
+        updateCamera();
+        
+        // Set initial eye directions
+        const charNames = Object.keys(characters);
+        if (charNames.length >= 2) {
+          const [char1, char2] = charNames;
+          const char1LooksRight = characters[char2].x > characters[char1].x;
+          setEyeDirection(char1, char1LooksRight ? 'right' : 'left');
+          setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
+        }
+        
+        // Decode audio into AudioBuffers (mobile-friendly)
+        audioCache.clear();
+        const sayActions = skit.script.filter(b => b.do === 'say');
+        const beatIndexMap = new Map();
+        skit.script.forEach((b, idx) => {
+          if (b.do === 'say') beatIndexMap.set(b, idx);
+        });
+        
+        for (let i = 0; i < sayActions.length; i++) {
+          const beat = sayActions[i];
+          const char = skit.cast[beat.who];
+          const audioData = skit.assets?.audio?.[`line-${i}`];
+          
+          if (audioData) {
+            document.getElementById('status').textContent = `Decoding audio ${i+1}/${sayActions.length}...`;
+            try {
+              // Convert data URL to ArrayBuffer and decode
+              const base64 = audioData.split(',')[1];
+              const binaryString = atob(base64);
+              const bytes = new Uint8Array(binaryString.length);
+              for (let j = 0; j < binaryString.length; j++) {
+                bytes[j] = binaryString.charCodeAt(j);
+              }
+              const audioBuffer = await audioContext.decodeAudioData(bytes.buffer.slice(0));
+              
+              const cacheKey = beat.t !== undefined 
+                ? `${beat.t}-${beat.who}` 
+                : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+              audioCache.set(cacheKey, { 
+                buffer: audioBuffer,
+                beat, 
+                charName: beat.who, 
+                volume: char.volume !== undefined ? char.volume : 1.0 
+              });
+            } catch (e) {
+              console.warn(`Failed to decode audio ${i}:`, e);
+            }
+          }
+        }
+        
+        currentSkit = skit;
+        triggeredBeats = new Set();
+        
+        document.getElementById('status').textContent = 'Ready!';
+        document.getElementById('playBtn').disabled = false;
+        
+      } catch (e) {
+        console.error('Failed to load from URL:', e);
+        document.getElementById('status').textContent = 'Failed to load: ' + e.message;
+      }
+    }
+    
+    async function createCharacterFromPublished(name, config, assets) {
+      const spriteName = `${config.sprite}-front`;
+      let svgText;
+      
+      if (assets?.sprites?.[spriteName]) {
+        // Decode from base64 data URL
+        const dataUrl = assets.sprites[spriteName];
+        const base64 = dataUrl.split(',')[1];
+        svgText = decodeURIComponent(escape(atob(base64)));
+      } else {
+        svgText = await loadSprite(config.sprite, 'front');
+      }
+      
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+      const svg = svgDoc.documentElement;
+      
+      const div = document.createElement('div');
+      div.className = 'character';
+      div.id = `char-${name}`;
+      div.appendChild(svg);
+      document.getElementById('stage').appendChild(div);
+      
+      const scale = config.scale || 1;
+      characters[name] = {
+        el: div,
+        x: config.x,
+        y: 50,
+        scale: scale,
+        emotion: 'neutral',
+        sprite: config.sprite,
+        voice: config.voice,
+        volume: config.volume
+      };
+      
+      div.style.left = config.x + '%';
+      div.style.transform = `translateX(-50%) scale(${scale})`;
+      
+      if (config.startOffscreen) {
+        div.style.display = 'none';
+      }
+      
+      // Auto-face toward center
+      if (config.x > 50) {
+        div.style.transform = `translateX(-50%) scaleX(-1) scale(${scale})`;
+        characters[name].flipped = true;
+      }
+    }
+    
+    function togglePlay() {
+      if (isPlaying) stop();
+      else play();
+    }
+    
+    function toggleCaptions() {
+      document.body.classList.toggle('captions-off');
+      const btn = document.getElementById('captionBtn');
+      btn.classList.toggle('active');
+    }
+    
+    // Sequential playback state
+    let sequentialIndex = 0;
+    let waitingForAudio = false;
+    let sequentialMode = false;
+    
+    function play() {
+      if (audioContext.state === 'suspended') audioContext.resume();
+      isPlaying = true;
+      startTime = performance.now();
+      triggeredBeats = new Set();
+      sequentialIndex = 0;
+      waitingForAudio = false;
+      
+      // Check if skit uses sequential mode (first beat has no 't' property)
+      sequentialMode = currentSkit.script.length > 0 && currentSkit.script[0].t === undefined;
+      
+      document.getElementById('playBtn').textContent = '⏸ Pause';
+      
+      if (sequentialMode) {
+        processNextSequentialBeat();
+      }
+      animate();
+    }
+    
+    function stop() {
+      isPlaying = false;
+      currentSpeaker = null;
+      peakAmp = 50;
+      openDuration = 0;
+      if (animationId) cancelAnimationFrame(animationId);
+      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('caption').classList.remove('visible');
+      Object.values(characters).forEach(c => {
+        c.el.classList.remove('speaking', 'look-left', 'look-right', 'look-up', 'look-down');
+        // Reset mouth state
+        const mouthOpen = c.el.querySelector('#mouth-open');
+        const mouthClosed = c.el.querySelector('#mouth-closed');
+        if (mouthOpen) { mouthOpen.setAttribute('opacity', '0'); mouthOpen.setAttribute('ry', '3'); }
+        if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+      });
+      audioCache.forEach((cached) => { 
+        if (cached.audio) {
+          cached.audio.pause(); 
+          cached.audio.currentTime = 0; 
+        }
+      });
+      if (currentSourceNode) {
+        try { currentSourceNode.stop(); } catch(e) {}
+        currentSourceNode = null;
+      }
+    }
+    
+    let currentSpeaker = null;
+    let peakAmp = 50;
+    let openDuration = 0;
+    
+    // Process next beat in sequential mode
+    function processNextSequentialBeat() {
+      // Resume audio context on mobile (may be suspended)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+      
+      if (!isPlaying || sequentialIndex >= currentSkit.script.length) {
+        if (sequentialIndex >= currentSkit.script.length) {
+          stop();
+        }
+        return;
+      }
+      
+      const beat = currentSkit.script[sequentialIndex];
+      sequentialIndex++;
+      
+      // If beat has a 't' value, it's timed - let the normal animate loop handle it
+      if (beat.t !== undefined) {
+        // Mark as triggered so animate doesn't double-process
+        const key = `${beat.t}-${beat.do}-${beat.who || ''}`;
+        triggeredBeats.add(key);
+      }
+      
+      // Handle delay/pause beats
+      if (beat.do === 'pause' || beat.do === 'delay') {
+        const delay = (beat.duration || beat.delay || 1) * 1000;
+        setTimeout(() => processNextSequentialBeat(), delay);
+        return;
+      }
+      
+      // Process the beat
+      processBeat(beat, () => {
+        // Callback for when beat completes (used for 'say' to wait for audio)
+        processNextSequentialBeat();
+      });
+      
+      // If it's not a 'say' beat, continue immediately (unless it has a delay)
+      if (beat.do !== 'say') {
+        const delay = (beat.delay || 0) * 1000;
+        setTimeout(() => processNextSequentialBeat(), delay);
+      }
+      // For 'say' beats, the callback in processBeat handles continuation
+    }
+    
+    function animate() {
+      if (!isPlaying) return;
+      
+      const elapsed = (performance.now() - startTime) / 1000;
+      
+      // Only check duration limit for timed mode
+      if (!sequentialMode && elapsed > currentSkit.meta.duration) {
+        stop();
+        return;
+      }
+      
+      // Process timed beats (those with 't' property)
+      currentSkit.script.forEach(beat => {
+        if (beat.t === undefined) return; // Skip sequential beats
+        const key = `${beat.t}-${beat.do}-${beat.who || ''}`;
+        if (elapsed >= beat.t && !triggeredBeats.has(key)) {
+          triggeredBeats.add(key);
+          processBeat(beat);
+        }
+      });
+      
+      // Lip sync based on audio amplitude - dynamic mouth scaling
+      if (currentSpeaker && characters[currentSpeaker]) {
+        const rawAmp = getAmplitude();
+        if (rawAmp > peakAmp) peakAmp = rawAmp;
+        peakAmp = Math.max(30, peakAmp * 0.995);
+        const normalizedAmp = rawAmp / peakAmp; // 0 to 1
+        
+        const charEl = characters[currentSpeaker].el;
+        const mouthOpen = charEl.querySelector('#mouth-open');
+        const mouthClosed = charEl.querySelector('#mouth-closed');
+        
+        if (mouthOpen && mouthClosed) {
+          // Threshold for any mouth movement
+          const threshold = 0.15;
+          
+          if (normalizedAmp > threshold) {
+            openDuration++;
+            
+            // Scale mouth opening based on amplitude (min 1, max 4 for ry)
+            const mouthScale = 1 + (normalizedAmp - threshold) * 4;
+            const mouthRy = Math.min(4, Math.max(1, mouthScale));
+            const mouthRx = 3 + (normalizedAmp - threshold) * 2; // width also scales slightly
+            
+            mouthOpen.setAttribute('ry', mouthRy.toFixed(1));
+            mouthOpen.setAttribute('rx', mouthRx.toFixed(1));
+            mouthOpen.setAttribute('opacity', '1');
+            mouthClosed.setAttribute('opacity', '0');
+            
+            // Head tilt when speaking
+            charEl.classList.add('speaking');
+          } else {
+            openDuration = 0;
+            mouthOpen.setAttribute('opacity', '0');
+            mouthClosed.setAttribute('opacity', '1');
+            charEl.classList.remove('speaking');
+          }
+        }
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    }
+    
+    function processBeat(beat, onComplete) {
+      switch (beat.do) {
+        case 'shot':
+          shot(beat.type, beat.who);
+          break;
+          
+        case 'say':
+          // Support both timed (beat.t) and sequential cache keys
+          // Find the beat's index in the script for sequential mode
+          const beatIdx = currentSkit.script.indexOf(beat);
+          const cacheKey = beat.t !== undefined ? `${beat.t}-${beat.who}` : `seq-${beatIdx}-${beat.who}`;
+          const cached = audioCache.get(cacheKey);
+          if (cached) {
+            // Show caption
+            document.getElementById('caption').textContent = beat.line;
+            document.getElementById('caption').classList.add('visible');
+            
+            // Stop previous speaker animation and audio
+            if (currentSpeaker && characters[currentSpeaker]) {
+              characters[currentSpeaker].el.classList.remove('speaking');
+              // Stop any currently playing audio
+              audioCache.forEach(({ audio }) => { 
+                if (!audio.paused) {
+                  audio.pause(); 
+                  audio.currentTime = 0; 
+                }
+              });
+            }
+            
+            // Set up eye contact - speaker looks at other character
+            const charNames = Object.keys(characters);
+            const otherChar = charNames.find(n => n !== beat.who);
+            if (otherChar) {
+              // Determine relative positions for eye direction
+              const speakerX = characters[beat.who].x;
+              const otherX = characters[otherChar].x;
+              const speakerLooksRight = otherX > speakerX;
+              const otherLooksRight = speakerX > otherX;
+              
+              setEyeDirection(beat.who, speakerLooksRight ? 'right' : 'left');
+              setEyeDirection(otherChar, otherLooksRight ? 'right' : 'left');
+            }
+            
+            // Start speaking
+            currentSpeaker = beat.who;
+            peakAmp = 50; // Reset peak for new speaker
+            openDuration = 0;
+            
+            const onAudioEnd = () => {
+              const charEl = characters[beat.who]?.el;
+              if (charEl) {
+                charEl.classList.remove('speaking');
+                const mouthOpen = charEl.querySelector('#mouth-open');
+                const mouthClosed = charEl.querySelector('#mouth-closed');
+                if (mouthOpen) {
+                  mouthOpen.setAttribute('ry', '1');
+                  mouthOpen.setAttribute('rx', '2');
+                  setTimeout(() => {
+                    mouthOpen.setAttribute('opacity', '0');
+                    if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+                  }, 100);
+                }
+              }
+              document.getElementById('caption').classList.remove('visible');
+              currentSpeaker = null;
+              currentSourceNode = null;
+              if (onComplete) setTimeout(onComplete, 200);
+            };
+            
+            // Stop any current audio
+            if (currentSourceNode) {
+              try { currentSourceNode.stop(); } catch(e) {}
+            }
+            
+            if (cached.buffer) {
+              // New-style: AudioBuffer (mobile-friendly)
+              const sourceNode = audioContext.createBufferSource();
+              sourceNode.buffer = cached.buffer;
+              const gainNode = audioContext.createGain();
+              gainNode.gain.value = cached.volume || 1.0;
+              sourceNode.connect(gainNode);
+              gainNode.connect(analyser);
+              sourceNode.onended = onAudioEnd;
+              sourceNode.start(0);
+              currentSourceNode = sourceNode;
+              currentGainNode = gainNode;
+            } else if (cached.audio) {
+              // Old-style: Audio element (for live TTS)
+              cached.audio.onended = onAudioEnd;
+              cached.audio.currentTime = 0;
+              cached.audio.play().catch(e => {
+                console.warn('Audio play failed:', e);
+                onAudioEnd();
+              });
+            } else {
+              // No audio - skip after brief delay
+              setTimeout(onAudioEnd, 1500);
+            }
+          } else {
+            // No audio cached - show caption briefly and continue
+            document.getElementById('caption').textContent = beat.line;
+            document.getElementById('caption').classList.add('visible');
+            console.warn(`No audio for: ${cacheKey}`);
+            setTimeout(() => {
+              document.getElementById('caption').classList.remove('visible');
+              if (onComplete) onComplete();
+            }, 2000);
+          }
+          break;
+          
+        case 'emote':
+          setEmotion(beat.who, beat.emotion);
+          break;
+          
+        case 'move':
+          moveCharacter(beat.who, beat.to, beat.duration || 1);
+          break;
+          
+        case 'enter':
+          enterCharacter(beat.who, beat.from, beat.to);
+          break;
+          
+        case 'exit':
+          exitCharacter(beat.who, beat.to);
+          break;
+          
+        case 'follow':
+          if (beat.who) followCharacter(beat.who);
+          else camera.follow = null;
+          break;
+          
+        case 'look':
+          // Handle look directions
+          let lookDir = beat.at;
+          if (beat.at === 'audience') {
+            // Look away from center (toward camera)
+            lookDir = characters[beat.who].x < 50 ? 'left' : 'right';
+          } else if (beat.at === 'other') {
+            // Look at other character
+            const charNames = Object.keys(characters);
+            const other = charNames.find(n => n !== beat.who);
+            if (other) {
+              lookDir = characters[other].x > characters[beat.who].x ? 'right' : 'left';
+            }
+          }
+          setEyeDirection(beat.who, lookDir);
+          break;
+          
+        case 'turn':
+          setCharacterView(beat.who, beat.to);
+          break;
+          
+        case 'face':
+          setFacing(beat.who, beat.dir);
+          break;
+      }
+    }
+    
+    // === HELPERS ===
+    function publishCurrentSkit() {
+      if (currentSkitName) {
+        publishSkit(currentSkitName);
+      } else {
+        alert('No skit loaded to publish');
+      }
+    }
+    
+    function loadFromUrlInput() {
+      const url = document.getElementById('skitUrl').value.trim();
+      if (url) {
+        loadFromUrl(url);
+      }
+    }
+    
+    // === INIT ===
+    async function init() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.connect(audioContext.destination);
+      
+      await loadSkit('luckyCharms');
+    }
+    
+    init();
+  </script>
+</body>
+</html>
