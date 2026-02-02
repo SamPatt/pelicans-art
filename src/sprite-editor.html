@@ -616,7 +616,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.7</span>
+    <span style="color:#666;">v3.8</span>
   </div>
 
   <script>
@@ -1419,25 +1419,17 @@
         // Log all segments found
         result.forEach((r, i) => bgLog(`Segment ${i}: ${r.label} (score: ${r.score?.toFixed(2) || 'N/A'})`));
         
-        // Find the best foreground mask - look for face, skin, hair, person
-        const foregroundLabels = ['face', 'skin', 'hair', 'upper', 'person', 'head'];
-        let personMask = result.find(r => 
-          foregroundLabels.some(label => r.label.toLowerCase().includes(label))
-        );
+        // Find all foreground segments (face, hair, clothes - NOT background)
+        const foregroundLabels = ['face', 'skin', 'hair', 'upper', 'person', 'head', 'neck'];
+        const foregroundSegments = result.filter(r => {
+          const label = r.label.toLowerCase();
+          return !label.includes('background') && !label.includes('bag');
+        });
         
-        // If no specific match, use first non-background
-        if (!personMask) {
-          personMask = result.find(r => !r.label.toLowerCase().includes('background'));
-        }
-        if (!personMask) {
-          personMask = result[0];
-        }
+        bgLog(`Found ${foregroundSegments.length} foreground segments: ${foregroundSegments.map(s => s.label).join(', ')}`);
         
-        bgLog(`Using mask: ${personMask?.label}`);
-        bgLog(`Mask type: ${typeof personMask?.mask}, has mask: ${!!personMask?.mask}`);
-        
-        if (!personMask) {
-          throw new Error('No segments found');
+        if (foregroundSegments.length === 0) {
+          throw new Error('No foreground segments found');
         }
         
         bgLog('Creating transparent image...');
@@ -1458,43 +1450,67 @@
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         
-        // The mask from transformers.js might be a RawImage or data URL
-        let maskData;
-        if (personMask.mask && personMask.mask.data) {
-          // RawImage format
-          bgLog('Mask is RawImage format');
-          maskData = personMask.mask;
-        } else if (typeof personMask.mask === 'string') {
-          // Data URL format
-          bgLog('Mask is data URL format');
-          const maskImg = new Image();
-          await new Promise((resolve, reject) => {
-            maskImg.onload = resolve;
-            maskImg.onerror = () => reject(new Error('Failed to load mask image'));
-            maskImg.src = personMask.mask;
-          });
+        // Create combined mask from all foreground segments
+        const combinedMask = new Uint8Array(img.width * img.height);
+        
+        for (const segment of foregroundSegments) {
+          bgLog(`Processing mask for: ${segment.label}`);
           
-          const maskCanvas = document.createElement('canvas');
-          maskCanvas.width = img.width;
-          maskCanvas.height = img.height;
-          const maskCtx = maskCanvas.getContext('2d');
-          maskCtx.drawImage(maskImg, 0, 0, img.width, img.height);
-          maskData = maskCtx.getImageData(0, 0, img.width, img.height);
-        } else {
-          bgLog(`Unknown mask format: ${JSON.stringify(Object.keys(personMask.mask || {}))}`);
-          throw new Error('Unknown mask format');
+          let segMaskData;
+          if (segment.mask && segment.mask.data) {
+            // RawImage format - has width, height, data
+            const rawMask = segment.mask;
+            bgLog(`  RawImage: ${rawMask.width}x${rawMask.height}, channels: ${rawMask.channels}`);
+            
+            // Resize mask to match image if needed
+            if (rawMask.width !== img.width || rawMask.height !== img.height) {
+              const tempCanvas = document.createElement('canvas');
+              tempCanvas.width = rawMask.width;
+              tempCanvas.height = rawMask.height;
+              const tempCtx = tempCanvas.getContext('2d');
+              const tempImageData = tempCtx.createImageData(rawMask.width, rawMask.height);
+              
+              // Copy mask data to image data (grayscale to RGBA)
+              for (let i = 0; i < rawMask.data.length; i++) {
+                tempImageData.data[i * 4] = rawMask.data[i];
+                tempImageData.data[i * 4 + 1] = rawMask.data[i];
+                tempImageData.data[i * 4 + 2] = rawMask.data[i];
+                tempImageData.data[i * 4 + 3] = 255;
+              }
+              tempCtx.putImageData(tempImageData, 0, 0);
+              
+              // Scale to image size
+              const scaleCanvas = document.createElement('canvas');
+              scaleCanvas.width = img.width;
+              scaleCanvas.height = img.height;
+              const scaleCtx = scaleCanvas.getContext('2d');
+              scaleCtx.drawImage(tempCanvas, 0, 0, img.width, img.height);
+              segMaskData = scaleCtx.getImageData(0, 0, img.width, img.height).data;
+            } else {
+              segMaskData = rawMask.data;
+            }
+          }
+          
+          // Combine masks (OR operation - if any mask says foreground, keep it)
+          if (segMaskData) {
+            const isRGBA = segMaskData.length === img.width * img.height * 4;
+            for (let i = 0; i < img.width * img.height; i++) {
+              const val = isRGBA ? segMaskData[i * 4] : segMaskData[i];
+              if (val > 128) { // Threshold
+                combinedMask[i] = 255;
+              }
+            }
+          }
         }
         
-        // Get image data and apply mask
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        bgLog(`Applying mask to ${imageData.data.length / 4} pixels`);
+        // Count non-zero pixels
+        const nonZero = combinedMask.filter(v => v > 0).length;
+        bgLog(`Combined mask: ${nonZero} foreground pixels (${(nonZero / combinedMask.length * 100).toFixed(1)}%)`);
         
-        // Apply mask as alpha
-        const maskPixels = maskData.data || maskData;
-        const channels = maskData.width ? 4 : 1; // RawImage is 1 channel, ImageData is 4
-        for (let i = 0; i < imageData.data.length / 4; i++) {
-          const maskVal = channels === 1 ? maskPixels[i] : maskPixels[i * 4];
-          imageData.data[i * 4 + 3] = maskVal;
+        // Apply combined mask as alpha
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < combinedMask.length; i++) {
+          imageData.data[i * 4 + 3] = combinedMask[i];
         }
         
         ctx.putImageData(imageData, 0, 0);
