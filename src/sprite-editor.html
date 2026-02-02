@@ -59,6 +59,15 @@
       margin: 0 5px;
     }
     
+    kbd {
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+    
     /* Main layout */
     .main {
       display: flex;
@@ -266,6 +275,30 @@
   </style>
 </head>
 <body>
+  <!-- Help Modal -->
+  <div id="help-modal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:400px;">
+      <div class="modal-header">
+        <h2>⌨️ Keyboard Shortcuts</h2>
+        <button class="modal-close" onclick="document.getElementById('help-modal').style.display='none'">×</button>
+      </div>
+      <div class="modal-body">
+        <table style="width:100%;color:#aaa;font-size:0.9em;">
+          <tr><td><kbd>Ctrl+Z</kbd></td><td>Undo</td></tr>
+          <tr><td><kbd>Ctrl+Y</kbd> / <kbd>Ctrl+Shift+Z</kbd></td><td>Redo</td></tr>
+          <tr><td><kbd>Ctrl+S</kbd></td><td>Save/Download</td></tr>
+          <tr><td><kbd>Ctrl+D</kbd></td><td>Duplicate</td></tr>
+          <tr><td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td><td>Delete element</td></tr>
+          <tr><td><kbd>Click</kbd></td><td>Select element</td></tr>
+          <tr><td><kbd>Drag</kbd></td><td>Move element</td></tr>
+        </table>
+        <hr style="border-color:#0f3460;margin:15px 0;">
+        <p style="color:#666;font-size:0.85em;">Sprite must have emotion-compatible IDs:<br>
+        eye-left-white, eye-right-white, eye-left-pupil, eye-right-pupil, brow-left, brow-right, mouth-closed, mouth-open</p>
+      </div>
+    </div>
+  </div>
+  
   <!-- Photo Sprite Modal -->
   <div id="photo-modal" class="modal" style="display:none;">
     <div class="modal-content">
@@ -399,6 +432,9 @@
       <button id="btn-undo" disabled>↩️ Undo</button>
       <button id="btn-redo" disabled>↪️ Redo</button>
       <button id="btn-save">💾 Save</button>
+      <span class="toolbar-divider">|</span>
+      <button id="btn-test" title="Test in Skit Player">▶️ Test</button>
+      <button id="btn-help" title="Keyboard Shortcuts">❓</button>
     </div>
   </header>
   
@@ -1418,6 +1454,12 @@
     document.getElementById('btn-duplicate').onclick = duplicateSelected;
     document.getElementById('btn-bring-front').onclick = bringToFront;
     document.getElementById('btn-send-back').onclick = sendToBack;
+    document.getElementById('btn-help').onclick = () => {
+      document.getElementById('help-modal').style.display = 'flex';
+    };
+    document.getElementById('btn-test').onclick = () => {
+      window.open('skit-player-v3.html', '_blank');
+    };
     
     loadSpriteList();
     loadSprite('girl'); // Load default
