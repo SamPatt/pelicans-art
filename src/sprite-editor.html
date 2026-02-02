@@ -9,6 +9,11 @@
   <title>SkitKit Sprite Editor v3</title>
   <!-- Face API for landmark detection -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <!-- Background removal -->
+  <script type="module">
+    import imglyRemoveBackground from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/+esm';
+    window.imglyRemoveBackground = imglyRemoveBackground;
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
@@ -450,9 +455,11 @@
           <p>Adjust the face region and mouth position:</p>
           <canvas id="photo-edit-canvas" width="300" height="400"></canvas>
           <div class="photo-controls">
-            <button onclick="autoDetectFace()">🔍 Re-detect Face</button>
-            <button onclick="generatePhotoSprite()">✨ Generate Sprite</button>
+            <button onclick="autoDetectFace()">🔍 Re-detect</button>
+            <button id="btn-remove-bg" onclick="startBackgroundRemoval()">🪄 Remove BG</button>
+            <button onclick="generatePhotoSprite()">✨ Generate</button>
           </div>
+          <div id="bg-status" style="margin-top:10px;color:#4ecca3;font-size:0.9em;"></div>
         </div>
       </div>
     </div>
@@ -611,7 +618,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.1</span>
+    <span style="color:#666;">v3.2</span>
   </div>
 
   <script>
@@ -1355,6 +1362,38 @@
     let faceLandmarks = null;
     let faceApiLoaded = false;
     
+    let bgRemovalReady = false;
+    let processedImageBlob = null;
+    
+    async function removeBackground(imageSource) {
+      document.getElementById('face-status').textContent = 'Removing background (first time downloads ~30MB model)...';
+      
+      try {
+        if (typeof window.imglyRemoveBackground === 'undefined') {
+          // Wait for module to load
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
+        const blob = await window.imglyRemoveBackground(imageSource, {
+          progress: (key, current, total) => {
+            if (key === 'compute:inference') {
+              const pct = Math.round((current / total) * 100);
+              document.getElementById('face-status').textContent = `Removing background... ${pct}%`;
+            }
+          }
+        });
+        
+        processedImageBlob = blob;
+        bgRemovalReady = true;
+        document.getElementById('face-status').textContent = '✓ Background removed!';
+        return blob;
+      } catch (e) {
+        console.error('Background removal failed:', e);
+        document.getElementById('face-status').textContent = 'Background removal failed, using original';
+        return null;
+      }
+    }
+    
     async function loadFaceApiModels() {
       if (faceApiLoaded) return true;
       
@@ -1447,7 +1486,7 @@
               const faceWidth = maxX - minX;
               
               const expandedX = Math.max(0, minX - faceWidth * 0.25);
-              const expandedY = Math.max(0, minY - faceHeight * 0.6); // More room for hair
+              const expandedY = Math.max(0, minY - faceHeight * 0.65); // More room for hair
               const expandedW = Math.min(canvas.width - expandedX, faceWidth * 1.5);
               const expandedH = Math.min(canvas.height - expandedY, faceHeight * 1.8);
               
@@ -1605,8 +1644,52 @@
     
     function autoDetectFace() {
       updateStatus('Re-detecting face...');
-      // Would use face-api.js here
       drawEditCanvas();
+    }
+    
+    async function startBackgroundRemoval() {
+      if (!uploadedImage) return;
+      
+      const btn = document.getElementById('btn-remove-bg');
+      btn.disabled = true;
+      btn.textContent = '⏳ Processing...';
+      
+      document.getElementById('bg-status').textContent = 'Loading background removal model (first time ~30MB)...';
+      
+      // Convert uploaded image to blob
+      const canvas = document.createElement('canvas');
+      canvas.width = uploadedImage.width;
+      canvas.height = uploadedImage.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(uploadedImage, 0, 0);
+      
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      
+      try {
+        const resultBlob = await removeBackground(blob);
+        
+        if (resultBlob) {
+          // Load the processed image
+          const processedImg = new Image();
+          processedImg.onload = () => {
+            uploadedImage = processedImg;
+            drawEditCanvas();
+            document.getElementById('bg-status').textContent = '✓ Background removed! Ready to generate.';
+            btn.textContent = '✓ BG Removed';
+            btn.style.background = '#4ecca3';
+          };
+          processedImg.src = URL.createObjectURL(resultBlob);
+        } else {
+          btn.disabled = false;
+          btn.textContent = '🪄 Remove BG';
+          document.getElementById('bg-status').textContent = 'Failed - try again or skip';
+        }
+      } catch (e) {
+        console.error(e);
+        btn.disabled = false;
+        btn.textContent = '🪄 Remove BG';
+        document.getElementById('bg-status').textContent = 'Error: ' + e.message;
+      }
     }
     
     function generatePhotoSprite() {
