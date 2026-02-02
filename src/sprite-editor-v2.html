@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
   <title>🎭 SkitKit Sprite Editor</title>
   <style>
     :root {
@@ -14,60 +14,46 @@
       --success: #4ecca3;
       --text: #eee;
       --text-dim: #888;
-      --border-radius: 8px;
-      --touch-target: 44px;
+      --radius: 8px;
+      --touch: 44px;
     }
     
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg-primary);
       color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
+      min-height: -webkit-fill-available;
     }
     
     /* === HEADER === */
     header {
       background: var(--bg-secondary);
-      padding: 12px 16px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
       position: sticky;
       top: 0;
       z-index: 100;
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
     
-    header h1 {
-      font-size: 1.2rem;
-      white-space: nowrap;
-    }
-    
-    .header-actions {
-      display: flex;
-      gap: 8px;
-    }
+    header h1 { font-size: 1.1rem; }
+    .header-actions { display: flex; gap: 8px; }
     
     /* === BUTTONS === */
-    button, .btn {
+    button {
       background: var(--bg-tertiary);
       border: none;
       color: var(--text);
       padding: 10px 16px;
-      border-radius: var(--border-radius);
+      border-radius: var(--radius);
       cursor: pointer;
       font-size: 14px;
-      min-height: var(--touch-target);
-      min-width: var(--touch-target);
+      min-height: var(--touch);
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -79,335 +65,177 @@
     button:hover { background: var(--accent); }
     button:active { transform: scale(0.96); }
     button.primary { background: var(--accent); }
-    button.primary:hover { background: var(--accent-hover); }
     button.success { background: var(--success); color: #000; }
-    button.icon-only { padding: 10px; }
+    button.active { background: var(--accent); }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    /* === MAIN LAYOUT === */
-    .app-container {
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - 60px);
-    }
-    
-    /* Desktop: side by side */
-    @media (min-width: 768px) {
-      .app-container {
-        flex-direction: row;
-      }
-    }
-    
     /* === CHARACTER PICKER === */
-    .character-picker {
+    .char-picker {
       background: var(--bg-secondary);
-      padding: 12px;
+      padding: 10px;
       display: flex;
       gap: 8px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
     }
-    
-    .character-picker::-webkit-scrollbar { display: none; }
+    .char-picker::-webkit-scrollbar { display: none; }
     
     .char-thumb {
       flex: 0 0 auto;
-      width: 60px;
-      height: 70px;
+      width: 56px;
+      height: 72px;
       background: var(--bg-tertiary);
-      border-radius: var(--border-radius);
+      border-radius: var(--radius);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: border-color 0.2s, transform 0.1s;
+      padding: 4px;
     }
     
     .char-thumb:hover { border-color: var(--accent); }
-    .char-thumb:active { transform: scale(0.95); }
-    .char-thumb.selected { border-color: var(--success); }
+    .char-thumb.selected { border-color: var(--success); background: rgba(78, 204, 163, 0.2); }
+    .char-thumb svg { width: 36px; height: 48px; }
+    .char-thumb span { font-size: 9px; color: var(--text-dim); margin-top: 2px; text-align: center; max-width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .char-thumb.add-new { background: transparent; border: 2px dashed var(--text-dim); }
     
-    .char-thumb svg {
-      width: 40px;
-      height: 50px;
-    }
-    
-    .char-thumb span {
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-top: 2px;
-      max-width: 56px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    
-    .char-thumb.add-new {
-      background: transparent;
-      border: 2px dashed var(--text-dim);
-    }
-    
-    .char-thumb.add-new:hover {
-      border-color: var(--accent);
-    }
-    
-    /* === EDITOR AREA === */
-    .editor-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    
-    /* Variant tabs */
+    /* === VARIANT TABS === */
     .variant-tabs {
       display: flex;
       gap: 4px;
       padding: 8px 12px;
       background: var(--bg-secondary);
+      border-bottom: 1px solid var(--bg-tertiary);
       overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
     }
     
     .variant-tab {
       padding: 8px 16px;
       background: var(--bg-tertiary);
-      border: none;
-      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      border-radius: var(--radius) var(--radius) 0 0;
       color: var(--text-dim);
-      cursor: pointer;
-      white-space: nowrap;
       min-height: 36px;
     }
+    .variant-tab.active { background: var(--bg-primary); color: var(--text); }
     
-    .variant-tab.active {
-      background: var(--bg-primary);
-      color: var(--text);
-    }
-    
-    .variant-tab.add-variant {
-      background: transparent;
-      border: 1px dashed var(--text-dim);
-    }
-    
-    /* Canvas area */
-    .canvas-container {
+    /* === MAIN DISPLAY === */
+    .display-area {
       flex: 1;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--bg-primary);
+      background: linear-gradient(135deg, #2a2a4a 0%, #1a1a2e 100%);
+      padding: 20px;
+      min-height: 300px;
       position: relative;
       overflow: hidden;
-      touch-action: none;
     }
     
-    #sprite-canvas {
-      background: #2a2a4a;
-      border-radius: var(--border-radius);
-      touch-action: none;
+    .sprite-display {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s ease-out;
     }
     
-    /* === TOOL PANEL === */
-    .tool-panel {
+    .sprite-display svg {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 60vh;
+      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+    }
+    
+    /* Zoom controls */
+    .zoom-controls {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      gap: 4px;
+    }
+    
+    .zoom-controls button {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      font-size: 18px;
+      min-height: 36px;
+    }
+    
+    .zoom-level {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      font-size: 12px;
+      color: var(--text-dim);
+      background: rgba(0,0,0,0.5);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+    
+    /* === CONTROLS PANEL === */
+    .controls-panel {
       background: var(--bg-secondary);
       padding: 12px;
       display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 50vh;
+      overflow-y: auto;
     }
     
     @media (min-width: 768px) {
-      .tool-panel {
-        width: 280px;
-        flex-direction: column;
-        flex-wrap: nowrap;
-        overflow-y: auto;
-        justify-content: flex-start;
-      }
+      .main-container { display: flex; flex-direction: row; height: calc(100vh - 130px); }
+      .display-area { flex: 1; }
+      .controls-panel { width: 320px; max-height: none; }
     }
     
-    .tool-section {
+    @media (max-width: 767px) {
+      .main-container { display: flex; flex-direction: column; }
+      .display-area { height: 45vh; min-height: 45vh; }
+    }
+    
+    .control-section {
       background: var(--bg-tertiary);
-      border-radius: var(--border-radius);
+      border-radius: var(--radius);
       padding: 12px;
-      width: 100%;
     }
     
-    .tool-section h3 {
-      font-size: 12px;
+    .control-section h3 {
+      font-size: 11px;
       color: var(--text-dim);
       text-transform: uppercase;
       margin-bottom: 10px;
+      letter-spacing: 0.5px;
     }
     
-    .tool-grid {
+    /* Emotion grid */
+    .emotion-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 6px;
     }
     
-    .tool-grid button {
-      padding: 8px;
-      font-size: 18px;
-    }
-    
-    /* Color picker */
-    .color-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    
-    .color-row label {
-      flex: 1;
-      font-size: 13px;
-    }
-    
-    .color-row input[type="color"] {
-      width: 44px;
-      height: 44px;
-      border: none;
-      border-radius: var(--border-radius);
-      cursor: pointer;
-      background: transparent;
-    }
-    
-    /* Slider */
-    .slider-row {
-      margin-bottom: 10px;
-    }
-    
-    .slider-row label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 13px;
-      margin-bottom: 4px;
-    }
-    
-    .slider-row input[type="range"] {
-      width: 100%;
-      height: 8px;
-      -webkit-appearance: none;
-      background: var(--bg-primary);
-      border-radius: 4px;
-    }
-    
-    .slider-row input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      background: var(--accent);
-      border-radius: 50%;
-      cursor: pointer;
-    }
-    
-    /* === TEST MODAL === */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.8);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-    }
-    
-    .modal.open { display: flex; }
-    
-    .modal-content {
-      background: var(--bg-secondary);
-      border-radius: var(--border-radius);
-      width: 100%;
-      max-width: 500px;
-      max-height: 90vh;
-      overflow-y: auto;
-      position: relative;
-    }
-    
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px;
-      border-bottom: 1px solid var(--bg-tertiary);
-      position: sticky;
-      top: 0;
-      background: var(--bg-secondary);
-    }
-    
-    .modal-header h2 {
-      font-size: 1.2rem;
-    }
-    
-    .modal-close {
-      background: transparent;
-      font-size: 24px;
-      padding: 4px 8px;
-      min-width: auto;
-      min-height: auto;
-    }
-    
-    .modal-body {
-      padding: 16px;
-    }
-    
-    /* === TEST PANEL CONTENT === */
-    .test-preview {
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-      background: var(--bg-primary);
-      border-radius: var(--border-radius);
-      margin-bottom: 16px;
-    }
-    
-    .test-preview svg {
-      width: 120px;
-      height: 180px;
-    }
-    
-    .emotion-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    
     .emotion-btn {
-      padding: 12px 8px;
-      font-size: 12px;
+      padding: 8px 4px;
+      font-size: 11px;
       flex-direction: column;
+      min-height: 50px;
     }
     
-    .emotion-btn span {
-      font-size: 20px;
-      margin-bottom: 4px;
-    }
+    .emotion-btn span { font-size: 18px; margin-bottom: 2px; }
     
-    .emotion-btn.active {
-      background: var(--accent);
-    }
-    
-    .voice-section {
-      margin-bottom: 16px;
-    }
-    
+    /* Voice section */
     .voice-select {
       width: 100%;
-      padding: 12px;
-      background: var(--bg-tertiary);
-      border: none;
-      border-radius: var(--border-radius);
+      padding: 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--bg-tertiary);
+      border-radius: var(--radius);
       color: var(--text);
       font-size: 14px;
       margin-bottom: 8px;
@@ -420,51 +248,32 @@
     
     .speak-row input {
       flex: 1;
-      padding: 12px;
-      background: var(--bg-tertiary);
-      border: none;
-      border-radius: var(--border-radius);
+      padding: 10px;
+      background: var(--bg-primary);
+      border: 1px solid var(--bg-tertiary);
+      border-radius: var(--radius);
       color: var(--text);
       font-size: 14px;
     }
     
-    .variant-switch {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    
-    .variant-switch button {
-      flex: 1;
-    }
-    
-    .variant-switch button.active {
-      background: var(--success);
-      color: #000;
-    }
-    
+    /* Toggle row */
     .toggle-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px;
-      background: var(--bg-tertiary);
-      border-radius: var(--border-radius);
-      margin-bottom: 8px;
+      padding: 8px 0;
     }
     
-    .toggle-row label {
-      font-size: 14px;
-    }
+    .toggle-row label { font-size: 13px; }
     
-    /* Toggle switch */
     .toggle {
-      width: 50px;
-      height: 28px;
+      width: 48px;
+      height: 26px;
       background: var(--bg-primary);
-      border-radius: 14px;
+      border-radius: 13px;
       position: relative;
       cursor: pointer;
+      transition: background 0.2s;
     }
     
     .toggle::after {
@@ -472,109 +281,55 @@
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       background: var(--text-dim);
       border-radius: 50%;
       transition: transform 0.2s, background 0.2s;
     }
     
-    .toggle.on::after {
-      transform: translateX(22px);
-      background: var(--success);
+    .toggle.on { background: rgba(78, 204, 163, 0.3); }
+    .toggle.on::after { transform: translateX(22px); background: var(--success); }
+    
+    /* Blinking animation */
+    .sprite-display.blinking #eye-left-white,
+    .sprite-display.blinking #eye-right-white,
+    .sprite-display.blinking #eye-left-pupil,
+    .sprite-display.blinking #eye-right-pupil,
+    .sprite-display.blinking #eye-left-highlight,
+    .sprite-display.blinking #eye-right-highlight {
+      transform: scaleY(0.1);
+      transform-origin: center;
     }
     
-    /* === LAYERS PANEL (Desktop) === */
-    @media (min-width: 768px) {
-      .layers-panel {
-        width: 200px;
-        background: var(--bg-secondary);
-        border-left: 1px solid var(--bg-tertiary);
-        display: flex;
-        flex-direction: column;
-      }
-      
-      .layers-header {
-        padding: 12px;
-        border-bottom: 1px solid var(--bg-tertiary);
-        font-size: 12px;
-        text-transform: uppercase;
-        color: var(--text-dim);
-      }
-      
-      .layers-list {
-        flex: 1;
-        overflow-y: auto;
-        padding: 8px;
-      }
-      
-      .layer-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px;
-        background: var(--bg-tertiary);
-        border-radius: var(--border-radius);
-        margin-bottom: 4px;
-        cursor: pointer;
-      }
-      
-      .layer-item.selected {
-        border: 2px solid var(--accent);
-      }
-      
-      .layer-item .layer-icon {
-        width: 24px;
-        text-align: center;
-      }
-      
-      .layer-item .layer-name {
-        flex: 1;
-        font-size: 12px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+    /* Talking animation */
+    .sprite-display.talking #mouth-closed {
+      animation: talk 0.15s ease-in-out infinite alternate;
     }
     
-    /* Hide layers on mobile */
-    @media (max-width: 767px) {
-      .layers-panel { display: none; }
+    @keyframes talk {
+      0% { transform: scaleY(1); }
+      100% { transform: scaleY(1.5) translateY(1px); }
     }
     
-    /* === LOADING === */
-    .loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 200px;
+    /* Photo sprite jaw puppet */
+    .sprite-display.talking #head-bottom {
+      animation: jawPuppet 0.12s ease-in-out infinite alternate;
+      transform-origin: top center;
+    }
+    
+    @keyframes jawPuppet {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(6deg); }
+    }
+    
+    /* Status bar */
+    .status-bar {
+      background: var(--bg-secondary);
+      padding: 8px 12px;
+      font-size: 12px;
       color: var(--text-dim);
-    }
-    
-    .spinner {
-      width: 32px;
-      height: 32px;
-      border: 3px solid var(--bg-tertiary);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    /* === UTILITY === */
-    .hidden { display: none !important; }
-    
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      border: 0;
+      border-top: 1px solid var(--bg-tertiary);
     }
   </style>
 </head>
@@ -583,90 +338,36 @@
 <header>
   <h1>🎭 Sprite Editor</h1>
   <div class="header-actions">
-    <button id="btn-test" class="primary">▶️ Test</button>
-    <button id="btn-save" class="success">💾</button>
+    <button id="btn-edit" title="Edit Mode">✏️</button>
+    <button id="btn-save" class="success" title="Save">💾</button>
   </div>
 </header>
 
-<div class="character-picker" id="character-picker">
-  <div class="loading"><div class="spinner"></div></div>
+<div class="char-picker" id="char-picker">
+  <!-- Populated by JS -->
 </div>
 
-<div class="app-container">
-  <div class="editor-area">
-    <div class="variant-tabs" id="variant-tabs">
-      <!-- Populated dynamically -->
+<div class="variant-tabs" id="variant-tabs">
+  <!-- Populated by JS -->
+</div>
+
+<div class="main-container">
+  <div class="display-area" id="display-area">
+    <div class="sprite-display" id="sprite-display">
+      <div style="color: var(--text-dim)">Select a character</div>
     </div>
-    
-    <div class="canvas-container">
-      <canvas id="sprite-canvas" width="300" height="400"></canvas>
-    </div>
-    
-    <div class="tool-panel">
-      <div class="tool-section">
-        <h3>Add Shape</h3>
-        <div class="tool-grid">
-          <button data-shape="rect" title="Rectangle">▭</button>
-          <button data-shape="ellipse" title="Ellipse">⬭</button>
-          <button data-shape="circle" title="Circle">●</button>
-          <button data-shape="triangle" title="Triangle">△</button>
-        </div>
-      </div>
-      
-      <div class="tool-section">
-        <h3>Colors</h3>
-        <div class="color-row">
-          <label>Fill</label>
-          <input type="color" id="color-fill" value="#4ecdc4">
-        </div>
-        <div class="color-row">
-          <label>Stroke</label>
-          <input type="color" id="color-stroke" value="#000000">
-        </div>
-        <div class="slider-row">
-          <label>Stroke Width <span id="stroke-val">2</span></label>
-          <input type="range" id="stroke-width" min="0" max="10" value="2">
-        </div>
-      </div>
-      
-      <div class="tool-section">
-        <h3>Actions</h3>
-        <div class="tool-grid">
-          <button id="btn-duplicate" title="Duplicate">⧉</button>
-          <button id="btn-delete" title="Delete">🗑️</button>
-          <button id="btn-up" title="Bring Forward">⬆</button>
-          <button id="btn-down" title="Send Back">⬇</button>
-        </div>
-      </div>
+    <div class="zoom-level" id="zoom-level">100%</div>
+    <div class="zoom-controls">
+      <button id="zoom-out">−</button>
+      <button id="zoom-reset">⟲</button>
+      <button id="zoom-in">+</button>
     </div>
   </div>
   
-  <div class="layers-panel">
-    <div class="layers-header">Layers</div>
-    <div class="layers-list" id="layers-list">
-      <!-- Populated dynamically -->
-    </div>
-  </div>
-</div>
-
-<!-- Test Modal -->
-<div class="modal" id="test-modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>🎭 Test Sprite</h2>
-      <button class="modal-close" id="close-test">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="test-preview" id="test-preview">
-        <!-- Sprite preview -->
-      </div>
-      
-      <div class="variant-switch" id="test-variants">
-        <!-- Variant buttons -->
-      </div>
-      
-      <h3 style="margin-bottom: 10px; font-size: 14px; color: var(--text-dim);">EMOTIONS</h3>
-      <div class="emotion-grid">
+  <div class="controls-panel">
+    <div class="control-section">
+      <h3>Emotions</h3>
+      <div class="emotion-grid" id="emotion-grid">
         <button class="emotion-btn active" data-emotion="neutral"><span>😐</span>Neutral</button>
         <button class="emotion-btn" data-emotion="happy"><span>😊</span>Happy</button>
         <button class="emotion-btn" data-emotion="sad"><span>😢</span>Sad</button>
@@ -676,37 +377,45 @@
         <button class="emotion-btn" data-emotion="smug"><span>😏</span>Smug</button>
         <button class="emotion-btn" data-emotion="worried"><span>😰</span>Worried</button>
       </div>
-      
-      <div class="voice-section">
-        <h3 style="margin-bottom: 10px; font-size: 14px; color: var(--text-dim);">VOICE</h3>
-        <select class="voice-select" id="voice-select">
-          <option value="alba">Alba (Female, Warm)</option>
-          <option value="cosette">Cosette (Female, Young)</option>
-          <option value="fantine">Fantine (Female, Mature)</option>
-          <option value="eponine">Eponine (Female, Edgy)</option>
-          <option value="azelma">Azelma (Female, Soft)</option>
-          <option value="marius">Marius (Male, Standard)</option>
-          <option value="jean">Jean (Male, Deep)</option>
-          <option value="javert">Javert (Male, Authoritative)</option>
-        </select>
-        <div class="speak-row">
-          <input type="text" id="speak-text" placeholder="Type something to say...">
-          <button id="btn-speak" class="primary">🔊</button>
-        </div>
+    </div>
+    
+    <div class="control-section">
+      <h3>Voice &amp; Speech</h3>
+      <select class="voice-select" id="voice-select">
+        <option value="alba">Alba (Female, Warm)</option>
+        <option value="cosette">Cosette (Female, Young)</option>
+        <option value="fantine">Fantine (Female, Mature)</option>
+        <option value="eponine">Eponine (Female, Edgy)</option>
+        <option value="azelma">Azelma (Female, Soft)</option>
+        <option value="marius" selected>Marius (Male, Standard)</option>
+        <option value="jean">Jean (Male, Deep)</option>
+        <option value="javert">Javert (Male, Authoritative)</option>
+      </select>
+      <div class="speak-row">
+        <input type="text" id="speak-text" placeholder="Type something to say...">
+        <button id="btn-speak" class="primary">🔊</button>
       </div>
-      
+    </div>
+    
+    <div class="control-section">
+      <h3>Animation</h3>
       <div class="toggle-row">
         <label>Eye Tracking</label>
-        <div class="toggle on" id="toggle-eyes"></div>
+        <div class="toggle on" id="toggle-eyes" data-on="true"></div>
       </div>
-      
       <div class="toggle-row">
         <label>Auto Blink</label>
-        <div class="toggle on" id="toggle-blink"></div>
+        <div class="toggle on" id="toggle-blink" data-on="true"></div>
+      </div>
+      <div class="toggle-row">
+        <label>Test Talking</label>
+        <div class="toggle" id="toggle-talk" data-on="false"></div>
       </div>
     </div>
   </div>
 </div>
+
+<div class="status-bar" id="status-bar">Ready</div>
 
 <script>
 // === STATE ===
@@ -715,28 +424,129 @@ const state = {
   currentChar: null,
   currentVariant: 'front',
   currentMeta: null,
-  shapes: [],
-  selectedShape: null,
-  isDragging: false,
-  dragOffset: { x: 0, y: 0 }
+  zoom: 1,
+  emotion: 'neutral',
+  eyeTracking: true,
+  autoBlinking: true,
+  isTalking: false
 };
 
+// === EMOTION SYSTEM (from skit-player-v3) ===
+const EMOTIONS = {
+  neutral: {
+    eyeWhite: { ry: 7, cy: 52 },
+    eyeWhiteHuman: { ry: 3, cy: 42 },
+    pupil: { ry: 5, cy: 52 },
+    pupilHuman: { r: 1.5, cy: 42 },
+    browLeft: "M30 44 Q40 42 48 44",
+    browRight: "M52 44 Q60 42 70 44",
+    browLeftHuman: "M37 36 Q43 34 49 36",
+    browRightHuman: "M51 36 Q57 34 63 36",
+    mouth: "M50 65 L46 70 M50 65 L54 70",
+    mouthHuman: "M46 52 Q50 55 54 52"
+  },
+  happy: {
+    eyeWhite: { ry: 5, cy: 50 },
+    eyeWhiteHuman: { ry: 2, cy: 41 },
+    pupil: { ry: 4, cy: 50 },
+    pupilHuman: { r: 1.5, cy: 41 },
+    browLeft: "M30 42 Q40 38 48 42",
+    browRight: "M52 42 Q60 38 70 42",
+    browLeftHuman: "M37 34 Q43 31 49 34",
+    browRightHuman: "M51 34 Q57 31 63 34",
+    mouth: "M44 66 Q50 72 56 66",
+    mouthHuman: "M44 52 Q50 58 56 52"
+  },
+  sad: {
+    eyeWhite: { ry: 6, cy: 54 },
+    eyeWhiteHuman: { ry: 3, cy: 44 },
+    pupil: { ry: 5, cy: 55 },
+    pupilHuman: { r: 1.5, cy: 45 },
+    browLeft: "M30 40 L48 46",
+    browRight: "M52 46 L70 40",
+    browLeftHuman: "M37 34 L49 40",
+    browRightHuman: "M51 40 L63 34",
+    mouth: "M44 70 Q50 65 56 70",
+    mouthHuman: "M46 56 Q50 52 54 56"
+  },
+  angry: {
+    eyeWhite: { ry: 5, cy: 52 },
+    eyeWhiteHuman: { ry: 2.5, cy: 42 },
+    pupil: { ry: 4, cy: 52 },
+    pupilHuman: { r: 1.5, cy: 42 },
+    browLeft: "M30 48 L48 42",
+    browRight: "M52 42 L70 48",
+    browLeftHuman: "M37 40 L49 34",
+    browRightHuman: "M51 34 L63 40",
+    mouth: "M44 68 L56 68",
+    mouthHuman: "M46 54 L54 54"
+  },
+  surprised: {
+    eyeWhite: { ry: 9, cy: 52 },
+    eyeWhiteHuman: { ry: 5, cy: 42 },
+    pupil: { ry: 6, cy: 52 },
+    pupilHuman: { r: 2, cy: 42 },
+    browLeft: "M30 38 Q40 34 48 38",
+    browRight: "M52 38 Q60 34 70 38",
+    browLeftHuman: "M37 30 Q43 26 49 30",
+    browRightHuman: "M51 30 Q57 26 63 30",
+    mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
+    mouthHuman: "M46 53 Q46 57 50 57 Q54 57 54 53 Q54 51 50 51 Q46 51 46 53"
+  },
+  thinking: {
+    eyeWhite: { ry: 6, cy: 52 },
+    eyeWhiteHuman: { ry: 2.5, cy: 42 },
+    pupil: { ry: 5, cy: 52 },
+    pupilHuman: { r: 1.5, cy: 42 },
+    browLeft: "M30 42 Q40 40 48 44",
+    browRight: "M52 42 Q60 38 70 42",
+    browLeftHuman: "M37 34 Q43 32 49 36",
+    browRightHuman: "M51 34 Q57 30 63 34",
+    mouth: "M44 68 Q50 66 56 68",
+    mouthHuman: "M46 54 Q50 52 54 54"
+  },
+  worried: {
+    eyeWhite: { ry: 7, cy: 53 },
+    eyeWhiteHuman: { ry: 3.5, cy: 43 },
+    pupil: { ry: 5, cy: 54 },
+    pupilHuman: { r: 1.5, cy: 44 },
+    browLeft: "M30 42 L48 46",
+    browRight: "M52 46 L70 42",
+    browLeftHuman: "M37 32 L49 38",
+    browRightHuman: "M51 38 L63 32",
+    mouth: "M44 68 Q50 66 56 68",
+    mouthHuman: "M46 56 Q50 53 54 56"
+  },
+  smug: {
+    eyeWhite: { ry: 5, cy: 52 },
+    eyeWhiteHuman: { ry: 2, cy: 42 },
+    pupil: { ry: 4, cy: 52 },
+    pupilHuman: { r: 1.5, cy: 42 },
+    browLeft: "M30 44 Q40 40 48 46",
+    browRight: "M52 46 Q60 40 70 44",
+    browLeftHuman: "M37 36 Q43 32 49 38",
+    browRightHuman: "M51 38 Q57 32 63 36",
+    mouth: "M44 66 Q50 70 56 68",
+    mouthHuman: "M46 52 Q50 56 54 54"
+  }
+};
+
+const HUMAN_SPRITES = ['person', 'girl', 'waiter', 'trump', 'trump-v3', 'leprechaun', 'man-suit'];
+
 // === ELEMENTS ===
-const canvas = document.getElementById('sprite-canvas');
-const ctx = canvas.getContext('2d');
-const charPicker = document.getElementById('character-picker');
+const charPicker = document.getElementById('char-picker');
 const variantTabs = document.getElementById('variant-tabs');
-const layersList = document.getElementById('layers-list');
-const testModal = document.getElementById('test-modal');
-const testPreview = document.getElementById('test-preview');
-const testVariants = document.getElementById('test-variants');
+const spriteDisplay = document.getElementById('sprite-display');
+const displayArea = document.getElementById('display-area');
+const zoomLevel = document.getElementById('zoom-level');
+const statusBar = document.getElementById('status-bar');
 
 // === INIT ===
 async function init() {
   await loadCharacters();
   setupEventListeners();
+  startBlinkLoop();
   
-  // Select first character
   if (state.characters.length > 0) {
     selectCharacter(state.characters[0]);
   }
@@ -749,9 +559,10 @@ async function loadCharacters() {
     const data = await resp.json();
     state.characters = data.characters;
     renderCharacterPicker();
+    setStatus(`Loaded ${state.characters.length} characters`);
   } catch (err) {
     console.error('Failed to load characters:', err);
-    charPicker.innerHTML = '<div class="loading">Failed to load characters</div>';
+    setStatus('Error loading characters');
   }
 }
 
@@ -762,23 +573,13 @@ function renderCharacterPicker() {
     const thumb = document.createElement('div');
     thumb.className = 'char-thumb';
     thumb.dataset.char = charName;
-    thumb.innerHTML = `
-      <div style="font-size: 24px;">🎭</div>
-      <span>${charName}</span>
-    `;
+    thumb.innerHTML = `<div style="font-size:20px;color:var(--text-dim)">⏳</div><span>${charName}</span>`;
     thumb.onclick = () => selectCharacter(charName);
     charPicker.appendChild(thumb);
     
-    // Load thumbnail preview
+    // Load thumbnail async
     loadCharacterThumb(charName, thumb);
   }
-  
-  // Add "new character" button
-  const addBtn = document.createElement('div');
-  addBtn.className = 'char-thumb add-new';
-  addBtn.innerHTML = '<div style="font-size: 24px;">+</div><span>New</span>';
-  addBtn.onclick = createNewCharacter;
-  charPicker.appendChild(addBtn);
 }
 
 async function loadCharacterThumb(charName, thumbEl) {
@@ -786,56 +587,68 @@ async function loadCharacterThumb(charName, thumbEl) {
     const resp = await fetch(`sprites/${charName}/front.svg`);
     if (resp.ok) {
       const svgText = await resp.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(svgText, 'image/svg+xml');
-      const svg = doc.querySelector('svg');
+      const temp = document.createElement('div');
+      temp.innerHTML = svgText;
+      const svg = temp.querySelector('svg');
       if (svg) {
-        svg.setAttribute('width', '40');
-        svg.setAttribute('height', '50');
+        svg.style.width = '36px';
+        svg.style.height = '48px';
         thumbEl.querySelector('div').replaceWith(svg);
       }
     }
-  } catch (err) {
-    // Keep placeholder
-  }
+  } catch (err) {}
 }
 
 // === SELECT CHARACTER ===
 async function selectCharacter(charName) {
   state.currentChar = charName;
   
-  // Update picker selection
+  // Update selection UI
   document.querySelectorAll('.char-thumb').forEach(t => {
     t.classList.toggle('selected', t.dataset.char === charName);
   });
   
   // Load meta
   try {
-    const metaResp = await fetch(`sprites/${charName}/meta.json`);
-    state.currentMeta = await metaResp.json();
+    const resp = await fetch(`sprites/${charName}/meta.json`);
+    state.currentMeta = await resp.json();
+    
+    // Set voice from meta
+    if (state.currentMeta.voice?.id) {
+      document.getElementById('voice-select').value = state.currentMeta.voice.id;
+    }
   } catch (err) {
     state.currentMeta = { name: charName };
   }
   
-  // Detect available variants
+  // Detect variants
   const variants = await detectVariants(charName);
   renderVariantTabs(variants);
   
   // Load default variant
   state.currentVariant = state.currentMeta.defaultVariant || 'front';
   await loadVariant(charName, state.currentVariant);
+  
+  setStatus(`Loaded ${charName}`);
 }
 
 async function detectVariants(charName) {
-  const possible = ['front', 'back', 'side', 'left', 'right'];
+  const possible = ['front', 'back', 'side', 'left', 'right', 'v2', 'v3', 'detailed', 'legacy'];
   const found = [];
   
-  for (const v of possible) {
+  await Promise.all(possible.map(async (v) => {
     try {
       const resp = await fetch(`sprites/${charName}/${v}.svg`, { method: 'HEAD' });
       if (resp.ok) found.push(v);
     } catch (err) {}
-  }
+  }));
+  
+  // Sort: front first, then alphabetically
+  found.sort((a, b) => {
+    if (a === 'front') return -1;
+    if (b === 'front') return 1;
+    return a.localeCompare(b);
+  });
   
   return found.length > 0 ? found : ['front'];
 }
@@ -855,545 +668,244 @@ function renderVariantTabs(variants) {
     };
     variantTabs.appendChild(tab);
   }
-  
-  // Add variant button
-  const addTab = document.createElement('button');
-  addTab.className = 'variant-tab add-variant';
-  addTab.textContent = '+';
-  addTab.onclick = addNewVariant;
-  variantTabs.appendChild(addTab);
 }
 
-// === LOAD VARIANT (SVG) ===
+// === LOAD SPRITE ===
 async function loadVariant(charName, variant) {
+  setStatus(`Loading ${charName}/${variant}...`);
+  
   try {
     const resp = await fetch(`sprites/${charName}/${variant}.svg`);
     if (!resp.ok) throw new Error('Not found');
     
     const svgText = await resp.text();
-    parseSVGToShapes(svgText);
-    renderCanvas();
-    renderLayers();
-  } catch (err) {
-    console.error('Failed to load variant:', err);
-    state.shapes = [];
-    renderCanvas();
-  }
-}
-
-// === PARSE SVG ===
-function parseSVGToShapes(svgText) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(svgText, 'image/svg+xml');
-  const svg = doc.querySelector('svg');
-  
-  state.shapes = [];
-  
-  if (!svg) return;
-  
-  // Get all shape elements
-  const elements = svg.querySelectorAll('rect, ellipse, circle, path, polygon');
-  
-  elements.forEach((el, idx) => {
-    const shape = {
-      id: el.id || `shape-${idx}`,
-      type: el.tagName.toLowerCase(),
-      fill: el.getAttribute('fill') || '#ccc',
-      stroke: el.getAttribute('stroke') || 'none',
-      strokeWidth: parseFloat(el.getAttribute('stroke-width')) || 0
-    };
+    spriteDisplay.innerHTML = svgText;
     
-    if (shape.type === 'rect') {
-      shape.x = parseFloat(el.getAttribute('x')) || 0;
-      shape.y = parseFloat(el.getAttribute('y')) || 0;
-      shape.width = parseFloat(el.getAttribute('width')) || 20;
-      shape.height = parseFloat(el.getAttribute('height')) || 20;
-      shape.rx = parseFloat(el.getAttribute('rx')) || 0;
-    } else if (shape.type === 'ellipse') {
-      shape.cx = parseFloat(el.getAttribute('cx')) || 50;
-      shape.cy = parseFloat(el.getAttribute('cy')) || 50;
-      shape.rx = parseFloat(el.getAttribute('rx')) || 20;
-      shape.ry = parseFloat(el.getAttribute('ry')) || 20;
-    } else if (shape.type === 'circle') {
-      shape.cx = parseFloat(el.getAttribute('cx')) || 50;
-      shape.cy = parseFloat(el.getAttribute('cy')) || 50;
-      shape.r = parseFloat(el.getAttribute('r')) || 20;
-    }
-    
-    state.shapes.push(shape);
-  });
-}
-
-// === RENDER ===
-function renderCanvas() {
-  ctx.fillStyle = '#2a2a4a';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  // Draw shapes
-  for (const shape of state.shapes) {
-    drawShape(shape);
-  }
-  
-  // Draw selection
-  if (state.selectedShape) {
-    drawSelection(state.selectedShape);
-  }
-}
-
-function drawShape(shape) {
-  ctx.fillStyle = shape.fill;
-  ctx.strokeStyle = shape.stroke;
-  ctx.lineWidth = shape.strokeWidth;
-  
-  ctx.beginPath();
-  
-  if (shape.type === 'rect') {
-    if (shape.rx > 0) {
-      roundRect(ctx, shape.x, shape.y, shape.width, shape.height, shape.rx);
-    } else {
-      ctx.rect(shape.x, shape.y, shape.width, shape.height);
-    }
-  } else if (shape.type === 'ellipse') {
-    ctx.ellipse(shape.cx, shape.cy, shape.rx, shape.ry, 0, 0, Math.PI * 2);
-  } else if (shape.type === 'circle') {
-    ctx.arc(shape.cx, shape.cy, shape.r, 0, Math.PI * 2);
-  }
-  
-  ctx.fill();
-  if (shape.strokeWidth > 0 && shape.stroke !== 'none') {
-    ctx.stroke();
-  }
-}
-
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-}
-
-function drawSelection(shape) {
-  ctx.strokeStyle = '#e94560';
-  ctx.lineWidth = 2;
-  ctx.setLineDash([5, 5]);
-  
-  ctx.beginPath();
-  if (shape.type === 'rect') {
-    ctx.rect(shape.x - 4, shape.y - 4, shape.width + 8, shape.height + 8);
-  } else if (shape.type === 'ellipse') {
-    ctx.ellipse(shape.cx, shape.cy, shape.rx + 4, shape.ry + 4, 0, 0, Math.PI * 2);
-  } else if (shape.type === 'circle') {
-    ctx.arc(shape.cx, shape.cy, shape.r + 4, 0, Math.PI * 2);
-  }
-  ctx.stroke();
-  ctx.setLineDash([]);
-}
-
-function renderLayers() {
-  layersList.innerHTML = '';
-  
-  for (let i = state.shapes.length - 1; i >= 0; i--) {
-    const shape = state.shapes[i];
-    const item = document.createElement('div');
-    item.className = 'layer-item' + (state.selectedShape === shape ? ' selected' : '');
-    item.innerHTML = `
-      <span class="layer-icon">${getShapeIcon(shape.type)}</span>
-      <span class="layer-name">${shape.id}</span>
-    `;
-    item.onclick = () => {
-      state.selectedShape = shape;
-      renderCanvas();
-      renderLayers();
-    };
-    layersList.appendChild(item);
-  }
-}
-
-function getShapeIcon(type) {
-  const icons = { rect: '▭', ellipse: '⬭', circle: '●', path: '〰', polygon: '⬡' };
-  return icons[type] || '?';
-}
-
-// === EVENT LISTENERS ===
-function setupEventListeners() {
-  // Shape tools
-  document.querySelectorAll('[data-shape]').forEach(btn => {
-    btn.onclick = () => addShape(btn.dataset.shape);
-  });
-  
-  // Actions
-  document.getElementById('btn-duplicate').onclick = duplicateShape;
-  document.getElementById('btn-delete').onclick = deleteShape;
-  document.getElementById('btn-up').onclick = () => moveShape(1);
-  document.getElementById('btn-down').onclick = () => moveShape(-1);
-  document.getElementById('btn-save').onclick = saveSprite;
-  
-  // Test modal
-  document.getElementById('btn-test').onclick = openTestModal;
-  document.getElementById('close-test').onclick = () => testModal.classList.remove('open');
-  testModal.onclick = (e) => { if (e.target === testModal) testModal.classList.remove('open'); };
-  
-  // Colors
-  document.getElementById('color-fill').oninput = (e) => {
-    if (state.selectedShape) {
-      state.selectedShape.fill = e.target.value;
-      renderCanvas();
-    }
-  };
-  
-  document.getElementById('color-stroke').oninput = (e) => {
-    if (state.selectedShape) {
-      state.selectedShape.stroke = e.target.value;
-      renderCanvas();
-    }
-  };
-  
-  document.getElementById('stroke-width').oninput = (e) => {
-    document.getElementById('stroke-val').textContent = e.target.value;
-    if (state.selectedShape) {
-      state.selectedShape.strokeWidth = parseFloat(e.target.value);
-      renderCanvas();
-    }
-  };
-  
-  // Canvas interaction
-  setupCanvasInteraction();
-  
-  // Test modal interactions
-  setupTestModalInteractions();
-}
-
-function setupCanvasInteraction() {
-  const getPos = (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    if (e.touches) {
-      return {
-        x: (e.touches[0].clientX - rect.left) * scaleX,
-        y: (e.touches[0].clientY - rect.top) * scaleY
-      };
-    }
-    return {
-      x: (e.clientX - rect.left) * scaleX,
-      y: (e.clientY - rect.top) * scaleY
-    };
-  };
-  
-  const hitTest = (x, y) => {
-    // Reverse order (top shapes first)
-    for (let i = state.shapes.length - 1; i >= 0; i--) {
-      const s = state.shapes[i];
-      if (s.type === 'rect') {
-        if (x >= s.x && x <= s.x + s.width && y >= s.y && y <= s.y + s.height) return s;
-      } else if (s.type === 'ellipse') {
-        const dx = (x - s.cx) / s.rx;
-        const dy = (y - s.cy) / s.ry;
-        if (dx * dx + dy * dy <= 1) return s;
-      } else if (s.type === 'circle') {
-        const dx = x - s.cx;
-        const dy = y - s.cy;
-        if (dx * dx + dy * dy <= s.r * s.r) return s;
-      }
-    }
-    return null;
-  };
-  
-  const onStart = (e) => {
-    e.preventDefault();
-    const pos = getPos(e);
-    const hit = hitTest(pos.x, pos.y);
-    
-    if (hit) {
-      state.selectedShape = hit;
-      state.isDragging = true;
-      
-      if (hit.type === 'rect') {
-        state.dragOffset = { x: pos.x - hit.x, y: pos.y - hit.y };
-      } else {
-        state.dragOffset = { x: pos.x - hit.cx, y: pos.y - hit.cy };
-      }
-      
-      // Update color inputs
-      document.getElementById('color-fill').value = hit.fill || '#cccccc';
-      document.getElementById('color-stroke').value = hit.stroke === 'none' ? '#000000' : (hit.stroke || '#000000');
-      document.getElementById('stroke-width').value = hit.strokeWidth || 0;
-      document.getElementById('stroke-val').textContent = hit.strokeWidth || 0;
-    } else {
-      state.selectedShape = null;
-    }
-    
-    renderCanvas();
-    renderLayers();
-  };
-  
-  const onMove = (e) => {
-    if (!state.isDragging || !state.selectedShape) return;
-    e.preventDefault();
-    
-    const pos = getPos(e);
-    const shape = state.selectedShape;
-    
-    if (shape.type === 'rect') {
-      shape.x = pos.x - state.dragOffset.x;
-      shape.y = pos.y - state.dragOffset.y;
-    } else {
-      shape.cx = pos.x - state.dragOffset.x;
-      shape.cy = pos.y - state.dragOffset.y;
-    }
-    
-    renderCanvas();
-  };
-  
-  const onEnd = () => {
-    state.isDragging = false;
-  };
-  
-  // Mouse
-  canvas.addEventListener('mousedown', onStart);
-  canvas.addEventListener('mousemove', onMove);
-  canvas.addEventListener('mouseup', onEnd);
-  canvas.addEventListener('mouseleave', onEnd);
-  
-  // Touch
-  canvas.addEventListener('touchstart', onStart, { passive: false });
-  canvas.addEventListener('touchmove', onMove, { passive: false });
-  canvas.addEventListener('touchend', onEnd);
-}
-
-// === SHAPE ACTIONS ===
-function addShape(type) {
-  const shape = {
-    id: `${type}-${Date.now()}`,
-    type: type,
-    fill: document.getElementById('color-fill').value,
-    stroke: document.getElementById('color-stroke').value,
-    strokeWidth: parseFloat(document.getElementById('stroke-width').value)
-  };
-  
-  if (type === 'rect') {
-    shape.x = 100;
-    shape.y = 150;
-    shape.width = 50;
-    shape.height = 50;
-    shape.rx = 0;
-  } else if (type === 'ellipse') {
-    shape.cx = 150;
-    shape.cy = 200;
-    shape.rx = 30;
-    shape.ry = 20;
-  } else if (type === 'circle') {
-    shape.cx = 150;
-    shape.cy = 200;
-    shape.r = 25;
-  } else if (type === 'triangle') {
-    // TODO: implement as polygon
-    shape.type = 'circle'; // fallback
-    shape.cx = 150;
-    shape.cy = 200;
-    shape.r = 25;
-  }
-  
-  state.shapes.push(shape);
-  state.selectedShape = shape;
-  renderCanvas();
-  renderLayers();
-}
-
-function duplicateShape() {
-  if (!state.selectedShape) return;
-  
-  const copy = JSON.parse(JSON.stringify(state.selectedShape));
-  copy.id = `${copy.type}-${Date.now()}`;
-  
-  if (copy.x !== undefined) { copy.x += 20; copy.y += 20; }
-  if (copy.cx !== undefined) { copy.cx += 20; copy.cy += 20; }
-  
-  state.shapes.push(copy);
-  state.selectedShape = copy;
-  renderCanvas();
-  renderLayers();
-}
-
-function deleteShape() {
-  if (!state.selectedShape) return;
-  
-  const idx = state.shapes.indexOf(state.selectedShape);
-  if (idx > -1) {
-    state.shapes.splice(idx, 1);
-    state.selectedShape = null;
-    renderCanvas();
-    renderLayers();
-  }
-}
-
-function moveShape(dir) {
-  if (!state.selectedShape) return;
-  
-  const idx = state.shapes.indexOf(state.selectedShape);
-  const newIdx = idx + dir;
-  
-  if (newIdx >= 0 && newIdx < state.shapes.length) {
-    state.shapes.splice(idx, 1);
-    state.shapes.splice(newIdx, 0, state.selectedShape);
-    renderCanvas();
-    renderLayers();
-  }
-}
-
-// === SAVE ===
-function saveSprite() {
-  const svg = generateSVG();
-  
-  // For now, download (later: save to server)
-  const blob = new Blob([svg], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${state.currentChar}-${state.currentVariant}.svg`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function generateSVG() {
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">\n`;
-  
-  for (const shape of state.shapes) {
-    const fill = `fill="${shape.fill}"`;
-    const stroke = shape.strokeWidth > 0 ? `stroke="${shape.stroke}" stroke-width="${shape.strokeWidth}"` : '';
-    
-    if (shape.type === 'rect') {
-      const rx = shape.rx > 0 ? `rx="${shape.rx}"` : '';
-      svg += `  <rect id="${shape.id}" x="${shape.x}" y="${shape.y}" width="${shape.width}" height="${shape.height}" ${rx} ${fill} ${stroke}/>\n`;
-    } else if (shape.type === 'ellipse') {
-      svg += `  <ellipse id="${shape.id}" cx="${shape.cx}" cy="${shape.cy}" rx="${shape.rx}" ry="${shape.ry}" ${fill} ${stroke}/>\n`;
-    } else if (shape.type === 'circle') {
-      svg += `  <circle id="${shape.id}" cx="${shape.cx}" cy="${shape.cy}" r="${shape.r}" ${fill} ${stroke}/>\n`;
-    }
-  }
-  
-  svg += '</svg>';
-  return svg;
-}
-
-// === TEST MODAL ===
-function openTestModal() {
-  testModal.classList.add('open');
-  loadTestPreview();
-}
-
-async function loadTestPreview() {
-  if (!state.currentChar) return;
-  
-  try {
-    const resp = await fetch(`sprites/${state.currentChar}/${state.currentVariant}.svg`);
-    const svgText = await resp.text();
-    testPreview.innerHTML = svgText;
-    
-    const svg = testPreview.querySelector('svg');
+    const svg = spriteDisplay.querySelector('svg');
     if (svg) {
-      svg.style.width = '120px';
-      svg.style.height = '180px';
+      // Ensure SVG scales properly
+      svg.style.width = 'auto';
+      svg.style.height = '50vh';
+      svg.style.maxHeight = '400px';
     }
     
-    // Load variants into test panel
-    const variants = await detectVariants(state.currentChar);
-    testVariants.innerHTML = '';
-    for (const v of variants) {
-      const btn = document.createElement('button');
-      btn.textContent = v.charAt(0).toUpperCase() + v.slice(1);
-      btn.className = v === state.currentVariant ? 'active' : '';
-      btn.onclick = async () => {
-        state.currentVariant = v;
-        testVariants.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        await loadTestPreview();
-      };
-      testVariants.appendChild(btn);
-    }
+    // Apply current zoom
+    updateZoom();
     
-    // Set voice from meta
-    if (state.currentMeta?.voice?.id) {
-      document.getElementById('voice-select').value = state.currentMeta.voice.id;
-    }
+    // Apply current emotion
+    applyEmotion(state.emotion);
     
+    setStatus(`${charName}/${variant} loaded`);
   } catch (err) {
-    testPreview.innerHTML = '<div class="loading">Failed to load preview</div>';
+    spriteDisplay.innerHTML = `<div style="color:var(--accent)">Failed to load sprite</div>`;
+    setStatus(`Error: ${err.message}`);
   }
 }
 
-function setupTestModalInteractions() {
-  // Emotions
-  document.querySelectorAll('.emotion-btn').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      applyEmotion(btn.dataset.emotion);
-    };
-  });
-  
-  // Toggles
-  document.getElementById('toggle-eyes').onclick = function() {
-    this.classList.toggle('on');
-  };
-  
-  document.getElementById('toggle-blink').onclick = function() {
-    this.classList.toggle('on');
-  };
-  
-  // Speak
-  document.getElementById('btn-speak').onclick = speakText;
-}
-
+// === EMOTION SYSTEM ===
 function applyEmotion(emotion) {
-  const svg = testPreview.querySelector('svg');
+  state.emotion = emotion;
+  
+  const svg = spriteDisplay.querySelector('svg');
   if (!svg) return;
   
-  const eyes = svg.querySelectorAll('[id*="eye"], [id*="Eye"]');
-  const mouth = svg.querySelector('[id*="mouth"], [id*="Mouth"]');
-  const brows = svg.querySelectorAll('[id*="brow"], [id*="Brow"]');
+  const config = EMOTIONS[emotion];
+  if (!config) return;
   
-  // Reset
-  eyes.forEach(e => e.style.transform = '');
-  brows.forEach(b => b.style.transform = '');
-  if (mouth) mouth.style.transform = '';
+  const isPhotoSprite = svg.dataset.photoSprite === 'true';
+  const isHuman = HUMAN_SPRITES.includes(state.currentChar);
   
-  // Apply emotion-specific transforms (simplified)
+  // Photo sprite emotions (warp-style transforms)
+  if (isPhotoSprite) {
+    applyPhotoEmotion(svg, emotion);
+    return;
+  }
+  
+  // Regular SVG sprite emotions
+  const eyeLeftWhite = svg.querySelector('#eye-left-white');
+  const eyeRightWhite = svg.querySelector('#eye-right-white');
+  const eyeLeftPupil = svg.querySelector('#eye-left-pupil');
+  const eyeRightPupil = svg.querySelector('#eye-right-pupil');
+  const browLeft = svg.querySelector('#brow-left');
+  const browRight = svg.querySelector('#brow-right');
+  const mouthClosed = svg.querySelector('#mouth-closed');
+  
+  // Use human or animal configs
+  const eyeConfig = isHuman ? config.eyeWhiteHuman : config.eyeWhite;
+  const pupilConfig = isHuman ? config.pupilHuman : config.pupil;
+  
+  if (eyeLeftWhite) {
+    eyeLeftWhite.setAttribute('ry', eyeConfig.ry);
+    eyeLeftWhite.setAttribute('cy', eyeConfig.cy);
+  }
+  if (eyeRightWhite) {
+    eyeRightWhite.setAttribute('ry', eyeConfig.ry);
+    eyeRightWhite.setAttribute('cy', eyeConfig.cy);
+  }
+  
+  if (eyeLeftPupil) {
+    if (pupilConfig.ry) {
+      eyeLeftPupil.setAttribute('ry', pupilConfig.ry);
+      eyeLeftPupil.setAttribute('cy', pupilConfig.cy);
+    } else if (pupilConfig.r) {
+      eyeLeftPupil.setAttribute('r', pupilConfig.r);
+      eyeLeftPupil.setAttribute('cy', pupilConfig.cy);
+    }
+  }
+  if (eyeRightPupil) {
+    if (pupilConfig.ry) {
+      eyeRightPupil.setAttribute('ry', pupilConfig.ry);
+      eyeRightPupil.setAttribute('cy', pupilConfig.cy);
+    } else if (pupilConfig.r) {
+      eyeRightPupil.setAttribute('r', pupilConfig.r);
+      eyeRightPupil.setAttribute('cy', pupilConfig.cy);
+    }
+  }
+  
+  const browLeftPath = isHuman ? config.browLeftHuman : config.browLeft;
+  const browRightPath = isHuman ? config.browRightHuman : config.browRight;
+  if (browLeft) browLeft.setAttribute('d', browLeftPath);
+  if (browRight) browRight.setAttribute('d', browRightPath);
+  
+  const mouthPath = isHuman ? config.mouthHuman : config.mouth;
+  if (mouthClosed) mouthClosed.setAttribute('d', mouthPath);
+}
+
+function applyPhotoEmotion(svg, emotion) {
+  const headTop = svg.querySelector('#head-top');
+  const headBottom = svg.querySelector('#head-bottom');
+  const faceUpper = svg.querySelector('#face-upper');
+  const mouthOpen = svg.querySelector('#mouth-open');
+  
+  // Reset transforms
+  if (headTop) headTop.style.transform = '';
+  if (headBottom) headBottom.style.transform = '';
+  if (faceUpper) faceUpper.style.transform = '';
+  if (mouthOpen) {
+    mouthOpen.setAttribute('ry', '1');
+    mouthOpen.setAttribute('opacity', '0');
+  }
+  
   switch (emotion) {
     case 'happy':
-      eyes.forEach(e => e.style.transform = 'scaleY(0.8)');
+      if (faceUpper) faceUpper.style.transform = 'scaleY(0.97)';
       break;
     case 'sad':
-      brows.forEach(b => b.style.transform = 'rotate(-10deg)');
+      if (headTop) headTop.style.transform = 'perspective(100px) rotateX(3deg)';
       break;
     case 'angry':
-      brows.forEach(b => b.style.transform = 'rotate(10deg) translateY(2px)');
+      if (faceUpper) faceUpper.style.transform = 'scaleY(0.95) translateY(2px)';
+      if (headBottom) headBottom.style.transform = 'rotate(2deg)';
+      if (mouthOpen) {
+        mouthOpen.setAttribute('ry', '1.5');
+        mouthOpen.setAttribute('opacity', '0.7');
+      }
       break;
     case 'surprised':
-      eyes.forEach(e => e.style.transform = 'scaleY(1.3)');
-      brows.forEach(b => b.style.transform = 'translateY(-3px)');
+      if (faceUpper) faceUpper.style.transform = 'scaleY(1.03) translateY(-2px)';
+      if (headBottom) headBottom.style.transform = 'rotate(12deg)';
+      if (mouthOpen) {
+        mouthOpen.setAttribute('ry', '5');
+        mouthOpen.setAttribute('rx', '10');
+        mouthOpen.setAttribute('opacity', '1');
+      }
+      break;
+    case 'thinking':
+      if (headTop) headTop.style.transform = 'rotate(-2deg)';
+      break;
+    case 'smug':
+      if (faceUpper) faceUpper.style.transform = 'scaleY(0.96)';
+      if (headTop) headTop.style.transform = 'rotate(3deg)';
+      break;
+    case 'tired':
+    case 'worried':
+      if (faceUpper) faceUpper.style.transform = 'scaleY(0.93) translateY(3px)';
       break;
   }
 }
 
-async function speakText() {
-  const text = document.getElementById('speak-text').value.trim();
+// === EYE TRACKING ===
+function updateEyePosition(x, y) {
+  if (!state.eyeTracking) return;
+  
+  const svg = spriteDisplay.querySelector('svg');
+  if (!svg) return;
+  
+  const rect = spriteDisplay.getBoundingClientRect();
+  const relX = (x - rect.left) / rect.width;
+  const relY = (y - rect.top) / rect.height;
+  
+  // Map to eye movement range (-3 to 3 for x, -2 to 2 for y)
+  const eyeX = (relX - 0.5) * 6;
+  const eyeY = (relY - 0.5) * 4;
+  
+  const eyeLeftPupil = svg.querySelector('#eye-left-pupil');
+  const eyeRightPupil = svg.querySelector('#eye-right-pupil');
+  
+  if (eyeLeftPupil) {
+    const baseCx = parseFloat(eyeLeftPupil.dataset.baseCx || eyeLeftPupil.getAttribute('cx'));
+    if (!eyeLeftPupil.dataset.baseCx) eyeLeftPupil.dataset.baseCx = baseCx;
+    eyeLeftPupil.setAttribute('cx', baseCx + eyeX);
+  }
+  
+  if (eyeRightPupil) {
+    const baseCx = parseFloat(eyeRightPupil.dataset.baseCx || eyeRightPupil.getAttribute('cx'));
+    if (!eyeRightPupil.dataset.baseCx) eyeRightPupil.dataset.baseCx = baseCx;
+    eyeRightPupil.setAttribute('cx', baseCx + eyeX);
+  }
+}
+
+// === BLINKING ===
+let blinkTimeout = null;
+
+function blink() {
+  spriteDisplay.classList.add('blinking');
+  setTimeout(() => {
+    spriteDisplay.classList.remove('blinking');
+  }, 100);
+}
+
+function startBlinkLoop() {
+  const scheduleNext = () => {
+    if (!state.autoBlinking) {
+      blinkTimeout = setTimeout(scheduleNext, 1000);
+      return;
+    }
+    
+    const delay = 3000 + Math.random() * 4000; // 3-7 seconds
+    blinkTimeout = setTimeout(() => {
+      blink();
+      scheduleNext();
+    }, delay);
+  };
+  
+  scheduleNext();
+}
+
+// === TALKING ===
+function setTalking(talking) {
+  state.isTalking = talking;
+  spriteDisplay.classList.toggle('talking', talking);
+}
+
+// === ZOOM ===
+function updateZoom() {
+  spriteDisplay.style.transform = `scale(${state.zoom})`;
+  zoomLevel.textContent = `${Math.round(state.zoom * 100)}%`;
+}
+
+// === TTS ===
+async function speakText(text) {
   if (!text) return;
   
   const voice = document.getElementById('voice-select').value;
   const btn = document.getElementById('btn-speak');
   
   btn.disabled = true;
-  btn.textContent = '...';
+  setTalking(true);
+  setStatus('Speaking...');
   
   try {
-    // Call Pocket TTS API
     const resp = await fetch('/tts/tts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1406,82 +918,141 @@ async function speakText() {
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
     
-    // Animate mouth while playing
-    audio.onplay = () => startTalkingAnimation();
     audio.onended = () => {
-      stopTalkingAnimation();
+      setTalking(false);
       URL.revokeObjectURL(url);
+      setStatus('Ready');
     };
     
-    audio.play();
+    audio.onerror = () => {
+      setTalking(false);
+      setStatus('Audio playback error');
+    };
+    
+    await audio.play();
   } catch (err) {
     console.error('TTS error:', err);
-    alert('Failed to generate speech');
+    setTalking(false);
+    setStatus('TTS failed - check console');
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔊';
   }
 }
 
-let talkingInterval = null;
-
-function startTalkingAnimation() {
-  const svg = testPreview.querySelector('svg');
-  if (!svg) return;
-  
-  const mouth = svg.querySelector('[id*="mouth"], [id*="Mouth"]');
-  if (!mouth) return;
-  
-  let open = false;
-  talkingInterval = setInterval(() => {
-    open = !open;
-    mouth.style.transform = open ? 'scaleY(1.5)' : 'scaleY(1)';
-  }, 100);
+// === UI HELPERS ===
+function setStatus(msg) {
+  statusBar.textContent = msg;
 }
 
-function stopTalkingAnimation() {
-  if (talkingInterval) {
-    clearInterval(talkingInterval);
-    talkingInterval = null;
-  }
+// === EVENT LISTENERS ===
+function setupEventListeners() {
+  // Emotions
+  document.querySelectorAll('.emotion-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyEmotion(btn.dataset.emotion);
+    };
+  });
   
-  const svg = testPreview.querySelector('svg');
-  if (!svg) return;
+  // Toggles
+  document.getElementById('toggle-eyes').onclick = function() {
+    this.classList.toggle('on');
+    state.eyeTracking = this.classList.contains('on');
+  };
   
-  const mouth = svg.querySelector('[id*="mouth"], [id*="Mouth"]');
-  if (mouth) mouth.style.transform = '';
-}
-
-// === NEW CHARACTER ===
-function createNewCharacter() {
-  const name = prompt('Character name (lowercase, no spaces):');
-  if (!name) return;
+  document.getElementById('toggle-blink').onclick = function() {
+    this.classList.toggle('on');
+    state.autoBlinking = this.classList.contains('on');
+  };
   
-  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+  document.getElementById('toggle-talk').onclick = function() {
+    this.classList.toggle('on');
+    setTalking(this.classList.contains('on'));
+  };
   
-  // For now, just add to list (would need server-side to create folder)
-  state.characters.push(safeName);
-  renderCharacterPicker();
-  selectCharacter(safeName);
+  // Speak
+  document.getElementById('btn-speak').onclick = () => {
+    const text = document.getElementById('speak-text').value.trim();
+    if (text) speakText(text);
+  };
   
-  alert(`Created "${safeName}". Note: folder will be created when you save.`);
-}
-
-function addNewVariant() {
-  const name = prompt('Variant name (e.g., side, left, right):');
-  if (!name) return;
+  document.getElementById('speak-text').onkeypress = (e) => {
+    if (e.key === 'Enter') {
+      const text = e.target.value.trim();
+      if (text) speakText(text);
+    }
+  };
   
-  const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-  state.currentVariant = safeName;
-  state.shapes = []; // Start fresh
-  renderCanvas();
+  // Zoom
+  document.getElementById('zoom-in').onclick = () => {
+    state.zoom = Math.min(3, state.zoom + 0.25);
+    updateZoom();
+  };
   
-  // Add tab
-  const tab = document.createElement('button');
-  tab.className = 'variant-tab active';
-  tab.textContent = safeName.charAt(0).toUpperCase() + safeName.slice(1);
-  variantTabs.querySelectorAll('.variant-tab').forEach(t => t.classList.remove('active'));
-  variantTabs.insertBefore(tab, variantTabs.querySelector('.add-variant'));
+  document.getElementById('zoom-out').onclick = () => {
+    state.zoom = Math.max(0.25, state.zoom - 0.25);
+    updateZoom();
+  };
+  
+  document.getElementById('zoom-reset').onclick = () => {
+    state.zoom = 1;
+    updateZoom();
+  };
+  
+  // Eye tracking - mouse
+  displayArea.addEventListener('mousemove', (e) => {
+    updateEyePosition(e.clientX, e.clientY);
+  });
+  
+  // Eye tracking - touch
+  displayArea.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1) {
+      updateEyePosition(e.touches[0].clientX, e.touches[0].clientY);
+    }
+  }, { passive: true });
+  
+  // Pinch zoom
+  let lastPinchDist = 0;
+  displayArea.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      lastPinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+  
+  displayArea.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      
+      if (lastPinchDist > 0) {
+        const delta = (dist - lastPinchDist) / 200;
+        state.zoom = Math.max(0.25, Math.min(3, state.zoom + delta));
+        updateZoom();
+      }
+      
+      lastPinchDist = dist;
+    }
+  }, { passive: true });
+  
+  displayArea.addEventListener('touchend', () => {
+    lastPinchDist = 0;
+  }, { passive: true });
+  
+  // Save button
+  document.getElementById('btn-save').onclick = () => {
+    alert('Save functionality coming soon!\nFor now, sprites are read-only.');
+  };
+  
+  // Edit button  
+  document.getElementById('btn-edit').onclick = () => {
+    alert('Visual editor coming soon!\nThis page is currently for testing sprites.');
+  };
 }
 
 // === START ===
