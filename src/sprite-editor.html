@@ -68,6 +68,35 @@
       font-size: 0.9em;
     }
     
+    .zoom-controls {
+      background: #16213e;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-bottom: 1px solid #0f3460;
+    }
+    
+    .zoom-controls button {
+      background: #0f3460;
+      border: none;
+      color: #eee;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    
+    .zoom-controls button:hover {
+      background: #e94560;
+    }
+    
+    #zoom-level {
+      min-width: 50px;
+      text-align: center;
+      font-size: 0.9em;
+    }
+    
     /* Main layout */
     .main {
       display: flex;
@@ -449,6 +478,12 @@
     
     <!-- Center: Canvas -->
     <div class="panel-center">
+      <div class="zoom-controls">
+        <button onclick="zoomIn()">🔍+</button>
+        <span id="zoom-level">100%</span>
+        <button onclick="zoomOut()">🔍-</button>
+        <button onclick="zoomReset()">⟲</button>
+      </div>
       <div class="canvas-container">
         <div id="svg-canvas">
           <!-- SVG loaded here -->
@@ -486,6 +521,33 @@
     let isDragging = false;
     let dragStart = { x: 0, y: 0 };
     let elementStart = { x: 0, y: 0 };
+    let zoomLevel = 100;
+    
+    // === ZOOM ===
+    function zoomIn() {
+      zoomLevel = Math.min(400, zoomLevel + 25);
+      applyZoom();
+    }
+    
+    function zoomOut() {
+      zoomLevel = Math.max(50, zoomLevel - 25);
+      applyZoom();
+    }
+    
+    function zoomReset() {
+      zoomLevel = 100;
+      applyZoom();
+    }
+    
+    function applyZoom() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (svg) {
+        const baseSize = 300; // Base canvas size
+        svg.setAttribute('width', baseSize * (zoomLevel / 100));
+        svg.setAttribute('height', baseSize * 1.5 * (zoomLevel / 100));
+      }
+      document.getElementById('zoom-level').textContent = zoomLevel + '%';
+    }
     
     // === SPRITE LIST ===
     const defaultSprites = [
