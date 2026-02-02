@@ -935,40 +935,20 @@
     }
     
     // === RESIZE HANDLES ===
-    function getElementBBox(el) {
-      const svg = document.querySelector('#svg-canvas svg');
-      if (!svg) return null;
-      
+    function getElementScreenBBox(el) {
       try {
-        const bbox = el.getBBox();
-        const ctm = el.getCTM();
-        const svgCtm = svg.getCTM();
-        
-        // Transform bbox corners to screen coordinates
-        const pt1 = svg.createSVGPoint();
-        pt1.x = bbox.x;
-        pt1.y = bbox.y;
-        const screenPt1 = pt1.matrixTransform(ctm);
-        
-        const pt2 = svg.createSVGPoint();
-        pt2.x = bbox.x + bbox.width;
-        pt2.y = bbox.y + bbox.height;
-        const screenPt2 = pt2.matrixTransform(ctm);
-        
-        // Convert to container-relative coordinates
         const container = document.querySelector('.canvas-container');
-        const svgRect = svg.getBoundingClientRect();
         const containerRect = container.getBoundingClientRect();
-        
-        const scale = svgRect.width / 100; // SVG viewBox width is 100
+        const elRect = el.getBoundingClientRect();
         
         return {
-          x: (screenPt1.x - svgCtm.e) * (svgRect.width / svg.viewBox.baseVal.width) + (svgRect.left - containerRect.left),
-          y: (screenPt1.y - svgCtm.f) * (svgRect.height / svg.viewBox.baseVal.height) + (svgRect.top - containerRect.top),
-          width: (screenPt2.x - screenPt1.x) * (svgRect.width / svg.viewBox.baseVal.width),
-          height: (screenPt2.y - screenPt1.y) * (svgRect.height / svg.viewBox.baseVal.height)
+          x: elRect.left - containerRect.left,
+          y: elRect.top - containerRect.top,
+          width: elRect.width,
+          height: elRect.height
         };
       } catch (e) {
+        console.error('getBBox error:', e);
         return null;
       }
     }
@@ -976,8 +956,11 @@
     function createResizeHandles(el) {
       removeResizeHandles();
       
-      const bbox = getElementBBox(el);
-      if (!bbox) return;
+      const bbox = getElementScreenBBox(el);
+      if (!bbox || bbox.width < 1 || bbox.height < 1) {
+        console.log('No valid bbox for handles');
+        return;
+      }
       
       const container = document.querySelector('.canvas-container');
       const handles = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
