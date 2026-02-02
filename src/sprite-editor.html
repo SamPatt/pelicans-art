@@ -611,7 +611,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v3.0</span>
+    <span style="color:#666;">v3.1</span>
   </div>
 
   <script>
@@ -1427,19 +1427,41 @@
             if (detection) {
               const box = detection.detection.box;
               const landmarks = detection.landmarks;
+              const positions = landmarks.positions;
               
-              // Store face bounding box
+              // Get key points for better head bounds
+              const jawline = positions.slice(0, 17);
+              const leftEyebrow = positions.slice(22, 27);
+              const rightEyebrow = positions.slice(17, 22);
+              
+              // Find bounds from landmarks
+              const allX = positions.map(p => p.x);
+              const allY = positions.map(p => p.y);
+              const minX = Math.min(...allX);
+              const maxX = Math.max(...allX);
+              const minY = Math.min(...allY); // Top of eyebrows
+              const maxY = Math.max(...allY); // Bottom of chin
+              
+              // Expand box: add 50% above eyebrows for forehead/hair, 15% below chin, 20% on sides
+              const faceHeight = maxY - minY;
+              const faceWidth = maxX - minX;
+              
+              const expandedX = Math.max(0, minX - faceWidth * 0.25);
+              const expandedY = Math.max(0, minY - faceHeight * 0.6); // More room for hair
+              const expandedW = Math.min(canvas.width - expandedX, faceWidth * 1.5);
+              const expandedH = Math.min(canvas.height - expandedY, faceHeight * 1.8);
+              
+              // Store expanded head bounding box
               faceData = {
-                x: box.x,
-                y: box.y,
-                width: box.width,
-                height: box.height,
+                x: expandedX,
+                y: expandedY,
+                width: expandedW,
+                height: expandedH,
                 canvasWidth: canvas.width,
                 canvasHeight: canvas.height
               };
               
-              // Store landmark positions (scaled to canvas)
-              const positions = landmarks.positions;
+              // Store landmark positions
               faceLandmarks = {
                 // Jawline: 0-16
                 jawline: positions.slice(0, 17),
