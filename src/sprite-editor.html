@@ -15,6 +15,66 @@
       overflow: hidden;
     }
     
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+      }
+      
+      .panel-left {
+        width: 100%;
+        max-height: 120px;
+        border-right: none;
+        border-bottom: 1px solid #0f3460;
+      }
+      
+      .panel-left .sprite-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      
+      .panel-left .sprite-item {
+        padding: 5px 8px;
+        font-size: 0.75em;
+      }
+      
+      .panel-center {
+        min-height: 400px;
+      }
+      
+      .panel-right {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid #0f3460;
+      }
+      
+      .element-tree {
+        max-height: 100px;
+      }
+      
+      header {
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      
+      .toolbar {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .toolbar button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+      }
+      
+      .toolbar-divider {
+        display: none;
+      }
+    }
+    
     /* Header */
     header {
       background: #16213e;
@@ -1267,6 +1327,8 @@
       document.getElementById('photo-modal').style.display = 'none';
     }
     
+    let previewCanvasSize = { width: 300, height: 300 };
+    
     async function handlePhotoUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -1282,43 +1344,55 @@
         const canvas = document.getElementById('photo-canvas');
         const ctx = canvas.getContext('2d');
         
-        // Scale to fit
-        const scale = Math.min(300 / img.width, 300 / img.height);
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
+        // Scale to fit in 300x300 max, maintain aspect ratio
+        const maxSize = 300;
+        const scale = Math.min(maxSize / img.width, maxSize / img.height);
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        
+        // Store for later calculations
+        previewCanvasSize = { width: canvas.width, height: canvas.height };
+        
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
         // Attempt basic face detection (placeholder - would use face-api.js)
-        document.getElementById('face-status').textContent = 'Face detected! Click to adjust.';
+        document.getElementById('face-status').textContent = 'Face detected! Tap to adjust, then generate.';
         
-        // Simple heuristic: assume face is in upper-center
+        // Simple heuristic: assume face is in upper-center third
         faceData = {
-          x: canvas.width * 0.3,
-          y: canvas.height * 0.1,
-          width: canvas.width * 0.4,
-          height: canvas.height * 0.5,
-          mouthY: canvas.height * 0.4,
-          eyeY: canvas.height * 0.25
+          x: canvas.width * 0.25,
+          y: canvas.height * 0.05,
+          width: canvas.width * 0.5,
+          height: canvas.height * 0.55,
+          canvasWidth: canvas.width,
+          canvasHeight: canvas.height
         };
         
         // Draw face rectangle
         ctx.strokeStyle = '#e94560';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
+        ctx.setLineDash([8, 4]);
         ctx.strokeRect(faceData.x, faceData.y, faceData.width, faceData.height);
+        ctx.setLineDash([]);
         
-        // Draw mouth line
+        // Draw center crosshair for mouth position
+        const mouthY = faceData.y + faceData.height * 0.75;
         ctx.strokeStyle = '#4ecca3';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(faceData.x, faceData.mouthY);
-        ctx.lineTo(faceData.x + faceData.width, faceData.mouthY);
+        ctx.moveTo(faceData.x + 10, mouthY);
+        ctx.lineTo(faceData.x + faceData.width - 10, mouthY);
         ctx.stroke();
+        ctx.fillStyle = '#4ecca3';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('mouth', faceData.x + faceData.width + 5, mouthY + 4);
         
         // Show step 2
         setTimeout(() => {
           document.getElementById('photo-step-1').style.display = 'none';
           document.getElementById('photo-step-2').style.display = 'block';
           drawEditCanvas();
-        }, 1000);
+        }, 1500);
       };
       
       img.src = URL.createObjectURL(file);
@@ -1334,14 +1408,27 @@
       ctx.fillStyle = '#0d0d1a';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Draw cropped face region
-      const srcX = (faceData.x / 300) * uploadedImage.width;
-      const srcY = (faceData.y / 300) * uploadedImage.height;
-      const srcW = (faceData.width / 300) * uploadedImage.width;
-      const srcH = (faceData.height / 300) * uploadedImage.height;
+      // Calculate source region from original image coordinates
+      // faceData coords are relative to preview canvas, need to map to original image
+      const scaleX = uploadedImage.width / faceData.canvasWidth;
+      const scaleY = uploadedImage.height / faceData.canvasHeight;
       
-      // Draw face in sprite position
-      ctx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 75, 20, 150, 180);
+      const srcX = faceData.x * scaleX;
+      const srcY = faceData.y * scaleY;
+      const srcW = faceData.width * scaleX;
+      const srcH = faceData.height * scaleY;
+      
+      // Draw face centered at top of preview, maintaining aspect ratio
+      const aspectRatio = srcW / srcH;
+      let destW = 150;
+      let destH = destW / aspectRatio;
+      if (destH > 180) {
+        destH = 180;
+        destW = destH * aspectRatio;
+      }
+      const destX = (300 - destW) / 2;
+      
+      ctx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, destX, 20, destW, destH);
       
       // Draw body placeholder
       ctx.fillStyle = '#4ecdc4';
@@ -1390,12 +1477,25 @@
       const pixel = tempCtx.getImageData(centerX, centerY, 1, 1).data;
       const skinColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
       
-      // Draw cropped face
-      const srcX = (faceData.x / 300) * uploadedImage.width;
-      const srcY = (faceData.y / 300) * uploadedImage.height;
-      const srcW = (faceData.width / 300) * uploadedImage.width;
-      const srcH = (faceData.height / 300) * uploadedImage.height;
-      faceCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 0, 0, 100, 100);
+      // Draw cropped face using correct coordinate mapping
+      const scaleX = uploadedImage.width / faceData.canvasWidth;
+      const scaleY = uploadedImage.height / faceData.canvasHeight;
+      const srcX = faceData.x * scaleX;
+      const srcY = faceData.y * scaleY;
+      const srcW = faceData.width * scaleX;
+      const srcH = faceData.height * scaleY;
+      
+      // Draw face maintaining aspect ratio
+      const faceAspect = srcW / srcH;
+      let drawW = 100, drawH = 100;
+      if (faceAspect > 1) {
+        drawH = 100 / faceAspect;
+      } else {
+        drawW = 100 * faceAspect;
+      }
+      const offsetX = (100 - drawW) / 2;
+      const offsetY = (100 - drawH) / 2;
+      faceCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, offsetX, offsetY, drawW, drawH);
       
       const faceDataUrl = faceCanvas.toDataURL('image/png');
       
