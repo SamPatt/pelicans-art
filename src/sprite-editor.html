@@ -778,6 +778,189 @@
       font-style: italic;
     }
 
+    /* Editable script cards */
+    .script-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .script-line:hover {
+      background: #1a2a4e;
+    }
+
+    .script-line .content {
+      flex: 1;
+    }
+
+    .script-line .actions {
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .script-line:hover .actions {
+      opacity: 1;
+    }
+
+    .script-line .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.8em;
+    }
+
+    .script-line .action-btn:hover {
+      background: #0f3460;
+    }
+
+    .script-line .action-btn.delete:hover {
+      background: #e94560;
+      color: white;
+    }
+
+    .add-action-btn {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: #16213e;
+      border: 2px dashed #0f3460;
+      border-radius: 6px;
+      color: #4ecca3;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.2s;
+    }
+
+    .add-action-btn:hover {
+      background: #1a2a4e;
+      border-color: #4ecca3;
+    }
+
+    .skit-save-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: #4ecca3;
+      border: none;
+      border-radius: 6px;
+      color: #111;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95em;
+      transition: all 0.2s;
+    }
+
+    .skit-save-btn:hover {
+      background: #3db892;
+    }
+
+    .skit-save-btn:disabled {
+      background: #2a4a4a;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    /* Action Edit Modal */
+    .action-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .action-modal.visible {
+      display: flex;
+    }
+
+    .action-modal-content {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 20px;
+      width: 400px;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .action-modal h3 {
+      color: #4ecca3;
+      margin-bottom: 15px;
+    }
+
+    .action-modal .form-group {
+      margin-bottom: 12px;
+    }
+
+    .action-modal label {
+      display: block;
+      color: #888;
+      font-size: 0.85em;
+      margin-bottom: 4px;
+    }
+
+    .action-modal input,
+    .action-modal select,
+    .action-modal textarea {
+      width: 100%;
+      padding: 8px 10px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 0.9em;
+    }
+
+    .action-modal textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .action-modal .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .action-modal .modal-buttons button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .action-modal .btn-save {
+      background: #4ecca3;
+      color: #111;
+    }
+
+    .action-modal .btn-cancel {
+      background: #333;
+      color: #eee;
+    }
+
+    .action-modal .btn-save:hover {
+      background: #3db892;
+    }
+
+    .action-modal .btn-cancel:hover {
+      background: #444;
+    }
+
     /* === Voice Settings Panel === */
     .voice-section {
       border-top: 1px solid #0f3460;
@@ -1160,6 +1343,33 @@
 
         <h4>📝 Script</h4>
         <div id="skit-script-list"></div>
+        <button class="add-action-btn" onclick="openAddActionModal()">+ Add Action</button>
+        <button class="skit-save-btn" id="skit-save-btn" onclick="saveSkitChanges()">Save Skit</button>
+      </div>
+
+      <!-- Action Edit Modal -->
+      <div id="action-modal" class="action-modal">
+        <div class="action-modal-content">
+          <h3 id="modal-title">Edit Action</h3>
+          <div class="form-group">
+            <label>Action Type</label>
+            <select id="action-type" onchange="updateModalFields()">
+              <option value="say">Say (dialogue)</option>
+              <option value="emote">Emote (expression)</option>
+              <option value="shot">Shot (camera)</option>
+              <option value="pause">Pause</option>
+              <option value="enter">Enter</option>
+              <option value="exit">Exit</option>
+              <option value="move">Move</option>
+              <option value="look">Look</option>
+            </select>
+          </div>
+          <div id="modal-fields"></div>
+          <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeActionModal()">Cancel</button>
+            <button class="btn-save" onclick="saveActionFromModal()">Save</button>
+          </div>
+        </div>
       </div>
 
       <div class="element-tree">
@@ -1489,7 +1699,7 @@
             cssClass = 'emote';
             break;
           case 'shot':
-            content = `📷 ${action.type}`;
+            content = `📷 ${action.type}${action.who ? ` (${action.who})` : ''}`;
             cssClass = 'shot';
             break;
           case 'enter':
@@ -1516,9 +1726,354 @@
             content = JSON.stringify(action);
         }
 
-        return `<div class="script-line ${cssClass}" data-index="${i}">${content}</div>`;
+        return `
+          <div class="script-line ${cssClass}" data-index="${i}">
+            <span class="content">${content}</span>
+            <span class="actions">
+              <button class="action-btn edit" onclick="openEditActionModal(${i})" title="Edit">✏️</button>
+              <button class="action-btn delete" onclick="deleteScriptAction(${i})" title="Delete">✕</button>
+            </span>
+          </div>`;
       }).join('') || '<p style="color:#666;font-size:0.85em;">No script defined</p>';
       document.getElementById('skit-script-list').innerHTML = scriptHtml;
+    }
+
+    // === SKIT EDITING ===
+    let editingActionIndex = null;  // null = adding new, number = editing existing
+
+    function getCharacterOptions() {
+      if (!currentSkitData?.cast) return '';
+      return Object.keys(currentSkitData.cast).map(id =>
+        `<option value="${id}">${id}</option>`
+      ).join('');
+    }
+
+    function updateModalFields() {
+      const actionType = document.getElementById('action-type').value;
+      const fieldsDiv = document.getElementById('modal-fields');
+      const charOptions = getCharacterOptions();
+
+      let html = '';
+      switch (actionType) {
+        case 'say':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Dialogue</label>
+              <textarea id="action-line" placeholder="What do they say?"></textarea>
+            </div>`;
+          break;
+        case 'emote':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Emotion</label>
+              <select id="action-emotion">
+                <option value="neutral">neutral</option>
+                <option value="happy">happy</option>
+                <option value="sad">sad</option>
+                <option value="angry">angry</option>
+                <option value="surprised">surprised</option>
+                <option value="worried">worried</option>
+                <option value="excited">excited</option>
+                <option value="smug">smug</option>
+                <option value="tired">tired</option>
+              </select>
+            </div>`;
+          break;
+        case 'shot':
+          html = `
+            <div class="form-group">
+              <label>Shot Type</label>
+              <select id="action-shot-type">
+                <option value="wide">wide</option>
+                <option value="medium">medium</option>
+                <option value="closeup">closeup</option>
+                <option value="extreme-closeup">extreme-closeup</option>
+                <option value="two-shot">two-shot</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Focus Character (optional)</label>
+              <select id="action-who">
+                <option value="">None</option>
+                ${charOptions}
+              </select>
+            </div>`;
+          break;
+        case 'pause':
+          html = `
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="1" min="0.5" max="10" step="0.5">
+            </div>`;
+          break;
+        case 'enter':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Enter From</label>
+              <select id="action-from">
+                <option value="left">left</option>
+                <option value="right">right</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Move To (x position 0-100)</label>
+              <input type="number" id="action-to" value="50" min="0" max="100">
+            </div>`;
+          break;
+        case 'exit':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Exit To</label>
+              <select id="action-to-dir">
+                <option value="left">left</option>
+                <option value="right">right</option>
+              </select>
+            </div>`;
+          break;
+        case 'move':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Move To (x position 0-100)</label>
+              <input type="number" id="action-to" value="50" min="0" max="100">
+            </div>`;
+          break;
+        case 'look':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Look At</label>
+              <select id="action-at">
+                <option value="left">left</option>
+                <option value="right">right</option>
+                <option value="up">up</option>
+                <option value="down">down</option>
+                <option value="audience">audience</option>
+              </select>
+            </div>`;
+          break;
+      }
+      fieldsDiv.innerHTML = html;
+    }
+
+    function openAddActionModal() {
+      editingActionIndex = null;
+      document.getElementById('modal-title').textContent = 'Add Action';
+      document.getElementById('action-type').value = 'say';
+      updateModalFields();
+      document.getElementById('action-modal').classList.add('visible');
+    }
+
+    function openEditActionModal(index) {
+      if (!currentSkitData?.script?.[index]) return;
+
+      editingActionIndex = index;
+      const action = currentSkitData.script[index];
+
+      document.getElementById('modal-title').textContent = 'Edit Action';
+      document.getElementById('action-type').value = action.do;
+      updateModalFields();
+
+      // Populate fields with existing values
+      setTimeout(() => {
+        switch (action.do) {
+          case 'say':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-line')) document.getElementById('action-line').value = action.line || '';
+            break;
+          case 'emote':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-emotion')) document.getElementById('action-emotion').value = action.emotion || 'neutral';
+            break;
+          case 'shot':
+            if (document.getElementById('action-shot-type')) document.getElementById('action-shot-type').value = action.type || 'wide';
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            break;
+          case 'pause':
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 1;
+            break;
+          case 'enter':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-from')) document.getElementById('action-from').value = action.from || 'left';
+            if (document.getElementById('action-to')) document.getElementById('action-to').value = action.to || 50;
+            break;
+          case 'exit':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-to-dir')) document.getElementById('action-to-dir').value = action.to || 'left';
+            break;
+          case 'move':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-to')) document.getElementById('action-to').value = action.to || 50;
+            break;
+          case 'look':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-at')) document.getElementById('action-at').value = action.at || 'audience';
+            break;
+        }
+      }, 0);
+
+      document.getElementById('action-modal').classList.add('visible');
+    }
+
+    function closeActionModal() {
+      document.getElementById('action-modal').classList.remove('visible');
+      editingActionIndex = null;
+    }
+
+    function saveActionFromModal() {
+      const actionType = document.getElementById('action-type').value;
+      let action = { do: actionType };
+
+      switch (actionType) {
+        case 'say':
+          action.who = document.getElementById('action-who')?.value;
+          action.line = document.getElementById('action-line')?.value;
+          if (!action.who || !action.line) {
+            alert('Character and dialogue are required');
+            return;
+          }
+          break;
+        case 'emote':
+          action.who = document.getElementById('action-who')?.value;
+          action.emotion = document.getElementById('action-emotion')?.value;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'shot':
+          action.type = document.getElementById('action-shot-type')?.value;
+          const shotWho = document.getElementById('action-who')?.value;
+          if (shotWho) action.who = shotWho;
+          break;
+        case 'pause':
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 1;
+          break;
+        case 'enter':
+          action.who = document.getElementById('action-who')?.value;
+          action.from = document.getElementById('action-from')?.value;
+          action.to = parseInt(document.getElementById('action-to')?.value) || 50;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'exit':
+          action.who = document.getElementById('action-who')?.value;
+          action.to = document.getElementById('action-to-dir')?.value;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'move':
+          action.who = document.getElementById('action-who')?.value;
+          action.to = parseInt(document.getElementById('action-to')?.value) || 50;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'look':
+          action.who = document.getElementById('action-who')?.value;
+          action.at = document.getElementById('action-at')?.value;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+      }
+
+      if (!currentSkitData.script) currentSkitData.script = [];
+
+      if (editingActionIndex !== null) {
+        // Edit existing
+        currentSkitData.script[editingActionIndex] = action;
+      } else {
+        // Add new
+        currentSkitData.script.push(action);
+      }
+
+      renderSkitStructure(currentSkitData);
+      closeActionModal();
+      markSkitDirty();
+    }
+
+    function deleteScriptAction(index) {
+      if (!currentSkitData?.script?.[index]) return;
+      if (!confirm('Delete this action?')) return;
+
+      currentSkitData.script.splice(index, 1);
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
+
+    let skitDirty = false;
+
+    function markSkitDirty() {
+      skitDirty = true;
+      const btn = document.getElementById('skit-save-btn');
+      if (btn) {
+        btn.textContent = 'Save Skit *';
+        btn.style.background = '#e94560';
+      }
+    }
+
+    async function saveSkitChanges() {
+      if (!currentSkitId || !currentSkitData) return;
+
+      const btn = document.getElementById('skit-save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const response = await fetch(`/api/skits/${currentSkitId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentSkitData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save skit');
+        }
+
+        skitDirty = false;
+        btn.textContent = 'Saved!';
+        btn.style.background = '#4ecca3';
+        updateStatus('Skit saved');
+
+        setTimeout(() => {
+          btn.textContent = 'Save Skit';
+        }, 2000);
+      } catch (err) {
+        console.error('Save error:', err);
+        btn.textContent = 'Save Failed';
+        updateStatus('Error saving skit: ' + err.message);
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function openSkitPlayer(id) {
