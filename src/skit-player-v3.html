@@ -1715,9 +1715,10 @@
           
         case 'say':
           // Support both timed (beat.t) and sequential cache keys
-          // Find the beat's index in the script for sequential mode
-          const beatIdx = currentSkit.script.indexOf(beat);
-          const cacheKey = beat.t !== undefined ? `${beat.t}-${beat.who}` : `seq-${beatIdx}-${beat.who}`;
+          // For sequential mode, use index within say-actions only (matches generation)
+          const sayActions = currentSkit.script.filter(b => b.do === 'say');
+          const sayIdx = sayActions.indexOf(beat);
+          const cacheKey = beat.t !== undefined ? `${beat.t}-${beat.who}` : `seq-${sayIdx}-${beat.who}`;
           const cached = audioCache.get(cacheKey);
           if (cached) {
             // Show caption
