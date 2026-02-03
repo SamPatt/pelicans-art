@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -14,6 +15,7 @@ import skitsRouter from './routes/skits.js';
 import publishRouter from './routes/publish.js';
 import ttsRouter from './routes/tts.js';
 import backgroundsRouter from './routes/backgrounds.js';
+import agentRouter from './routes/agent.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = path.join(__dirname, '../src');
@@ -35,6 +37,7 @@ app.use('/api/skits', skitsRouter);
 app.use('/api/publish', publishRouter);
 app.use('/api/tts', ttsRouter);
 app.use('/api/backgrounds', backgroundsRouter);
+app.use('/api/agent', agentRouter);
 
 // TTS proxy for legacy player compatibility (forwards /tts/* to TTS server)
 app.post('/tts/tts', async (req, res) => {
@@ -107,6 +110,13 @@ async function start() {
     console.log(`  Player: http://localhost:${PORT}/player`);
     console.log(`  Editor: http://localhost:${PORT}/editor`);
     console.log(`  API:    http://localhost:${PORT}/api`);
+    console.log('');
+    console.log('Services:');
+    console.log(`  TTS:      ${process.env.TTS_URL || 'http://127.0.0.1:8001'}`);
+    console.log(`  OpenClaw: ${process.env.OPENCLAW_URL || 'http://127.0.0.1:18789'}`);
+    if (!process.env.OPENCLAW_TOKEN) {
+      console.log('  ⚠️  OPENCLAW_TOKEN not set - AI generation will be unavailable');
+    }
   });
 }
 

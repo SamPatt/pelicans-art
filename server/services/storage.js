@@ -43,6 +43,7 @@ export async function ensureDataDirs(dataDir) {
   }
 
   await ensureDir(path.join(DATA_DIR, 'sprites'));
+  await ensureDir(path.join(DATA_DIR, 'backgrounds'));
   await ensureDir(path.join(DATA_DIR, 'skits'));
   await ensureDir(path.join(DATA_DIR, 'published'));
   await ensureDir(path.join(DATA_DIR, 'audio-cache'));
@@ -180,23 +181,88 @@ export async function deleteSprite(name) {
 // --- Background Storage ---
 
 export async function listBackgrounds() {
+  // Get built-in backgrounds
+  let builtin = [];
   try {
     const files = await fs.readdir(BUILTIN_BACKGROUNDS_DIR);
-    return files
+    builtin = files
       .filter(f => f.endsWith('.svg'))
       .map(f => f.replace('.svg', ''));
   } catch (err) {
-    if (err.code === 'ENOENT') return [];
-    throw err;
+    if (err.code !== 'ENOENT') throw err;
   }
+
+  // Get user backgrounds
+  let user = [];
+  const userBgDir = path.join(DATA_DIR, 'backgrounds');
+  try {
+    const files = await fs.readdir(userBgDir);
+    user = files
+      .filter(f => f.endsWith('.svg'))
+      .map(f => f.replace('.svg', ''));
+  } catch (err) {
+    if (err.code !== 'ENOENT') throw err;
+  }
+
+  // User backgrounds first (they can shadow built-ins), then non-shadowed built-ins
+  const userSet = new Set(user);
+  const backgrounds = [];
+
+  // Add user backgrounds
+  for (const name of user) {
+    backgrounds.push({ name, builtin: false });
+  }
+
+  // Add built-in backgrounds not shadowed by user
+  for (const name of builtin) {
+    if (!userSet.has(name)) {
+      backgrounds.push({ name, builtin: true });
+    }
+  }
+
+  return backgrounds;
 }
 
 export async function getBackground(name) {
-  const bgPath = path.join(BUILTIN_BACKGROUNDS_DIR, `${name}.svg`);
+  // Check user backgrounds first, then builtin
+  const userPath = path.join(DATA_DIR, 'backgrounds', `${name}.svg`);
+  const builtinPath = path.join(BUILTIN_BACKGROUNDS_DIR, `${name}.svg`);
+
+  if (await exists(userPath)) {
+    return fs.readFile(userPath, 'utf-8');
+  }
+
+  if (await exists(builtinPath)) {
+    return fs.readFile(builtinPath, 'utf-8');
+  }
+
+  throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
+}
+
+export async function saveBackground(name, svg) {
+  const bgDir = path.join(DATA_DIR, 'backgrounds');
+  await ensureDir(bgDir);
+  await fs.writeFile(path.join(bgDir, `${name}.svg`), svg);
+  return { name, builtin: false };
+}
+
+export async function deleteBackground(name) {
+  // Prevent deleting built-in backgrounds
+  const builtinPath = path.join(BUILTIN_BACKGROUNDS_DIR, `${name}.svg`);
+  if (await exists(builtinPath)) {
+    const userPath = path.join(DATA_DIR, 'backgrounds', `${name}.svg`);
+    if (!await exists(userPath)) {
+      throw Object.assign(new Error(`Cannot delete built-in background: ${name}`), { status: 403 });
+    }
+    // User has a shadow - delete the shadow
+  }
+
+  const bgPath = path.join(DATA_DIR, 'backgrounds', `${name}.svg`);
   if (!await exists(bgPath)) {
     throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
   }
-  return fs.readFile(bgPath, 'utf-8');
+
+  await fs.unlink(bgPath);
 }
 
 // --- Skit Storage ---
