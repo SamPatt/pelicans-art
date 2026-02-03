@@ -891,7 +891,13 @@
             const canvas = document.getElementById('svg-canvas');
             canvas.innerHTML = msg.sprite.svg;
             setupSvgInteraction();
-            applyZoom();
+            // Preserve current zoom level
+            const svg = canvas.querySelector('svg');
+            if (svg) {
+              const baseSize = 300;
+              svg.setAttribute('width', baseSize * (zoomLevel / 100));
+              svg.setAttribute('height', baseSize * 1.5 * (zoomLevel / 100));
+            }
             setCommandStatus('success', 'Updated!');
           }
         }
@@ -1873,16 +1879,19 @@
       // Save to localStorage as backup
       saveToLocalStorage();
 
-      // Try to save via API (to src/sprites directory)
+      // Try to save via API (to data/sprites as user sprite)
       try {
-        const response = await fetch(`/api/sprites/${currentSpriteName}/source/${currentVariant}`, {
+        const response = await fetch(`/api/sprites/${currentSpriteName}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ svg: currentSprite })
+          body: JSON.stringify({
+            svg: currentSprite,
+            meta: currentMeta || {}
+          })
         });
 
         if (response.ok) {
-          updateStatus(`Saved: ${currentSpriteName}/${currentVariant}.svg`);
+          updateStatus(`Saved: ${currentSpriteName}`);
           return;
         }
 
@@ -1901,7 +1910,7 @@
       a.click();
       URL.revokeObjectURL(url);
 
-      updateStatus(`Saved: ${currentSpriteName}/${currentVariant}.svg (downloaded - API unavailable)`);
+      updateStatus(`Saved: ${currentSpriteName} (downloaded - API unavailable)`);
     }
     
     function saveToLocalStorage() {
