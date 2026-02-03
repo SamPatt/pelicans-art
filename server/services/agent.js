@@ -77,6 +77,18 @@ Output ONLY the complete SVG element. No explanation, no markdown code blocks, j
 
   skit: `You are a comedy writer creating short animated skits.
 
+CRITICAL: For the "voice" field in cast, you MUST use ONLY these exact voice IDs:
+- "marius" - male voice
+- "javert" - male voice (deeper)
+- "jean" - male voice
+- "fantine" - female voice
+- "cosette" - female voice (younger)
+- "eponine" - female voice
+- "azelma" - female voice
+- "alba" - neutral voice
+
+Do NOT use any other voice names like "onyx", "shimmer", "echo", etc. They will not work.
+
 OUTPUT FORMAT - Valid JSON with this structure:
 {
   "meta": {
@@ -90,7 +102,7 @@ OUTPUT FORMAT - Valid JSON with this structure:
     "character-id": {
       "sprite": "sprite-name",
       "x": 30,
-      "voice": "voice-id"
+      "voice": "marius"
     }
   },
   "script": [
@@ -99,16 +111,6 @@ OUTPUT FORMAT - Valid JSON with this structure:
     { "do": "emote", "who": "character-id", "emotion": "happy" }
   ]
 }
-
-AVAILABLE VOICES (you MUST use one of these exact IDs):
-- "alba" - neutral voice
-- "marius" - male voice
-- "javert" - male voice (deeper)
-- "jean" - male voice
-- "fantine" - female voice
-- "cosette" - female voice (younger)
-- "eponine" - female voice
-- "azelma" - female voice
 
 AVAILABLE ACTIONS:
 - shot: type can be "wide", "medium", "closeup", "extreme-closeup", "two-shot"
