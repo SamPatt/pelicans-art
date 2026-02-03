@@ -89,13 +89,13 @@ export function validateSpriteSvg(svg) {
     warnings.push('mouth-open should have opacity="0" initially');
   }
 
-  // Try to check mouth alignment (basic heuristic)
+  // Try to check mouth alignment (basic heuristic) - warning only, don't block saves
   const mouthClosedY = extractYPosition(svg, 'mouth-closed');
   const mouthOpenY = extractYPosition(svg, 'mouth-open');
   if (mouthClosedY !== null && mouthOpenY !== null) {
     const diff = Math.abs(mouthClosedY - mouthOpenY);
     if (diff > 5) {
-      errors.push(`mouth-open and mouth-closed Y positions differ by ${diff.toFixed(1)} units (should be aligned)`);
+      warnings.push(`mouth-open and mouth-closed Y positions differ by ${diff.toFixed(1)} units (should be aligned)`);
     }
   }
 

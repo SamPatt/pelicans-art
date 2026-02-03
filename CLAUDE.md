@@ -79,10 +79,16 @@ nohup pocket-tts serve --port 8001 --host 0.0.0.0 &
 ai-improv-theater/
 ├── src/                  # Frontend (HTML, JS, CSS)
 │   ├── index.html        # Main page
+│   ├── sprite-editor.html # Sprite/skit editor
 │   ├── renderer.js       # Canvas-based skit renderer
-│   └── skits/            # JSON skit files
-├── server/               # Backend services
-├── sprites/              # Character and prop images
+│   ├── sprites/          # Character SVG sprites
+│   ├── backgrounds/      # Background SVGs
+│   └── published/        # Pre-rendered skits with audio
+├── data/                 # Runtime data (API storage)
+│   ├── skits/            # Editable skit JSON files
+│   ├── published/        # Published skit data
+│   └── audio-cache/      # Cached TTS audio
+├── server/               # Backend API server
 ├── voice-samples/        # Reference audio for voice cloning
 ├── scripts/              # Utility scripts
 └── venv/                 # Python virtualenv (TTS dependencies)

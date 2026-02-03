@@ -754,6 +754,67 @@
       background: #3db892;
     }
 
+    /* === Delete buttons for list items === */
+    .item-delete-btn {
+      background: transparent;
+      border: none;
+      color: #666;
+      padding: 4px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.85em;
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+      margin-left: auto;
+    }
+
+    .sprite-item:hover .item-delete-btn,
+    .background-item:hover .item-delete-btn,
+    .skit-item:hover .item-delete-btn {
+      opacity: 1;
+    }
+
+    .item-delete-btn:hover {
+      color: #e94560;
+    }
+
+    .delete-confirm {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+    }
+
+    .delete-confirm-btn {
+      background: transparent;
+      border: none;
+      padding: 4px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    .delete-confirm-yes {
+      background: #ff6b6b;
+      color: #fff;
+    }
+
+    .delete-confirm-yes:hover {
+      background: #ff4757;
+    }
+
+    .delete-confirm-no {
+      background: #576574;
+      color: #fff;
+    }
+
+    .delete-confirm-no:hover {
+      background: #808e9b;
+    }
+
+    .item-delete-btn-hidden {
+      display: none !important;
+    }
+
     /* === Skit Editor Panel === */
     .skit-editor-panel {
       padding: 20px;
@@ -1978,7 +2039,8 @@
             <div class="bg-thumbnail">
               <img src="${thumbPath}" alt="${name}" onerror="handleBgThumbError(this, '${name}')">
             </div>
-            <span>${name}</span>
+            <span style="flex:1">${name}</span>
+            <button class="item-delete-btn" onclick="event.stopPropagation(); showDeleteConfirm(this, 'background', '${name}')" title="Delete">🗑️</button>
           </div>
         `;
         }).join('');
@@ -2206,6 +2268,7 @@
             <span class="skit-icon">🎬</span>
             <span class="skit-title">${skit.title || skit.id}</span>
             <button class="skit-play-btn" onclick="event.stopPropagation(); openSkitPlayer('${skit.id}')" title="Play">▶</button>
+            <button class="item-delete-btn" onclick="event.stopPropagation(); showDeleteConfirm(this, 'skit', '${skit.id}')" title="Delete">🗑️</button>
           </div>
         `).join('');
 
@@ -3249,6 +3312,108 @@
       updateStatus(msg);
     }
 
+    // === DELETE CONFIRMATION ===
+    function showDeleteConfirm(btn, type, id) {
+      // Hide any other open confirmations
+      document.querySelectorAll('.delete-confirm').forEach(el => {
+        const parent = el.parentElement;
+        const originalBtn = parent.querySelector('.item-delete-btn-hidden');
+        if (originalBtn) {
+          originalBtn.classList.remove('item-delete-btn-hidden');
+          originalBtn.classList.add('item-delete-btn');
+        }
+        el.remove();
+      });
+
+      // Hide the delete button
+      btn.classList.remove('item-delete-btn');
+      btn.classList.add('item-delete-btn-hidden');
+      btn.style.display = 'none';
+
+      // Create confirmation buttons
+      const confirmDiv = document.createElement('div');
+      confirmDiv.className = 'delete-confirm';
+      confirmDiv.innerHTML = `
+        <button class="delete-confirm-btn delete-confirm-yes" onclick="event.stopPropagation(); confirmDelete('${type}', '${id}')" title="Confirm delete">✓</button>
+        <button class="delete-confirm-btn delete-confirm-no" onclick="event.stopPropagation(); cancelDelete(this)" title="Cancel">✕</button>
+      `;
+      btn.parentElement.appendChild(confirmDiv);
+    }
+
+    function cancelDelete(cancelBtn) {
+      const confirmDiv = cancelBtn.parentElement;
+      const parent = confirmDiv.parentElement;
+      const hiddenBtn = parent.querySelector('.item-delete-btn-hidden');
+      if (hiddenBtn) {
+        hiddenBtn.classList.remove('item-delete-btn-hidden');
+        hiddenBtn.classList.add('item-delete-btn');
+        hiddenBtn.style.display = '';
+      }
+      confirmDiv.remove();
+    }
+
+    async function confirmDelete(type, id) {
+      try {
+        let endpoint;
+        let successMsg;
+        let reloadFn;
+
+        switch (type) {
+          case 'sprite':
+            endpoint = `/api/sprites/${encodeURIComponent(id)}`;
+            successMsg = `Deleted sprite: ${id}`;
+            reloadFn = loadSpriteList;
+            // Clear selection if this was the current sprite
+            if (currentSpriteName === id) {
+              currentSpriteName = null;
+              currentEditMode = null;
+              document.getElementById('svg-canvas').innerHTML = '';
+            }
+            break;
+          case 'background':
+            endpoint = `/api/backgrounds/${encodeURIComponent(id)}`;
+            successMsg = `Deleted background: ${id}`;
+            reloadFn = loadBackgrounds;
+            // Clear selection if this was the current background
+            if (currentBackgroundName === id) {
+              currentBackgroundName = null;
+              currentEditMode = null;
+              document.getElementById('svg-canvas').innerHTML = '';
+            }
+            break;
+          case 'skit':
+            endpoint = `/api/skits/${encodeURIComponent(id)}`;
+            successMsg = `Deleted skit: ${id}`;
+            reloadFn = loadSkits;
+            // Clear selection if this was the current skit
+            if (currentSkitId === id) {
+              currentSkitId = null;
+              currentEditMode = null;
+              document.getElementById('skit-editor-panel').style.display = 'none';
+            }
+            break;
+          default:
+            throw new Error(`Unknown type: ${type}`);
+        }
+
+        const response = await fetch(endpoint, { method: 'DELETE' });
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || 'Delete failed');
+        }
+
+        updateStatus(successMsg);
+        await reloadFn();
+      } catch (err) {
+        console.error('Delete failed:', err);
+        updateStatus(`Delete failed: ${err.message}`);
+        // Re-show the delete button on error
+        document.querySelectorAll('.delete-confirm').forEach(el => {
+          cancelDelete(el.querySelector('.delete-confirm-no'));
+        });
+      }
+    }
+
     // === WEBSOCKET FOR LIVE UPDATES ===
     let ws = null;
 
@@ -3694,7 +3859,11 @@
         const item = document.createElement('div');
         item.className = 'sprite-item';
         item.dataset.char = name;
-        item.innerHTML = `<span class="icon">🎭</span> ${name}`;
+        item.innerHTML = `
+          <span class="icon">🎭</span>
+          <span style="flex:1">${name}</span>
+          <button class="item-delete-btn" onclick="event.stopPropagation(); showDeleteConfirm(this, 'sprite', '${name}')" title="Delete">🗑️</button>
+        `;
         item.onclick = () => selectCharacter(name);
         list.appendChild(item);
       }
