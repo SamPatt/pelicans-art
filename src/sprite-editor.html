@@ -3839,6 +3839,11 @@
     }
     
     async function saveSprite() {
+      // Handle background saves
+      if (currentEditMode === 'background') {
+        return saveBackgroundAsset();
+      }
+
       if (!currentSpriteName || !currentSprite) {
         updateStatus('No sprite to save');
         return;
@@ -3879,6 +3884,32 @@
       URL.revokeObjectURL(url);
 
       updateStatus(`Saved: ${currentSpriteName} (downloaded - API unavailable)`);
+    }
+
+    async function saveBackgroundAsset() {
+      if (!currentBackgroundName || !currentSprite) {
+        updateStatus('No background to save');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/backgrounds/${currentBackgroundName}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ svg: currentSprite })
+        });
+
+        if (response.ok) {
+          updateStatus(`Saved background: ${currentBackgroundName}`);
+        } else {
+          const err = await response.text();
+          console.error('Background save failed:', err);
+          updateStatus('Failed to save background');
+        }
+      } catch (err) {
+        console.error('Background save error:', err);
+        updateStatus('Error saving background');
+      }
     }
     
     function saveToLocalStorage() {
