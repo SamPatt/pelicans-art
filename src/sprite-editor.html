@@ -824,21 +824,23 @@
       color: white;
     }
 
-    /* Drag handle */
-    .script-line .drag-handle {
+    /* Script card reorder grip */
+    .script-line .reorder-grip {
       cursor: grab;
-      color: #555;
-      padding: 0 4px;
+      color: #444;
+      padding: 0 8px 0 0;
       user-select: none;
-      font-size: 1.1em;
-      letter-spacing: -2px;
+      font-size: 0.9em;
+      flex-shrink: 0;
+      opacity: 0.6;
     }
 
-    .script-line .drag-handle:hover {
-      color: #888;
+    .script-line:hover .reorder-grip {
+      opacity: 1;
+      color: #666;
     }
 
-    .script-line .drag-handle:active {
+    .script-line .reorder-grip:active {
       cursor: grabbing;
     }
 
@@ -1810,7 +1812,7 @@
 
         scriptHtml += `
           <div class="script-line ${cssClass}" data-index="${i}" draggable="true">
-            <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
+            <span class="reorder-grip" title="Drag to reorder">☰</span>
             <span class="content">${content}</span>
             <span class="actions">
               <button class="action-btn edit" onclick="openEditActionModal(${i})" title="Edit">✏️</button>
