@@ -887,17 +887,32 @@
           // Use the SVG from the message directly
           console.log('Sprite updated, applying new SVG...');
           if (msg.sprite && msg.sprite.svg) {
+            // Save current state to undo stack before applying changes
+            saveState();
+
+            // Store current zoom level
+            const currentZoom = zoomLevel;
+
+            // Apply new SVG
             currentSprite = msg.sprite.svg;
             const canvas = document.getElementById('svg-canvas');
             canvas.innerHTML = msg.sprite.svg;
-            setupSvgInteraction();
-            // Preserve current zoom level
+
+            // Set up click handlers on elements
+            renderSpriteFromCurrent();
+            buildElementTree();
+            clearSelection();
+            updateUndoButtons();
+
+            // Restore zoom level
+            zoomLevel = currentZoom;
             const svg = canvas.querySelector('svg');
             if (svg) {
               const baseSize = 300;
               svg.setAttribute('width', baseSize * (zoomLevel / 100));
               svg.setAttribute('height', baseSize * 1.5 * (zoomLevel / 100));
             }
+
             setCommandStatus('success', 'Updated!');
           }
         }
@@ -1051,7 +1066,11 @@
       const canvas = document.getElementById('svg-canvas');
       canvas.innerHTML = svg;
 
-      setupSvgInteraction();
+      // Set up click handlers and UI
+      renderSpriteFromCurrent();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
       applyZoom();
       updateCommandContext();
       updateVariantTabs();
