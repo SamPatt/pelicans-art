@@ -863,16 +863,16 @@
 
     .script-insert-gap .insert-btn {
       position: absolute;
-      left: 50%;
+      left: 4px;
       top: 50%;
-      transform: translate(-50%, -50%);
-      width: 20px;
-      height: 20px;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
       background: #0f3460;
       border: 1px dashed #4ecca3;
       color: #4ecca3;
-      font-size: 14px;
+      font-size: 12px;
       line-height: 1;
       cursor: pointer;
       opacity: 0;
@@ -890,7 +890,7 @@
     .script-insert-gap .insert-btn:hover {
       background: #4ecca3;
       color: #111;
-      transform: translate(-50%, -50%) scale(1.2);
+      transform: translateY(-50%) scale(1.2);
     }
 
     /* Drop zone highlight */
@@ -1878,6 +1878,12 @@
     }
 
     function handleDragOver(e) {
+      const targetIndex = parseInt(this.dataset.insertIndex);
+      // Don't allow drop in gap immediately before or after the dragged item
+      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) {
+        e.dataTransfer.dropEffect = 'none';
+        return;
+      }
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       this.classList.add('drag-over');
@@ -1893,11 +1899,19 @@
 
       const targetIndex = parseInt(this.dataset.insertIndex);
       if (draggedIndex === null || draggedIndex === undefined) return;
+      // Don't allow drop in gap immediately before or after the dragged item
+      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) return;
 
       moveAction(draggedIndex, targetIndex);
     }
 
     function handleCardDragOver(e) {
+      const targetIndex = parseInt(this.dataset.index);
+      // Don't allow drop on the same card or the one right after
+      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) {
+        e.dataTransfer.dropEffect = 'none';
+        return;
+      }
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       this.classList.add('drag-over');
@@ -1913,6 +1927,8 @@
 
       const targetIndex = parseInt(this.dataset.index);
       if (draggedIndex === null || draggedIndex === undefined) return;
+      // Don't allow drop on the same card or the one right after
+      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) return;
 
       // Drop on card = insert before that card
       moveAction(draggedIndex, targetIndex);
