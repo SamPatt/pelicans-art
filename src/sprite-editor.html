@@ -270,11 +270,12 @@
       flex: 1;
       overflow: auto;
       padding: 20px;
-      cursor: grab;
+      cursor: crosshair;
+      position: relative;
     }
 
-    .canvas-container.panning {
-      cursor: grabbing;
+    .canvas-container.selecting {
+      cursor: crosshair;
       user-select: none;
     }
 
@@ -296,6 +297,22 @@
     .selected-element {
       outline: 2px dashed #e94560;
       outline-offset: 2px;
+      /* SVG elements need filter for highlight since outline doesn't work */
+      filter: drop-shadow(0 0 3px #e94560) drop-shadow(0 0 3px #e94560);
+    }
+
+    /* Box selection marquee */
+    #selection-box {
+      position: absolute;
+      border: 2px dashed #4ecca3;
+      background: rgba(78, 204, 163, 0.1);
+      pointer-events: none;
+      z-index: 1000;
+      display: none;
+    }
+
+    #selection-box.active {
+      display: block;
     }
     
     /* Resize handles */
@@ -1704,6 +1721,7 @@
         <button onclick="zoomReset()">⟲</button>
       </div>
       <div class="canvas-container">
+        <div id="selection-box"></div>
         <div id="svg-canvas">
           <!-- SVG loaded here -->
         </div>
@@ -1882,11 +1900,14 @@
     let currentSprite = null;
     let currentSpriteName = null;
     let selectedElement = null;
+    let selectedElements = []; // Multi-selection support
     let undoStack = [];
     let redoStack = [];
     let isDragging = false;
+    let justFinishedDragging = false; // Prevents click from firing after drag
     let dragStart = { x: 0, y: 0 };
     let elementStart = { x: 0, y: 0 };
+    let elementStarts = []; // Starting positions for multi-drag
     let zoomLevel = 100;
     let currentMeta = null;
     let isGenerating = false;
@@ -3852,14 +3873,20 @@
             el.style.cursor = 'pointer';
             el.addEventListener('click', (e) => {
               e.stopPropagation();
-              selectElement(el);
+              // Don't change selection if we just finished dragging
+              if (justFinishedDragging) {
+                justFinishedDragging = false;
+                return;
+              }
+              // Shift-click to add to selection, regular click to replace
+              selectElement(el, e.shiftKey);
             });
           }
         });
         
         // Click on canvas background deselects
         svg.addEventListener('click', (e) => {
-          if (e.target === svg) {
+          if (e.target === svg && !didBoxSelect) {
             clearSelection();
           }
         });
@@ -3890,6 +3917,11 @@
         item.dataset.depth = depth;
         item.dataset.element = i; // Store reference for selection
 
+        // Highlight if this element is selected
+        if (selectedElements.includes(child)) {
+          item.classList.add('selected');
+        }
+
         const indent = '<span class="tree-indent"></span>'.repeat(depth);
         const tag = child.tagName.toLowerCase();
         const id = child.id ? ` <span class="id">#${child.id}</span>` : '';
@@ -3897,7 +3929,10 @@
         const layerBadge = depth === 0 ? `<span class="layer-badge">${i + 1}/${totalSiblings}</span>` : '';
 
         item.innerHTML = `${indent}<span class="tag">&lt;${tag}&gt;</span>${id}${layerBadge}`;
-        item.onclick = () => selectElement(child);
+        item.onclick = (e) => selectElement(child, e.shiftKey);
+
+        // Store reference to tree item on the element for quick updates
+        child._treeItem = item;
 
         container.appendChild(item);
 
@@ -3908,35 +3943,77 @@
     }
     
     // === SELECTION ===
-    function selectElement(el) {
-      clearSelection();
+    function selectElement(el, addToSelection = false) {
+      if (!addToSelection) {
+        clearSelection();
+      }
+
+      // Check if already selected
+      if (selectedElements.includes(el)) {
+        return;
+      }
+
       selectedElement = el;
+      selectedElements.push(el);
       el.classList.add('selected-element');
-      
+
       // Highlight in tree
-      const tree = document.getElementById('element-tree');
-      const items = tree.querySelectorAll('.tree-item');
-      items.forEach(item => {
-        // Simple matching by tag and id
-        const hasId = el.id && item.innerHTML.includes(`#${el.id}`);
-        const matchesTag = item.innerHTML.includes(`<${el.tagName.toLowerCase()}>`);
-        if (hasId || (!el.id && matchesTag)) {
-          // This is approximate - could improve
-        }
-      });
-      
-      showProperties(el);
-      setupDragging(el);
-      createResizeHandles(el);
+      if (el._treeItem) {
+        el._treeItem.classList.add('selected');
+      }
+
+      // Setup dragging for multi-select
+      setupMultiDragging(el);
+
+      if (selectedElements.length === 1) {
+        showProperties(el);
+        createResizeHandles(el);
+      } else {
+        removeResizeHandles();
+        document.getElementById('properties-panel').innerHTML =
+          `<div class="no-selection">${selectedElements.length} elements selected</div>`;
+      }
     }
-    
+
+    function selectMultipleElements(elements) {
+      clearSelection();
+      elements.forEach((el) => {
+        selectedElements.push(el);
+        el.classList.add('selected-element');
+        if (el._treeItem) {
+          el._treeItem.classList.add('selected');
+        }
+        setupMultiDragging(el);
+      });
+
+      if (elements.length === 1) {
+        selectedElement = elements[0];
+        showProperties(elements[0]);
+        createResizeHandles(elements[0]);
+      } else if (elements.length > 1) {
+        selectedElement = elements[0];
+        document.getElementById('properties-panel').innerHTML =
+          `<div class="no-selection">${elements.length} elements selected</div>`;
+      }
+    }
+
     function clearSelection() {
       removeResizeHandles();
-      if (selectedElement) {
-        selectedElement.classList.remove('selected-element');
-      }
+      selectedElements.forEach(el => {
+        el.classList.remove('selected-element');
+        if (el._treeItem) {
+          el._treeItem.classList.remove('selected');
+        }
+        // Remove multi-drag listeners
+        if (el._multiDragStart) {
+          el.removeEventListener('mousedown', el._multiDragStart);
+          el.removeEventListener('touchstart', el._multiDragStart);
+          delete el._multiDragStart;
+        }
+      });
       selectedElement = null;
-      document.getElementById('properties-panel').innerHTML = 
+      selectedElements = [];
+      document.getElementById('properties-panel').innerHTML =
         '<div class="no-selection">Select an element to edit</div>';
     }
     
@@ -4217,64 +4294,144 @@
     // === DRAGGING (mouse + touch) ===
     function setupDragging(el) {
       const svg = document.querySelector('#svg-canvas svg');
-      
+
       el.addEventListener('mousedown', startDrag);
       el.addEventListener('touchstart', startDrag, { passive: false });
-      
+
       function getEventCoords(e) {
         if (e.touches && e.touches.length > 0) {
           return { x: e.touches[0].clientX, y: e.touches[0].clientY };
         }
         return { x: e.clientX, y: e.clientY };
       }
-      
+
       function startDrag(e) {
         if (e.button && e.button !== 0) return;
         e.preventDefault();
-        
+
         saveState();
         isDragging = true;
-        
+
         const coords = getEventCoords(e);
         const pt = svg.createSVGPoint();
         pt.x = coords.x;
         pt.y = coords.y;
         const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-        
+
         dragStart = { x: svgPt.x, y: svgPt.y };
         elementStart = getElementPosition(el);
-        
+
         document.addEventListener('mousemove', drag);
         document.addEventListener('mouseup', endDrag);
         document.addEventListener('touchmove', drag, { passive: false });
         document.addEventListener('touchend', endDrag);
       }
-      
+
       function drag(e) {
         if (!isDragging) return;
         e.preventDefault();
-        
+
         const coords = getEventCoords(e);
         const pt = svg.createSVGPoint();
         pt.x = coords.x;
         pt.y = coords.y;
         const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
-        
+
         const dx = svgPt.x - dragStart.x;
         const dy = svgPt.y - dragStart.y;
-        
+
         setElementPosition(el, elementStart.x + dx, elementStart.y + dy);
         showProperties(el); // Update property panel
       }
-      
+
       function endDrag() {
         isDragging = false;
+        justFinishedDragging = true; // Prevent click from re-selecting
         document.removeEventListener('mousemove', drag);
         document.removeEventListener('mouseup', endDrag);
         document.removeEventListener('touchmove', drag);
         document.removeEventListener('touchend', endDrag);
         updateSpriteSource();
       }
+    }
+
+    // Multi-element dragging - moves all selected elements together
+    function setupMultiDragging(el) {
+      const svg = document.querySelector('#svg-canvas svg');
+
+      // Remove any existing listeners to avoid duplicates
+      el.removeEventListener('mousedown', el._multiDragStart);
+      el.removeEventListener('touchstart', el._multiDragStart);
+
+      function getEventCoords(e) {
+        if (e.touches && e.touches.length > 0) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      }
+
+      function startMultiDrag(e) {
+        if (e.button && e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        saveState();
+        isDragging = true;
+
+        const coords = getEventCoords(e);
+        const pt = svg.createSVGPoint();
+        pt.x = coords.x;
+        pt.y = coords.y;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        dragStart = { x: svgPt.x, y: svgPt.y };
+
+        // Store starting positions for all selected elements
+        elementStarts = selectedElements.map(sel => ({
+          el: sel,
+          pos: getElementPosition(sel)
+        }));
+
+        document.addEventListener('mousemove', multiDrag);
+        document.addEventListener('mouseup', endMultiDrag);
+        document.addEventListener('touchmove', multiDrag, { passive: false });
+        document.addEventListener('touchend', endMultiDrag);
+      }
+
+      function multiDrag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        const coords = getEventCoords(e);
+        const pt = svg.createSVGPoint();
+        pt.x = coords.x;
+        pt.y = coords.y;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        const dx = svgPt.x - dragStart.x;
+        const dy = svgPt.y - dragStart.y;
+
+        // Move all selected elements
+        elementStarts.forEach(({ el, pos }) => {
+          setElementPosition(el, pos.x + dx, pos.y + dy);
+        });
+      }
+
+      function endMultiDrag() {
+        isDragging = false;
+        justFinishedDragging = true; // Prevent click from clearing selection
+        document.removeEventListener('mousemove', multiDrag);
+        document.removeEventListener('mouseup', endMultiDrag);
+        document.removeEventListener('touchmove', multiDrag);
+        document.removeEventListener('touchend', endMultiDrag);
+        updateSpriteSource();
+      }
+
+      // Store reference for removal
+      el._multiDragStart = startMultiDrag;
+
+      el.addEventListener('mousedown', startMultiDrag);
+      el.addEventListener('touchstart', startMultiDrag, { passive: false });
     }
     
     function getElementPosition(el) {
@@ -6301,7 +6458,7 @@
             }
           });
           svg.addEventListener('click', (e) => {
-            if (e.target === svg) {
+            if (e.target === svg && !didBoxSelect) {
               clearSelection();
             }
           });
@@ -6374,74 +6531,165 @@
       applyZoom();
     }, { passive: false });
 
-    // === CANVAS PANNING ===
-    let isPanning = false;
-    let didPan = false;
-    let panStart = { x: 0, y: 0 };
-    let scrollStart = { x: 0, y: 0 };
+    // === BOX SELECTION ===
+    let isBoxSelecting = false;
+    let didBoxSelect = false;
+    let boxStart = { x: 0, y: 0 };
 
     const canvasContainer = document.querySelector('.canvas-container');
+    const selectionBox = document.getElementById('selection-box');
 
     canvasContainer.addEventListener('mousedown', (e) => {
-      // Only start panning if clicking on empty space (container or svg-canvas background)
+      // Only start box selection on empty space
       const isEmptySpace = e.target === canvasContainer ||
                           e.target.id === 'svg-canvas' ||
+                          e.target.id === 'selection-box' ||
                           e.target.tagName === 'svg';
 
-      // Don't pan if clicking on an SVG element (for element dragging)
       if (!isEmptySpace) return;
-
-      // Don't pan if middle/right click
       if (e.button !== 0) return;
 
-      isPanning = true;
-      didPan = false;
-      canvasContainer.classList.add('panning');
-      panStart = { x: e.clientX, y: e.clientY };
-      scrollStart = { x: canvasContainer.scrollLeft, y: canvasContainer.scrollTop };
+      isBoxSelecting = true;
+      didBoxSelect = false;
+
+      // Get position relative to the container
+      const rect = canvasContainer.getBoundingClientRect();
+      boxStart = {
+        x: e.clientX - rect.left + canvasContainer.scrollLeft,
+        y: e.clientY - rect.top + canvasContainer.scrollTop
+      };
+
+      // Initialize selection box
+      selectionBox.style.left = boxStart.x + 'px';
+      selectionBox.style.top = boxStart.y + 'px';
+      selectionBox.style.width = '0px';
+      selectionBox.style.height = '0px';
 
       e.preventDefault();
     });
 
     document.addEventListener('mousemove', (e) => {
-      if (!isPanning) return;
+      if (!isBoxSelecting) return;
 
-      const dx = e.clientX - panStart.x;
-      const dy = e.clientY - panStart.y;
+      const rect = canvasContainer.getBoundingClientRect();
+      const currentX = e.clientX - rect.left + canvasContainer.scrollLeft;
+      const currentY = e.clientY - rect.top + canvasContainer.scrollTop;
 
-      // Only count as panning if moved more than 3 pixels
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-        didPan = true;
+      // Calculate box dimensions (handle negative drag)
+      const x = Math.min(boxStart.x, currentX);
+      const y = Math.min(boxStart.y, currentY);
+      const width = Math.abs(currentX - boxStart.x);
+      const height = Math.abs(currentY - boxStart.y);
+
+      // Only show box if dragged more than 5 pixels
+      if (width > 5 || height > 5) {
+        didBoxSelect = true;
+        selectionBox.classList.add('active');
+        selectionBox.style.left = x + 'px';
+        selectionBox.style.top = y + 'px';
+        selectionBox.style.width = width + 'px';
+        selectionBox.style.height = height + 'px';
       }
-
-      canvasContainer.scrollLeft = scrollStart.x - dx;
-      canvasContainer.scrollTop = scrollStart.y - dy;
     });
 
-    document.addEventListener('mouseup', () => {
-      if (isPanning) {
-        isPanning = false;
-        canvasContainer.classList.remove('panning');
+    document.addEventListener('mouseup', (e) => {
+      if (!isBoxSelecting) return;
+
+      isBoxSelecting = false;
+
+      // Get bounding rect BEFORE hiding the selection box
+      const boxRect = selectionBox.getBoundingClientRect();
+      selectionBox.classList.remove('active');
+
+      if (didBoxSelect) {
+        const svgCanvas = document.getElementById('svg-canvas');
+        const svg = svgCanvas.querySelector('svg');
+        if (!svg) {
+          didBoxSelect = false;
+          return;
+        }
+
+        // Recursively find all selectable elements that intersect
+        const elementsToSelect = [];
+        const skipTags = ['defs', 'style', 'title', 'desc', 'metadata', 'svg'];
+
+        function checkElement(el) {
+          const tagName = el.tagName.toLowerCase();
+          if (skipTags.includes(tagName)) return;
+
+          try {
+            const elRect = el.getBoundingClientRect();
+
+            // Check if element intersects with selection box
+            const intersects = !(elRect.right < boxRect.left ||
+                                elRect.left > boxRect.right ||
+                                elRect.bottom < boxRect.top ||
+                                elRect.top > boxRect.bottom);
+
+            // Only add leaf elements (not groups)
+            if (intersects && elRect.width > 0 && elRect.height > 0) {
+              if (tagName !== 'g') {
+                elementsToSelect.push(el);
+              }
+            }
+          } catch (err) {
+            // Skip elements that can't be measured
+          }
+
+          // Recurse into children
+          if (el.children && el.children.length > 0) {
+            Array.from(el.children).forEach(checkElement);
+          }
+        }
+
+        Array.from(svg.children).forEach(checkElement);
+
+        if (elementsToSelect.length > 0) {
+          // Check if shift is held to add to selection
+          if (e.shiftKey) {
+            elementsToSelect.forEach(el => {
+              if (!selectedElements.includes(el)) {
+                selectElement(el, true);
+              }
+            });
+          } else {
+            selectMultipleElements(elementsToSelect);
+          }
+          updateStatus(`Selected ${selectedElements.length} element${selectedElements.length > 1 ? 's' : ''}`);
+        }
+        // Don't reset didBoxSelect here - let the click handler do it
       }
     });
 
-    // Deselect when clicking on canvas container (outside SVG) - but not after panning
+    // Deselect when clicking on canvas container (not after box selection)
     canvasContainer.addEventListener('click', (e) => {
-      // Don't deselect if we just finished panning
-      if (didPan) {
-        didPan = false;
+      // Don't deselect if we just did box selection
+      if (didBoxSelect) {
+        didBoxSelect = false;
         return;
       }
 
-      // Only deselect if clicking directly on the container or svg-canvas
-      if (e.target === canvasContainer || e.target.id === 'svg-canvas' || e.target.tagName === 'svg') {
+      // Only deselect if clicking directly on empty space
+      const isEmptySpace = e.target === canvasContainer ||
+                          e.target.id === 'svg-canvas' ||
+                          e.target.tagName === 'svg';
+
+      if (isEmptySpace) {
         clearSelection();
       }
     });
 
-    // Prevent text selection while panning
+    // Prevent text selection while box selecting
     canvasContainer.addEventListener('selectstart', (e) => {
-      if (isPanning) e.preventDefault();
+      if (isBoxSelecting) e.preventDefault();
+    });
+
+    // Shift+click on element to add to selection
+    document.getElementById('svg-canvas').addEventListener('click', (e) => {
+      if (e.shiftKey && e.target.tagName !== 'svg' && e.target.id !== 'svg-canvas') {
+        e.stopPropagation();
+        selectElement(e.target, true);
+      }
     });
   </script>
 </body>
