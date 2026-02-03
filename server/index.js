@@ -3,9 +3,12 @@ import cors from 'cors';
 import { createServer } from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fetch from 'node-fetch';
 
 import { ensureDataDirs } from './services/storage.js';
 import { setupWebSocket } from './services/websocket.js';
+
+const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
 import spritesRouter from './routes/sprites.js';
 import skitsRouter from './routes/skits.js';
 import publishRouter from './routes/publish.js';
@@ -32,6 +35,36 @@ app.use('/api/skits', skitsRouter);
 app.use('/api/publish', publishRouter);
 app.use('/api/tts', ttsRouter);
 app.use('/api/backgrounds', backgroundsRouter);
+
+// TTS proxy for legacy player compatibility (forwards /tts/* to TTS server)
+app.post('/tts/tts', async (req, res) => {
+  try {
+    // Forward the raw body to TTS server
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
+    req.on('end', async () => {
+      const body = Buffer.concat(chunks);
+      const response = await fetch(`${TTS_URL}/tts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': req.get('Content-Type')
+        },
+        body
+      });
+
+      if (!response.ok) {
+        return res.status(response.status).send(await response.text());
+      }
+
+      res.set('Content-Type', 'audio/wav');
+      const buffer = await response.buffer();
+      res.send(buffer);
+    });
+  } catch (err) {
+    console.error('TTS proxy error:', err);
+    res.status(502).json({ error: true, message: 'TTS service unavailable' });
+  }
+});
 
 // Static route aliases
 app.get('/player', (req, res) => {
