@@ -1866,6 +1866,74 @@
       }
     }
     
+    // === LOAD RAW SKIT FROM API ===
+    async function loadSkitFromApi(id) {
+      document.getElementById('status').textContent = 'Loading skit from API...';
+      document.getElementById('playBtn').disabled = true;
+
+      try {
+        const resp = await fetch(`/api/skits/${id}`);
+        if (!resp.ok) {
+          throw new Error(`Failed to load skit: ${resp.status}`);
+        }
+        const skit = await resp.json();
+
+        currentSkit = skit;
+        currentSkitName = id;
+        triggeredBeats = new Set();
+        audioCache.clear();
+
+        // Clear stage
+        const stage = document.getElementById('stage');
+        stage.querySelectorAll('.character').forEach(el => el.remove());
+        Object.keys(characters).forEach(k => delete characters[k]);
+
+        // Set background
+        if (skit.stage?.background) {
+          document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg?v=${CACHE_BUSTER}`;
+        }
+
+        // Create characters
+        for (const [name, config] of Object.entries(skit.cast || {})) {
+          await createCharacter(name, config);
+        }
+
+        // Reset camera
+        camera.x = 50; camera.y = 50; camera.zoom = 1; camera.follow = null;
+        updateCamera();
+
+        // Set initial eye directions
+        const charNames = Object.keys(characters);
+        if (charNames.length >= 2) {
+          const [char1, char2] = charNames;
+          const char1LooksRight = characters[char2].x > characters[char1].x;
+          setEyeDirection(char1, char1LooksRight ? 'right' : 'left');
+          setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
+        }
+
+        // Generate audio
+        document.getElementById('status').textContent = 'Generating audio...';
+        const sayActions = (skit.script || []).filter(b => b.do === 'say');
+        const indexMap = new Map();
+        sayActions.forEach((action, idx) => indexMap.set(action, idx));
+
+        for (const action of sayActions) {
+          const char = characters[action.who];
+          if (char) {
+            const voice = char.voice || 'alba';
+            const idx = indexMap.get(action);
+            await generateAudio(action.line, voice, idx, action.who);
+          }
+        }
+
+        document.getElementById('status').textContent = `Loaded: ${skit.meta?.title || id}`;
+        document.getElementById('playBtn').disabled = false;
+      } catch (err) {
+        console.error('Failed to load skit from API:', err);
+        document.getElementById('status').textContent = `Error: ${err.message}`;
+      }
+    }
+
     // === INIT ===
     async function init() {
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -1874,18 +1942,27 @@
       analyser.smoothingTimeConstant = 0.8;
       dataArray = new Uint8Array(analyser.frequencyBinCount);
       analyser.connect(audioContext.destination);
-      
-      // Check for URL parameter to auto-load published skit
+
+      // Check for URL parameter to auto-load skit
       const params = new URLSearchParams(window.location.search);
       const skitParam = params.get('skit');
-      
+
       if (skitParam) {
-        // Hide skit switcher and URL loader for published mode
+        // Hide skit switcher and URL loader
         document.querySelectorAll('#controls button:not(#playBtn):not(#captionBtn)').forEach(b => b.style.display = 'none');
         document.getElementById('url-loader').style.display = 'none';
         document.getElementById('publishBtn').style.display = 'none';
-        // Load pre-generated published skit
-        await loadFromUrl(`published/${skitParam}.json`);
+
+        // Check if it's a UUID (raw skit from API) or a published skit name
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(skitParam);
+
+        if (isUuid) {
+          // Load raw skit from API
+          await loadSkitFromApi(skitParam);
+        } else {
+          // Load pre-generated published skit
+          await loadFromUrl(`published/${skitParam}.json`);
+        }
       } else {
         await loadSkit('luckyCharms');
       }
