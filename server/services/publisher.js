@@ -23,7 +23,8 @@ async function generateTTS(text, voice) {
 
   const response = await fetch(`${TTS_URL}/tts`, {
     method: 'POST',
-    body: formData
+    body: formData,
+    headers: formData.getHeaders()
   });
 
   if (!response.ok) {
@@ -64,6 +65,9 @@ export async function publishSkit(skitId, skit, onProgress) {
     audio: {}
   };
 
+  // Track failures for reporting
+  const failures = [];
+
   // Calculate total steps
   const spriteNames = new Set(Object.values(skit.cast).map(c => c.sprite));
   const sayActions = skit.script.filter(b => b.do === 'say');
@@ -85,7 +89,7 @@ export async function publishSkit(skitId, skit, onProgress) {
       assets.sprites[`${spriteName}-front`] = svgToDataUrl(sprite.svg);
     } catch (err) {
       console.warn(`Failed to load sprite ${spriteName}:`, err.message);
-      // Continue without this sprite
+      failures.push({ type: 'sprite', name: spriteName, error: err.message });
     }
   }
 
@@ -103,6 +107,7 @@ export async function publishSkit(skitId, skit, onProgress) {
     assets.backgrounds[skit.stage.background] = svgToDataUrl(bgSvg);
   } catch (err) {
     console.warn(`Failed to load background ${skit.stage.background}:`, err.message);
+    failures.push({ type: 'background', name: skit.stage.background, error: err.message });
   }
 
   // 3. Generate audio for each "say" action
@@ -112,6 +117,7 @@ export async function publishSkit(skitId, skit, onProgress) {
 
     if (!char) {
       console.warn(`Unknown character in script: ${beat.who}`);
+      failures.push({ type: 'audio', line: i, error: `Unknown character: ${beat.who}` });
       continue;
     }
 
@@ -130,7 +136,7 @@ export async function publishSkit(skitId, skit, onProgress) {
       assets.audio[`line-${i}`] = audioToDataUrl(audioBuffer);
     } catch (err) {
       console.warn(`Failed to generate audio for line ${i}:`, err.message);
-      // Continue without this audio
+      failures.push({ type: 'audio', line: i, error: err.message });
     }
   }
 
@@ -150,6 +156,8 @@ export async function publishSkit(skitId, skit, onProgress) {
   return {
     id: skitId,
     url: `/published/${skitId}.json`,
-    size: result.size
+    size: result.size,
+    failures: failures.length > 0 ? failures : undefined,
+    complete: failures.length === 0
   };
 }

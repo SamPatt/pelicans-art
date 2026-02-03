@@ -54,7 +54,8 @@ router.post('/', async (req, res, next) => {
 
     const response = await fetch(`${TTS_URL}/tts`, {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: formData.getHeaders()
     });
 
     if (!response.ok) {
@@ -107,7 +108,8 @@ router.post('/generate', async (req, res, next) => {
 
     const response = await fetch(`${TTS_URL}/tts`, {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: formData.getHeaders()
     });
 
     if (!response.ok) {

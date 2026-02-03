@@ -8,7 +8,8 @@ import {
 import { normalizeSprite } from '../middleware/normalize.js';
 import {
   validateSpriteSvg,
-  validateSpriteMiddleware
+  validateSpriteMiddleware,
+  validateSpriteUpdateMiddleware
 } from '../middleware/validate.js';
 
 const router = Router();
@@ -82,11 +83,11 @@ router.post('/',
 
 /**
  * PUT /api/sprites/:name
- * Update sprite SVG or metadata
+ * Update sprite SVG and/or metadata
  */
 router.put('/:name',
   normalizeSprite,
-  validateSpriteMiddleware,
+  validateSpriteUpdateMiddleware,
   async (req, res, next) => {
     try {
       const { name } = req.params;
@@ -100,7 +101,9 @@ router.put('/:name',
         console.log(`Creating user shadow of built-in sprite: ${name}`);
       }
 
-      const result = await saveSprite(name, svg, meta || existing.meta);
+      // Use existing svg if not provided (metadata-only update)
+      const updatedSvg = svg || existing.svg;
+      const result = await saveSprite(name, updatedSvg, meta || existing.meta);
 
       // Broadcast update via WebSocket
       const wss = req.app.get('wss');

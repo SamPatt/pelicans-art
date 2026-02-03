@@ -19,6 +19,9 @@ const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../data');
 const app = express();
 const server = createServer(app);
 
+// Trust proxy for correct protocol/host behind reverse proxy
+app.set('trust proxy', true);
+
 // Middleware
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json({ limit: '10mb' })); // Large SVGs can be big

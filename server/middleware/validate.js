@@ -30,6 +30,13 @@ const VALID_SHOT_TYPES = ['wide', 'two-shot', 'closeup', 'extreme-closeup', 'med
 const VALID_ACTIONS = ['shot', 'say', 'emote', 'pause', 'enter', 'exit', 'move', 'look', 'turn', 'face'];
 
 /**
+ * Check if SVG has an element with given ID (supports single and double quotes)
+ */
+function hasId(svg, id) {
+  return new RegExp(`id=["']${id}["']`).test(svg);
+}
+
+/**
  * Validate sprite SVG structure
  * Returns { valid: boolean, errors: string[], warnings: string[] }
  */
@@ -55,30 +62,30 @@ export function validateSpriteSvg(svg) {
     warnings.push(`ViewBox is "${viewBoxMatch[1]}", expected "0 0 100 150"`);
   }
 
-  // Check required groups
+  // Check required groups (support both single and double quotes)
   for (const group of REQUIRED_SPRITE_GROUPS) {
-    if (!svg.includes(`id="${group}"`)) {
+    if (!hasId(svg, group)) {
       errors.push(`Missing required group: ${group}`);
     }
   }
 
-  // Check required elements
+  // Check required elements (support both single and double quotes)
   for (const element of REQUIRED_SPRITE_ELEMENTS) {
-    if (!svg.includes(`id="${element}"`)) {
+    if (!hasId(svg, element)) {
       errors.push(`Missing required element: ${element}`);
     }
   }
 
   // Check for pupil class on pupil elements
-  if (svg.includes('id="eye-left-pupil"') && !svg.match(/id="eye-left-pupil"[^>]*class="[^"]*pupil/)) {
+  if (hasId(svg, 'eye-left-pupil') && !svg.match(/id=["']eye-left-pupil["'][^>]*class=["'][^"']*pupil/)) {
     warnings.push('eye-left-pupil should have class="pupil" for eye tracking');
   }
-  if (svg.includes('id="eye-right-pupil"') && !svg.match(/id="eye-right-pupil"[^>]*class="[^"]*pupil/)) {
+  if (hasId(svg, 'eye-right-pupil') && !svg.match(/id=["']eye-right-pupil["'][^>]*class=["'][^"']*pupil/)) {
     warnings.push('eye-right-pupil should have class="pupil" for eye tracking');
   }
 
   // Check mouth-open has opacity="0"
-  if (svg.includes('id="mouth-open"') && !svg.match(/id="mouth-open"[^>]*opacity="0"/)) {
+  if (hasId(svg, 'mouth-open') && !svg.match(/id=["']mouth-open["'][^>]*opacity=["']0["']/)) {
     warnings.push('mouth-open should have opacity="0" initially');
   }
 
@@ -103,12 +110,12 @@ export function validateSpriteSvg(svg) {
  * Extract Y position from an SVG element (heuristic)
  */
 function extractYPosition(svg, elementId) {
-  // Try to find cy attribute (for ellipse/circle)
-  const cyMatch = svg.match(new RegExp(`id="${elementId}"[^>]*cy="([\\d.]+)"`));
+  // Try to find cy attribute (for ellipse/circle) - support single and double quotes
+  const cyMatch = svg.match(new RegExp(`id=["']${elementId}["'][^>]*cy=["']([\\d.]+)["']`));
   if (cyMatch) return parseFloat(cyMatch[1]);
 
   // Try to find y in d attribute for path (very basic)
-  const pathMatch = svg.match(new RegExp(`id="${elementId}"[^>]*d="[^"]*[\\s,]([\\d.]+)`));
+  const pathMatch = svg.match(new RegExp(`id=["']${elementId}["'][^>]*d=["'][^"']*[\\s,]([\\d.]+)`));
   if (pathMatch) return parseFloat(pathMatch[1]);
 
   return null;
@@ -212,13 +219,42 @@ export function validateSkit(skit) {
 }
 
 /**
- * Express middleware to validate sprite on create/update
+ * Express middleware to validate sprite on create (svg required)
  */
 export function validateSpriteMiddleware(req, res, next) {
   const { svg } = req.body;
 
   if (!svg) {
     return res.status(400).json({ error: true, message: 'SVG content is required' });
+  }
+
+  const validation = validateSpriteSvg(svg);
+
+  // Attach validation result for route to use
+  req.spriteValidation = validation;
+
+  // Don't block on warnings, only errors
+  if (!validation.valid) {
+    return res.status(400).json({
+      error: true,
+      message: 'Invalid sprite SVG',
+      validation
+    });
+  }
+
+  next();
+}
+
+/**
+ * Express middleware to validate sprite on update (svg optional for metadata-only updates)
+ */
+export function validateSpriteUpdateMiddleware(req, res, next) {
+  const { svg } = req.body;
+
+  // If no svg provided, this is a metadata-only update - skip validation
+  if (!svg) {
+    req.spriteValidation = null;
+    return next();
   }
 
   const validation = validateSpriteSvg(svg);
