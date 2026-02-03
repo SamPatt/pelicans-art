@@ -1922,12 +1922,13 @@
         }
 
         // Generate audio and set up cache (same pattern as loadSkit)
-        document.getElementById('status').textContent = 'Generating audio...';
         const sayActions = (skit.script || []).filter(b => b.do === 'say');
-        const beatIndexMap = new Map();
-        sayActions.forEach((action, idx) => beatIndexMap.set(action, idx));
+        const totalLines = sayActions.length;
 
-        for (const beat of sayActions) {
+        for (let i = 0; i < sayActions.length; i++) {
+          const beat = sayActions[i];
+          document.getElementById('status').textContent = `Generating audio ${i + 1}/${totalLines}...`;
+
           const char = characters[beat.who];
           if (!char) {
             console.warn(`Character "${beat.who}" not found`);
@@ -1952,7 +1953,7 @@
             gainNode.connect(analyser);
 
             // Use sequential index for cache key (API skits don't have t values)
-            const cacheKey = `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+            const cacheKey = `seq-${i}-${beat.who}`;
             audioCache.set(cacheKey, { audio, beat, charName: beat.who, gainNode });
           } catch (e) {
             console.error('TTS error for', beat.who, ':', e);
