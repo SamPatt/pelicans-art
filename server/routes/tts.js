@@ -71,13 +71,17 @@ router.post('/', async (req, res, next) => {
     res.set('Content-Type', 'audio/wav');
     response.body.pipe(res);
   } catch (err) {
-    if (err.code === 'ECONNREFUSED') {
+    console.error('TTS error:', err.code || err.type, err.message);
+    if (err.code === 'ECONNREFUSED' || err.errno === 'ECONNREFUSED' || err.type === 'system') {
       return res.status(503).json({
         error: true,
         message: 'TTS service unavailable. Is pocket-tts running?'
       });
     }
-    next(err);
+    return res.status(500).json({
+      error: true,
+      message: `TTS error: ${err.message}`
+    });
   }
 });
 
@@ -126,13 +130,17 @@ router.post('/generate', async (req, res, next) => {
       audio: `data:audio/wav;base64,${base64}`
     });
   } catch (err) {
-    if (err.code === 'ECONNREFUSED') {
+    console.error('TTS generate error:', err.code || err.type, err.message);
+    if (err.code === 'ECONNREFUSED' || err.errno === 'ECONNREFUSED' || err.type === 'system') {
       return res.status(503).json({
         error: true,
         message: 'TTS service unavailable. Is pocket-tts running?'
       });
     }
-    next(err);
+    return res.status(500).json({
+      error: true,
+      message: `TTS error: ${err.message}`
+    });
   }
 });
 
