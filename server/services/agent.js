@@ -53,9 +53,11 @@ OUTPUT FORMAT - You must respond with valid JSON:
   "svg": "<svg>...</svg>"
 }
 
-TYPE GUIDELINES:
-- "human": Human characters (people, occupations like doctor/chef/teacher, named individuals)
+TYPE IS REQUIRED - you MUST include the "type" field:
+- "human": Human characters (people, occupations like doctor/chef/teacher, named individuals, gangs, groups of people)
 - "creature": Non-human characters (animals, robots, aliens, monsters, fantasy beings, objects with faces)
+
+When in doubt, use "human" for any person or group of people.
 
 Output ONLY valid JSON with type and svg. No explanation, no markdown code blocks.`,
 
@@ -344,8 +346,8 @@ export async function generateAsset(request) {
       throw new Error('Sprite response missing svg field');
     }
     if (!parsed.type || !['human', 'creature'].includes(parsed.type)) {
-      // Default to creature if not specified
-      parsed.type = 'creature';
+      // Default to human if not specified (most sprites are people)
+      parsed.type = 'human';
     }
     // Extract and validate the SVG
     const svg = extractSvg(parsed.svg);
