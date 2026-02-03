@@ -133,7 +133,19 @@
       opacity: 0.5;
       cursor: not-allowed;
     }
-    
+
+    .toolbar button.save-success {
+      background: #4ecca3 !important;
+      color: #111 !important;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .toolbar button.save-error {
+      background: #e94560 !important;
+      color: #fff !important;
+      transition: background 0.2s, color 0.2s;
+    }
+
     .toolbar-divider {
       color: #444;
       margin: 0 5px;
@@ -256,18 +268,24 @@
     
     .canvas-container {
       flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       overflow: auto;
       padding: 20px;
+      cursor: grab;
     }
-    
+
+    .canvas-container.panning {
+      cursor: grabbing;
+      user-select: none;
+    }
+
     #svg-canvas {
       background: #2a2a4a;
       border: 2px solid #0f3460;
       border-radius: 8px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      cursor: default;
+      margin: auto;
+      width: fit-content;
     }
     
     #svg-canvas svg {
@@ -310,7 +328,7 @@
     
     /* Element tree */
     .element-tree {
-      height: 150px;
+      height: 300px;
       background: #16213e;
       border-top: 1px solid #0f3460;
       overflow-y: auto;
@@ -343,7 +361,22 @@
       display: inline-block;
       width: 15px;
     }
-    
+
+    .tree-item .layer-badge {
+      background: #0f3460;
+      color: #888;
+      font-size: 0.75em;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-left: 6px;
+      font-family: monospace;
+    }
+
+    .tree-item.selected .layer-badge {
+      background: rgba(0,0,0,0.3);
+      color: #fff;
+    }
+
     /* Right panel - properties */
     .panel-right {
       width: 280px;
@@ -1179,6 +1212,133 @@
       background: #444;
     }
 
+    /* === Naming Modal === */
+    .naming-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .naming-modal.visible {
+      display: flex;
+    }
+
+    .naming-modal-content {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 20px;
+      width: 360px;
+      max-width: 90vw;
+    }
+
+    .naming-modal h3 {
+      color: #4ecca3;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+    }
+
+    .naming-modal .form-group {
+      margin-bottom: 12px;
+    }
+
+    .naming-modal label {
+      display: block;
+      color: #888;
+      font-size: 0.85em;
+      margin-bottom: 4px;
+    }
+
+    .naming-modal input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    .naming-modal input:focus {
+      outline: none;
+      border-color: #4ecca3;
+    }
+
+    .naming-modal .quick-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .naming-modal .quick-btn {
+      padding: 6px 14px;
+      background: #0f3460;
+      border: 1px solid #1a4a7a;
+      border-radius: 4px;
+      color: #4ecca3;
+      cursor: pointer;
+      font-size: 0.9em;
+      transition: all 0.15s;
+    }
+
+    .naming-modal .quick-btn:hover {
+      background: #1a4a7a;
+      border-color: #4ecca3;
+    }
+
+    .naming-modal .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .naming-modal .modal-buttons button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .naming-modal .btn-ok {
+      background: #4ecca3;
+      color: #111;
+    }
+
+    .naming-modal .btn-cancel {
+      background: #333;
+      color: #eee;
+    }
+
+    .naming-modal .btn-ok:hover {
+      background: #3db892;
+    }
+
+    .naming-modal .btn-cancel:hover {
+      background: #444;
+    }
+
+    .naming-modal .error-msg {
+      color: #e94560;
+      font-size: 0.85em;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .naming-modal .error-msg.visible {
+      display: block;
+    }
+
     /* === Voice Settings Panel === */
     .voice-section {
       border-top: 1px solid #0f3460;
@@ -1459,8 +1619,8 @@
       <span class="toolbar-divider">|</span>
       <button id="btn-duplicate" title="Duplicate (Ctrl+D)">⧉</button>
       <button id="btn-delete" title="Delete (Del)" style="color:#e94560;">🗑️</button>
-      <button id="btn-bring-front" title="Bring to Front">⬆</button>
-      <button id="btn-send-back" title="Send to Back">⬇</button>
+      <button id="btn-layer-up" title="Move Layer Up">⬆</button>
+      <button id="btn-layer-down" title="Move Layer Down">⬇</button>
       <span class="toolbar-divider">|</span>
       <button id="btn-undo" disabled>↩️ Undo</button>
       <button id="btn-redo" disabled>↪️ Redo</button>
@@ -1609,6 +1769,25 @@
         </div>
       </div>
 
+      <!-- Naming Modal -->
+      <div id="naming-modal" class="naming-modal">
+        <div class="naming-modal-content">
+          <h3 id="naming-modal-title">Enter Name</h3>
+          <div id="naming-quick-buttons" class="quick-buttons" style="display:none;">
+            <!-- Quick buttons populated by JS -->
+          </div>
+          <div class="form-group">
+            <label id="naming-modal-label">Name</label>
+            <input type="text" id="naming-modal-input" placeholder="lowercase-with-hyphens" autocomplete="off">
+            <div id="naming-modal-error" class="error-msg">Invalid name. Use only lowercase letters, numbers, and hyphens.</div>
+          </div>
+          <div class="modal-buttons">
+            <button class="btn-cancel" onclick="cancelNamingModal()">Cancel</button>
+            <button class="btn-ok" onclick="confirmNamingModal()">OK</button>
+          </div>
+        </div>
+      </div>
+
       <div class="element-tree">
         <div class="panel-header">🌳 Elements</div>
         <div id="element-tree">
@@ -1616,7 +1795,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Right Panel: Properties -->
     <div class="panel-right">
       <div class="panel-header">⚙️ Properties</div>
@@ -2464,6 +2643,108 @@
       insertAtIndex = null;
     }
 
+    // === Naming Modal Functions ===
+    let namingModalResolve = null;
+    let namingModalReject = null;
+
+    /**
+     * Show a naming modal and return a promise that resolves with the name
+     * @param {Object} options
+     * @param {string} options.title - Modal title
+     * @param {string} options.label - Input label
+     * @param {string} options.placeholder - Input placeholder
+     * @param {string} options.defaultValue - Default input value
+     * @param {string[]} options.quickButtons - Array of quick button labels
+     * @returns {Promise<string|null>} - Resolves with name or null if cancelled
+     */
+    function showNamingModal(options = {}) {
+      return new Promise((resolve, reject) => {
+        namingModalResolve = resolve;
+        namingModalReject = reject;
+
+        const modal = document.getElementById('naming-modal');
+        const title = document.getElementById('naming-modal-title');
+        const label = document.getElementById('naming-modal-label');
+        const input = document.getElementById('naming-modal-input');
+        const error = document.getElementById('naming-modal-error');
+        const quickBtnsContainer = document.getElementById('naming-quick-buttons');
+
+        title.textContent = options.title || 'Enter Name';
+        label.textContent = options.label || 'Name';
+        input.placeholder = options.placeholder || 'lowercase-with-hyphens';
+        input.value = options.defaultValue || '';
+        error.classList.remove('visible');
+
+        // Set up quick buttons
+        if (options.quickButtons && options.quickButtons.length > 0) {
+          quickBtnsContainer.innerHTML = '';
+          options.quickButtons.forEach(btnName => {
+            const btn = document.createElement('button');
+            btn.className = 'quick-btn';
+            btn.textContent = btnName;
+            btn.onclick = () => {
+              input.value = btnName;
+              input.focus();
+            };
+            quickBtnsContainer.appendChild(btn);
+          });
+          quickBtnsContainer.style.display = 'flex';
+        } else {
+          quickBtnsContainer.style.display = 'none';
+        }
+
+        modal.classList.add('visible');
+        input.focus();
+        input.select();
+
+        // Handle Enter key
+        input.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            confirmNamingModal();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelNamingModal();
+          }
+        };
+      });
+    }
+
+    function confirmNamingModal() {
+      const input = document.getElementById('naming-modal-input');
+      const error = document.getElementById('naming-modal-error');
+      const value = input.value.trim();
+
+      if (!value) {
+        cancelNamingModal();
+        return;
+      }
+
+      const safeName = value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+      if (!/^[a-z0-9-]+$/.test(safeName) || safeName === '-') {
+        error.classList.add('visible');
+        input.focus();
+        return;
+      }
+
+      document.getElementById('naming-modal').classList.remove('visible');
+      if (namingModalResolve) {
+        namingModalResolve(safeName);
+        namingModalResolve = null;
+        namingModalReject = null;
+      }
+    }
+
+    function cancelNamingModal() {
+      document.getElementById('naming-modal').classList.remove('visible');
+      if (namingModalResolve) {
+        namingModalResolve(null);
+        namingModalResolve = null;
+        namingModalReject = null;
+      }
+    }
+
     function saveActionFromModal() {
       const actionType = document.getElementById('action-type').value;
       let action = { do: actionType };
@@ -3106,21 +3387,16 @@
 
         const typeLabel = assetType === 'background' ? 'background' : 'sprite';
 
-        // Keep prompting until valid name or cancel
-        while (true) {
-          const name = prompt(`Name for new ${typeLabel} (lowercase, numbers, hyphens only):`, suggestedName);
+        assetName = await showNamingModal({
+          title: `New ${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)}`,
+          label: `${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)} name`,
+          placeholder: 'lowercase-with-hyphens',
+          defaultValue: suggestedName
+        });
 
-          if (!name) {
-            // User cancelled
-            return;
-          }
-
-          if (/^[a-z0-9-]+$/.test(name)) {
-            assetName = name;
-            break;
-          } else {
-            alert('Invalid name. Use only lowercase letters, numbers, and hyphens.');
-          }
+        if (!assetName) {
+          // User cancelled
+          return;
         }
       }
 
@@ -3524,20 +3800,30 @@
       }
     }
     
-    function addNewVariant() {
-      const name = prompt('New variant name (e.g., side, left, angry):');
-      if (!name) return;
-      const safeName = name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+    async function addNewVariant() {
+      // Filter out variant names that already exist
+      const commonVariants = ['back', 'side', 'left', 'right'];
+      const availableQuickButtons = commonVariants.filter(v => !currentVariants.includes(v));
+
+      const safeName = await showNamingModal({
+        title: 'New Variant',
+        label: 'Variant name (e.g., side, left, angry)',
+        placeholder: 'back',
+        quickButtons: availableQuickButtons
+      });
+
+      if (!safeName) return;
+
       currentVariant = safeName;
       currentVariants.push(safeName);
-      
+
       // Start with blank or copy current
       if (confirm('Start with a copy of current sprite? (Cancel for blank)')) {
         // Keep currentSprite as is
       } else {
         currentSprite = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150"></svg>`;
       }
-      
+
       renderVariantTabs();
       renderSprite();
       buildElementTree();
@@ -3595,20 +3881,26 @@
     
     function buildTreeRecursive(element, container, depth) {
       const children = element.children;
-      for (const child of children) {
+      const totalSiblings = children.length;
+
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
         const item = document.createElement('div');
         item.className = 'tree-item';
         item.dataset.depth = depth;
-        
+        item.dataset.element = i; // Store reference for selection
+
         const indent = '<span class="tree-indent"></span>'.repeat(depth);
         const tag = child.tagName.toLowerCase();
         const id = child.id ? ` <span class="id">#${child.id}</span>` : '';
-        
-        item.innerHTML = `${indent}<span class="tag">&lt;${tag}&gt;</span>${id}`;
+        // Layer number: i+1 of totalSiblings (1-indexed, higher = on top)
+        const layerBadge = depth === 0 ? `<span class="layer-badge">${i + 1}/${totalSiblings}</span>` : '';
+
+        item.innerHTML = `${indent}<span class="tag">&lt;${tag}&gt;</span>${id}${layerBadge}`;
         item.onclick = () => selectElement(child);
-        
+
         container.appendChild(item);
-        
+
         if (child.children.length > 0) {
           buildTreeRecursive(child, container, depth + 1);
         }
@@ -4191,24 +4483,42 @@
 
       // Try to save via API
       try {
-        const response = await fetch(`/api/sprites/${currentSpriteName}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            svg: currentSprite,
-            meta: currentMeta || {}
-          })
-        });
+        let response;
+        const variant = currentVariant || 'front';
+
+        if (variant === 'front') {
+          // Use the main sprite endpoint for front variant
+          response = await fetch(`/api/sprites/${currentSpriteName}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              svg: currentSprite,
+              meta: currentMeta || {}
+            })
+          });
+        } else {
+          // Use the variant-specific endpoint for other variants
+          response = await fetch(`/api/sprites/${currentSpriteName}/variant/${variant}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              svg: currentSprite
+            })
+          });
+        }
 
         if (response.ok) {
-          updateStatus(`Saved: ${currentSpriteName}`);
+          updateStatus(`Saved: ${currentSpriteName}/${variant}`);
+          showSaveSuccess();
           return;
         }
 
         // If API fails, fall back to download
         console.warn('API save failed, falling back to download:', await response.text());
+        showSaveError();
       } catch (err) {
         console.warn('API save error, falling back to download:', err);
+        showSaveError();
       }
 
       // Fallback: Download as file
@@ -4221,6 +4531,26 @@
       URL.revokeObjectURL(url);
 
       updateStatus(`Saved: ${currentSpriteName} (downloaded - API unavailable)`);
+    }
+
+    function showSaveSuccess() {
+      const btn = document.getElementById('btn-save');
+      btn.classList.add('save-success');
+      btn.textContent = '✓ Saved';
+      setTimeout(() => {
+        btn.classList.remove('save-success');
+        btn.textContent = '💾 Save';
+      }, 1500);
+    }
+
+    function showSaveError() {
+      const btn = document.getElementById('btn-save');
+      btn.classList.add('save-error');
+      btn.textContent = '✗ Error';
+      setTimeout(() => {
+        btn.classList.remove('save-error');
+        btn.textContent = '💾 Save';
+      }, 2000);
     }
 
     async function saveBackgroundAsset() {
@@ -4239,16 +4569,19 @@
 
         if (response.ok) {
           updateStatus(`Saved background: ${currentBackgroundName}/${currentBackgroundOrientation}`);
+          showSaveSuccess();
           // Refresh background list to update orientations
           await loadBackgrounds();
         } else {
           const err = await response.text();
           console.error('Background save failed:', err);
           updateStatus('Failed to save background');
+          showSaveError();
         }
       } catch (err) {
         console.error('Background save error:', err);
         updateStatus('Error saving background');
+        showSaveError();
       }
     }
     
@@ -5429,32 +5762,58 @@
       updateStatus('Element duplicated');
     }
     
-    function bringToFront() {
+    function moveLayerUp() {
       if (!selectedElement) {
         updateStatus('Select an element first');
         return;
       }
-      
-      saveState();
+
       const parent = selectedElement.parentNode;
-      parent.appendChild(selectedElement);
+      const siblings = Array.from(parent.children);
+      const currentIndex = siblings.indexOf(selectedElement);
+
+      // Already at top
+      if (currentIndex === siblings.length - 1) {
+        updateStatus('Already at top layer');
+        return;
+      }
+
+      saveState();
+      const nextSibling = siblings[currentIndex + 1];
+      // Insert after the next sibling (move up one layer)
+      parent.insertBefore(selectedElement, nextSibling.nextSibling);
       buildElementTree();
       updateSpriteSource();
-      updateStatus('Brought to front');
+
+      const newIndex = Array.from(parent.children).indexOf(selectedElement);
+      updateStatus(`Layer ${newIndex + 1} of ${parent.children.length}`);
     }
-    
-    function sendToBack() {
+
+    function moveLayerDown() {
       if (!selectedElement) {
         updateStatus('Select an element first');
         return;
       }
-      
-      saveState();
+
       const parent = selectedElement.parentNode;
-      parent.insertBefore(selectedElement, parent.firstChild);
+      const siblings = Array.from(parent.children);
+      const currentIndex = siblings.indexOf(selectedElement);
+
+      // Already at bottom
+      if (currentIndex === 0) {
+        updateStatus('Already at bottom layer');
+        return;
+      }
+
+      saveState();
+      const prevSibling = siblings[currentIndex - 1];
+      // Insert before the previous sibling (move down one layer)
+      parent.insertBefore(selectedElement, prevSibling);
       buildElementTree();
       updateSpriteSource();
-      updateStatus('Sent to back');
+
+      const newIndex = Array.from(parent.children).indexOf(selectedElement);
+      updateStatus(`Layer ${newIndex + 1} of ${parent.children.length}`);
     }
     
     // === ADD SHAPES ===
@@ -5580,8 +5939,8 @@
     document.getElementById('btn-add-circle').onclick = () => addShape('circle');
     document.getElementById('btn-duplicate').onclick = duplicateSelected;
     document.getElementById('btn-delete').onclick = deleteSelected;
-    document.getElementById('btn-bring-front').onclick = bringToFront;
-    document.getElementById('btn-send-back').onclick = sendToBack;
+    document.getElementById('btn-layer-up').onclick = moveLayerUp;
+    document.getElementById('btn-layer-down').onclick = moveLayerDown;
     document.getElementById('btn-help').onclick = () => {
       document.getElementById('help-modal').style.display = 'flex';
     };
@@ -6015,19 +6374,74 @@
       applyZoom();
     }, { passive: false });
 
-    // Deselect when clicking on canvas container (outside SVG)
-    document.querySelector('.canvas-container').addEventListener('click', (e) => {
-      // Only deselect if clicking directly on the container, not on child elements
-      if (e.target === e.currentTarget || e.target.id === 'svg-canvas') {
+    // === CANVAS PANNING ===
+    let isPanning = false;
+    let didPan = false;
+    let panStart = { x: 0, y: 0 };
+    let scrollStart = { x: 0, y: 0 };
+
+    const canvasContainer = document.querySelector('.canvas-container');
+
+    canvasContainer.addEventListener('mousedown', (e) => {
+      // Only start panning if clicking on empty space (container or svg-canvas background)
+      const isEmptySpace = e.target === canvasContainer ||
+                          e.target.id === 'svg-canvas' ||
+                          e.target.tagName === 'svg';
+
+      // Don't pan if clicking on an SVG element (for element dragging)
+      if (!isEmptySpace) return;
+
+      // Don't pan if middle/right click
+      if (e.button !== 0) return;
+
+      isPanning = true;
+      didPan = false;
+      canvasContainer.classList.add('panning');
+      panStart = { x: e.clientX, y: e.clientY };
+      scrollStart = { x: canvasContainer.scrollLeft, y: canvasContainer.scrollTop };
+
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isPanning) return;
+
+      const dx = e.clientX - panStart.x;
+      const dy = e.clientY - panStart.y;
+
+      // Only count as panning if moved more than 3 pixels
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        didPan = true;
+      }
+
+      canvasContainer.scrollLeft = scrollStart.x - dx;
+      canvasContainer.scrollTop = scrollStart.y - dy;
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (isPanning) {
+        isPanning = false;
+        canvasContainer.classList.remove('panning');
+      }
+    });
+
+    // Deselect when clicking on canvas container (outside SVG) - but not after panning
+    canvasContainer.addEventListener('click', (e) => {
+      // Don't deselect if we just finished panning
+      if (didPan) {
+        didPan = false;
+        return;
+      }
+
+      // Only deselect if clicking directly on the container or svg-canvas
+      if (e.target === canvasContainer || e.target.id === 'svg-canvas' || e.target.tagName === 'svg') {
         clearSelection();
       }
     });
 
-    // Also handle click on the svg-canvas div itself
-    document.getElementById('svg-canvas').addEventListener('click', (e) => {
-      if (e.target === e.currentTarget) {
-        clearSelection();
-      }
+    // Prevent text selection while panning
+    canvasContainer.addEventListener('selectstart', (e) => {
+      if (isPanning) e.preventDefault();
     });
   </script>
 </body>
