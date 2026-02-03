@@ -970,6 +970,35 @@
 
       if (!command || isGenerating) return;
 
+      const isCreateMode = !currentSpriteName;
+      let spriteName = currentSpriteName;
+
+      // For create mode, get the name FIRST before generating
+      if (isCreateMode) {
+        const suggestedName = command.toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .split(/\s+/)
+          .slice(0, 3)
+          .join('-');
+
+        // Keep prompting until valid name or cancel
+        while (true) {
+          const name = prompt('Name for new sprite (lowercase, numbers, hyphens only):', suggestedName);
+
+          if (!name) {
+            // User cancelled
+            return;
+          }
+
+          if (/^[a-z0-9-]+$/.test(name)) {
+            spriteName = name;
+            break;
+          } else {
+            alert('Invalid name. Use only lowercase letters, numbers, and hyphens.');
+          }
+        }
+      }
+
       isGenerating = true;
       submitBtn.disabled = true;
       submitBtn.textContent = 'Generating...';
@@ -979,12 +1008,12 @@
       try {
         const payload = {
           type: 'sprite',
-          mode: currentSpriteName ? 'edit' : 'create',
+          mode: isCreateMode ? 'create' : 'edit',
           command: command
         };
 
         // Include current state for edit mode
-        if (currentSpriteName && currentSprite) {
+        if (!isCreateMode && currentSprite) {
           payload.current = {
             name: currentSpriteName,
             svg: currentSprite,
@@ -1010,38 +1039,25 @@
             setCommandStatus('success', 'Saved!');
             input.value = '';
           } else {
-            // New sprite - prompt for name and save
-            const suggestedName = command.toLowerCase()
-              .replace(/[^a-z0-9\s]/g, '')
-              .split(/\s+/)
-              .slice(0, 3)
-              .join('-');
+            // New sprite - save with the name we got earlier
+            const saveResp = await fetch('/api/sprites', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: spriteName,
+                svg: result.asset.svg,
+                meta: { description: command }
+              })
+            });
 
-            const name = prompt('Name for new sprite:', suggestedName);
-
-            if (name && /^[a-z0-9-]+$/.test(name)) {
-              // Save the new sprite
-              const saveResp = await fetch('/api/sprites', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  name: name,
-                  svg: result.asset.svg,
-                  meta: { description: command }
-                })
-              });
-
-              if (saveResp.ok) {
-                setCommandStatus('success', `Created: ${name}`);
-                input.value = '';
-                await loadSpriteList();
-                loadSpriteFromSvg(name, result.asset.svg);
-              } else {
-                const err = await saveResp.json();
-                throw new Error(err.message || 'Failed to save sprite');
-              }
-            } else if (name) {
-              setCommandStatus('error', 'Invalid name (use lowercase, numbers, hyphens)');
+            if (saveResp.ok) {
+              setCommandStatus('success', `Created: ${spriteName}`);
+              input.value = '';
+              await loadSpriteList();
+              loadSpriteFromSvg(spriteName, result.asset.svg);
+            } else {
+              const err = await saveResp.json();
+              throw new Error(err.message || 'Failed to save sprite');
             }
           }
         }
