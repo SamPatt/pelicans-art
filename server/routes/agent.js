@@ -4,7 +4,7 @@
 
 import { Router } from 'express';
 import { generateAsset, checkOpenClawConnection } from '../services/agent.js';
-import { saveSprite, getSprite } from '../services/storage.js';
+import { saveSprite, getSprite, saveBackground, saveSkit } from '../services/storage.js';
 
 const router = Router();
 
@@ -90,6 +90,60 @@ router.post('/generate', async (req, res, next) => {
         saved: true,
         name: current.name,
         asset: result
+      });
+    }
+
+    // For background edit mode, save automatically and broadcast
+    if (mode === 'edit' && current?.name && type === 'background') {
+      await saveBackground(current.name, result.svg);
+
+      // Broadcast update via WebSocket
+      const wss = req.app.get('wss');
+      if (wss?.broadcast) {
+        wss.broadcast({
+          type: 'background:updated',
+          name: current.name
+        });
+      }
+
+      return res.json({
+        success: true,
+        saved: true,
+        name: current.name,
+        asset: result
+      });
+    }
+
+    // For skit edit mode, save automatically and broadcast
+    if (mode === 'edit' && current?.id && type === 'skit') {
+      let skitData;
+      try {
+        skitData = typeof result === 'string' ? JSON.parse(result) : result;
+      } catch (e) {
+        return res.status(422).json({
+          error: true,
+          message: 'AI generated invalid skit data',
+          parseError: true
+        });
+      }
+
+      await saveSkit(current.id, skitData);
+
+      // Broadcast update via WebSocket
+      const wss = req.app.get('wss');
+      if (wss?.broadcast) {
+        wss.broadcast({
+          type: 'skit:updated',
+          skitId: current.id,
+          skit: skitData
+        });
+      }
+
+      return res.json({
+        success: true,
+        saved: true,
+        id: current.id,
+        asset: skitData
       });
     }
 

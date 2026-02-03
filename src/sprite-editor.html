@@ -577,6 +577,313 @@
     #command-bar .generating-text {
       animation: pulse 1.5s ease-in-out infinite;
     }
+
+    /* === Collapsible Sidebar Sections === */
+    .sidebar-section {
+      border-bottom: 1px solid #0f3460;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      cursor: pointer;
+      user-select: none;
+      background: #16213e;
+      font-weight: bold;
+      font-size: 0.9em;
+      color: #e94560;
+    }
+
+    .section-header:hover {
+      background: #1a2a4e;
+    }
+
+    .section-icon {
+      margin-right: 8px;
+      transition: transform 0.2s;
+      font-size: 10px;
+      color: #888;
+    }
+
+    .sidebar-section.collapsed .section-icon {
+      transform: rotate(-90deg);
+    }
+
+    .sidebar-section.collapsed .section-content {
+      display: none;
+    }
+
+    .section-count {
+      margin-left: auto;
+      color: #666;
+      font-size: 0.75em;
+      font-weight: normal;
+    }
+
+    .section-content {
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    /* === Background Items === */
+    .background-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.85em;
+      gap: 8px;
+    }
+
+    .background-item:hover {
+      background: #0f3460;
+    }
+
+    .background-item.active {
+      background: #e94560;
+    }
+
+    .bg-thumbnail {
+      width: 40px;
+      height: 30px;
+      background: #0d0d1a;
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .bg-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* === Skit Items === */
+    .skit-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.85em;
+      gap: 8px;
+    }
+
+    .skit-item:hover {
+      background: #0f3460;
+    }
+
+    .skit-item.active {
+      background: #e94560;
+    }
+
+    .skit-icon {
+      font-size: 1.1em;
+    }
+
+    .skit-title {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .skit-play-btn {
+      background: #4ecca3;
+      border: none;
+      color: #111;
+      padding: 4px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8em;
+    }
+
+    .skit-play-btn:hover {
+      background: #3db892;
+    }
+
+    /* === Skit Editor Panel === */
+    .skit-editor-panel {
+      padding: 20px;
+      background: #0d0d1a;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .skit-editor-panel h3 {
+      color: #e94560;
+      margin-bottom: 8px;
+    }
+
+    .skit-editor-panel h4 {
+      color: #4ecca3;
+      margin: 15px 0 8px 0;
+      font-size: 0.9em;
+    }
+
+    .skit-meta p {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .cast-member {
+      display: flex;
+      gap: 10px;
+      padding: 5px 10px;
+      background: #16213e;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      font-size: 0.85em;
+    }
+
+    .cast-id {
+      color: #4ecca3;
+      font-weight: bold;
+    }
+
+    .cast-sprite {
+      color: #888;
+    }
+
+    .script-line {
+      padding: 8px 12px;
+      margin-bottom: 4px;
+      background: #16213e;
+      border-radius: 4px;
+      font-size: 0.85em;
+      border-left: 3px solid #0f3460;
+    }
+
+    .script-line.say {
+      border-left-color: #4ecca3;
+    }
+
+    .script-line.emote {
+      border-left-color: #ffd93d;
+      font-style: italic;
+      color: #aaa;
+    }
+
+    .script-line.shot {
+      border-left-color: #e94560;
+      color: #e94560;
+      font-size: 0.8em;
+    }
+
+    .script-line.stage {
+      border-left-color: #9b59b6;
+      color: #9b59b6;
+      font-style: italic;
+    }
+
+    /* === Voice Settings Panel === */
+    .voice-section {
+      border-top: 1px solid #0f3460;
+      margin-top: 10px;
+    }
+
+    .voice-selector {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .voice-selector select {
+      flex: 1;
+      padding: 6px 8px;
+      background: #0d0d1a;
+      color: #eee;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    .voice-preview-btn {
+      padding: 6px 12px;
+      background: #4a4a4a;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #eee;
+      font-size: 0.85em;
+    }
+
+    .voice-preview-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .voice-preview-btn:hover:not(:disabled) {
+      background: #5a5a5a;
+    }
+
+    .voice-params {
+      margin: 12px 0;
+    }
+
+    .voice-param-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .voice-param-row label {
+      width: 55px;
+      font-size: 0.75em;
+      color: #888;
+    }
+
+    .voice-param-row input[type="range"] {
+      flex: 1;
+      margin: 0 8px;
+      accent-color: #4ecca3;
+    }
+
+    .voice-param-row span {
+      width: 35px;
+      text-align: right;
+      font-size: 0.75em;
+      color: #aaa;
+    }
+
+    .save-voice-btn {
+      width: 100%;
+      padding: 8px;
+      background: #2a6a2a;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85em;
+    }
+
+    .save-voice-btn:hover {
+      background: #3a8a3a;
+    }
+
+    /* === Edit Mode Indicator === */
+    .edit-mode-indicator {
+      padding: 5px 10px;
+      background: #2a2a4a;
+      border-bottom: 1px solid #0f3460;
+      font-size: 0.8em;
+      color: #888;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .edit-mode-indicator .mode-type {
+      color: #4ecca3;
+      font-weight: bold;
+    }
+
+    .edit-mode-indicator .mode-name {
+      color: #ffd93d;
+    }
   </style>
 </head>
 <body>
@@ -778,11 +1085,48 @@
   </div>
 
   <div class="main">
-    <!-- Left Panel: Sprite List -->
+    <!-- Left Panel: Asset Lists -->
     <div class="panel-left">
-      <div class="panel-header">📁 Characters</div>
-      <div class="sprite-list" id="sprite-list">
-        <!-- Populated by JS -->
+      <!-- Characters Section -->
+      <div class="sidebar-section" data-section="characters">
+        <div class="section-header" onclick="toggleSection('characters')">
+          <span class="section-icon">&#9662;</span>
+          <span>🎭 Characters</span>
+          <span class="section-count" id="char-count">(0)</span>
+        </div>
+        <div class="section-content">
+          <div class="sprite-list" id="sprite-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Backgrounds Section -->
+      <div class="sidebar-section" data-section="backgrounds">
+        <div class="section-header" onclick="toggleSection('backgrounds')">
+          <span class="section-icon">&#9662;</span>
+          <span>🖼️ Backgrounds</span>
+          <span class="section-count" id="bg-count">(0)</span>
+        </div>
+        <div class="section-content">
+          <div class="background-list" id="background-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Skits Section -->
+      <div class="sidebar-section" data-section="skits">
+        <div class="section-header" onclick="toggleSection('skits')">
+          <span class="section-icon">&#9662;</span>
+          <span>🎬 Skits</span>
+          <span class="section-count" id="skit-count">(0)</span>
+        </div>
+        <div class="section-content">
+          <div class="skit-list" id="skit-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
       </div>
     </div>
     
@@ -803,6 +1147,21 @@
           <!-- SVG loaded here -->
         </div>
       </div>
+
+      <!-- Skit Editor Panel (hidden by default) -->
+      <div id="skit-editor-panel" class="skit-editor-panel" style="display: none;">
+        <div class="skit-meta">
+          <h3 id="skit-title">Untitled Skit</h3>
+          <p id="skit-description"></p>
+        </div>
+
+        <h4>🎭 Cast</h4>
+        <div id="skit-cast-list"></div>
+
+        <h4>📝 Script</h4>
+        <div id="skit-script-list"></div>
+      </div>
+
       <div class="element-tree">
         <div class="panel-header">🌳 Elements</div>
         <div id="element-tree">
@@ -845,6 +1204,44 @@
           <button onclick="resetAnimation(); this.blur();" style="width:100%;background:#e94560;">⟲ Reset to Original</button>
         </div>
       </div>
+
+      <!-- Voice Settings Panel -->
+      <div class="panel-header voice-section" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleVoicePanel()">
+        <span>🔊 Voice Settings</span>
+        <span id="voice-panel-toggle" style="font-size:0.8em;">▼</span>
+      </div>
+      <div id="voice-settings-panel" class="property-group" style="display:none;">
+        <div class="voice-selector">
+          <select id="voice-select" onchange="updateVoiceSelection()">
+            <option value="">-- Select Voice --</option>
+          </select>
+          <button class="voice-preview-btn" id="voice-preview-btn" onclick="previewVoice()" disabled>
+            ▶ Preview
+          </button>
+        </div>
+
+        <div class="voice-params">
+          <div class="voice-param-row">
+            <label>Pitch</label>
+            <input type="range" id="voice-pitch" min="-1" max="1" step="0.1" value="0" oninput="updateVoiceParamDisplays()">
+            <span id="voice-pitch-val">0</span>
+          </div>
+          <div class="voice-param-row">
+            <label>Speed</label>
+            <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1" oninput="updateVoiceParamDisplays()">
+            <span id="voice-speed-val">1</span>
+          </div>
+          <div class="voice-param-row">
+            <label>Volume</label>
+            <input type="range" id="voice-volume" min="0" max="2" step="0.1" value="1" oninput="updateVoiceParamDisplays()">
+            <span id="voice-volume-val">1</span>
+          </div>
+        </div>
+
+        <button class="save-voice-btn" onclick="saveVoiceSettings()">
+          💾 Save Voice Settings
+        </button>
+      </div>
     </div>
   </div>
   
@@ -867,6 +1264,429 @@
     let zoomLevel = 100;
     let currentMeta = null;
     let isGenerating = false;
+
+    // Edit mode state: 'sprite' | 'background' | 'skit'
+    let currentEditMode = 'sprite';
+    let currentBackgroundName = null;
+    let currentSkitId = null;
+    let currentSkitData = null;
+
+    // Available voices for TTS
+    const AVAILABLE_VOICES = [
+      { id: 'alba', name: 'Alba', description: 'Soft, measured female' },
+      { id: 'marius', name: 'Marius', description: 'Young male' },
+      { id: 'javert', name: 'Javert', description: 'Stern authoritative male' },
+      { id: 'jean', name: 'Jean', description: 'Warm older male' },
+      { id: 'fantine', name: 'Fantine', description: 'Gentle female' },
+      { id: 'cosette', name: 'Cosette', description: 'Sweet young female' },
+      { id: 'eponine', name: 'Eponine', description: 'Edgy young female' },
+      { id: 'azelma', name: 'Azelma', description: 'Playful female' }
+    ];
+
+    // Audio preview for voice testing
+    let currentAudioPreview = null;
+
+    // === COLLAPSIBLE SIDEBAR SECTIONS ===
+    function toggleSection(sectionName) {
+      const section = document.querySelector(`[data-section="${sectionName}"]`);
+      if (section) {
+        section.classList.toggle('collapsed');
+
+        // Save state to localStorage
+        const collapsed = JSON.parse(localStorage.getItem('skitkit-collapsed-sections') || '{}');
+        collapsed[sectionName] = section.classList.contains('collapsed');
+        localStorage.setItem('skitkit-collapsed-sections', JSON.stringify(collapsed));
+      }
+    }
+
+    function restoreCollapsedState() {
+      const collapsed = JSON.parse(localStorage.getItem('skitkit-collapsed-sections') || '{}');
+      Object.entries(collapsed).forEach(([section, isCollapsed]) => {
+        if (isCollapsed) {
+          const el = document.querySelector(`[data-section="${section}"]`);
+          if (el) el.classList.add('collapsed');
+        }
+      });
+    }
+
+    // === BACKGROUND MANAGEMENT ===
+    let backgroundList = [];
+
+    async function loadBackgrounds() {
+      try {
+        const response = await fetch('/api/backgrounds');
+        backgroundList = await response.json();
+
+        const list = document.getElementById('background-list');
+        list.innerHTML = backgroundList.map(bg => `
+          <div class="background-item" data-name="${bg.name || bg}" onclick="selectBackground('${bg.name || bg}')">
+            <div class="bg-thumbnail">
+              <img src="/backgrounds/${bg.name || bg}.svg" alt="${bg.name || bg}" onerror="this.parentElement.innerHTML='🖼️'">
+            </div>
+            <span>${bg.name || bg}</span>
+          </div>
+        `).join('');
+
+        document.getElementById('bg-count').textContent = `(${backgroundList.length})`;
+      } catch (e) {
+        console.error('Failed to load backgrounds:', e);
+        document.getElementById('bg-count').textContent = '(0)';
+      }
+    }
+
+    async function selectBackground(name) {
+      // Clear other selections
+      clearAllSelections();
+
+      currentEditMode = 'background';
+      currentBackgroundName = name;
+      currentSpriteName = null;
+      currentSkitId = null;
+
+      // Update UI highlights
+      document.querySelectorAll('.background-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.name === name);
+      });
+
+      // Show canvas, hide skit editor
+      document.getElementById('svg-canvas').style.display = 'block';
+      document.getElementById('skit-editor-panel').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'flex';
+      document.querySelector('.element-tree').style.display = 'block';
+      document.getElementById('variant-tabs').style.display = 'none'; // Hide variant tabs for backgrounds
+      document.querySelector('.zoom-controls').style.display = 'flex';
+
+      // Load background SVG
+      try {
+        const response = await fetch(`/api/backgrounds/${name}`);
+        const svg = await response.text();
+
+        currentSprite = svg;
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = svg;
+
+        // Setup interactions
+        const svgEl = canvas.querySelector('svg');
+        if (svgEl) {
+          // Scale for editing - backgrounds use 400x300 viewBox
+          svgEl.setAttribute('width', '400');
+          svgEl.setAttribute('height', '300');
+
+          svgEl.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'g' && el.tagName !== 'svg') {
+              el.style.cursor = 'pointer';
+              el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectElement(el);
+              });
+            }
+          });
+
+          // Click on background deselects
+          svgEl.addEventListener('click', (e) => {
+            if (e.target === svgEl) {
+              clearSelection();
+            }
+          });
+        }
+
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+        updateCommandContext();
+        updateStatus(`Loaded background: ${name}`);
+      } catch (e) {
+        console.error('Failed to load background:', e);
+        updateStatus(`Error loading background: ${name}`);
+      }
+    }
+
+    // === SKIT MANAGEMENT ===
+    let skitList = [];
+
+    async function loadSkits() {
+      try {
+        const response = await fetch('/api/skits');
+        skitList = await response.json();
+
+        const list = document.getElementById('skit-list');
+        list.innerHTML = skitList.map(skit => `
+          <div class="skit-item" data-id="${skit.id}" onclick="selectSkit('${skit.id}')">
+            <span class="skit-icon">🎬</span>
+            <span class="skit-title">${skit.meta?.title || skit.id}</span>
+            <button class="skit-play-btn" onclick="event.stopPropagation(); openSkitPlayer('${skit.id}')" title="Play">▶</button>
+          </div>
+        `).join('');
+
+        document.getElementById('skit-count').textContent = `(${skitList.length})`;
+      } catch (e) {
+        console.error('Failed to load skits:', e);
+        document.getElementById('skit-count').textContent = '(0)';
+      }
+    }
+
+    async function selectSkit(id) {
+      // Clear other selections
+      clearAllSelections();
+
+      currentEditMode = 'skit';
+      currentSkitId = id;
+      currentSpriteName = null;
+      currentBackgroundName = null;
+
+      // Update UI highlights
+      document.querySelectorAll('.skit-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === id);
+      });
+
+      // Hide canvas, show skit editor
+      document.getElementById('svg-canvas').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'none';
+      document.querySelector('.element-tree').style.display = 'none';
+      document.getElementById('variant-tabs').style.display = 'none';
+      document.querySelector('.zoom-controls').style.display = 'none';
+      document.getElementById('skit-editor-panel').style.display = 'block';
+
+      // Load skit data
+      try {
+        const response = await fetch(`/api/skits/${id}`);
+        currentSkitData = await response.json();
+        renderSkitStructure(currentSkitData);
+        updateCommandContext();
+        updateStatus(`Loaded skit: ${currentSkitData.meta?.title || id}`);
+      } catch (e) {
+        console.error('Failed to load skit:', e);
+        updateStatus(`Error loading skit: ${id}`);
+      }
+    }
+
+    function renderSkitStructure(skit) {
+      // Meta
+      document.getElementById('skit-title').textContent = skit.meta?.title || 'Untitled Skit';
+      document.getElementById('skit-description').textContent = skit.meta?.description || '';
+
+      // Cast
+      const castHtml = Object.entries(skit.cast || {}).map(([id, char]) => `
+        <div class="cast-member">
+          <span class="cast-id">${id}</span>
+          <span class="cast-sprite">→ ${char.sprite}</span>
+        </div>
+      `).join('') || '<p style="color:#666;font-size:0.85em;">No cast defined</p>';
+      document.getElementById('skit-cast-list').innerHTML = castHtml;
+
+      // Script
+      const scriptHtml = (skit.script || []).map((action, i) => {
+        let content = '';
+        let cssClass = '';
+
+        switch (action.do) {
+          case 'say':
+            content = `<strong>${action.who}:</strong> "${action.line}"`;
+            cssClass = 'say';
+            break;
+          case 'emote':
+            content = `${action.who} → ${action.emotion}`;
+            cssClass = 'emote';
+            break;
+          case 'shot':
+            content = `📷 ${action.type}`;
+            cssClass = 'shot';
+            break;
+          case 'enter':
+            content = `↗ ${action.who} enters from ${action.from}`;
+            cssClass = 'stage';
+            break;
+          case 'exit':
+            content = `↘ ${action.who} exits to ${action.to}`;
+            cssClass = 'stage';
+            break;
+          case 'move':
+            content = `→ ${action.who} moves to ${action.to}`;
+            cssClass = 'stage';
+            break;
+          case 'pause':
+            content = `⏸ pause ${action.duration}s`;
+            cssClass = 'stage';
+            break;
+          case 'look':
+            content = `👁 ${action.who} looks ${action.at}`;
+            cssClass = 'stage';
+            break;
+          default:
+            content = JSON.stringify(action);
+        }
+
+        return `<div class="script-line ${cssClass}" data-index="${i}">${content}</div>`;
+      }).join('') || '<p style="color:#666;font-size:0.85em;">No script defined</p>';
+      document.getElementById('skit-script-list').innerHTML = scriptHtml;
+    }
+
+    function openSkitPlayer(id) {
+      window.open(`skit-player-v3.html?id=${id}`, '_blank');
+    }
+
+    // === VOICE SETTINGS ===
+    function toggleVoicePanel() {
+      const panel = document.getElementById('voice-settings-panel');
+      const toggle = document.getElementById('voice-panel-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggle.textContent = '▲';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '▼';
+      }
+    }
+
+    function populateVoiceSelector() {
+      const select = document.getElementById('voice-select');
+      select.innerHTML = '<option value="">-- Select Voice --</option>' +
+        AVAILABLE_VOICES.map(v =>
+          `<option value="${v.id}">${v.name} - ${v.description}</option>`
+        ).join('');
+    }
+
+    function loadSpriteVoiceSettings(meta) {
+      const voice = meta?.voice || {};
+
+      document.getElementById('voice-select').value = voice.id || '';
+      document.getElementById('voice-pitch').value = voice.pitch ?? 0;
+      document.getElementById('voice-speed').value = voice.speed ?? 1;
+      document.getElementById('voice-volume').value = voice.volume ?? 1;
+
+      updateVoiceParamDisplays();
+      document.getElementById('voice-preview-btn').disabled = !voice.id;
+    }
+
+    function updateVoiceSelection() {
+      const voiceId = document.getElementById('voice-select').value;
+      document.getElementById('voice-preview-btn').disabled = !voiceId;
+    }
+
+    function updateVoiceParamDisplays() {
+      document.getElementById('voice-pitch-val').textContent =
+        parseFloat(document.getElementById('voice-pitch').value).toFixed(1);
+      document.getElementById('voice-speed-val').textContent =
+        parseFloat(document.getElementById('voice-speed').value).toFixed(1);
+      document.getElementById('voice-volume-val').textContent =
+        parseFloat(document.getElementById('voice-volume').value).toFixed(1);
+    }
+
+    async function previewVoice() {
+      const voiceId = document.getElementById('voice-select').value;
+      if (!voiceId) return;
+
+      const btn = document.getElementById('voice-preview-btn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        // Stop any existing preview
+        if (currentAudioPreview) {
+          currentAudioPreview.pause();
+          currentAudioPreview = null;
+        }
+
+        const testText = `Hello, I am ${currentSpriteName || 'a character'}.`;
+
+        const formData = new FormData();
+        formData.append('text', testText);
+        formData.append('voice', voiceId);
+
+        const response = await fetch('/api/tts', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) throw new Error('TTS request failed');
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        currentAudioPreview = new Audio(audioUrl);
+        currentAudioPreview.volume = parseFloat(document.getElementById('voice-volume').value);
+        currentAudioPreview.playbackRate = parseFloat(document.getElementById('voice-speed').value);
+
+        currentAudioPreview.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+        };
+
+        await currentAudioPreview.play();
+
+      } catch (err) {
+        console.error('Voice preview failed:', err);
+        updateStatus('Voice preview failed - check TTS service');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    async function saveVoiceSettings() {
+      if (!currentSpriteName || currentEditMode !== 'sprite') {
+        updateStatus('Select a sprite first');
+        return;
+      }
+
+      const voiceSettings = {
+        id: document.getElementById('voice-select').value || undefined,
+        pitch: parseFloat(document.getElementById('voice-pitch').value),
+        speed: parseFloat(document.getElementById('voice-speed').value),
+        volume: parseFloat(document.getElementById('voice-volume').value)
+      };
+
+      // Remove undefined id
+      if (!voiceSettings.id) delete voiceSettings.id;
+
+      try {
+        // Get current sprite data
+        const response = await fetch(`/api/sprites/${currentSpriteName}`);
+        const sprite = await response.json();
+
+        // Update meta with voice settings
+        const updatedMeta = {
+          ...(sprite.meta || {}),
+          voice: voiceSettings
+        };
+
+        // Save sprite with updated meta
+        const saveResponse = await fetch(`/api/sprites/${currentSpriteName}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            svg: sprite.svg,
+            meta: updatedMeta
+          })
+        });
+
+        if (saveResponse.ok) {
+          currentMeta = updatedMeta;
+          updateStatus('Voice settings saved');
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (err) {
+        console.error('Failed to save voice settings:', err);
+        updateStatus('Failed to save voice settings');
+      }
+    }
+
+    // === HELPER FUNCTIONS ===
+    function clearAllSelections() {
+      // Clear sprite selection
+      document.querySelectorAll('.sprite-item').forEach(el => el.classList.remove('active'));
+      // Clear background selection
+      document.querySelectorAll('.background-item').forEach(el => el.classList.remove('active'));
+      // Clear skit selection
+      document.querySelectorAll('.skit-item').forEach(el => el.classList.remove('active'));
+      // Clear element selection
+      clearSelection();
+    }
+
+    function setStatus(msg) {
+      updateStatus(msg);
+    }
 
     // === WEBSOCKET FOR LIVE UPDATES ===
     let ws = null;
@@ -921,6 +1741,24 @@
           // Refresh sprite list
           loadSpriteList();
         }
+
+        // Background updates
+        if (msg.type === 'background:created' || msg.type === 'background:updated' || msg.type === 'background:deleted') {
+          loadBackgrounds();
+          if (msg.type === 'background:updated' && msg.name === currentBackgroundName) {
+            selectBackground(msg.name);
+            setCommandStatus('success', 'Updated!');
+          }
+        }
+
+        // Skit updates
+        if (msg.type === 'skit:created' || msg.type === 'skit:updated' || msg.type === 'skit:deleted') {
+          loadSkits();
+          if (msg.type === 'skit:updated' && msg.skitId === currentSkitId) {
+            selectSkit(msg.skitId);
+            setCommandStatus('success', 'Updated!');
+          }
+        }
       };
 
       ws.onerror = (err) => {
@@ -938,12 +1776,19 @@
       const contextEl = document.getElementById('command-context-text');
       const inputEl = document.getElementById('command-input');
 
-      if (currentSpriteName) {
-        contextEl.innerHTML = `Editing: <span class="sprite-name">${currentSpriteName}</span>`;
+      if (currentEditMode === 'sprite' && currentSpriteName) {
+        contextEl.innerHTML = `Editing sprite: <span class="sprite-name">${currentSpriteName}</span>`;
+        inputEl.placeholder = 'Describe changes to make...';
+      } else if (currentEditMode === 'background' && currentBackgroundName) {
+        contextEl.innerHTML = `Editing background: <span class="sprite-name">${currentBackgroundName}</span>`;
+        inputEl.placeholder = 'Describe changes to make...';
+      } else if (currentEditMode === 'skit' && currentSkitId) {
+        const title = currentSkitData?.meta?.title || currentSkitId;
+        contextEl.innerHTML = `Editing skit: <span class="sprite-name">${title}</span>`;
         inputEl.placeholder = 'Describe changes to make...';
       } else {
-        contextEl.textContent = 'No sprite selected';
-        inputEl.placeholder = 'Describe a character to create...';
+        contextEl.textContent = 'No selection';
+        inputEl.placeholder = 'Describe what to create (character, background, or skit)...';
       }
     }
 
@@ -970,20 +1815,55 @@
 
       if (!command || isGenerating) return;
 
-      const isCreateMode = !currentSpriteName;
-      let spriteName = currentSpriteName;
+      // Detect asset type for create mode
+      let assetType = currentEditMode;
+      let isCreateMode = false;
+
+      if (currentEditMode === 'sprite' && !currentSpriteName) {
+        isCreateMode = true;
+        // Auto-detect type from command
+        const lowerCmd = command.toLowerCase();
+        if (lowerCmd.includes('background') || lowerCmd.includes('scene') || lowerCmd.includes('setting')) {
+          assetType = 'background';
+        } else if (lowerCmd.includes('skit') || lowerCmd.includes('script') || lowerCmd.includes('dialogue')) {
+          assetType = 'skit';
+        } else {
+          assetType = 'sprite';
+        }
+      } else if (currentEditMode === 'background' && !currentBackgroundName) {
+        isCreateMode = true;
+        assetType = 'background';
+      } else if (currentEditMode === 'skit' && !currentSkitId) {
+        isCreateMode = true;
+        assetType = 'skit';
+      } else if (!currentSpriteName && !currentBackgroundName && !currentSkitId) {
+        isCreateMode = true;
+        // Auto-detect type from command
+        const lowerCmd = command.toLowerCase();
+        if (lowerCmd.includes('background') || lowerCmd.includes('scene') || lowerCmd.includes('setting')) {
+          assetType = 'background';
+        } else if (lowerCmd.includes('skit') || lowerCmd.includes('script') || lowerCmd.includes('dialogue')) {
+          assetType = 'skit';
+        } else {
+          assetType = 'sprite';
+        }
+      }
+
+      let assetName = null;
 
       // For create mode, get the name FIRST before generating
-      if (isCreateMode) {
+      if (isCreateMode && assetType !== 'skit') {
         const suggestedName = command.toLowerCase()
           .replace(/[^a-z0-9\s]/g, '')
           .split(/\s+/)
           .slice(0, 3)
           .join('-');
 
+        const typeLabel = assetType === 'background' ? 'background' : 'sprite';
+
         // Keep prompting until valid name or cancel
         while (true) {
-          const name = prompt('Name for new sprite (lowercase, numbers, hyphens only):', suggestedName);
+          const name = prompt(`Name for new ${typeLabel} (lowercase, numbers, hyphens only):`, suggestedName);
 
           if (!name) {
             // User cancelled
@@ -991,7 +1871,7 @@
           }
 
           if (/^[a-z0-9-]+$/.test(name)) {
-            spriteName = name;
+            assetName = name;
             break;
           } else {
             alert('Invalid name. Use only lowercase letters, numbers, and hyphens.');
@@ -1007,18 +1887,30 @@
 
       try {
         const payload = {
-          type: 'sprite',
+          type: assetType,
           mode: isCreateMode ? 'create' : 'edit',
           command: command
         };
 
         // Include current state for edit mode
-        if (!isCreateMode && currentSprite) {
-          payload.current = {
-            name: currentSpriteName,
-            svg: currentSprite,
-            meta: currentMeta || {}
-          };
+        if (!isCreateMode) {
+          if (assetType === 'sprite' && currentSprite) {
+            payload.current = {
+              name: currentSpriteName,
+              svg: currentSprite,
+              meta: currentMeta || {}
+            };
+          } else if (assetType === 'background' && currentSprite) {
+            payload.current = {
+              name: currentBackgroundName,
+              svg: currentSprite
+            };
+          } else if (assetType === 'skit' && currentSkitData) {
+            payload.current = {
+              id: currentSkitId,
+              skit: currentSkitData
+            };
+          }
         }
 
         const response = await fetch('/api/agent/generate', {
@@ -1038,7 +1930,7 @@
             // Already saved (edit mode) - WebSocket will handle reload
             setCommandStatus('success', 'Saved!');
             input.value = '';
-          } else {
+          } else if (assetType === 'sprite') {
             // New sprite - save with the name we got earlier
             const meta = {
               description: command,
@@ -1048,20 +1940,65 @@
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                name: spriteName,
+                name: assetName,
                 svg: result.asset.svg,
                 meta
               })
             });
 
             if (saveResp.ok) {
-              setCommandStatus('success', `Created: ${spriteName}`);
+              setCommandStatus('success', `Created sprite: ${assetName}`);
               input.value = '';
               await loadSpriteList();
-              loadSpriteFromSvg(spriteName, result.asset.svg);
+              loadSpriteFromSvg(assetName, result.asset.svg);
             } else {
               const err = await saveResp.json();
               throw new Error(err.message || 'Failed to save sprite');
+            }
+          } else if (assetType === 'background') {
+            // New background
+            const saveResp = await fetch('/api/backgrounds', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: assetName,
+                svg: result.asset.svg
+              })
+            });
+
+            if (saveResp.ok) {
+              setCommandStatus('success', `Created background: ${assetName}`);
+              input.value = '';
+              await loadBackgrounds();
+              selectBackground(assetName);
+            } else {
+              const err = await saveResp.json();
+              throw new Error(err.message || 'Failed to save background');
+            }
+          } else if (assetType === 'skit') {
+            // New skit - parse JSON and save
+            let skitData;
+            try {
+              skitData = typeof result.asset === 'string' ? JSON.parse(result.asset) : result.asset;
+            } catch (e) {
+              throw new Error('AI returned invalid skit data');
+            }
+
+            const saveResp = await fetch('/api/skits', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(skitData)
+            });
+
+            if (saveResp.ok) {
+              const savedSkit = await saveResp.json();
+              setCommandStatus('success', `Created skit: ${skitData.meta?.title || savedSkit.id}`);
+              input.value = '';
+              await loadSkits();
+              selectSkit(savedSkit.id);
+            } else {
+              const err = await saveResp.json();
+              throw new Error(err.message || 'Failed to save skit');
             }
           }
         }
@@ -1142,7 +2079,7 @@
     async function loadSpriteList() {
       const list = document.getElementById('sprite-list');
       list.innerHTML = '';
-      
+
       try {
         const resp = await fetch('sprites/index.json');
         const data = await resp.json();
@@ -1150,7 +2087,7 @@
       } catch (e) {
         characterList = ['cat', 'robot', 'person', 'girl', 'alien'];
       }
-      
+
       for (const name of characterList) {
         const item = document.createElement('div');
         item.className = 'sprite-item';
@@ -1159,15 +2096,32 @@
         item.onclick = () => selectCharacter(name);
         list.appendChild(item);
       }
+
+      // Update count
+      document.getElementById('char-count').textContent = `(${characterList.length})`;
     }
     
     async function selectCharacter(name) {
+      // Clear other selections
+      clearAllSelections();
+
+      currentEditMode = 'sprite';
       currentSpriteName = name;
+      currentBackgroundName = null;
+      currentSkitId = null;
 
       // Update UI
       document.querySelectorAll('.sprite-item').forEach(item => {
         item.classList.toggle('active', item.dataset.char === name);
       });
+
+      // Show canvas, hide skit editor
+      document.getElementById('svg-canvas').style.display = 'block';
+      document.getElementById('skit-editor-panel').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'flex';
+      document.querySelector('.element-tree').style.display = 'block';
+      document.getElementById('variant-tabs').style.display = 'flex'; // Show variant tabs for sprites
+      document.querySelector('.zoom-controls').style.display = 'flex';
 
       // Load sprite metadata to get type
       try {
@@ -1186,6 +2140,9 @@
         currentMeta = null;
         currentSpriteType = 'creature';
       }
+
+      // Load voice settings into UI
+      loadSpriteVoiceSettings(currentMeta);
 
       // Detect variants
       currentVariants = await detectVariants(name);
@@ -3297,14 +4254,27 @@
     <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
   </g>
 </svg>`;
-      
+
+      // Clear all selections
+      clearAllSelections();
+
+      currentEditMode = 'sprite';
       currentSprite = svg;
       currentSpriteName = null;  // Clear so command bar shows "create" mode
+      currentBackgroundName = null;
+      currentSkitId = null;
       currentMeta = null;
 
-      document.querySelectorAll('.sprite-item').forEach(item => {
-        item.classList.remove('active');
-      });
+      // Show canvas, hide skit editor
+      document.getElementById('svg-canvas').style.display = 'block';
+      document.getElementById('skit-editor-panel').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'flex';
+      document.querySelector('.element-tree').style.display = 'block';
+      document.getElementById('variant-tabs').style.display = 'flex'; // Show variant tabs
+      document.querySelector('.zoom-controls').style.display = 'flex';
+
+      // Reset voice settings UI
+      loadSpriteVoiceSettings(null);
 
       renderSprite();
       buildElementTree();
@@ -3740,8 +4710,13 @@
       return originalSelectCharacter(name);
     };
 
+    // Initialize
+    populateVoiceSelector();
+    restoreCollapsedState();
     loadSpriteList();
     loadLocalSprites();
+    loadBackgrounds();
+    loadSkits();
     selectCharacter('cat'); // Load default
     connectWebSocket(); // Connect for live AI updates
     
@@ -3755,6 +4730,21 @@
       }
       applyZoom();
     }, { passive: false });
+
+    // Deselect when clicking on canvas container (outside SVG)
+    document.querySelector('.canvas-container').addEventListener('click', (e) => {
+      // Only deselect if clicking directly on the container, not on child elements
+      if (e.target === e.currentTarget || e.target.id === 'svg-canvas') {
+        clearSelection();
+      }
+    });
+
+    // Also handle click on the svg-canvas div itself
+    document.getElementById('svg-canvas').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        clearSelection();
+      }
+    });
   </script>
 </body>
 </html>
