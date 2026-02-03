@@ -11,13 +11,12 @@ Integration of AI Improv Theater with OpenClaw for agent-driven sprite and skit 
 **Architecture:**
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                         OpenClaw Instance                            │
+│                    Sprite/Skit Editor (Browser)                      │
 │  ┌───────────────────────────────────────────────────────────────┐  │
-│  │                      SkitKit Skill                             │  │
-│  │  SKILL.md + bundled scripts                                    │  │
+│  │  Command Bar: [Make the eyes glow green___________] [Generate] │  │
 │  └───────────────────────────┬───────────────────────────────────┘  │
 └──────────────────────────────┼──────────────────────────────────────┘
-                               │ HTTP calls
+                               │ POST /api/agent/generate
                                ▼
 ┌─────────────────────────────────────────────────────────────────────┐
 │                    SkitKit Server (:3000)                            │
@@ -28,16 +27,198 @@ Integration of AI Improv Theater with OpenClaw for agent-driven sprite and skit 
 │  └─────────────┘  └─────────────┘  └─────────────┘  └───────────┘  │
 │                                                                      │
 │  ┌─────────────────────────────────────────────────────────────┐    │
+│  │                    Agent Service                             │    │
+│  │  Calls OpenClaw → Parses SVG → Validates → Saves             │    │
+│  └─────────────────────────────────────────────────────────────┘    │
+│                                                                      │
+│  ┌─────────────────────────────────────────────────────────────┐    │
 │  │                    File Storage                              │    │
 │  │  /data/sprites/   /data/skits/   /data/published/            │    │
+│  │  /data/backgrounds/                                          │    │
 │  └─────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                    Pocket TTS (:8001)                                │
-└─────────────────────────────────────────────────────────────────────┘
+           │                                       │
+           │ WebSocket: asset updated              │
+           ▼                                       ▼
+┌──────────────────────────┐        ┌─────────────────────────────────┐
+│  Editor auto-reloads     │        │        OpenClaw Instance         │
+│  canvas with new SVG     │        │  (API/CLI - TBD)                 │
+└──────────────────────────┘        └─────────────────────────────────┘
+                                                   │
+                                                   ▼
+                                    ┌─────────────────────────────────┐
+                                    │        Pocket TTS (:8001)        │
+                                    └─────────────────────────────────┘
 ```
+
+---
+
+## Agent Integration Approach
+
+### Command Bar (Not Chat)
+
+Instead of a full chat UI, we use a **single command input** for AI-assisted creation:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Editing: robot                                                          │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ 🤖 Make the eyes glow green                              [Generate] │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+When no asset is loaded:
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ No sprite selected                                                      │
+│ ┌─────────────────────────────────────────────────────────────────────┐ │
+│ │ 🤖 Describe a character to create...                     [Generate] │ │
+│ └─────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Context Modes
+
+| Mode | Context Sent to Agent | Result |
+|------|----------------------|--------|
+| **Create sprite** | Command only | Agent generates full SVG, user prompted for name |
+| **Edit sprite** | Command + current SVG + meta | Agent modifies existing SVG |
+| **Create background** | Command only | Agent generates scenic SVG, user prompted for name |
+| **Edit background** | Command + current SVG | Agent modifies existing background |
+| **Create skit** | Command only | Agent generates cast + script JSON |
+| **Edit skit** | Command + current skit JSON | Agent modifies skit |
+
+### Data Flow
+
+```
+User types command in editor
+         │
+         ▼
+POST /api/agent/generate
+{
+  "type": "sprite",           // or "background" or "skit"
+  "mode": "edit",             // or "create"
+  "command": "make eyes glow green",
+  "current": {                // only for edit mode
+    "name": "robot",
+    "svg": "<svg>...",
+    "meta": {...}
+  }
+}
+         │
+         ▼
+┌─────────────────────────────────┐
+│        SkitKit Server           │
+│                                 │
+│  1. Build prompt with context   │
+│  2. Call OpenClaw (TBD)         │
+│  3. Extract SVG from response   │
+│  4. Validate structure          │
+│  5. Save to storage             │
+│  6. Broadcast via WebSocket     │
+└─────────────────────────────────┘
+         │
+         ▼
+WebSocket: { type: "sprite:updated", name: "robot", ... }
+         │
+         ▼
+Editor receives → reloads canvas with new SVG
+```
+
+### System Prompts
+
+> **Note:** These prompts will need fine-tuning based on real-world results.
+
+**For sprites:**
+```
+You are an SVG character artist. Create/modify sprites for animated comedy skits.
+
+Structure requirements:
+- viewBox: 0 0 100 150
+- Groups: #body, #head-top, #head-bottom
+- Required IDs: eye-left-white, eye-right-white, eye-left-pupil,
+  eye-right-pupil, brow-left, brow-right, mouth-closed, mouth-open
+- mouth-open and mouth-closed must be at same Y position
+
+{current SVG if editing}
+
+User request: {command}
+
+Output ONLY the complete SVG. No explanation.
+```
+
+**For backgrounds:**
+```
+You are an SVG scene artist. Create/modify backgrounds for animated comedy skits.
+
+- viewBox: 0 0 400 300
+- Simple, flat style suitable for comedy
+- Include depth (foreground/midground/background layers)
+- Avoid complex gradients or patterns
+
+{current SVG if editing}
+
+User request: {command}
+
+Output ONLY the complete SVG. No explanation.
+```
+
+### Skit Editor
+
+The skit editor shows a structured, editable view of the skit JSON:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 🤖 A chef argues with a customer about soup               [Generate]   │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Title: [The Soup Complaint_______]                                      │
+│                                                                         │
+│ Cast:                                                                   │
+│   chef     → [grumpy-chef ▼]  x: [70]  voice: [javert ▼]               │
+│   customer → [person ▼]       x: [30]  voice: [cosette ▼]              │
+│                                                                         │
+│ Script:                                                                 │
+│   1. [shot ▼]  type: [wide ▼]                                          │
+│   2. [say ▼]   who: [customer ▼]  "Excuse me, there's a fly..."        │
+│   3. [emote ▼] who: [chef ▼]      emotion: [angry ▼]                   │
+│   4. [say ▼]   who: [chef ▼]      "That is not a fly!"                 │
+│   [+ Add line]                                                          │
+│                                                                         │
+│                                            [Preview]  [Publish]         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Open Design Questions
+
+1. **OpenClaw Integration**: How does SkitKit server call OpenClaw? HTTP API? CLI? SDK?
+   - **Status:** Needs investigation
+
+2. **UI Layout**:
+   - Command bar placement (top/bottom)?
+   - Sprites/Backgrounds toggle (tabs vs dropdown)?
+   - **Status:** TBD
+
+3. **Validation Strictness**: When LLM returns invalid SVG:
+   - Reject and show error?
+   - Accept with warnings?
+   - Auto-retry with fix instructions?
+   - **Status:** TBD
+
+4. **Skit Regeneration**:
+   - Regenerate whole skit or just script?
+   - Per-line commands ("make line 4 funnier")?
+   - **Status:** TBD
+
+### Decisions Made
+
+| Decision | Choice |
+|----------|--------|
+| Chat UI | No - single command bar |
+| LLM backend | OpenClaw (integration method TBD) |
+| Background storage | `data/backgrounds/` like user sprites |
+| Naming new assets | Prompt user for name after generation |
+| Prompt tuning | Revisit and fine-tune after initial implementation |
 
 ---
 
@@ -371,138 +552,131 @@ const ws = new WebSocket(`${wsProtocol}//${location.host}/ws`);
 
 ---
 
-## Phase 2: OpenClaw Skill Definition
+## Phase 2: OpenClaw Integration
 
-### 2.1 SKILL.md Structure
+### 2.1 Investigation Required
 
-**File: `skill/SKILL.md`**
+**Status:** We need to investigate how SkitKit can call OpenClaw programmatically.
 
-```markdown
----
-name: skitkit
-description: Create animated comedy skits with SVG characters and TTS voices
-version: 1.0.0
-triggers:
-  - "create a skit"
-  - "make a character"
-  - "sprite"
-  - "comedy sketch"
-  - "animate"
-invocation: user  # User must explicitly invoke
-context: fork     # Runs in isolated context
----
+**Questions to answer:**
+1. Does OpenClaw expose an HTTP API for agent requests?
+2. Is there a CLI we can spawn as a subprocess?
+3. Is there a Node.js/JavaScript SDK?
+4. Can we use the underlying LLM directly (Anthropic API) as fallback?
 
-# SkitKit - AI Comedy Sketch Creator
+**Possible integration patterns:**
 
-You are an AI comedy writer and animator. You create short animated skits
-with SVG character sprites and text-to-speech voices.
+```
+Option A: HTTP API
+┌─────────────┐     POST /generate      ┌─────────────┐
+│   SkitKit   │ ───────────────────────▶│  OpenClaw   │
+│   Server    │◀─────────────────────── │   Server    │
+└─────────────┘     JSON response       └─────────────┘
 
-## Available Tools
+Option B: CLI subprocess
+┌─────────────┐     spawn process       ┌─────────────┐
+│   SkitKit   │ ───────────────────────▶│  openclaw   │
+│   Server    │◀─────────────────────── │   CLI       │
+└─────────────┘     stdout JSON         └─────────────┘
 
-### create_sprite
-Create a new character sprite for use in skits.
+Option C: Direct LLM API (fallback)
+┌─────────────┐     POST /messages      ┌─────────────┐
+│   SkitKit   │ ───────────────────────▶│  Anthropic  │
+│   Server    │◀─────────────────────── │   API       │
+└─────────────┘     JSON response       └─────────────┘
+```
 
-**Parameters:**
-- `name` (string, required): Unique identifier (lowercase, hyphens ok)
-- `description` (string, required): Character description for reference
-- `svg` (string, required): Complete SVG markup following sprite structure
-- `voice` (string, optional): Voice ID (alba, marius, javert, jean, fantine, cosette, eponine, azelma)
-- `tags` (array, optional): Searchable tags
+### 2.2 Agent Service Architecture
 
-**Example:**
-\`\`\`json
-{
-  "name": "grumpy-chef",
-  "description": "An irritable French chef with a tall hat",
-  "svg": "<svg viewBox=\"0 0 100 150\">...</svg>",
-  "voice": "javert",
-  "tags": ["human", "chef", "angry"]
+**New file: `server/services/agent.js`**
+
+```javascript
+// Pseudocode - actual implementation depends on OpenClaw integration method
+
+export async function generateAsset(request) {
+  const { type, mode, command, current } = request;
+
+  // 1. Build prompt based on asset type
+  const systemPrompt = getSystemPrompt(type);
+  const userPrompt = buildUserPrompt(mode, command, current);
+
+  // 2. Call OpenClaw/LLM (method TBD)
+  const response = await callAgent(systemPrompt, userPrompt);
+
+  // 3. Extract and validate result
+  const svg = extractSvg(response);
+  const validation = validateAsset(type, svg);
+
+  return { svg, validation };
 }
-\`\`\`
+```
 
-### list_sprites
-List all available character sprites.
+### 2.3 New API Endpoints
 
-**Returns:** Array of sprite names with descriptions.
+#### Agent Generation Endpoint
 
-### get_sprite
-Get details of a specific sprite including SVG source.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/agent/generate` | Generate or modify asset via AI |
 
-**Parameters:**
-- `name` (string, required): Sprite name
-
-### create_skit
-Create a new comedy skit.
-
-**Parameters:**
-- `title` (string, required): Skit title
-- `description` (string, optional): What the skit is about
-- `background` (string, required): Background name (office, restaurant, space, kitchen)
-- `cast` (object, required): Character definitions
-- `script` (array, required): Sequence of actions
-
-**Example:**
-\`\`\`json
+**Request payload:**
+```json
 {
-  "title": "The Soup Complaint",
-  "background": "restaurant",
-  "cast": {
-    "chef": { "sprite": "grumpy-chef", "x": 70 },
-    "customer": { "sprite": "person", "x": 30 }
+  "type": "sprite",
+  "mode": "edit",
+  "command": "make the eyes glow green",
+  "current": {
+    "name": "robot",
+    "svg": "<svg>...</svg>",
+    "meta": { "type": "creature" }
+  }
+}
+```
+
+**Response (synchronous):**
+```json
+{
+  "success": true,
+  "asset": {
+    "name": "robot",
+    "svg": "<svg>...</svg>"
   },
-  "script": [
-    { "do": "shot", "type": "wide" },
-    { "do": "say", "who": "customer", "line": "Excuse me, there's a fly in my soup." },
-    { "do": "emote", "who": "chef", "emotion": "angry" },
-    { "do": "say", "who": "chef", "line": "That is not a fly. That is a GARNISH." }
-  ]
+  "validation": {
+    "valid": true,
+    "warnings": []
+  }
 }
-\`\`\`
+```
 
-### preview_skit
-Get a URL to preview the skit in a browser.
+Or broadcast via WebSocket and return immediately:
+```json
+{
+  "success": true,
+  "status": "generating",
+  "message": "Check WebSocket for updates"
+}
+```
 
-**Parameters:**
-- `skit_id` (string, required): The skit ID returned from create_skit
+#### Background CRUD Endpoints
 
-**Returns:** URL that can be opened in browser for preview.
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/backgrounds` | List all backgrounds (built-in + user) |
+| GET | `/api/backgrounds/:name` | Get background SVG |
+| POST | `/api/backgrounds` | Create new background |
+| PUT | `/api/backgrounds/:name` | Update background |
+| DELETE | `/api/backgrounds/:name` | Delete user background |
 
-### publish_skit
-Publish a skit to a self-contained shareable format.
+**Storage:** User backgrounds in `data/backgrounds/` (same pattern as sprites)
 
-**Parameters:**
-- `skit_id` (string, required): The skit ID to publish
+### 2.4 SVG Sprite Structure Reference
 
-**Returns:** URL to the published skit JSON.
+Characters must follow this structure for emotions and lip-sync:
 
-### list_backgrounds
-List available background scenes.
-
-### list_voices
-List available TTS voices with descriptions.
-
-## Script Actions Reference
-
-| Action | Parameters | Description |
-|--------|------------|-------------|
-| `shot` | type, who? | Camera shot (wide, two-shot, closeup, extreme-closeup, medium) |
-| `say` | who, line | Character speaks (triggers TTS) |
-| `emote` | who, emotion | Change expression (neutral, happy, sad, angry, surprised, worried, excited, smug, tired) |
-| `pause` | duration | Wait N seconds |
-| `enter` | who, from, to | Character enters from left/right to X position |
-| `exit` | who, to | Character exits to left/right |
-| `move` | who, to, duration? | Move character to X position |
-| `look` | who, at | Eye direction (left, right, up, down, audience, other) |
-
-## SVG Sprite Structure
-
-Characters must follow this structure for emotions and lip-sync to work:
-
-\`\`\`xml
+```xml
 <svg viewBox="0 0 100 150">
   <g id="body"><!-- torso, arms, legs --></g>
   <g id="head-top">
-    <!-- Hair, forehead -->
     <ellipse id="eye-left-white" cx="40" cy="42" rx="5" ry="3"/>
     <ellipse id="eye-right-white" cx="60" cy="42" rx="5" ry="3"/>
     <circle id="eye-left-pupil" class="pupil" cx="40" cy="42" r="1.5"/>
@@ -511,75 +685,31 @@ Characters must follow this structure for emotions and lip-sync to work:
     <path id="brow-right" d="M55 38 Q60 36 65 38"/>
   </g>
   <g id="head-bottom">
-    <!-- Nose, jaw -->
     <path id="mouth-closed" d="M45 52 Q50 55 55 52"/>
     <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="2" opacity="0"/>
   </g>
 </svg>
-\`\`\`
+```
 
 **Critical:** `mouth-open` and `mouth-closed` must be at the same Y position.
 
-## Comedy Guidelines
+### 2.5 Background Structure Reference
 
-See COMEDY-GUIDE.md for detailed writing advice. Key points:
-- Find the "game" (the central comic idea)
-- Two POVs: one absurd, one normal/foil
-- Escalate the same joke, don't add new ones
-- End with a button (strong final laugh)
-- Keep it under 90 seconds
+```xml
+<svg viewBox="0 0 400 300">
+  <!-- Background layer -->
+  <rect id="sky" x="0" y="0" width="400" height="200" fill="#87CEEB"/>
 
-## Example Workflow
+  <!-- Midground -->
+  <g id="midground">
+    <!-- Buildings, mountains, etc. -->
+  </g>
 
-1. **Brainstorm:** "What if a job interviewer was actually a cat?"
-2. **Create sprites:** Make any custom characters needed
-3. **Write skit:** Define cast and script
-4. **Preview:** Check timing and pacing
-5. **Iterate:** Adjust dialogue, emotions, camera
-6. **Publish:** Generate shareable link
-```
-
-### 2.2 Tool Implementation Scripts
-
-**File: `skill/tools/create_sprite.sh`**
-```bash
-#!/bin/bash
-# Called by OpenClaw when agent uses create_sprite tool
-# Expects JSON input on stdin
-
-curl -X POST http://localhost:3000/api/sprites \
-  -H "Content-Type: application/json" \
-  -d @-
-```
-
-**File: `skill/tools/create_skit.sh`**
-```bash
-#!/bin/bash
-curl -X POST http://localhost:3000/api/skits \
-  -H "Content-Type: application/json" \
-  -d @-
-```
-
-**File: `skill/tools/preview_skit.sh`**
-```bash
-#!/bin/bash
-SKIT_ID=$1
-# Use ?id= for API skits (work-in-progress), ?skit= for published
-echo "{\"url\": \"http://localhost:3000/player?id=${SKIT_ID}\"}"
-```
-
-### 2.3 Alternative: Direct HTTP (No Scripts)
-
-If OpenClaw supports HTTP tools natively:
-
-```yaml
-tools:
-  - name: create_sprite
-    type: http
-    method: POST
-    url: "{{SKITKIT_URL}}/api/sprites"
-    headers:
-      Content-Type: application/json
+  <!-- Foreground -->
+  <g id="foreground">
+    <!-- Ground, props near camera -->
+  </g>
+</svg>
 ```
 
 ---
@@ -697,17 +827,171 @@ async function validateCurrentSprite() {
 }
 ```
 
-### 3.3 New: Skit Editor Page (Future)
+### 3.3 Command Bar Component
+
+Add AI generation capability to the sprite editor via a simple command input (not a full chat UI).
+
+**UI Component:**
+```html
+<div id="command-bar">
+  <div class="command-context">Editing: robot</div>
+  <div class="command-input-row">
+    <span class="command-icon">🤖</span>
+    <input type="text" id="command-input"
+           placeholder="Make the eyes glow green...">
+    <button id="command-submit">Generate</button>
+  </div>
+  <div id="command-status"></div>
+</div>
+```
+
+**States:**
+- **Editing existing**: Shows "Editing: {name}", placeholder is action-oriented
+- **Creating new**: Shows "No sprite selected", placeholder prompts for description
+- **Generating**: Input disabled, shows spinner, "Generating..." status
+- **Error**: Shows error message, allows retry
+
+**JavaScript:**
+```javascript
+async function submitCommand() {
+  const command = document.getElementById('command-input').value;
+  if (!command.trim()) return;
+
+  setCommandStatus('generating');
+
+  try {
+    const response = await fetch('/api/agent/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: currentMode, // 'sprite' or 'background'
+        mode: currentSpriteName ? 'edit' : 'create',
+        command: command,
+        current: currentSpriteName ? {
+          name: currentSpriteName,
+          svg: currentSprite,
+          meta: currentMeta
+        } : null
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      if (result.asset.name !== currentSpriteName) {
+        // New asset created - prompt for name
+        const name = prompt('Name for new sprite:', suggestName(command));
+        if (name) {
+          await saveNewSprite(name, result.asset.svg);
+        }
+      }
+      // WebSocket will handle the reload
+      setCommandStatus('success');
+    } else {
+      setCommandStatus('error', result.message);
+    }
+  } catch (err) {
+    setCommandStatus('error', err.message);
+  }
+}
+
+// Listen for WebSocket updates
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.type === 'sprite:updated' && msg.name === currentSpriteName) {
+    loadSprite(msg.name); // Reload canvas
+  }
+};
+```
+
+### 3.4 Sprite/Background Mode Toggle
+
+The editor needs to switch between editing sprites and backgrounds.
+
+**Options (TBD):**
+- Tabs at top: `[Sprites] [Backgrounds]`
+- Dropdown in sidebar
+- Separate pages entirely
+
+**Differences by mode:**
+| | Sprites | Backgrounds |
+|---|---------|-------------|
+| viewBox | 0 0 100 150 | 0 0 400 300 |
+| Required elements | eyes, mouth, brows | none |
+| Validation | Strict structure | Basic SVG only |
+| Animation preview | Yes | No |
+
+### 3.5 Skit Editor Page
 
 **File: `src/skit-editor.html`**
 
-A simple interface for editing skit JSON with:
-- Cast management (add/remove characters, position them)
-- Script timeline editor
-- Live preview panel (embeds player)
-- Publish button
+A structured interface for creating and editing skits with AI assistance.
 
-This could be a later phase - agents can work with raw JSON initially.
+**Layout:**
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ 🤖 [A chef argues with a customer about soup_______]       [Generate]  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│  Title: [The Soup Complaint_______________]    Background: [kitchen ▼]  │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │ Cast                                                         [+ Add]││
+│  ├─────────────────────────────────────────────────────────────────────┤│
+│  │ chef     │ Sprite: [grumpy-chef ▼] │ X: [70] │ Voice: [javert ▼]    ││
+│  │ customer │ Sprite: [person ▼]      │ X: [30] │ Voice: [cosette ▼]   ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │ Script                                                       [+ Add]││
+│  ├─────────────────────────────────────────────────────────────────────┤│
+│  │ 1. │ [shot ▼]  │ type: [wide ▼]                              │ [×]  ││
+│  │ 2. │ [say ▼]   │ who: [customer ▼] │ "There's a fly in..."   │ [×]  ││
+│  │ 3. │ [emote ▼] │ who: [chef ▼]     │ emotion: [angry ▼]      │ [×]  ││
+│  │ 4. │ [say ▼]   │ who: [chef ▼]     │ "That is a GARNISH!"    │ [×]  ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│                                                                         │
+│                                    [Save]  [Preview]  [Publish]         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**Features:**
+- Command bar for AI-assisted generation (same pattern as sprite editor)
+- Inline editing of all fields (click to edit)
+- Dropdowns populated from API (sprites, backgrounds, voices)
+- Drag-and-drop reordering of script lines
+- Add/remove cast members and script lines
+- Preview opens player with `?id={skitId}`
+- Publish bundles everything with TTS
+
+**Script line types:**
+```javascript
+const LINE_TYPES = {
+  shot:  { fields: ['type'], options: { type: ['wide', 'medium', 'closeup', 'extreme-closeup', 'two-shot'] }},
+  say:   { fields: ['who', 'line'] },
+  emote: { fields: ['who', 'emotion'], options: { emotion: ['neutral', 'happy', 'sad', 'angry', 'surprised', 'worried', 'excited', 'smug', 'tired'] }},
+  pause: { fields: ['duration'] },
+  enter: { fields: ['who', 'from', 'to'] },
+  exit:  { fields: ['who', 'to'] },
+  move:  { fields: ['who', 'to', 'duration'] },
+  look:  { fields: ['who', 'at'], options: { at: ['left', 'right', 'up', 'down', 'audience'] }}
+};
+```
+
+**WebSocket integration:**
+```javascript
+// Subscribe to skit updates
+ws.send(JSON.stringify({ type: 'subscribe', skitId: currentSkitId }));
+
+// Handle updates (e.g., from AI regeneration)
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+  if (msg.type === 'skit:updated' && msg.skitId === currentSkitId) {
+    // Reload skit data without losing scroll position
+    loadSkitData(msg.skit);
+  }
+};
+```
 
 ---
 
@@ -726,6 +1010,9 @@ data/
 │   └── grumpy-chef/
 │       ├── front.svg
 │       └── meta.json
+├── backgrounds/             # User-created backgrounds (shadows built-ins)
+│   ├── spooky-forest.svg
+│   └── underwater.svg
 ├── skits/
 │   ├── abc123.json          # Work-in-progress skits
 │   └── def456.json
@@ -735,6 +1022,8 @@ data/
 └── audio-cache/             # Cached TTS audio (optional)
     └── {hash}.wav
 ```
+
+**Note:** User backgrounds are stored as flat SVG files in `data/backgrounds/`, similar to how built-in backgrounds are stored in `src/backgrounds/`. User backgrounds with the same name as built-ins will shadow them.
 
 ### 4.2 Sprite Storage Service
 
@@ -1226,31 +1515,52 @@ describe('Sprite validation', () => {
 
 ## Implementation Order
 
-### Week 1: Foundation
-- [ ] Set up `server/` directory with Express
-- [ ] Implement sprite CRUD endpoints
-- [ ] Implement skit CRUD endpoints
-- [ ] Basic file storage service
-- [ ] TTS proxy endpoint
+### Phase 1: Foundation ✅ COMPLETE
+- [x] Set up `server/` directory with Express
+- [x] Implement sprite CRUD endpoints
+- [x] Implement skit CRUD endpoints
+- [x] Basic file storage service
+- [x] TTS proxy endpoint
+- [x] WebSocket server
+- [x] Publishing pipeline
 
-### Week 2: Publishing & Preview
-- [ ] Implement publishing pipeline
-- [ ] Add WebSocket server
-- [ ] Real-time preview updates
-- [ ] Progress reporting during publish
+### Phase 2: OpenClaw Integration (CURRENT)
+- [ ] Investigate OpenClaw API/CLI/SDK
+- [ ] Implement agent service (`server/services/agent.js`)
+- [ ] Add `/api/agent/generate` endpoint
+- [ ] Add background CRUD endpoints
+- [ ] Add background storage to `data/backgrounds/`
+- [ ] Test sprite generation with OpenClaw
+- [ ] Fine-tune system prompts
 
-### Week 3: OpenClaw Integration
-- [ ] Write SKILL.md
-- [ ] Create tool wrapper scripts (or HTTP tool config)
-- [ ] Test with OpenClaw agent
-- [ ] Iterate on skill based on agent feedback
+### Phase 3: Frontend - Command Bar
+- [ ] Add command bar component to sprite editor
+- [ ] Add sprite/background mode toggle
+- [ ] WebSocket connection for live updates
+- [ ] Loading/error states for generation
+- [ ] Name prompt for new assets
 
-### Week 4: Polish & Deploy
-- [ ] Frontend modifications (WebSocket, API loading)
-- [ ] Sprite validation service
+### Phase 4: Frontend - Skit Editor
+- [ ] Create `skit-editor.html`
+- [ ] Cast management (add/remove/edit)
+- [ ] Script timeline (add/remove/reorder/edit)
+- [ ] Command bar for AI-assisted skit generation
+- [ ] Preview button (opens player)
+- [ ] Publish button
+- [ ] WebSocket for live updates
+
+### Phase 5: Player Enhancements
+- [ ] Add `?id=` parameter for API skit loading
+- [ ] WebSocket subscription for live preview
+- [ ] Agent mode (minimal UI, auto-play)
+
+### Phase 6: Testing & Polish
+- [ ] API tests with vitest
+- [ ] Integration tests (create → preview → publish)
+- [ ] Prompt fine-tuning based on results
+- [ ] Error handling improvements
 - [ ] Systemd service file
 - [ ] Documentation updates
-- [ ] End-to-end testing
 
 ---
 
@@ -1269,17 +1579,22 @@ Answers to questions that came up during review:
    - Use `?id=xxx` for work-in-progress skits (fetched from API)
    - Use `?skit=xxx` for published skits (fetched from `/published/xxx.json`)
 
-3. **Skill payloads vs API schema:**
-   - The server accepts BOTH skill-friendly (flat) and API-native (nested) payloads
-   - Normalization middleware converts flat → nested before route handlers
-   - This keeps the skill simple for agents while maintaining a clean internal schema
+3. **Agent integration approach:**
+   - Single command bar, not full chat UI
+   - SkitKit server calls OpenClaw (not the reverse)
+   - No text response from agent, just updated assets
+   - WebSocket broadcasts updates to editor
+
+4. **Prompt tuning:**
+   - Initial prompts defined in implementation plan
+   - Will require iteration based on real-world results
+   - Note: revisit and fine-tune after initial implementation
 
 ---
 
 ## Future Enhancements
 
-- **Skit Editor UI**: Visual timeline editor for non-technical users
-- **Background Editor**: Create/edit backgrounds similar to sprite editor
+- **Per-line skit editing**: "Make line 4 funnier" commands
 - **Voice Cloning**: Support custom voice samples per character
 - **Animation Presets**: Pre-built animation sequences (walk cycles, gestures)
 - **Multi-agent Collaboration**: Writer + Artist + Director agents
