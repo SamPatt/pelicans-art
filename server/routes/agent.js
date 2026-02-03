@@ -116,9 +116,13 @@ router.post('/generate', async (req, res, next) => {
 
     // For skit edit mode, save automatically and broadcast
     if (mode === 'edit' && current?.id && type === 'skit') {
+      // Agent service returns { skit: {...} }, extract the skit object
       let skitData;
       try {
-        skitData = typeof result === 'string' ? JSON.parse(result) : result;
+        skitData = result.skit || result;
+        if (typeof skitData === 'string') {
+          skitData = JSON.parse(skitData);
+        }
       } catch (e) {
         return res.status(422).json({
           error: true,

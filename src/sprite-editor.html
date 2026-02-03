@@ -1413,7 +1413,7 @@
         list.innerHTML = skitList.map(skit => `
           <div class="skit-item" data-id="${skit.id}" onclick="selectSkit('${skit.id}')">
             <span class="skit-icon">🎬</span>
-            <span class="skit-title">${skit.meta?.title || skit.id}</span>
+            <span class="skit-title">${skit.title || skit.id}</span>
             <button class="skit-play-btn" onclick="event.stopPropagation(); openSkitPlayer('${skit.id}')" title="Play">▶</button>
           </div>
         `).join('');
@@ -1522,7 +1522,7 @@
     }
 
     function openSkitPlayer(id) {
-      window.open(`skit-player-v3.html?id=${id}`, '_blank');
+      window.open(`skit-player-v3.html?skit=${id}`, '_blank');
     }
 
     // === VOICE SETTINGS ===
@@ -1590,13 +1590,13 @@
 
         const testText = `Hello, I am ${currentSpriteName || 'a character'}.`;
 
-        const formData = new FormData();
-        formData.append('text', testText);
-        formData.append('voice', voiceId);
-
         const response = await fetch('/api/tts', {
           method: 'POST',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: testText,
+            voice: voiceId
+          })
         });
 
         if (!response.ok) throw new Error('TTS request failed');
@@ -1629,6 +1629,11 @@
         return;
       }
 
+      if (!currentSprite) {
+        updateStatus('No sprite loaded');
+        return;
+      }
+
       const voiceSettings = {
         id: document.getElementById('voice-select').value || undefined,
         pitch: parseFloat(document.getElementById('voice-pitch').value),
@@ -1640,22 +1645,18 @@
       if (!voiceSettings.id) delete voiceSettings.id;
 
       try {
-        // Get current sprite data
-        const response = await fetch(`/api/sprites/${currentSpriteName}`);
-        const sprite = await response.json();
-
-        // Update meta with voice settings
+        // Update meta with voice settings, preserving current in-memory state
         const updatedMeta = {
-          ...(sprite.meta || {}),
+          ...(currentMeta || {}),
           voice: voiceSettings
         };
 
-        // Save sprite with updated meta
+        // Save sprite with current in-memory SVG and updated meta
         const saveResponse = await fetch(`/api/sprites/${currentSpriteName}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            svg: sprite.svg,
+            svg: currentSprite,
             meta: updatedMeta
           })
         });
@@ -1976,10 +1977,13 @@
               throw new Error(err.message || 'Failed to save background');
             }
           } else if (assetType === 'skit') {
-            // New skit - parse JSON and save
+            // New skit - agent returns { skit: {...} }, extract the skit object
             let skitData;
             try {
-              skitData = typeof result.asset === 'string' ? JSON.parse(result.asset) : result.asset;
+              skitData = result.asset.skit || result.asset;
+              if (typeof skitData === 'string') {
+                skitData = JSON.parse(skitData);
+              }
             } catch (e) {
               throw new Error('AI returned invalid skit data');
             }
@@ -2032,9 +2036,9 @@
       updateCommandContext();
       updateVariantTabs();
 
-      // Update sprite list selection
+      // Update sprite list selection (items use data-char attribute)
       document.querySelectorAll('.sprite-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.name === name);
+        item.classList.toggle('active', item.dataset.char === name);
       });
     }
 
@@ -2825,7 +2829,7 @@
     function renderSpriteFromCurrent() {
       const svg = document.querySelector('#svg-canvas svg');
       if (!svg) return;
-      
+
       svg.querySelectorAll('*').forEach(el => {
         if (el.tagName !== 'g' && el.tagName !== 'svg') {
           el.style.cursor = 'pointer';
@@ -2833,6 +2837,13 @@
             e.stopPropagation();
             selectElement(el);
           });
+        }
+      });
+
+      // Add click handler on SVG background for deselection
+      svg.addEventListener('click', (e) => {
+        if (e.target === svg) {
+          clearSelection();
         }
       });
     }
