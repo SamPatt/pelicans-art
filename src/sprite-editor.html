@@ -1820,26 +1820,12 @@
       let assetType = currentEditMode;
       let isCreateMode = false;
 
-      if (currentEditMode === 'sprite' && !currentSpriteName) {
+      // Check if we're in create mode (nothing selected)
+      const hasSelection = currentSpriteName || currentBackgroundName || currentSkitId;
+
+      if (!hasSelection) {
         isCreateMode = true;
-        // Auto-detect type from command
-        const lowerCmd = command.toLowerCase();
-        if (lowerCmd.includes('background') || lowerCmd.includes('scene') || lowerCmd.includes('setting')) {
-          assetType = 'background';
-        } else if (lowerCmd.includes('skit') || lowerCmd.includes('script') || lowerCmd.includes('dialogue')) {
-          assetType = 'skit';
-        } else {
-          assetType = 'sprite';
-        }
-      } else if (currentEditMode === 'background' && !currentBackgroundName) {
-        isCreateMode = true;
-        assetType = 'background';
-      } else if (currentEditMode === 'skit' && !currentSkitId) {
-        isCreateMode = true;
-        assetType = 'skit';
-      } else if (!currentSpriteName && !currentBackgroundName && !currentSkitId) {
-        isCreateMode = true;
-        // Auto-detect type from command
+        // Auto-detect type from command text
         const lowerCmd = command.toLowerCase();
         if (lowerCmd.includes('background') || lowerCmd.includes('scene') || lowerCmd.includes('setting')) {
           assetType = 'background';
