@@ -884,10 +884,16 @@
         console.log('WebSocket message:', msg);
 
         if (msg.type === 'sprite:updated' && msg.name === currentSpriteName) {
-          // Reload the current sprite
-          console.log('Sprite updated, reloading...');
-          loadSprite(currentSpriteName, currentVariant);
-          setCommandStatus('success', 'Updated!');
+          // Use the SVG from the message directly
+          console.log('Sprite updated, applying new SVG...');
+          if (msg.sprite && msg.sprite.svg) {
+            currentSprite = msg.sprite.svg;
+            const canvas = document.getElementById('svg-canvas');
+            canvas.innerHTML = msg.sprite.svg;
+            setupSvgInteraction();
+            applyZoom();
+            setCommandStatus('success', 'Updated!');
+          }
         }
 
         if (msg.type === 'sprite:created') {
