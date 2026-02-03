@@ -10,7 +10,7 @@ const router = Router();
 
 /**
  * GET /api/backgrounds
- * List available backgrounds (built-in + user)
+ * List available backgrounds
  */
 router.get('/', async (req, res, next) => {
   try {
@@ -101,7 +101,7 @@ router.put('/:name', async (req, res, next) => {
 
 /**
  * DELETE /api/backgrounds/:name
- * Delete user background (cannot delete built-ins)
+ * Delete a background
  */
 router.delete('/:name', async (req, res, next) => {
   try {

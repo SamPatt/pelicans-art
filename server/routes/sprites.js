@@ -3,7 +3,7 @@ import {
   listSprites,
   getSprite,
   saveSprite,
-  saveBuiltinSprite,
+  saveSpriteVariant,
   deleteSprite
 } from '../services/storage.js';
 import { normalizeSprite } from '../middleware/normalize.js';
@@ -17,7 +17,7 @@ const router = Router();
 
 /**
  * GET /api/sprites
- * List all sprites (built-in + user)
+ * List all sprites
  */
 router.get('/', async (req, res, next) => {
   try {
@@ -97,11 +97,6 @@ router.put('/:name',
       // Check if sprite exists (will throw 404 if not)
       const existing = await getSprite(name);
 
-      if (existing.builtin) {
-        // Creating a user shadow of a built-in sprite
-        console.log(`Creating user shadow of built-in sprite: ${name}`);
-      }
-
       // Use existing svg if not provided (metadata-only update)
       const updatedSvg = svg || existing.svg;
       const result = await saveSprite(name, updatedSvg, meta || existing.meta);
@@ -124,7 +119,7 @@ router.put('/:name',
 
 /**
  * DELETE /api/sprites/:name
- * Delete user sprite (cannot delete built-ins)
+ * Delete a sprite
  */
 router.delete('/:name', async (req, res, next) => {
   try {
@@ -143,10 +138,10 @@ router.delete('/:name', async (req, res, next) => {
 });
 
 /**
- * PUT /api/sprites/:name/source/:variant
- * Save directly to built-in sprites (src/sprites) - for development workflow
+ * PUT /api/sprites/:name/variant/:variant
+ * Save a specific variant of a sprite (e.g., front, back, side)
  */
-router.put('/:name/source/:variant', async (req, res, next) => {
+router.put('/:name/variant/:variant', async (req, res, next) => {
   try {
     const { name, variant } = req.params;
     const { svg } = req.body;
@@ -155,7 +150,7 @@ router.put('/:name/source/:variant', async (req, res, next) => {
       return res.status(400).json({ error: true, message: 'SVG content is required' });
     }
 
-    const result = await saveBuiltinSprite(name, variant, svg);
+    const result = await saveSpriteVariant(name, variant, svg);
 
     // Broadcast update via WebSocket
     const wss = req.app.get('wss');

@@ -2,8 +2,8 @@ import fs from 'fs/promises';
 import path from 'path';
 
 let DATA_DIR = './data';
-let BUILTIN_SPRITES_DIR = './src/sprites';
-let BUILTIN_BACKGROUNDS_DIR = './src/backgrounds';
+let SPRITES_DIR = './src/sprites';
+let BACKGROUNDS_DIR = './src/backgrounds';
 
 // --- Helper Functions ---
 
@@ -36,35 +36,33 @@ export async function ensureDir(dirPath) {
 export async function ensureDataDirs(dataDir) {
   if (dataDir) {
     DATA_DIR = dataDir;
-    // Resolve builtin dirs relative to data dir's parent (project root)
+    // Resolve asset dirs relative to data dir's parent (project root)
     const projectRoot = path.dirname(dataDir);
-    BUILTIN_SPRITES_DIR = path.join(projectRoot, 'src/sprites');
-    BUILTIN_BACKGROUNDS_DIR = path.join(projectRoot, 'src/backgrounds');
+    SPRITES_DIR = path.join(projectRoot, 'src/sprites');
+    BACKGROUNDS_DIR = path.join(projectRoot, 'src/backgrounds');
   }
 
-  await ensureDir(path.join(DATA_DIR, 'sprites'));
-  await ensureDir(path.join(DATA_DIR, 'backgrounds'));
+  // Ensure asset directories exist
+  await ensureDir(SPRITES_DIR);
+  await ensureDir(BACKGROUNDS_DIR);
+
+  // Ensure data directories for skits and audio
   await ensureDir(path.join(DATA_DIR, 'skits'));
   await ensureDir(path.join(DATA_DIR, 'published'));
   await ensureDir(path.join(DATA_DIR, 'audio-cache'));
 
-  console.log(`Data directories initialized at: ${DATA_DIR}`);
+  console.log(`Asset directories: sprites=${SPRITES_DIR}, backgrounds=${BACKGROUNDS_DIR}`);
+  console.log(`Data directory: ${DATA_DIR}`);
 }
 
 // --- Sprite Storage ---
 
 export async function listSprites() {
-  const builtin = await listDirs(BUILTIN_SPRITES_DIR);
-  const user = await listDirs(path.join(DATA_DIR, 'sprites'));
-
-  // User sprites listed first (they take precedence), then built-ins not shadowed
-  const userSet = new Set(user);
+  const spriteNames = await listDirs(SPRITES_DIR);
 
   const sprites = [];
-
-  // Add user sprites
-  for (const name of user) {
-    const metaPath = path.join(DATA_DIR, 'sprites', name, 'meta.json');
+  for (const name of spriteNames) {
+    const metaPath = path.join(SPRITES_DIR, name, 'meta.json');
     let meta = {};
     if (await exists(metaPath)) {
       try {
@@ -73,25 +71,6 @@ export async function listSprites() {
     }
     sprites.push({
       name,
-      builtin: false,
-      description: meta.description || meta.name || name
-    });
-  }
-
-  // Add built-in sprites not shadowed by user sprites
-  for (const name of builtin) {
-    if (userSet.has(name)) continue;
-
-    const metaPath = path.join(BUILTIN_SPRITES_DIR, name, 'meta.json');
-    let meta = {};
-    if (await exists(metaPath)) {
-      try {
-        meta = JSON.parse(await fs.readFile(metaPath, 'utf-8'));
-      } catch (e) { /* ignore parse errors */ }
-    }
-    sprites.push({
-      name,
-      builtin: true,
       description: meta.description || meta.name || name
     });
   }
@@ -100,19 +79,9 @@ export async function listSprites() {
 }
 
 export async function getSprite(name) {
-  // Check user sprites first, then builtin
-  const userPath = path.join(DATA_DIR, 'sprites', name);
-  const builtinPath = path.join(BUILTIN_SPRITES_DIR, name);
+  const spritePath = path.join(SPRITES_DIR, name);
 
-  let spritePath;
-  let isBuiltin = false;
-
-  if (await exists(userPath)) {
-    spritePath = userPath;
-  } else if (await exists(builtinPath)) {
-    spritePath = builtinPath;
-    isBuiltin = true;
-  } else {
+  if (!await exists(spritePath)) {
     throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
   }
 
@@ -131,23 +100,22 @@ export async function getSprite(name) {
     } catch (e) { /* ignore parse errors */ }
   }
 
-  return { name, svg, meta, builtin: isBuiltin };
+  return { name, svg, meta };
 }
 
 export async function saveSprite(name, svg, meta) {
-  const spritePath = path.join(DATA_DIR, 'sprites', name);
+  const spritePath = path.join(SPRITES_DIR, name);
   await ensureDir(spritePath);
   await fs.writeFile(path.join(spritePath, 'front.svg'), svg);
   await fs.writeFile(path.join(spritePath, 'meta.json'), JSON.stringify(meta, null, 2));
-  return { name, builtin: false };
+  return { name };
 }
 
 /**
- * Save directly to built-in sprites directory (src/sprites)
- * Used by sprite editor for development workflow
+ * Save a specific variant of a sprite
  */
-export async function saveBuiltinSprite(name, variant, svg) {
-  const spritePath = path.join(BUILTIN_SPRITES_DIR, name);
+export async function saveSpriteVariant(name, variant, svg) {
+  const spritePath = path.join(SPRITES_DIR, name);
 
   // Check if sprite directory exists
   if (!await exists(spritePath)) {
@@ -156,21 +124,11 @@ export async function saveBuiltinSprite(name, variant, svg) {
 
   const variantFile = `${variant}.svg`;
   await fs.writeFile(path.join(spritePath, variantFile), svg);
-  return { name, variant, builtin: true };
+  return { name, variant };
 }
 
 export async function deleteSprite(name) {
-  // Prevent deleting built-in sprites
-  const builtinPath = path.join(BUILTIN_SPRITES_DIR, name);
-  if (await exists(builtinPath)) {
-    const userPath = path.join(DATA_DIR, 'sprites', name);
-    if (!await exists(userPath)) {
-      throw Object.assign(new Error(`Cannot delete built-in sprite: ${name}`), { status: 403 });
-    }
-    // User has a shadow sprite - delete the shadow
-  }
-
-  const spritePath = path.join(DATA_DIR, 'sprites', name);
+  const spritePath = path.join(SPRITES_DIR, name);
   if (!await exists(spritePath)) {
     throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
   }
@@ -181,83 +139,37 @@ export async function deleteSprite(name) {
 // --- Background Storage ---
 
 export async function listBackgrounds() {
-  // Get built-in backgrounds
-  let builtin = [];
+  let backgrounds = [];
   try {
-    const files = await fs.readdir(BUILTIN_BACKGROUNDS_DIR);
-    builtin = files
+    const files = await fs.readdir(BACKGROUNDS_DIR);
+    backgrounds = files
       .filter(f => f.endsWith('.svg'))
-      .map(f => f.replace('.svg', ''));
+      .map(f => ({ name: f.replace('.svg', '') }));
   } catch (err) {
     if (err.code !== 'ENOENT') throw err;
-  }
-
-  // Get user backgrounds
-  let user = [];
-  const userBgDir = path.join(DATA_DIR, 'backgrounds');
-  try {
-    const files = await fs.readdir(userBgDir);
-    user = files
-      .filter(f => f.endsWith('.svg'))
-      .map(f => f.replace('.svg', ''));
-  } catch (err) {
-    if (err.code !== 'ENOENT') throw err;
-  }
-
-  // User backgrounds first (they can shadow built-ins), then non-shadowed built-ins
-  const userSet = new Set(user);
-  const backgrounds = [];
-
-  // Add user backgrounds
-  for (const name of user) {
-    backgrounds.push({ name, builtin: false });
-  }
-
-  // Add built-in backgrounds not shadowed by user
-  for (const name of builtin) {
-    if (!userSet.has(name)) {
-      backgrounds.push({ name, builtin: true });
-    }
   }
 
   return backgrounds;
 }
 
 export async function getBackground(name) {
-  // Check user backgrounds first, then builtin
-  const userPath = path.join(DATA_DIR, 'backgrounds', `${name}.svg`);
-  const builtinPath = path.join(BUILTIN_BACKGROUNDS_DIR, `${name}.svg`);
+  const bgPath = path.join(BACKGROUNDS_DIR, `${name}.svg`);
 
-  if (await exists(userPath)) {
-    return fs.readFile(userPath, 'utf-8');
-  }
-
-  if (await exists(builtinPath)) {
-    return fs.readFile(builtinPath, 'utf-8');
+  if (await exists(bgPath)) {
+    return fs.readFile(bgPath, 'utf-8');
   }
 
   throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
 }
 
 export async function saveBackground(name, svg) {
-  const bgDir = path.join(DATA_DIR, 'backgrounds');
-  await ensureDir(bgDir);
-  await fs.writeFile(path.join(bgDir, `${name}.svg`), svg);
-  return { name, builtin: false };
+  await ensureDir(BACKGROUNDS_DIR);
+  await fs.writeFile(path.join(BACKGROUNDS_DIR, `${name}.svg`), svg);
+  return { name };
 }
 
 export async function deleteBackground(name) {
-  // Prevent deleting built-in backgrounds
-  const builtinPath = path.join(BUILTIN_BACKGROUNDS_DIR, `${name}.svg`);
-  if (await exists(builtinPath)) {
-    const userPath = path.join(DATA_DIR, 'backgrounds', `${name}.svg`);
-    if (!await exists(userPath)) {
-      throw Object.assign(new Error(`Cannot delete built-in background: ${name}`), { status: 403 });
-    }
-    // User has a shadow - delete the shadow
-  }
-
-  const bgPath = path.join(DATA_DIR, 'backgrounds', `${name}.svg`);
+  const bgPath = path.join(BACKGROUNDS_DIR, `${name}.svg`);
   if (!await exists(bgPath)) {
     throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
   }

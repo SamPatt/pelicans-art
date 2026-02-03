@@ -67,7 +67,13 @@ router.post('/generate', async (req, res, next) => {
 
     // For edit mode with a name, save automatically and broadcast
     if (mode === 'edit' && current?.name && type === 'sprite') {
-      await saveSprite(current.name, result.svg, current.meta || {});
+      // Merge spriteType into meta if provided by AI
+      const updatedMeta = {
+        ...(current.meta || {}),
+        ...(result.spriteType ? { type: result.spriteType } : {})
+      };
+
+      await saveSprite(current.name, result.svg, updatedMeta);
 
       // Broadcast update via WebSocket
       const wss = req.app.get('wss');
@@ -75,7 +81,7 @@ router.post('/generate', async (req, res, next) => {
         wss.broadcast({
           type: 'sprite:updated',
           name: current.name,
-          sprite: { name: current.name, svg: result.svg, meta: current.meta }
+          sprite: { name: current.name, svg: result.svg, meta: updatedMeta }
         });
       }
 

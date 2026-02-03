@@ -1040,13 +1040,17 @@
             input.value = '';
           } else {
             // New sprite - save with the name we got earlier
+            const meta = {
+              description: command,
+              type: result.asset.spriteType || 'creature'
+            };
             const saveResp = await fetch('/api/sprites', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 name: spriteName,
                 svg: result.asset.svg,
-                meta: { description: command }
+                meta
               })
             });
 

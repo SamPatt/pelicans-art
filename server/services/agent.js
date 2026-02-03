@@ -35,7 +35,9 @@ REQUIRED GROUPS:
 - id="head-top": Hair, forehead, eyes, brows
 - id="head-bottom": Nose, jaw, mouth
 
-CRITICAL: mouth-open and mouth-closed MUST be at the same Y position for lip-sync to work.
+ANATOMY REQUIREMENTS:
+- HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
+- MOUTH ALIGNMENT: mouth-open and mouth-closed MUST be at the EXACT same X and Y position. The open mouth replaces the closed mouth during speech - if they're misaligned, the mouth will appear to jump around during lip-sync.
 
 STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy
@@ -43,7 +45,17 @@ STYLE GUIDELINES:
 - Expressive features that will animate well
 - Character should face forward (front view)
 
-Output ONLY the complete SVG element. No explanation, no markdown code blocks, just the raw SVG.`,
+OUTPUT FORMAT - You must respond with valid JSON:
+{
+  "type": "human" or "creature",
+  "svg": "<svg>...</svg>"
+}
+
+TYPE GUIDELINES:
+- "human": Human characters (people, occupations like doctor/chef/teacher, named individuals)
+- "creature": Non-human characters (animals, robots, aliens, monsters, fantasy beings, objects with faces)
+
+Output ONLY valid JSON with type and svg. No explanation, no markdown code blocks.`,
 
   background: `You are an SVG scene artist creating backgrounds for animated comedy skits.
 
@@ -244,7 +256,21 @@ export async function generateAsset(request) {
   if (type === 'skit') {
     const skit = extractJson(content);
     return { skit };
+  } else if (type === 'sprite') {
+    // Sprite returns JSON with type and svg
+    const parsed = extractJson(content);
+    if (!parsed.svg) {
+      throw new Error('Sprite response missing svg field');
+    }
+    if (!parsed.type || !['human', 'creature'].includes(parsed.type)) {
+      // Default to creature if not specified
+      parsed.type = 'creature';
+    }
+    // Extract and validate the SVG
+    const svg = extractSvg(parsed.svg);
+    return { svg, spriteType: parsed.type };
   } else {
+    // Background returns raw SVG
     const svg = extractSvg(content);
     return { svg };
   }

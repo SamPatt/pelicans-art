@@ -1,0 +1,78 @@
+<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg" width="100" height="150">
+  <!-- Body -->
+  <g id="body">
+    <!-- Dress -->
+    <path d="M30 75 Q25 85 25 110 L25 140 Q25 145 35 145 L65 145 Q75 145 75 140 L75 110 Q75 85 70 75 Z" fill="#8B0000" style="cursor: pointer;"></path>
+    <!-- Apron -->
+    <path d="M38 80 L38 140 L62 140 L62 80 Q50 85 38 80" fill="#F5DEB3" style="cursor: pointer;"></path>
+    <path d="M38 95 L62 95" stroke="#CD853F" stroke-width="1" fill="none" style="cursor: pointer;"></path>
+    <path d="M38 110 L62 110" stroke="#CD853F" stroke-width="1" fill="none" style="cursor: pointer;"></path>
+    <!-- Arms -->
+    <path d="M30 80 Q15 90 20 110 Q22 115 28 112" fill="#8B0000" style="cursor: pointer;"></path>
+    <path d="M70 80 Q85 90 80 110 Q78 115 72 112" fill="#8B0000" style="cursor: pointer;"></path>
+    <!-- Hands -->
+    <circle cx="24" cy="112" r="5" fill="#FDBCB4" style="cursor: pointer;"></circle>
+    <circle cx="76" cy="112" r="5" fill="#FDBCB4" style="cursor: pointer;"></circle>
+    <!-- Feet -->
+    <ellipse cx="40" cy="148" rx="8" ry="4" fill="#4A4A4A" style="cursor: pointer;"></ellipse>
+    <ellipse cx="60" cy="148" rx="8" ry="4" fill="#4A4A4A" style="cursor: pointer;"></ellipse>
+  <rect x="40.0" y="54.9" width="20" height="20" fill="#FDBCB4" style="cursor: pointer;" class=""></rect></g>
+  
+  <!-- Head Top (hair, forehead, eyes, brows) -->
+  <g id="head-top">
+    <!-- Headscarf back -->
+    <ellipse cx="50" cy="42" rx="28" ry="25" fill="#E74C3C" style="cursor: pointer;"></ellipse>
+    <!-- Face background -->
+    <ellipse cx="50" cy="50" rx="22" ry="20" fill="#FDBCB4" style="cursor: pointer;" class=""></ellipse>
+    <!-- Headscarf front -->
+    <path d="M28 35 Q50 25 72 35 Q75 40 72 45 Q50 38 28 45 Q25 40 28 35" fill="#E74C3C" style="cursor: pointer;"></path>
+    <!-- Headscarf pattern dots -->
+    <circle cx="35" cy="38" r="1.5" fill="#FFEB3B" style="cursor: pointer;"></circle>
+    <circle cx="50" cy="34" r="1.5" fill="#FFEB3B" style="cursor: pointer;"></circle>
+    <circle cx="65" cy="38" r="1.5" fill="#FFEB3B" style="cursor: pointer;"></circle>
+    <!-- Headscarf knot -->
+    
+    
+    
+    
+    <!-- Eyes -->
+    <ellipse id="eye-left-white" cx="42" cy="50" rx="5" ry="5" fill="white" style="cursor: pointer;"></ellipse>
+    <ellipse id="eye-right-white" cx="58" cy="50" rx="5" ry="5" fill="white" style="cursor: pointer;"></ellipse>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="50" r="2.5" fill="#4A4A4A" style="cursor: pointer;" ry="4"></circle>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="50" r="2.5" fill="#4A4A4A" style="cursor: pointer;" ry="4"></circle>
+    
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M30 42 Q40 38 48 42" stroke="#8B7355" stroke-width="1.5" fill="none" stroke-linecap="round" style="cursor: pointer;"></path>
+    <path id="brow-right" d="M52 42 Q60 38 70 42" stroke="#8B7355" stroke-width="1.5" fill="none" stroke-linecap="round" style="cursor: pointer;"></path>
+    
+    <!-- Glasses -->
+    <circle cx="42" cy="48" r="7" stroke="#8B7355" stroke-width="1.5" fill="none" style="cursor: pointer;"></circle>
+    <circle cx="58" cy="48" r="7" stroke="#8B7355" stroke-width="1.5" fill="none" style="cursor: pointer;"></circle>
+    <path d="M49 48 L51 48" stroke="#8B7355" stroke-width="1.5" style="cursor: pointer;"></path>
+    <path d="M35 47 L28 44" stroke="#8B7355" stroke-width="1.5" style="cursor: pointer;"></path>
+    <path d="M65 47 L72 44" stroke="#8B7355" stroke-width="1.5" style="cursor: pointer;"></path>
+    
+    <!-- Wrinkles -->
+    <path d="M35 52 Q33 54 35 56" stroke="#E0A090" stroke-width="0.5" fill="none" style="cursor: pointer;"></path>
+    <path d="M65 52 Q67 54 65 56" stroke="#E0A090" stroke-width="0.5" fill="none" style="cursor: pointer;"></path>
+  </g>
+  
+  <!-- Head Bottom (nose, jaw, mouth) -->
+  <g id="head-bottom">
+    <!-- Rosy cheeks -->
+    <ellipse cx="35" cy="55" rx="5" ry="3" fill="#FFB6C1" opacity="0.6" style="cursor: pointer;"></ellipse>
+    <ellipse cx="65" cy="55" rx="5" ry="3" fill="#FFB6C1" opacity="0.6" style="cursor: pointer;"></ellipse>
+    
+    <!-- Nose -->
+    <ellipse cx="50" cy="55" rx="3" ry="4" fill="#F0A090" style="cursor: pointer;"></ellipse>
+    
+    <!-- Mouth closed -->
+    <path id="mouth-closed" d="M44 66 Q50 72 56 66" stroke="#CD5C5C" stroke-width="2" fill="none" stroke-linecap="round" style="cursor: pointer;"></path>
+    
+    <!-- Mouth open -->
+    <ellipse id="mouth-open" cx="50" cy="63" rx="5" ry="4" fill="#8B0000" opacity="0" style="cursor: pointer;"></ellipse>
+    
+    <!-- Chin -->
+    <path d="M45 67 Q50 70 55 67" stroke="#E0A090" stroke-width="0.5" fill="none" style="cursor: pointer;"></path>
+  </g>
+</svg>
