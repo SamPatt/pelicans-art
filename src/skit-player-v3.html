@@ -263,6 +263,10 @@
     const camera = { x: 50, y: 50, zoom: 1, follow: null };
     let currentSkit = null;
     let currentSkitName = null;
+
+    // Valid TTS voice IDs - AI-generated skits must use one of these
+    const VALID_VOICES = ['alba', 'marius', 'javert', 'jean', 'fantine', 'cosette', 'eponine', 'azelma'];
+    const DEFAULT_VOICE = 'alba';
     let isPlaying = false;
     let startTime = 0;
     let animationId = null;
@@ -1893,8 +1897,13 @@
           document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg?v=${CACHE_BUSTER}`;
         }
 
-        // Create characters
+        // Create characters (validate voices - AI may generate invalid ones)
         for (const [name, config] of Object.entries(skit.cast || {})) {
+          // Validate voice - if invalid, use default
+          if (config.voice && !VALID_VOICES.includes(config.voice) && !config.voice.startsWith('http')) {
+            console.warn(`Invalid voice "${config.voice}" for ${name}, using default "${DEFAULT_VOICE}"`);
+            config.voice = DEFAULT_VOICE;
+          }
           await createCharacter(name, config);
         }
 
@@ -1920,7 +1929,11 @@
         for (const action of sayActions) {
           const char = characters[action.who];
           if (char) {
-            const voice = char.voice || 'alba';
+            // Ensure voice is valid (double-check after createCharacter validation)
+            let voice = char.voice || DEFAULT_VOICE;
+            if (!VALID_VOICES.includes(voice) && !voice.startsWith('http')) {
+              voice = DEFAULT_VOICE;
+            }
             const idx = indexMap.get(action);
             await generateAudio(action.line, voice, idx, action.who);
           }

@@ -100,6 +100,16 @@ OUTPUT FORMAT - Valid JSON with this structure:
   ]
 }
 
+AVAILABLE VOICES (you MUST use one of these exact IDs):
+- "alba" - neutral voice
+- "marius" - male voice
+- "javert" - male voice (deeper)
+- "jean" - male voice
+- "fantine" - female voice
+- "cosette" - female voice (younger)
+- "eponine" - female voice
+- "azelma" - female voice
+
 AVAILABLE ACTIONS:
 - shot: type can be "wide", "medium", "closeup", "extreme-closeup", "two-shot"
 - say: character speaks (who + line)
