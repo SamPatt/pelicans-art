@@ -2,6 +2,8 @@
  * Agent Service - Communicates with OpenClaw for AI-assisted generation
  */
 
+import { listBackgrounds, listSprites } from './storage.js';
+
 // Read config at runtime to ensure .env is loaded
 function getConfig() {
   return {
@@ -75,7 +77,29 @@ SUGGESTED STRUCTURE:
 
 Output ONLY the complete SVG element. No explanation, no markdown code blocks, just the raw SVG.`,
 
-  skit: `You are a comedy writer creating short animated skits.
+  // Note: skit prompt is built dynamically in buildSkitPrompt() to include available assets
+  skit: null
+};
+
+/**
+ * Build the skit system prompt with available assets
+ */
+async function buildSkitPrompt() {
+  // Get available backgrounds and sprites
+  let backgrounds = [];
+  let sprites = [];
+
+  try {
+    backgrounds = await listBackgrounds();
+    sprites = await listSprites();
+  } catch (e) {
+    console.warn('[Agent] Failed to load assets for skit prompt:', e.message);
+  }
+
+  const backgroundNames = backgrounds.map(b => b.name);
+  const spriteNames = sprites.map(s => s.name);
+
+  return `You are a comedy writer creating short animated skits.
 
 CRITICAL: For the "voice" field in cast, you MUST use ONLY these exact voice IDs:
 - "marius" - male voice
@@ -88,6 +112,12 @@ CRITICAL: For the "voice" field in cast, you MUST use ONLY these exact voice IDs
 - "alba" - neutral voice
 
 Do NOT use any other voice names like "onyx", "shimmer", "echo", etc. They will not work.
+
+AVAILABLE BACKGROUNDS (use one of these for stage.background):
+${backgroundNames.length > 0 ? backgroundNames.map(n => `- "${n}"`).join('\n') : '- (none available - omit background field)'}
+
+AVAILABLE SPRITES (use these for cast character sprites):
+${spriteNames.length > 0 ? spriteNames.map(n => `- "${n}"`).join('\n') : '- (none available)'}
 
 OUTPUT FORMAT - Valid JSON with this structure:
 {
@@ -129,8 +159,8 @@ COMEDY GUIDELINES:
 - End with a button (strong final laugh)
 - Keep it under 90 seconds
 
-Output ONLY valid JSON. No explanation, no markdown code blocks.`
-};
+Output ONLY valid JSON. No explanation, no markdown code blocks.`;
+}
 
 /**
  * Build the user prompt based on mode and context
@@ -253,11 +283,16 @@ async function callOpenClaw(systemPrompt, userPrompt) {
 export async function generateAsset(request) {
   const { type, mode, command, current } = request;
 
-  if (!SYSTEM_PROMPTS[type]) {
+  // Skit uses dynamic prompt, others use static
+  let systemPrompt;
+  if (type === 'skit') {
+    systemPrompt = await buildSkitPrompt();
+  } else if (SYSTEM_PROMPTS[type]) {
+    systemPrompt = SYSTEM_PROMPTS[type];
+  } else {
     throw new Error(`Unknown asset type: ${type}`);
   }
 
-  const systemPrompt = SYSTEM_PROMPTS[type];
   const userPrompt = buildUserPrompt(mode, command, current);
 
   console.log(`[Agent] Generating ${type} (${mode}): "${command.slice(0, 50)}..."`);

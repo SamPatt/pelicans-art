@@ -747,6 +747,44 @@
       color: #888;
     }
 
+    /* Background selector in skit editor */
+    .skit-background-selector {
+      margin-bottom: 10px;
+    }
+
+    .skit-background-selector select {
+      width: 100%;
+      padding: 8px 10px;
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 0.9em;
+      cursor: pointer;
+    }
+
+    .skit-background-selector select:hover {
+      border-color: #4ecca3;
+    }
+
+    .skit-background-preview {
+      margin-top: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: #16213e;
+      aspect-ratio: 4/3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 0.8em;
+    }
+
+    .skit-background-preview svg {
+      width: 100%;
+      height: 100%;
+    }
+
     .script-line {
       padding: 8px 12px;
       margin-bottom: 4px;
@@ -1415,6 +1453,14 @@
           <p id="skit-description"></p>
         </div>
 
+        <h4>🖼️ Background</h4>
+        <div id="skit-background-selector" class="skit-background-selector">
+          <select id="skit-background-select" onchange="changeSkitBackground(this.value)">
+            <option value="">-- Select Background --</option>
+          </select>
+          <div id="skit-background-preview" class="skit-background-preview"></div>
+        </div>
+
         <h4>🎭 Cast</h4>
         <div id="skit-cast-list"></div>
 
@@ -1751,6 +1797,9 @@
       // Meta
       document.getElementById('skit-title').textContent = skit.meta?.title || 'Untitled Skit';
       document.getElementById('skit-description').textContent = skit.meta?.description || '';
+
+      // Background selector
+      populateBackgroundSelector(skit.stage?.background);
 
       // Cast
       const castHtml = Object.entries(skit.cast || {}).map(([id, char]) => `
@@ -2246,6 +2295,71 @@
       currentSkitData.script.splice(index, 1);
       renderSkitStructure(currentSkitData);
       markSkitDirty();
+    }
+
+    // === SKIT BACKGROUND ===
+    let availableBackgrounds = [];
+
+    async function populateBackgroundSelector(currentBackground) {
+      const select = document.getElementById('skit-background-select');
+
+      // Fetch available backgrounds if not cached
+      if (availableBackgrounds.length === 0) {
+        try {
+          const resp = await fetch('/api/backgrounds');
+          availableBackgrounds = await resp.json();
+        } catch (e) {
+          console.error('Failed to load backgrounds:', e);
+          availableBackgrounds = [];
+        }
+      }
+
+      // Populate dropdown
+      select.innerHTML = '<option value="">-- Select Background --</option>' +
+        availableBackgrounds.map(bg =>
+          `<option value="${bg.name}" ${bg.name === currentBackground ? 'selected' : ''}>${bg.name}</option>`
+        ).join('');
+
+      // Show preview
+      loadBackgroundPreview(currentBackground);
+    }
+
+    async function loadBackgroundPreview(backgroundName) {
+      const preview = document.getElementById('skit-background-preview');
+
+      if (!backgroundName) {
+        preview.innerHTML = '<span>No background selected</span>';
+        return;
+      }
+
+      try {
+        const resp = await fetch(`/api/backgrounds/${backgroundName}`);
+        if (resp.ok) {
+          const svg = await resp.text();
+          preview.innerHTML = svg;
+        } else {
+          preview.innerHTML = `<span>Background not found: ${backgroundName}</span>`;
+        }
+      } catch (e) {
+        preview.innerHTML = `<span>Error loading preview</span>`;
+      }
+    }
+
+    function changeSkitBackground(backgroundName) {
+      if (!currentSkitData) return;
+
+      if (!currentSkitData.stage) {
+        currentSkitData.stage = {};
+      }
+      currentSkitData.stage.background = backgroundName || undefined;
+
+      loadBackgroundPreview(backgroundName);
+      markSkitDirty();
+    }
+
+    // Get list of available background names for AI prompting
+    function getAvailableBackgroundNames() {
+      return availableBackgrounds.map(bg => bg.name);
     }
 
     let skitDirty = false;
