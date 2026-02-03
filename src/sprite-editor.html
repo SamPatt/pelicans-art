@@ -3279,17 +3279,19 @@
 </svg>`;
       
       currentSprite = svg;
-      currentSpriteName = 'new-sprite';
-      
+      currentSpriteName = null;  // Clear so command bar shows "create" mode
+      currentMeta = null;
+
       document.querySelectorAll('.sprite-item').forEach(item => {
         item.classList.remove('active');
       });
-      
+
       renderSprite();
       buildElementTree();
       clearSelection();
       resetHistory();
-      updateStatus('Created new sprite template');
+      updateCommandContext();  // Update command bar to show "create" mode
+      updateStatus('New sprite - describe what you want to create');
     }
     
     // === INIT ===
