@@ -1,9 +1,14 @@
-import 'dotenv/config';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Load .env from project root (parent of server/)
+const __dirnameEnv = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirnameEnv, '..', '.env') });
+
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import fetch from 'node-fetch';
 
 import { ensureDataDirs } from './services/storage.js';

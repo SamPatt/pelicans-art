@@ -2,9 +2,14 @@
  * Agent Service - Communicates with OpenClaw for AI-assisted generation
  */
 
-const OPENCLAW_URL = process.env.OPENCLAW_URL || 'http://127.0.0.1:18789';
-const OPENCLAW_TOKEN = process.env.OPENCLAW_TOKEN;
-const OPENCLAW_AGENT_ID = process.env.OPENCLAW_AGENT_ID || 'skitkit';
+// Read config at runtime to ensure .env is loaded
+function getConfig() {
+  return {
+    url: process.env.OPENCLAW_URL || 'http://127.0.0.1:18789',
+    token: process.env.OPENCLAW_TOKEN,
+    agentId: process.env.OPENCLAW_AGENT_ID || 'skitkit'
+  };
+}
 
 // System prompts for different asset types
 // NOTE: These will need fine-tuning based on real-world results
@@ -174,19 +179,21 @@ function extractJson(content) {
  * Call OpenClaw's chat completions API
  */
 async function callOpenClaw(systemPrompt, userPrompt) {
-  if (!OPENCLAW_TOKEN) {
+  const config = getConfig();
+
+  if (!config.token) {
     throw new Error('OPENCLAW_TOKEN not configured. Set it in your .env file.');
   }
 
-  const response = await fetch(`${OPENCLAW_URL}/v1/chat/completions`, {
+  const response = await fetch(`${config.url}/v1/chat/completions`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${OPENCLAW_TOKEN}`,
+      'Authorization': `Bearer ${config.token}`,
       'Content-Type': 'application/json',
-      'x-openclaw-agent-id': OPENCLAW_AGENT_ID
+      'x-openclaw-agent-id': config.agentId
     },
     body: JSON.stringify({
-      model: `openclaw:${OPENCLAW_AGENT_ID}`,
+      model: `openclaw:${config.agentId}`,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
@@ -247,28 +254,30 @@ export async function generateAsset(request) {
  * Check if OpenClaw is configured and reachable
  */
 export async function checkOpenClawConnection() {
-  if (!OPENCLAW_TOKEN) {
+  const config = getConfig();
+
+  if (!config.token) {
     return { connected: false, error: 'OPENCLAW_TOKEN not configured' };
   }
 
   try {
     // Try a simple request to check connectivity
-    const response = await fetch(`${OPENCLAW_URL}/`, {
+    const response = await fetch(`${config.url}/`, {
       headers: {
-        'Authorization': `Bearer ${OPENCLAW_TOKEN}`
+        'Authorization': `Bearer ${config.token}`
       }
     });
 
     return {
       connected: response.ok,
-      url: OPENCLAW_URL,
-      agentId: OPENCLAW_AGENT_ID
+      url: config.url,
+      agentId: config.agentId
     };
   } catch (err) {
     return {
       connected: false,
       error: err.message,
-      url: OPENCLAW_URL
+      url: config.url
     };
   }
 }
