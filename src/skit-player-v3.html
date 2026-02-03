@@ -1920,22 +1920,41 @@
           setEyeDirection(char2, char1LooksRight ? 'left' : 'right');
         }
 
-        // Generate audio
+        // Generate audio and set up cache (same pattern as loadSkit)
         document.getElementById('status').textContent = 'Generating audio...';
         const sayActions = (skit.script || []).filter(b => b.do === 'say');
-        const indexMap = new Map();
-        sayActions.forEach((action, idx) => indexMap.set(action, idx));
+        const beatIndexMap = new Map();
+        sayActions.forEach((action, idx) => beatIndexMap.set(action, idx));
 
-        for (const action of sayActions) {
-          const char = characters[action.who];
-          if (char) {
-            // Ensure voice is valid (double-check after createCharacter validation)
-            let voice = char.voice || DEFAULT_VOICE;
-            if (!VALID_VOICES.includes(voice) && !voice.startsWith('http')) {
-              voice = DEFAULT_VOICE;
-            }
-            const idx = indexMap.get(action);
-            await generateAudio(action.line, voice, idx, action.who);
+        for (const beat of sayActions) {
+          const char = characters[beat.who];
+          if (!char) {
+            console.warn(`Character "${beat.who}" not found`);
+            continue;
+          }
+
+          // Ensure voice is valid
+          let voice = char.voice || DEFAULT_VOICE;
+          if (!VALID_VOICES.includes(voice) && !voice.startsWith('http')) {
+            voice = DEFAULT_VOICE;
+          }
+
+          try {
+            const blob = await generateAudio(beat.line, voice);
+            const audio = new Audio(URL.createObjectURL(blob));
+            const source = audioContext.createMediaElementSource(audio);
+
+            // Use gain node for volume
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
+            source.connect(gainNode);
+            gainNode.connect(analyser);
+
+            // Use sequential index for cache key (API skits don't have t values)
+            const cacheKey = `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+            audioCache.set(cacheKey, { audio, beat, charName: beat.who, gainNode });
+          } catch (e) {
+            console.error('TTS error for', beat.who, ':', e);
           }
         }
 
