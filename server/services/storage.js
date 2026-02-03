@@ -141,6 +141,23 @@ export async function saveSprite(name, svg, meta) {
   return { name, builtin: false };
 }
 
+/**
+ * Save directly to built-in sprites directory (src/sprites)
+ * Used by sprite editor for development workflow
+ */
+export async function saveBuiltinSprite(name, variant, svg) {
+  const spritePath = path.join(BUILTIN_SPRITES_DIR, name);
+
+  // Check if sprite directory exists
+  if (!await exists(spritePath)) {
+    throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
+  }
+
+  const variantFile = `${variant}.svg`;
+  await fs.writeFile(path.join(spritePath, variantFile), svg);
+  return { name, variant, builtin: true };
+}
+
 export async function deleteSprite(name) {
   // Prevent deleting built-in sprites
   const builtinPath = path.join(BUILTIN_SPRITES_DIR, name);

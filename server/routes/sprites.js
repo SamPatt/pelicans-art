@@ -3,6 +3,7 @@ import {
   listSprites,
   getSprite,
   saveSprite,
+  saveBuiltinSprite,
   deleteSprite
 } from '../services/storage.js';
 import { normalizeSprite } from '../middleware/normalize.js';
@@ -136,6 +137,33 @@ router.delete('/:name', async (req, res, next) => {
     }
 
     res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * PUT /api/sprites/:name/source/:variant
+ * Save directly to built-in sprites (src/sprites) - for development workflow
+ */
+router.put('/:name/source/:variant', async (req, res, next) => {
+  try {
+    const { name, variant } = req.params;
+    const { svg } = req.body;
+
+    if (!svg) {
+      return res.status(400).json({ error: true, message: 'SVG content is required' });
+    }
+
+    const result = await saveBuiltinSprite(name, variant, svg);
+
+    // Broadcast update via WebSocket
+    const wss = req.app.get('wss');
+    if (wss?.broadcast) {
+      wss.broadcast({ type: 'sprite:updated', name, variant });
+    }
+
+    res.json(result);
   } catch (err) {
     next(err);
   }

@@ -1553,11 +1553,30 @@
         updateStatus('No sprite to save');
         return;
       }
-      
-      // Save to localStorage
+
+      // Save to localStorage as backup
       saveToLocalStorage();
-      
-      // Download as file
+
+      // Try to save via API (to src/sprites directory)
+      try {
+        const response = await fetch(`/api/sprites/${currentSpriteName}/source/${currentVariant}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ svg: currentSprite })
+        });
+
+        if (response.ok) {
+          updateStatus(`Saved: ${currentSpriteName}/${currentVariant}.svg`);
+          return;
+        }
+
+        // If API fails, fall back to download
+        console.warn('API save failed, falling back to download:', await response.text());
+      } catch (err) {
+        console.warn('API save error, falling back to download:', err);
+      }
+
+      // Fallback: Download as file
       const blob = new Blob([currentSprite], { type: 'image/svg+xml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1565,8 +1584,8 @@
       a.download = `${currentSpriteName}_${currentVariant}.svg`;
       a.click();
       URL.revokeObjectURL(url);
-      
-      updateStatus(`Saved: ${currentSpriteName}/${currentVariant}.svg (download started)`);
+
+      updateStatus(`Saved: ${currentSpriteName}/${currentVariant}.svg (downloaded - API unavailable)`);
     }
     
     function saveToLocalStorage() {
