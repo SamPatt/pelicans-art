@@ -430,6 +430,47 @@
       pointer-events: all;
       cursor: move;
     }
+
+    /* Emotion preview buttons */
+    .emotion-btn {
+      width: 36px;
+      height: 36px;
+      font-size: 1.3em;
+      background: #0f3460;
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .emotion-btn:hover {
+      background: #1a4a7a;
+      transform: scale(1.1);
+    }
+
+    .emotion-btn.active {
+      border-color: #e94560;
+      background: #2a1a3a;
+    }
+
+    #animation-preview-panel button {
+      background: #0f3460;
+      border: none;
+      color: #eee;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+
+    #animation-preview-panel button:hover {
+      background: #1a4a7a;
+    }
+
+    #animation-preview-panel button.active {
+      background: #4ecca3;
+      color: #111;
+    }
   </style>
 </head>
 <body>
@@ -655,6 +696,34 @@
       <div class="panel-header">⚙️ Properties</div>
       <div id="properties-panel">
         <div class="no-selection">Select an element to edit</div>
+      </div>
+
+      <!-- Animation Preview Panel -->
+      <div class="panel-header" style="margin-top:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleAnimPanel()">
+        <span>🎭 Animation Preview</span>
+        <span id="anim-panel-toggle" style="font-size:0.8em;">▼</span>
+      </div>
+      <div id="animation-preview-panel" class="property-group" style="display:none;">
+        <div class="property-row" style="flex-wrap:wrap;gap:5px;">
+          <label style="width:100%;margin-bottom:5px;">Emotions:</label>
+          <button class="emotion-btn" data-emotion="neutral" title="Neutral">😐</button>
+          <button class="emotion-btn" data-emotion="happy" title="Happy">😊</button>
+          <button class="emotion-btn" data-emotion="sad" title="Sad">😢</button>
+          <button class="emotion-btn" data-emotion="angry" title="Angry">😠</button>
+          <button class="emotion-btn" data-emotion="surprised" title="Surprised">😲</button>
+          <button class="emotion-btn" data-emotion="excited" title="Excited">🤩</button>
+          <button class="emotion-btn" data-emotion="worried" title="Worried">😟</button>
+          <button class="emotion-btn" data-emotion="smug" title="Smug">😏</button>
+          <button class="emotion-btn" data-emotion="tired" title="Tired">😴</button>
+        </div>
+        <div class="property-row" style="margin-top:10px;flex-wrap:wrap;gap:5px;">
+          <label style="width:100%;margin-bottom:5px;">Talking:</label>
+          <button id="btn-talk-toggle" onclick="toggleTalking(); this.blur();" style="flex:1;">🗣️ Start Talking</button>
+          <button id="btn-blink-toggle" onclick="toggleBlinking(); this.blur();" style="flex:1;">👁️ Blink</button>
+        </div>
+        <div class="property-row" style="margin-top:5px;">
+          <button onclick="resetAnimation(); this.blur();" style="width:100%;background:#e94560;">⟲ Reset to Original</button>
+        </div>
       </div>
     </div>
   </div>
@@ -2864,7 +2933,338 @@
     document.getElementById('btn-test').onclick = () => {
       window.open('skit-player-v3.html', '_blank');
     };
-    
+
+    // === ANIMATION PREVIEW ===
+    const EMOTIONS = {
+      neutral: {
+        eyeWhite: { ry: 7, cy: 52 },
+        pupil: { ry: 5, cy: 52 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        mouth: "M50 65 L46 70 M50 65 L54 70"
+      },
+      happy: {
+        eyeWhite: { ry: 5, cy: 50 },
+        pupil: { ry: 4, cy: 50 },
+        browLeft: "M30 42 Q40 38 48 42",
+        browRight: "M52 42 Q60 38 70 42",
+        mouth: "M44 66 Q50 72 56 66"
+      },
+      sad: {
+        eyeWhite: { ry: 6, cy: 54 },
+        pupil: { ry: 5, cy: 55 },
+        browLeft: "M30 40 L48 46",
+        browRight: "M52 46 L70 40",
+        mouth: "M44 70 Q50 65 56 70"
+      },
+      angry: {
+        eyeWhite: { ry: 5, cy: 52 },
+        pupil: { ry: 4, cy: 52 },
+        browLeft: "M30 48 L48 42",
+        browRight: "M52 42 L70 48",
+        mouth: "M44 68 L56 68"
+      },
+      surprised: {
+        eyeWhite: { ry: 9, cy: 52 },
+        pupil: { ry: 6, cy: 52 },
+        browLeft: "M30 38 Q40 34 48 38",
+        browRight: "M52 38 Q60 34 70 38",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66"
+      },
+      excited: {
+        eyeWhite: { ry: 9, cy: 50 },
+        pupil: { ry: 6, cy: 50 },
+        browLeft: "M30 38 Q40 32 48 38",
+        browRight: "M52 38 Q60 32 70 38",
+        mouth: "M42 64 Q50 74 58 64"
+      },
+      worried: {
+        eyeWhite: { ry: 7, cy: 53 },
+        pupil: { ry: 5, cy: 54 },
+        browLeft: "M30 42 L48 46",
+        browRight: "M52 46 L70 42",
+        mouth: "M44 68 Q50 66 56 68"
+      },
+      smug: {
+        eyeWhite: { ry: 5, cy: 52 },
+        pupil: { ry: 4, cy: 52 },
+        browLeft: "M30 44 Q40 40 48 46",
+        browRight: "M52 46 Q60 40 70 44",
+        mouth: "M44 66 Q50 70 56 68"
+      },
+      tired: {
+        eyeWhite: { ry: 4, cy: 54 },
+        pupil: { ry: 3, cy: 54 },
+        browLeft: "M30 46 Q40 48 48 46",
+        browRight: "M52 46 Q60 48 70 46",
+        mouth: "M46 68 Q50 66 54 68"
+      }
+    };
+
+    let currentEmotion = 'neutral';
+    let talkingInterval = null;
+    let blinkingInterval = null;
+    let originalSvgState = null;
+
+    function saveOriginalState() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (svg) {
+        originalSvgState = svg.cloneNode(true);
+      }
+    }
+
+    function setEditorEmotion(emotion) {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      const config = EMOTIONS[emotion];
+      if (!config) return;
+
+      // Save original state if not saved yet
+      if (!originalSvgState) saveOriginalState();
+
+      currentEmotion = emotion;
+
+      // Update active button
+      document.querySelectorAll('.emotion-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emotion === emotion);
+      });
+
+      // Get SVG elements
+      const eyeLeftWhite = svg.querySelector('#eye-left-white');
+      const eyeRightWhite = svg.querySelector('#eye-right-white');
+      const eyeLeftPupil = svg.querySelector('#eye-left-pupil');
+      const eyeRightPupil = svg.querySelector('#eye-right-pupil');
+      const browLeft = svg.querySelector('#brow-left');
+      const browRight = svg.querySelector('#brow-right');
+      const mouthClosed = svg.querySelector('#mouth-closed');
+
+      // Apply eye whites
+      if (eyeLeftWhite) {
+        eyeLeftWhite.setAttribute('ry', config.eyeWhite.ry);
+        eyeLeftWhite.setAttribute('cy', config.eyeWhite.cy);
+      }
+      if (eyeRightWhite) {
+        eyeRightWhite.setAttribute('ry', config.eyeWhite.ry);
+        eyeRightWhite.setAttribute('cy', config.eyeWhite.cy);
+      }
+
+      // Apply pupils
+      if (eyeLeftPupil) {
+        eyeLeftPupil.setAttribute('ry', config.pupil.ry);
+        eyeLeftPupil.setAttribute('cy', config.pupil.cy);
+      }
+      if (eyeRightPupil) {
+        eyeRightPupil.setAttribute('ry', config.pupil.ry);
+        eyeRightPupil.setAttribute('cy', config.pupil.cy);
+      }
+
+      // Apply eyebrows
+      if (browLeft) browLeft.setAttribute('d', config.browLeft);
+      if (browRight) browRight.setAttribute('d', config.browRight);
+
+      // Apply mouth
+      if (mouthClosed) mouthClosed.setAttribute('d', config.mouth);
+
+      setStatus(`Emotion: ${emotion}`);
+    }
+
+    function toggleTalking() {
+      const btn = document.getElementById('btn-talk-toggle');
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      if (talkingInterval) {
+        // Stop talking
+        clearInterval(talkingInterval);
+        talkingInterval = null;
+        btn.textContent = '🗣️ Start Talking';
+        btn.classList.remove('active');
+
+        // Reset mouth
+        const mouthOpen = svg.querySelector('#mouth-open');
+        const mouthClosed = svg.querySelector('#mouth-closed');
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+        if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+      } else {
+        // Start talking
+        if (!originalSvgState) saveOriginalState();
+        btn.textContent = '🗣️ Stop Talking';
+        btn.classList.add('active');
+
+        const mouthOpen = svg.querySelector('#mouth-open');
+        const mouthClosed = svg.querySelector('#mouth-closed');
+
+        let mouthState = false;
+        talkingInterval = setInterval(() => {
+          mouthState = !mouthState;
+          if (mouthOpen) mouthOpen.setAttribute('opacity', mouthState ? '1' : '0');
+          if (mouthClosed) mouthClosed.setAttribute('opacity', mouthState ? '0' : '1');
+        }, 150);
+      }
+    }
+
+    // Store original eye values for blink reset
+    let originalEyeValues = null;
+
+    function toggleBlinking() {
+      const btn = document.getElementById('btn-blink-toggle');
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      const eyeLeftWhite = svg.querySelector('#eye-left-white');
+      const eyeRightWhite = svg.querySelector('#eye-right-white');
+      const eyeLeftPupil = svg.querySelector('#eye-left-pupil');
+      const eyeRightPupil = svg.querySelector('#eye-right-pupil');
+
+      if (blinkingInterval) {
+        // Stop blinking
+        clearInterval(blinkingInterval);
+        blinkingInterval = null;
+        btn.textContent = '👁️ Blink';
+        btn.classList.remove('active');
+
+        // Restore original eye values
+        if (originalEyeValues) {
+          if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', originalEyeValues.leftWhiteRy);
+          if (eyeRightWhite) eyeRightWhite.setAttribute('ry', originalEyeValues.rightWhiteRy);
+          if (eyeLeftPupil) eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
+          if (eyeRightPupil) eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+        }
+      } else {
+        // Start blinking - store current values first
+        if (!originalSvgState) saveOriginalState();
+        btn.textContent = '👁️ Stop Blink';
+        btn.classList.add('active');
+
+        // Store current eye values
+        originalEyeValues = {
+          leftWhiteRy: eyeLeftWhite ? eyeLeftWhite.getAttribute('ry') : '7',
+          rightWhiteRy: eyeRightWhite ? eyeRightWhite.getAttribute('ry') : '7',
+          leftPupilRy: eyeLeftPupil ? eyeLeftPupil.getAttribute('ry') : '5',
+          rightPupilRy: eyeRightPupil ? eyeRightPupil.getAttribute('ry') : '5'
+        };
+
+        blinkingInterval = setInterval(() => {
+          // Blink (close eyes - both whites and pupils)
+          if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', '0.5');
+          if (eyeRightWhite) eyeRightWhite.setAttribute('ry', '0.5');
+          if (eyeLeftPupil) eyeLeftPupil.setAttribute('ry', '0.3');
+          if (eyeRightPupil) eyeRightPupil.setAttribute('ry', '0.3');
+
+          // Open eyes after 100ms
+          setTimeout(() => {
+            if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', originalEyeValues.leftWhiteRy);
+            if (eyeRightWhite) eyeRightWhite.setAttribute('ry', originalEyeValues.rightWhiteRy);
+            if (eyeLeftPupil) eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
+            if (eyeRightPupil) eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+          }, 100);
+        }, 3000);
+      }
+    }
+
+    function toggleAnimPanel() {
+      const panel = document.getElementById('animation-preview-panel');
+      const toggle = document.getElementById('anim-panel-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggle.textContent = '▲';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '▼';
+      }
+    }
+
+    function resetAnimation() {
+      // Stop all animations
+      if (talkingInterval) {
+        clearInterval(talkingInterval);
+        talkingInterval = null;
+        document.getElementById('btn-talk-toggle').textContent = '🗣️ Start Talking';
+        document.getElementById('btn-talk-toggle').classList.remove('active');
+      }
+      if (blinkingInterval) {
+        clearInterval(blinkingInterval);
+        blinkingInterval = null;
+        document.getElementById('btn-blink-toggle').textContent = '👁️ Blink';
+        document.getElementById('btn-blink-toggle').classList.remove('active');
+      }
+
+      // Clear stored eye values
+      originalEyeValues = null;
+
+      // Restore original SVG state
+      if (originalSvgState) {
+        const container = document.getElementById('svg-canvas');
+        container.innerHTML = '';
+        container.appendChild(originalSvgState.cloneNode(true));
+
+        // Re-add click handlers to restored SVG elements
+        const svg = container.querySelector('svg');
+        if (svg) {
+          svg.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'g' && el.tagName !== 'svg') {
+              el.style.cursor = 'pointer';
+              el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectElement(el);
+              });
+            }
+          });
+          svg.addEventListener('click', (e) => {
+            if (e.target === svg) {
+              clearSelection();
+            }
+          });
+        }
+        buildElementTree();
+        originalSvgState = null;
+      }
+
+      currentEmotion = 'neutral';
+      document.querySelectorAll('.emotion-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
+      });
+
+      setStatus('Animation reset');
+    }
+
+    // Add emotion button listeners
+    document.querySelectorAll('.emotion-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setEditorEmotion(btn.dataset.emotion);
+        btn.blur(); // Remove focus so SVG can be clicked
+      });
+    });
+
+    // Reset animation state when sprite changes
+    const originalSelectCharacter = selectCharacter;
+    selectCharacter = async function(name) {
+      // Stop animations and clear state
+      if (talkingInterval) {
+        clearInterval(talkingInterval);
+        talkingInterval = null;
+        document.getElementById('btn-talk-toggle').textContent = '🗣️ Start Talking';
+        document.getElementById('btn-talk-toggle').classList.remove('active');
+      }
+      if (blinkingInterval) {
+        clearInterval(blinkingInterval);
+        blinkingInterval = null;
+        document.getElementById('btn-blink-toggle').textContent = '👁️ Blink';
+        document.getElementById('btn-blink-toggle').classList.remove('active');
+      }
+      originalSvgState = null;
+      originalEyeValues = null;
+      currentEmotion = 'neutral';
+      document.querySelectorAll('.emotion-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
+      });
+
+      // Call original function
+      return originalSelectCharacter(name);
+    };
+
     loadSpriteList();
     loadLocalSprites();
     selectCharacter('cat'); // Load default
