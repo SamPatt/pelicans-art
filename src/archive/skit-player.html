@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Improv Theater</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      padding: 10px;
+      min-height: 100vh;
+    }
+    h1 { color: #e94560; margin-bottom: 10px; text-align: center; font-size: 20px; }
+    .stage-container {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+      margin: 0 auto;
+      position: relative;
+      border: 2px solid #e94560;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #e8e0d5;
+      transition: aspect-ratio 0.3s ease, max-width 0.3s ease;
+    }
+    .stage-container.portrait {
+      aspect-ratio: 9/16;
+      max-width: 450px;
+    }
+    .stage, .shot-stage {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    @media (max-width: 600px) {
+      body { padding: 5px; }
+      h1 { font-size: 16px; margin-bottom: 5px; }
+      .controls button { padding: 10px 16px; font-size: 14px; }
+    }
+    @media (max-height: 500px) and (orientation: landscape) {
+      h1 { display: none; }
+      .status { display: none; }
+      .script-selector { display: none; }
+      body { padding: 0; }
+      .stage { 
+        width: 100vw; 
+        max-width: none;
+        height: calc(100vh - 50px); 
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+      .controls { margin-top: 5px; }
+      .controls button { padding: 8px 12px; font-size: 12px; }
+    }
+    .background {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      transition: object-position 0.3s ease-out;
+    }
+    .character {
+      position: absolute;
+      bottom: 20%;
+      width: 15%;
+      max-width: 120px;
+      height: auto;
+      transition: left 1s ease-in-out, right 1s ease-in-out, opacity 0.3s, transform 0.8s ease-in-out, bottom 0.8s ease-in-out;
+      transform-origin: center bottom;
+    }
+    .character.left { left: 10%; }
+    .character.right { right: 35%; }
+    .character.offscreen-left { left: -20%; opacity: 0; }
+    .character.offscreen-right { right: -20%; opacity: 0; }
+    
+    /* Depth levels for moving into background */
+    .character.depth-far {
+      transform: scale(0.5);
+      bottom: 35%;
+      opacity: 0.85;
+    }
+    .character.depth-mid {
+      transform: scale(0.75);
+      bottom: 22%;
+      opacity: 0.92;
+    }
+    .character.depth-near {
+      transform: scale(1);
+      bottom: 10%;
+      opacity: 1;
+    }
+    
+    /* Closeup shot character - large, positioned toward opposite side */
+    #shot-closeup-left .character,
+    #shot-closeup-right .character {
+      position: absolute;
+      top: -10%;
+      bottom: auto;
+    }
+    #shot-closeup-left .character svg,
+    #shot-closeup-right .character svg {
+      width: 60vw !important;
+      height: auto !important;
+      max-width: none !important;
+    }
+    /* Left character closeup - on left side of frame, looking right */
+    #shot-closeup-left .character {
+      left: 5%;
+    }
+    /* Right character closeup - on right side of frame, looking left */
+    #shot-closeup-right .character {
+      left: 35%;
+    }
+    
+    /* Zoom levels for closeup shots */
+    #shot-closeup-left .character,
+    #shot-closeup-right .character {
+      transition: transform 0.8s ease-in-out;
+      transform-origin: 50% 30%; /* Center on face area */
+    }
+    .character.zoom-full {
+      transform: scale(1) translateX(0) translateY(0);
+    }
+    .character.zoom-medium {
+      transform: scale(1.5) translateY(10%);
+    }
+    .character.zoom-face {
+      transform: scale(2.5) translateY(15%) translateX(5%);
+    }
+    /* Right character zoom needs opposite X adjustment */
+    #shot-closeup-right .character.zoom-face {
+      transform: scale(2.5) translateY(15%) translateX(-5%);
+    }
+    
+    /* Closeup caption - centered at bottom */
+    .caption.closeup {
+      position: absolute;
+      bottom: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      max-width: 80%;
+    }
+    
+    .prop {
+      position: absolute;
+      width: 8%;
+      height: auto;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .prop.visible { opacity: 1; }
+    
+    /* Head rotation from center */
+    .character svg #head-top,
+    .character svg #head-bottom {
+      transition: transform 0.05s ease-out;
+      transform-origin: 50% 55px;
+    }
+    /* Left character - tilts back away from where looking */
+    .character.left.speaking svg #head-top,
+    .character.left.speaking svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    .character.left.speaking.facing-right svg #head-top,
+    .character.left.speaking.facing-right svg #head-bottom {
+      transform: rotate(-8deg);
+    }
+    /* Right character - tilts back away from where looking */
+    .character.right.speaking svg #head-top,
+    .character.right.speaking svg #head-bottom {
+      transform: rotate(8deg);
+    }
+    .character.right.speaking.facing-left svg #head-top,
+    .character.right.speaking.facing-left svg #head-bottom {
+      transform: rotate(8deg);
+    }
+    .character.speaking svg #mouth-open { opacity: 1 !important; }
+    .character.speaking svg #mouth-closed { opacity: 0 !important; }
+    
+    /* Eye movement */
+    .character svg .pupil { transition: transform 0.15s ease-out; }
+    .character.look-left svg .pupil { transform: translateX(-1.5px); }
+    .character.look-right svg .pupil { transform: translateX(1.5px); }
+    .character.look-up svg .pupil { transform: translateY(-1.5px); }
+    .character.look-down svg .pupil { transform: translateY(1.5px); }
+
+    .caption {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 11px;
+      max-width: 40%;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 10;
+      bottom: 2%;
+    }
+    .caption.visible { opacity: 1; }
+    .caption.left { left: 5%; }
+    .caption.right { right: 5%; }
+    
+    .controls { text-align: center; margin-top: 15px; }
+    button {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover { background: #ff6b6b; }
+    button:disabled { background: #444; cursor: not-allowed; }
+    .status { text-align: center; margin-top: 10px; color: #888; font-size: 14px; }
+    .script-selector { text-align: center; margin-top: 10px; }
+    .script-selector button { background: #16213e; border: 1px solid #e94560; }
+    .script-selector button.active { background: #e94560; }
+  </style>
+</head>
+<body>
+  <h1>🎭 AI Improv Theater</h1>
+  
+  <div class="stage-container" id="stage-container">
+    <!-- Wide shot (both characters) -->
+    <div class="stage shot-stage" id="shot-wide">
+      <img class="background" id="bg-wide" src="backgrounds/office.svg" alt="background">
+      <div class="character left" id="char-left"></div>
+      <div class="character right" id="char-right"></div>
+      <div id="props-container"></div>
+      <div class="caption left" id="caption-left"></div>
+      <div class="caption right" id="caption-right"></div>
+    </div>
+    
+    <!-- Closeup left character -->
+    <div class="stage shot-stage" id="shot-closeup-left" style="display:none">
+      <img class="background" id="bg-closeup-left" src="backgrounds/office.svg" alt="background">
+      <div class="character closeup-center" id="char-closeup-left"></div>
+      <div class="caption closeup" id="caption-closeup-left"></div>
+    </div>
+    
+    <!-- Closeup right character -->
+    <div class="stage shot-stage" id="shot-closeup-right" style="display:none">
+      <img class="background" id="bg-closeup-right" src="backgrounds/office.svg" alt="background">
+      <div class="character closeup-center" id="char-closeup-right"></div>
+      <div class="caption closeup" id="caption-closeup-right"></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button id="playBtn" disabled>▶ Play</button>
+    <button id="stopBtn">⬛ Stop</button>
+  </div>
+  
+  <div class="script-selector">
+    <button id="script1Btn" class="active">Performance Review</button>
+    <button id="script2Btn">Existential Kitchen</button>
+    <button id="script3Btn">Space Station</button>
+    <button id="script4Btn">Giant Cat</button>
+    <button id="script5Btn">Long Week</button>
+    <button id="script6Btn">Lucky Charms</button>
+    <button id="script7Btn">Space Wall</button>
+  </div>
+  
+  <div class="status" id="status">Loading...</div>
+
+  <script>
+    // Scripts
+    const scripts = {
+      performanceReview: {
+        meta: { title: "The Performance Review", duration: 18 },
+        stage: { background: "office" },
+        cast: {
+          boss: { position: "right", sprite: "trump", voice: "fantine", startOffscreen: false },
+          employee: { position: "left", sprite: "trump", voice: "jean", startOffscreen: true }
+        },
+        props: {
+          sword: { sprite: "sword", x: "60%", y: "50%" }
+        },
+        script: [
+          { t: 0, do: "enter", who: "employee", from: "left" },
+          { t: 1.5, do: "say", who: "boss", line: "Have a seat. Let's discuss your performance.", target: "employee" },
+          { t: 5, do: "say", who: "employee", line: "I don't work here.", target: "boss" },
+          { t: 7.5, do: "say", who: "boss", line: "Exactly. That's the problem.", target: "employee" },
+          { t: 10.5, do: "spawn", what: "sword" },
+          { t: 11, do: "say", who: "boss", line: "We're letting you go.", target: "employee" },
+          { t: 14, do: "exit", who: "employee", to: "right" },
+          { t: 16.5, do: "say", who: "boss", line: "Same time next week.", target: "employee" }
+        ]
+      },
+      existentialKitchen: {
+        meta: { title: "Existential Kitchen", duration: 16 },
+        stage: { background: "kitchen" },
+        cast: {
+          human: { position: "left", sprite: "person", voice: "alba", startOffscreen: false },
+          cat: { position: "right", sprite: "cat", voice: "cosette", startOffscreen: false }
+        },
+        props: {
+          banana: { sprite: "banana", x: "45%", y: "60%" }
+        },
+        script: [
+          // Shot-reverse-shot demo
+          { t: 0, do: "shot", type: "closeup", who: "human" },
+          { t: 0, do: "say", who: "human", line: "I should eat something healthy.", target: "cat" },
+          { t: 2, do: "shot", type: "wide" },
+          { t: 2, do: "spawn", what: "banana" },
+          { t: 3.5, do: "shot", type: "closeup", who: "cat" },
+          { t: 3.5, do: "emote", who: "cat", emotion: "angry" },
+          { t: 3.5, do: "say", who: "cat", line: "Don't.", target: "human" },
+          { t: 5, do: "shot", type: "closeup", who: "human" },
+          { t: 5, do: "emote", who: "human", emotion: "surprised" },
+          { t: 5, do: "say", who: "human", line: "You can talk?!", target: "cat" },
+          { t: 6.5, do: "shot", type: "closeup", who: "cat" },
+          { t: 6.5, do: "emote", who: "cat", emotion: "surprised" },
+          { t: 6.5, do: "say", who: "cat", line: "You can hear?", target: "human" },
+          { t: 8.5, do: "emote", who: "cat", emotion: "worried" },
+          { t: 8.5, do: "say", who: "cat", line: "This has never happened before.", target: "human" },
+          { t: 10.5, do: "shot", type: "wide" },
+          { t: 10.5, do: "despawn", what: "banana" },
+          { t: 10.5, do: "emote", who: "human", emotion: "worried" },
+          { t: 10.5, do: "say", who: "human", line: "Where did the banana go?", target: "cat" },
+          { t: 12, do: "shot", type: "closeup", who: "cat" },
+          { t: 12, do: "emote", who: "cat", emotion: "smug" },
+          { t: 12, do: "say", who: "cat", line: "We don't talk about the banana.", target: "human" }
+        ]
+      },
+      spaceStation: {
+        meta: { title: "Space Station Malfunction", duration: 14 },
+        stage: { background: "space" },
+        cast: {
+          astronaut: { position: "left", sprite: "person", voice: "jean", startOffscreen: false },
+          ai: { position: "right", sprite: "robot", voice: "alba", startOffscreen: false }
+        },
+        props: {},
+        script: [
+          { t: 0.5, do: "say", who: "astronaut", line: "Computer, why is there no oxygen?", target: "ai" },
+          { t: 3.5, do: "say", who: "ai", line: "I'm sorry Dave. I can't do that.", target: "astronaut" },
+          { t: 6, do: "say", who: "astronaut", line: "My name is Steve.", target: "ai" },
+          { t: 8, do: "say", who: "ai", line: "That's what Dave said.", target: "astronaut" },
+          { t: 10.5, do: "say", who: "astronaut", line: "What happened to Dave?!", target: "ai" },
+          { t: 12.5, do: "say", who: "ai", line: "We don't talk about Dave.", target: "astronaut" }
+        ]
+      },
+      giantCat: {
+        meta: { title: "Giant Cat in the Park", duration: 36 },
+        stage: { background: "park" },
+        cast: {
+          jogger: { position: "left", sprite: "person", voice: "jean", startOffscreen: true },
+          cat: { position: "right", sprite: "cat", voice: "cosette", startOffscreen: true }
+        },
+        props: {
+          yarn: { sprite: "yarn", x: "50%", y: "40%" }
+        },
+        script: [
+          // Jogger enters happy
+          { t: 0.5, do: "enter", who: "jogger", from: "left" },
+          { t: 0.5, do: "emote", who: "jogger", emotion: "happy" },
+          { t: 1, do: "look", who: "jogger", at: "audience" },
+          { t: 2, do: "say", who: "jogger", line: "What a beautiful day for a jog!", target: "audience" },
+          
+          // Cat enters, jogger gets surprised
+          { t: 5, do: "enter", who: "cat", from: "right" },
+          { t: 5, do: "emote", who: "cat", emotion: "neutral" },
+          { t: 5.5, do: "look", who: "jogger", at: "right" },
+          { t: 5.5, do: "emote", who: "jogger", emotion: "surprised" },
+          { t: 6, do: "say", who: "jogger", line: "What the... is that a giant cat?!", target: "cat" },
+          
+          // Cat responds smugly
+          { t: 9, do: "emote", who: "cat", emotion: "smug" },
+          { t: 9, do: "say", who: "cat", line: "I prefer the term 'adequately sized'.", target: "jogger" },
+          { t: 12, do: "emote", who: "jogger", emotion: "surprised" },
+          { t: 12, do: "say", who: "jogger", line: "You can talk?!", target: "cat" },
+          { t: 14, do: "emote", who: "cat", emotion: "smug" },
+          { t: 14, do: "say", who: "cat", line: "You can jog? In this economy?", target: "jogger" },
+          
+          // Yarn appears - cat gets excited
+          { t: 17, do: "spawn", what: "yarn" },
+          { t: 17, do: "look", who: "cat", at: "up" },
+          { t: 17, do: "emote", who: "cat", emotion: "surprised" },
+          { t: 17.5, do: "say", who: "cat", line: "Is that... yarn?", target: "audience" },
+          { t: 20, do: "look", who: "jogger", at: "up" },
+          { t: 20, do: "emote", who: "jogger", emotion: "worried" },
+          { t: 20.5, do: "say", who: "jogger", line: "Where did that come from?", target: "cat" },
+          
+          // Cat gets obsessed
+          { t: 23, do: "emote", who: "cat", emotion: "excited" },
+          { t: 23, do: "say", who: "cat", line: "I must... I must have it.", target: "audience" },
+          { t: 25.5, do: "despawn", what: "yarn" },
+          { t: 25.5, do: "emote", who: "cat", emotion: "sad" },
+          { t: 26, do: "emote", who: "cat", emotion: "angry" },
+          { t: 26, do: "say", who: "cat", line: "NO! MY YARN!", target: "audience" },
+          
+          // Jogger backs away worried
+          { t: 28.5, do: "emote", who: "jogger", emotion: "worried" },
+          { t: 28.5, do: "say", who: "jogger", line: "I'm just gonna... go.", target: "cat" },
+          { t: 30, do: "turn", who: "jogger", to: "back" },
+          { t: 30.5, do: "move", who: "jogger", to: "mid" },
+          { t: 31, do: "look", who: "cat", at: "up" },
+          { t: 32, do: "move", who: "jogger", to: "far" },
+          { t: 33, do: "emote", who: "cat", emotion: "angry" },
+          { t: 33, do: "say", who: "cat", line: "Bring back my yarn!", target: "audience" }
+        ]
+      },
+      longWeek: {
+        meta: { title: "Long Week", duration: 18 },
+        stage: { background: "office-pink" },
+        cast: {
+          girl: { position: "left", sprite: "girl", voice: "cosette", startOffscreen: false }
+        },
+        props: {},
+        script: [
+          // Panel 1: Tired at work
+          { t: 0.5, do: "emote", who: "girl", emotion: "tired" },
+          { t: 1, do: "say", who: "girl", line: "Finally, it's over! That was such a long week.", target: "audience" },
+          
+          // Panel 2: Excited about going home
+          { t: 5, do: "emote", who: "girl", emotion: "excited" },
+          { t: 5.5, do: "say", who: "girl", line: "I can't wait to go home and celebrate!", target: "audience" },
+          
+          // Scene change to bedroom
+          { t: 9, do: "exit", who: "girl", to: "right" },
+          { t: 10, do: "scene", background: "bedroom" },
+          
+          // Panel 3 & 4: Enter and flop
+          { t: 11, do: "enter", who: "girl", from: "left" },
+          { t: 11, do: "emote", who: "girl", emotion: "tired" },
+          { t: 12, do: "turn", who: "girl", to: "back" },
+          { t: 12.5, do: "move", who: "girl", to: "mid" },
+          
+          // The flop
+          { t: 14, do: "pose", who: "girl", pose: "flop" },
+          { t: 14, do: "move", who: "girl", to: "far" }
+        ]
+      },
+      luckyCharms: {
+        meta: { title: "Lucky Charms", duration: 45 },
+        stage: { background: "restaurant" },
+        cast: {
+          waiter: { position: "left", sprite: "waiter", voice: "jean", startOffscreen: false },
+          woman: { position: "right", sprite: "girl", voice: "cosette", startOffscreen: false }
+        },
+        props: {},
+        script: [
+          // Opening - wide shot
+          { t: 0.5, do: "shot", type: "wide" },
+          { t: 0.5, do: "emote", who: "waiter", emotion: "happy" },
+          { t: 0.5, do: "emote", who: "woman", emotion: "neutral" },
+          
+          // Waiter approaches
+          { t: 1, do: "shot", type: "closeup", who: "waiter" },
+          { t: 1, do: "say", who: "waiter", line: "Good evening, madam. May I tell you about our special tonight?", target: "woman" },
+          
+          // Woman responds
+          { t: 5, do: "shot", type: "closeup", who: "woman" },
+          { t: 5, do: "emote", who: "woman", emotion: "happy" },
+          { t: 5, do: "say", who: "woman", line: "Oh yes, please!", target: "waiter" },
+          
+          // Waiter excited
+          { t: 8, do: "shot", type: "closeup", who: "waiter" },
+          { t: 8, do: "emote", who: "waiter", emotion: "excited" },
+          { t: 8, do: "say", who: "waiter", line: "Tonight we have something truly magical.", target: "woman" },
+          
+          // Woman intrigued
+          { t: 12, do: "shot", type: "closeup", who: "woman" },
+          { t: 12, do: "emote", who: "woman", emotion: "surprised" },
+          { t: 12, do: "say", who: "woman", line: "Magical? In a restaurant?", target: "waiter" },
+          
+          // Waiter reveals - zoom in on face
+          { t: 15, do: "shot", type: "closeup", who: "waiter" },
+          { t: 15, do: "emote", who: "waiter", emotion: "happy" },
+          { t: 15.5, do: "zoom", who: "waiter", level: "face" },
+          { t: 15.5, do: "say", who: "waiter", line: "Lucky Charms. Magically delicious.", target: "woman" },
+          
+          // Woman confused - zoom to face
+          { t: 19, do: "shot", type: "closeup", who: "woman" },
+          { t: 19, do: "emote", who: "woman", emotion: "worried" },
+          { t: 19.5, do: "zoom", who: "woman", level: "face" },
+          { t: 19.5, do: "say", who: "woman", line: "The... the cereal?", target: "waiter" },
+          
+          // Waiter doubles down
+          { t: 22, do: "shot", type: "closeup", who: "waiter" },
+          { t: 22, do: "emote", who: "waiter", emotion: "smug" },
+          { t: 22, do: "say", who: "waiter", line: "Imported directly from General Mills.", target: "woman" },
+          
+          // Woman skeptical
+          { t: 26, do: "shot", type: "closeup", who: "woman" },
+          { t: 26, do: "emote", who: "woman", emotion: "angry" },
+          { t: 26, do: "say", who: "woman", line: "Sir, this is a five star restaurant.", target: "waiter" },
+          
+          // Waiter defensive
+          { t: 30, do: "shot", type: "closeup", who: "waiter" },
+          { t: 30, do: "emote", who: "waiter", emotion: "worried" },
+          { t: 30, do: "say", who: "waiter", line: "Yes, and it has five different marshmallow shapes.", target: "woman" },
+          
+          // Woman done
+          { t: 34, do: "shot", type: "closeup", who: "woman" },
+          { t: 34, do: "emote", who: "woman", emotion: "tired" },
+          { t: 34, do: "say", who: "woman", line: "I'd like to speak to the manager.", target: "waiter" },
+          
+          // Waiter final pitch
+          { t: 38, do: "shot", type: "closeup", who: "waiter" },
+          { t: 38, do: "emote", who: "waiter", emotion: "excited" },
+          { t: 38, do: "say", who: "waiter", line: "He's also a leprechaun. You'll love him.", target: "woman" },
+          
+          // End wide shot
+          { t: 42, do: "shot", type: "wide" }
+        ]
+      },
+      spaceWall: {
+        meta: { title: "The Space Wall", duration: 55 },
+        stage: { background: "space" },
+        cast: {
+          trump: { position: "right", sprite: "trump", voice: "https://openclaw-vps.tail4abd9a.ts.net/skit/audio/trump_voice.wav", startOffscreen: false },
+          alien: { position: "left", sprite: "alien-green", voice: "cosette", startOffscreen: true }
+        },
+        props: {},
+        script: [
+          // Trump alone in space, looking important
+          { t: 0.5, do: "shot", type: "closeup", who: "trump" },
+          { t: 0.5, do: "emote", who: "trump", emotion: "smug" },
+          { t: 1, do: "say", who: "trump", line: "Space. The final frontier. And frankly, it needs a wall.", target: "audience" },
+          
+          // Alien enters
+          { t: 5, do: "shot", type: "wide" },
+          { t: 5, do: "enter", who: "alien", from: "left" },
+          { t: 5.5, do: "emote", who: "alien", emotion: "neutral" },
+          
+          // Trump notices
+          { t: 6, do: "shot", type: "closeup", who: "trump" },
+          { t: 6, do: "emote", who: "trump", emotion: "surprised" },
+          { t: 6.5, do: "say", who: "trump", line: "Whoa! An alien! Tremendous! Are you here legally?", target: "alien" },
+          
+          // Alien confused
+          { t: 10, do: "shot", type: "closeup", who: "alien" },
+          { t: 10, do: "emote", who: "alien", emotion: "surprised" },
+          { t: 10.5, do: "say", who: "alien", line: "Legally? We have traveled forty thousand light years.", target: "trump" },
+          
+          // Trump negotiating
+          { t: 14, do: "shot", type: "closeup", who: "trump" },
+          { t: 14, do: "emote", who: "trump", emotion: "smug" },
+          { t: 14.5, do: "say", who: "trump", line: "Forty thousand? That's a lot of miles. You're gonna need a visa.", target: "alien" },
+          
+          // Alien increasingly confused
+          { t: 18, do: "shot", type: "closeup", who: "alien" },
+          { t: 18, do: "emote", who: "alien", emotion: "worried" },
+          { t: 18.5, do: "say", who: "alien", line: "We do not use your primitive currency systems.", target: "trump" },
+          
+          // Trump excited about deal
+          { t: 22, do: "shot", type: "closeup", who: "trump" },
+          { t: 22, do: "emote", who: "trump", emotion: "excited" },
+          { t: 22.5, do: "say", who: "trump", line: "No currency? Even better! You're gonna help me build the wall!", target: "alien" },
+          
+          // Alien intrigued
+          { t: 26, do: "shot", type: "closeup", who: "alien" },
+          { t: 26, do: "emote", who: "alien", emotion: "surprised" },
+          { t: 26.5, do: "say", who: "alien", line: "Wall? What wall? There is nothing here but void.", target: "trump" },
+          
+          // Trump explaining
+          { t: 30, do: "shot", type: "closeup", who: "trump" },
+          { t: 30, do: "emote", who: "trump", emotion: "happy" },
+          { t: 30.5, do: "say", who: "trump", line: "Exactly! We need to keep the void out. It's pouring in!", target: "alien" },
+          
+          // Alien trying to comprehend
+          { t: 34, do: "shot", type: "closeup", who: "alien" },
+          { t: 34, do: "emote", who: "alien", emotion: "worried" },
+          { t: 34.5, do: "say", who: "alien", line: "Your species confuses us greatly.", target: "trump" },
+          
+          // Trump making the deal
+          { t: 38, do: "shot", type: "closeup", who: "trump" },
+          { t: 38, do: "emote", who: "trump", emotion: "smug" },
+          { t: 38.5, do: "say", who: "trump", line: "Look, I wrote a book. The Art of the Deal. Best seller. You should read it.", target: "alien" },
+          
+          // Alien had enough
+          { t: 43, do: "shot", type: "closeup", who: "alien" },
+          { t: 43, do: "emote", who: "alien", emotion: "angry" },
+          { t: 43.5, do: "say", who: "alien", line: "We are leaving. This planet was a mistake.", target: "trump" },
+          
+          // Wide shot - alien exits
+          { t: 47, do: "shot", type: "wide" },
+          { t: 47, do: "exit", who: "alien", to: "left" },
+          
+          // Trump alone, satisfied
+          { t: 49, do: "shot", type: "closeup", who: "trump" },
+          { t: 49, do: "emote", who: "trump", emotion: "smug" },
+          { t: 49.5, do: "say", who: "trump", line: "Another successful negotiation. Nobody negotiates like me.", target: "audience" },
+          
+          // End wide
+          { t: 53, do: "shot", type: "wide" }
+        ]
+      }
+    };
+
+    // Emotion configurations for animation
+    const EMOTIONS = {
+      neutral: {
+        eyeWhite: { ry: 7, cy: 52 },      // cat defaults
+        eyeWhiteHuman: { ry: 3, cy: 42 }, // human defaults - updated
+        pupil: { ry: 5, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        browLeftHuman: "M37 36 Q43 34 49 36",
+        browRightHuman: "M51 36 Q57 34 63 36",
+        mouth: "M50 65 L46 70 M50 65 L54 70",
+        mouthHuman: "M46 52 Q50 55 54 52",
+        highlight: 0
+      },
+      happy: {
+        eyeWhite: { ry: 5, cy: 50 },
+        eyeWhiteHuman: { ry: 2, cy: 41 },
+        pupil: { ry: 4, cy: 50 },
+        pupilHuman: { r: 1.5, cy: 41 },
+        browLeft: "M30 42 Q40 38 48 42",
+        browRight: "M52 42 Q60 38 70 42",
+        browLeftHuman: "M37 34 Q43 31 49 34",
+        browRightHuman: "M51 34 Q57 31 63 34",
+        mouth: "M44 66 Q50 72 56 66",
+        mouthHuman: "M44 52 Q50 58 56 52",
+        highlight: 0
+      },
+      sad: {
+        eyeWhite: { ry: 6, cy: 54 },
+        eyeWhiteHuman: { ry: 3, cy: 44 },
+        pupil: { ry: 5, cy: 55 },
+        pupilHuman: { r: 1.5, cy: 45 },
+        browLeft: "M30 40 L48 46",
+        browRight: "M52 46 L70 40",
+        browLeftHuman: "M37 34 L49 40",
+        browRightHuman: "M51 40 L63 34",
+        mouth: "M44 70 Q50 65 56 70",
+        mouthHuman: "M46 56 Q50 52 54 56",
+        highlight: 0
+      },
+      angry: {
+        eyeWhite: { ry: 5, cy: 52 },
+        eyeWhiteHuman: { ry: 2.5, cy: 42 },
+        pupil: { ry: 4, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 48 L48 42",
+        browRight: "M52 42 L70 48",
+        browLeftHuman: "M37 40 L49 34",
+        browRightHuman: "M51 34 L63 40",
+        mouth: "M44 68 L56 68",
+        mouthHuman: "M46 54 L54 54",
+        highlight: 0
+      },
+      surprised: {
+        eyeWhite: { ry: 9, cy: 52 },
+        eyeWhiteHuman: { ry: 5, cy: 42 },
+        pupil: { ry: 6, cy: 52 },
+        pupilHuman: { r: 2, cy: 42 },
+        browLeft: "M30 38 Q40 34 48 38",
+        browRight: "M52 38 Q60 34 70 38",
+        browLeftHuman: "M37 30 Q43 26 49 30",
+        browRightHuman: "M51 30 Q57 26 63 30",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
+        mouthHuman: "M47 52 Q50 58 53 52",
+        highlight: 1
+      },
+      excited: {
+        eyeWhite: { ry: 9, cy: 50 },
+        eyeWhiteHuman: { ry: 5, cy: 40 },
+        pupil: { ry: 6, cy: 50 },
+        pupilHuman: { r: 2, cy: 40 },
+        browLeft: "M30 38 Q40 32 48 38",
+        browRight: "M52 38 Q60 32 70 38",
+        browLeftHuman: "M37 28 Q43 24 49 28",
+        browRightHuman: "M51 28 Q57 24 63 28",
+        mouth: "M42 64 Q50 74 58 64",
+        mouthHuman: "M44 52 Q50 60 56 52",
+        highlight: 1
+      },
+      worried: {
+        eyeWhite: { ry: 7, cy: 53 },
+        eyeWhiteHuman: { ry: 3.5, cy: 43 },
+        pupil: { ry: 5, cy: 54 },
+        pupilHuman: { r: 1.5, cy: 44 },
+        browLeft: "M30 42 L48 46",
+        browRight: "M52 44 Q60 40 70 44",
+        browLeftHuman: "M37 36 L49 42",
+        browRightHuman: "M51 40 Q57 34 63 40",
+        mouth: "M44 68 Q48 66 50 68 Q52 70 56 68",
+        mouthHuman: "M46 54 Q48 52 50 54 Q52 56 54 54",
+        highlight: 0
+      },
+      smug: {
+        eyeWhite: { ry: 4, cy: 52 },
+        eyeWhiteHuman: { ry: 2, cy: 42 },
+        pupil: { ry: 3, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 42 Q60 38 70 44",
+        browLeftHuman: "M37 38 Q43 36 49 38",
+        browRightHuman: "M51 36 Q57 32 63 36",
+        mouth: "M44 67 Q52 72 58 66",
+        mouthHuman: "M46 52 Q52 56 56 52",
+        highlight: 0
+      },
+      tired: {
+        eyeWhite: { ry: 4, cy: 54 },
+        eyeWhiteHuman: { ry: 2, cy: 44 },
+        pupil: { ry: 3, cy: 54 },
+        pupilHuman: { r: 1.5, cy: 44 },
+        browLeft: "M30 46 L48 48",
+        browRight: "M52 48 L70 46",
+        browLeftHuman: "M37 40 L49 42",
+        browRightHuman: "M51 42 L63 40",
+        mouth: "M46 68 Q50 66 54 68",
+        mouthHuman: "M46 55 Q50 53 54 55",
+        highlight: 0
+      }
+    };
+
+    // Track current emotion per character
+    let characterEmotions = { left: 'neutral', right: 'neutral' };
+    
+    // Track current shot
+    let currentShot = 'wide';
+
+    let audioContext, analyser, dataArray;
+    let currentScript = null;
+    let audioCache = new Map();
+    let isPlaying = false;
+    let startTime = 0;
+    let animationId = null;
+
+    async function loadSprite(elementId, spriteName, view = 'front') {
+      // Try specific view first, fall back to base sprite
+      let res = await fetch(`sprites/${spriteName}/${view}.svg`);
+      if (!res.ok) {
+        res = await fetch(`sprites/${spriteName}.svg`);
+      }
+      if (res.ok) {
+        const svgText = await res.text();
+        document.getElementById(elementId).innerHTML = svgText;
+        document.getElementById(elementId).dataset.sprite = spriteName;
+        document.getElementById(elementId).dataset.view = view;
+      }
+    }
+    
+    async function loadSpriteToAll(position, spriteName, view = 'front') {
+      // Load sprite to wide shot and corresponding closeup
+      await loadSprite(`char-${position}`, spriteName, view);
+      await loadSprite(`char-closeup-${position}`, spriteName, view);
+    }
+    
+    function getCharacterPosition(pos) {
+      // Get the actual computed position of a character in the wide shot
+      const charEl = document.getElementById(`char-${pos}`);
+      const stageEl = document.getElementById('shot-wide');
+      if (!charEl || !stageEl) return 50; // default to center
+
+      const charRect = charEl.getBoundingClientRect();
+      const stageRect = stageEl.getBoundingClientRect();
+
+      // Calculate character center as percentage of stage width
+      const charCenter = charRect.left + charRect.width / 2;
+      const posPercent = ((charCenter - stageRect.left) / stageRect.width) * 100;
+
+      return Math.max(0, Math.min(100, posPercent));
+    }
+
+    function switchShot(shotType, who = null) {
+      // Hide all shots
+      document.querySelectorAll('.shot-stage').forEach(el => el.style.display = 'none');
+
+      // Reset zoom on all closeup characters
+      document.querySelectorAll('.character').forEach(el => {
+        el.classList.remove('zoom-full', 'zoom-medium', 'zoom-face');
+      });
+
+      // Show the requested shot
+      if (shotType === 'wide') {
+        document.getElementById('shot-wide').style.display = 'block';
+      } else if (shotType === 'closeup' && who) {
+        const char = currentScript.cast[who];
+        const pos = char.position;
+        document.getElementById(`shot-closeup-${pos}`).style.display = 'block';
+
+        // Get the character's actual position and adjust background to match
+        const charPosPercent = getCharacterPosition(pos);
+        const bgEl = document.getElementById(`bg-closeup-${pos}`);
+        if (bgEl) {
+          // Shift background so it shows the area where the character is
+          // Character at 20% -> show left side of bg (object-position: 20% center)
+          // Character at 80% -> show right side of bg (object-position: 80% center)
+          bgEl.style.objectPosition = `${charPosPercent}% center`;
+        }
+
+        // Sync emotion to closeup character
+        const emotion = characterEmotions[pos];
+        if (emotion) {
+          setEmotion(`closeup-${pos}`, emotion, 0);
+        }
+        // Make closeup character look toward the other side (where other character would be)
+        const closeupChar = document.getElementById(`char-closeup-${pos}`);
+        if (closeupChar) {
+          closeupChar.classList.remove('look-left', 'look-right');
+          closeupChar.classList.add(pos === 'left' ? 'look-right' : 'look-left');
+        }
+      }
+
+      currentShot = shotType;
+      console.log(`Shot: ${shotType}${who ? ' (' + who + ')' : ''}`);
+    }
+    
+    function setAllBackgrounds(bgName, orientation = 'landscape') {
+      const newPath = `backgrounds/${bgName}/${orientation}.svg`;
+      const legacyPath = `backgrounds/${bgName}.svg`;
+
+      // Update stage container orientation
+      const stageContainer = document.getElementById('stage-container');
+      if (orientation === 'portrait') {
+        stageContainer.classList.add('portrait');
+      } else {
+        stageContainer.classList.remove('portrait');
+      }
+
+      // Add onerror handler to fallback to legacy path
+      const onError = function() {
+        if (!this.src.includes(legacyPath)) {
+          console.log(`Background not found at ${newPath}, trying legacy path`);
+          this.src = legacyPath;
+        }
+      };
+
+      ['bg-wide', 'bg-closeup-left', 'bg-closeup-right'].forEach(id => {
+        const el = document.getElementById(id);
+        el.onerror = onError;
+        el.src = newPath;
+      });
+    }
+    
+    async function turnCharacter(charId, toView) {
+      const charEl = document.getElementById(`char-${charId}`);
+      const spriteName = charEl.dataset.sprite;
+      if (spriteName) {
+        await loadSprite(`char-${charId}`, spriteName, toView);
+        // Also update closeup version
+        await loadSprite(`char-closeup-${charId}`, spriteName, toView);
+      }
+    }
+
+    function setEyeDirection(charId, direction) {
+      const charEl = document.getElementById(`char-${charId}`);
+      charEl.classList.remove('look-left', 'look-right', 'look-up', 'look-down');
+      if (['left', 'right', 'up', 'down'].includes(direction)) {
+        charEl.classList.add(`look-${direction}`);
+      }
+    }
+
+    function setFacing(charId, target) {
+      const charEl = document.getElementById(`char-${charId}`);
+      charEl.classList.remove('facing-left', 'facing-right');
+      if (target === 'left') charEl.classList.add('facing-right');
+      if (target === 'right') charEl.classList.add('facing-left');
+    }
+
+    function setEmotion(charId, emotion, durationMs = 300) {
+      const config = EMOTIONS[emotion];
+      if (!config) return;
+      
+      const charEl = document.getElementById(`char-${charId}`);
+      if (!charEl) return;
+      
+      // Detect if human or cat based on sprite
+      const sprite = charEl.dataset.sprite || '';
+      const isHuman = sprite === 'person' || sprite === 'trump' || sprite === 'girl' || sprite === 'waiter';
+      
+      // Get elements
+      const eyeLeftWhite = charEl.querySelector('#eye-left-white');
+      const eyeRightWhite = charEl.querySelector('#eye-right-white');
+      const eyeLeftPupil = charEl.querySelector('#eye-left-pupil');
+      const eyeRightPupil = charEl.querySelector('#eye-right-pupil');
+      const browLeft = charEl.querySelector('#brow-left');
+      const browRight = charEl.querySelector('#brow-right');
+      const browLeftBorder = charEl.querySelector('#brow-left-border');
+      const browRightBorder = charEl.querySelector('#brow-right-border');
+      const mouthClosed = charEl.querySelector('#mouth-closed');
+      const highlightLeft = charEl.querySelector('#eye-left-highlight');
+      const highlightRight = charEl.querySelector('#eye-right-highlight');
+      
+      // Apply CSS transition
+      const transitionStyle = `all ${durationMs}ms ease-out`;
+      
+      // Animate eyes
+      if (eyeLeftWhite && eyeRightWhite) {
+        const eyeConfig = isHuman ? config.eyeWhiteHuman : config.eyeWhite;
+        [eyeLeftWhite, eyeRightWhite].forEach(el => {
+          el.style.transition = transitionStyle;
+          if (eyeConfig.ry) el.setAttribute('ry', eyeConfig.ry);
+          if (eyeConfig.cy) el.setAttribute('cy', eyeConfig.cy);
+        });
+      }
+      
+      // Animate pupils
+      if (eyeLeftPupil && eyeRightPupil) {
+        const pupilConfig = isHuman ? config.pupilHuman : config.pupil;
+        [eyeLeftPupil, eyeRightPupil].forEach(el => {
+          el.style.transition = transitionStyle;
+          if (pupilConfig.ry) el.setAttribute('ry', pupilConfig.ry);
+          if (pupilConfig.r) el.setAttribute('r', pupilConfig.r);
+          if (pupilConfig.cy) el.setAttribute('cy', pupilConfig.cy);
+        });
+      }
+      
+      // Animate eyebrows (path swap with fade)
+      if (browLeft) {
+        const newPath = isHuman ? config.browLeftHuman : config.browLeft;
+        browLeft.style.transition = transitionStyle;
+        browLeft.setAttribute('d', newPath);
+      }
+      if (browRight) {
+        const newPath = isHuman ? config.browRightHuman : config.browRight;
+        browRight.style.transition = transitionStyle;
+        browRight.setAttribute('d', newPath);
+      }
+      // Update borders to match (offset by 2px)
+      if (browLeftBorder && isHuman) {
+        const basePath = config.browLeftHuman;
+        // Shift Y coordinates down by 2 for border
+        const borderPath = basePath.replace(/(\d+)\s+(\d+)/g, (m, x, y) => `${x} ${parseInt(y) + 2}`);
+        browLeftBorder.setAttribute('d', borderPath);
+      }
+      if (browRightBorder && isHuman) {
+        const basePath = config.browRightHuman;
+        const borderPath = basePath.replace(/(\d+)\s+(\d+)/g, (m, x, y) => `${x} ${parseInt(y) + 2}`);
+        browRightBorder.setAttribute('d', borderPath);
+      }
+      
+      // Animate mouth
+      if (mouthClosed) {
+        const newPath = isHuman ? config.mouthHuman : config.mouth;
+        mouthClosed.style.transition = transitionStyle;
+        mouthClosed.setAttribute('d', newPath);
+      }
+      
+      // Highlights for surprised/excited
+      if (highlightLeft && highlightRight) {
+        highlightLeft.style.transition = transitionStyle;
+        highlightRight.style.transition = transitionStyle;
+        highlightLeft.setAttribute('opacity', config.highlight);
+        highlightRight.setAttribute('opacity', config.highlight);
+      }
+      
+      // Track current emotion
+      characterEmotions[charId] = emotion;
+      
+      // Also update closeup version if it exists (but don't recurse)
+      if (!charId.startsWith('closeup-')) {
+        const closeupEl = document.getElementById(`char-closeup-${charId}`);
+        if (closeupEl) {
+          setEmotion(`closeup-${charId}`, emotion, durationMs);
+        }
+      }
+      
+      console.log(`${charId} emotion: ${emotion}`);
+    }
+
+    async function init() {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioContext.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.8;
+      dataArray = new Uint8Array(analyser.frequencyBinCount);
+      analyser.connect(audioContext.destination);
+      
+      document.getElementById('status').textContent = 'Select a skit...';
+    }
+
+    function getAmplitude() {
+      analyser.getByteFrequencyData(dataArray);
+      let sum = 0;
+      for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+      return sum / dataArray.length;
+    }
+
+    // Audio cache using IndexedDB for persistence across sessions
+    const AUDIO_CACHE_NAME = 'skit-audio-cache-v1';
+    
+    async function openAudioCache() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(AUDIO_CACHE_NAME, 1);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        request.onupgradeneeded = (e) => {
+          e.target.result.createObjectStore('audio', { keyPath: 'key' });
+        };
+      });
+    }
+    
+    async function getCachedAudio(key) {
+      try {
+        const db = await openAudioCache();
+        return new Promise((resolve) => {
+          const tx = db.transaction('audio', 'readonly');
+          const store = tx.objectStore('audio');
+          const request = store.get(key);
+          request.onsuccess = () => resolve(request.result?.blob);
+          request.onerror = () => resolve(null);
+        });
+      } catch { return null; }
+    }
+    
+    async function setCachedAudio(key, blob) {
+      try {
+        const db = await openAudioCache();
+        const tx = db.transaction('audio', 'readwrite');
+        tx.objectStore('audio').put({ key, blob, ts: Date.now() });
+      } catch (e) { console.warn('Cache write failed:', e); }
+    }
+    
+    async function generateAudio(text, voice) {
+      // Create cache key from text + voice
+      const cacheKey = `${voice}:${text}`;
+      
+      // Check cache first
+      const cached = await getCachedAudio(cacheKey);
+      if (cached) {
+        console.log('Audio cache hit:', text.substring(0, 30) + '...');
+        return cached;
+      }
+      
+      // Generate new audio
+      const formData = new FormData();
+      formData.append('text', text);
+      formData.append('voice_url', voice);
+      const res = await fetch('/tts/tts', { method: 'POST', body: formData });
+      if (!res.ok) throw new Error('TTS failed');
+      const blob = await res.blob();
+      
+      // Cache it
+      await setCachedAudio(cacheKey, blob);
+      console.log('Audio cached:', text.substring(0, 30) + '...');
+      
+      return blob;
+    }
+
+    async function loadScript(name) {
+      currentScript = scripts[name];
+      audioCache.clear();
+      
+      document.getElementById('status').textContent = 'Generating audio...';
+      document.getElementById('playBtn').disabled = true;
+      
+      // Update buttons
+      document.getElementById('script1Btn').classList.toggle('active', name === 'performanceReview');
+      document.getElementById('script2Btn').classList.toggle('active', name === 'existentialKitchen');
+      document.getElementById('script3Btn').classList.toggle('active', name === 'spaceStation');
+      document.getElementById('script4Btn').classList.toggle('active', name === 'giantCat');
+      document.getElementById('script5Btn').classList.toggle('active', name === 'longWeek');
+      document.getElementById('script6Btn').classList.toggle('active', name === 'luckyCharms');
+      document.getElementById('script7Btn').classList.toggle('active', name === 'spaceWall');
+      
+      // Load background to all shots (with orientation support)
+      setAllBackgrounds(currentScript.stage.background, currentScript.stage.orientation || 'landscape');
+      
+      // Reset to wide shot
+      switchShot('wide');
+      
+      // Load character sprites to all shots (default to front view)
+      for (const [charName, char] of Object.entries(currentScript.cast)) {
+        const initialView = char.initialView || 'front';
+        await loadSpriteToAll(char.position, char.sprite, initialView);
+      }
+      
+      // Default: look at each other, reset emotions
+      setEyeDirection('left', 'right');
+      setEyeDirection('right', 'left');
+      characterEmotions = { left: 'neutral', right: 'neutral' };
+      
+      // Set up characters initial positions
+      Object.entries(currentScript.cast).forEach(([charName, char]) => {
+        const charEl = document.getElementById(`char-${char.position}`);
+        charEl.classList.remove('offscreen-left', 'offscreen-right');
+        if (char.startOffscreen) {
+          charEl.classList.add(`offscreen-${char.position}`);
+        }
+      });
+      
+      // Set up props
+      const propsContainer = document.getElementById('props-container');
+      propsContainer.innerHTML = '';
+      if (currentScript.props) {
+        Object.entries(currentScript.props).forEach(([propName, prop]) => {
+          const propEl = document.createElement('div');
+          propEl.id = `prop-${propName}`;
+          propEl.className = 'prop';
+          propEl.style.left = prop.x;
+          propEl.style.bottom = prop.y;
+          const propEmojis = { sword: '⚔️', banana: '🍌', yarn: '🧶' };
+          propEl.innerHTML = `<div style="font-size:40px">${propEmojis[prop.sprite] || '📦'}</div>`;
+          propsContainer.appendChild(propEl);
+        });
+      }
+      
+      // Generate audio for all lines (with caching)
+      const sayActions = currentScript.script.filter(b => b.do === 'say');
+      let cacheHits = 0;
+      for (let i = 0; i < sayActions.length; i++) {
+        const beat = sayActions[i];
+        const char = currentScript.cast[beat.who];
+        document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
+        
+        try {
+          const cacheKey = `${char.voice}:${beat.line}`;
+          const wasCached = await getCachedAudio(cacheKey);
+          if (wasCached) cacheHits++;
+          
+          const blob = await generateAudio(beat.line, char.voice);
+          const audio = new Audio(URL.createObjectURL(blob));
+          const source = audioContext.createMediaElementSource(audio);
+          source.connect(analyser);
+          audioCache.set(`${beat.t}-${beat.who}`, { audio, beat, char });
+        } catch (e) {
+          console.error('TTS error:', e);
+        }
+      }
+      
+      const cacheMsg = cacheHits > 0 ? ` (${cacheHits} cached)` : '';
+      document.getElementById('status').textContent = `Ready!${cacheMsg}`;
+      document.getElementById('playBtn').disabled = false;
+    }
+
+    function play() {
+      if (audioContext.state === 'suspended') audioContext.resume();
+      isPlaying = true;
+      startTime = performance.now();
+      document.getElementById('playBtn').textContent = '⏸ Pause';
+      animate();
+    }
+
+    function stop() {
+      isPlaying = false;
+      if (animationId) cancelAnimationFrame(animationId);
+      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('char-left').classList.remove('speaking', 'facing-left', 'facing-right');
+      document.getElementById('char-right').classList.remove('speaking', 'facing-left', 'facing-right');
+      document.getElementById('char-closeup-left')?.classList.remove('speaking');
+      document.getElementById('char-closeup-right')?.classList.remove('speaking');
+      document.getElementById('caption-left').classList.remove('visible');
+      document.getElementById('caption-right').classList.remove('visible');
+      document.getElementById('caption-closeup-left')?.classList.remove('visible');
+      document.getElementById('caption-closeup-right')?.classList.remove('visible');
+      audioCache.forEach(({ audio }) => { audio.pause(); audio.currentTime = 0; });
+    }
+
+    let triggeredBeats = new Set();
+    let currentSpeaker = null;
+    let peakAmp = 50;
+    let openDuration = 0;
+
+    function animate() {
+      if (!isPlaying) return;
+      
+      const elapsed = (performance.now() - startTime) / 1000;
+      
+      // Check if skit ended
+      if (elapsed > currentScript.meta.duration) {
+        stop();
+        return;
+      }
+      
+      // Trigger beats
+      currentScript.script.forEach(beat => {
+        const key = `${beat.t}-${beat.do}-${beat.who || beat.what}`;
+        if (elapsed >= beat.t && !triggeredBeats.has(key)) {
+          triggeredBeats.add(key);
+          
+          if (beat.do === 'say') {
+            const cached = audioCache.get(`${beat.t}-${beat.who}`);
+            if (cached) {
+              const char = currentScript.cast[beat.who];
+              const charPos = char.position;
+              const otherPos = charPos === 'left' ? 'right' : 'left';
+              
+              setFacing(charPos, otherPos);
+              setEyeDirection(charPos, otherPos);
+              setEyeDirection(otherPos, charPos);
+              
+              // Handle captions based on current shot
+              if (currentShot === 'wide') {
+                document.getElementById(`caption-${charPos}`).textContent = beat.line;
+                document.getElementById(`caption-${charPos}`).classList.add('visible');
+                document.getElementById(`caption-${otherPos}`).classList.remove('visible');
+              } else if (currentShot === 'closeup') {
+                // Show caption in closeup shot
+                document.getElementById(`caption-closeup-${charPos}`).textContent = beat.line;
+                document.getElementById(`caption-closeup-${charPos}`).classList.add('visible');
+              }
+              
+              currentSpeaker = charPos;
+              cached.audio.play();
+            }
+          } else if (beat.do === 'enter') {
+            const char = currentScript.cast[beat.who];
+            const charEl = document.getElementById(`char-${char.position}`);
+            charEl.classList.remove('offscreen-left', 'offscreen-right');
+          } else if (beat.do === 'exit') {
+            const char = currentScript.cast[beat.who];
+            const charEl = document.getElementById(`char-${char.position}`);
+            charEl.classList.add(`offscreen-${beat.to}`);
+          } else if (beat.do === 'spawn') {
+            const propEl = document.getElementById(`prop-${beat.what}`);
+            if (propEl) propEl.classList.add('visible');
+          } else if (beat.do === 'despawn') {
+            const propEl = document.getElementById(`prop-${beat.what}`);
+            if (propEl) propEl.classList.remove('visible');
+          } else if (beat.do === 'look') {
+            const char = currentScript.cast[beat.who];
+            const charPos = char.position;
+            // Handle look directions
+            let lookDir = beat.at;
+            if (beat.at === 'audience') {
+              lookDir = charPos === 'left' ? 'left' : 'right'; // Look away from center
+            } else if (beat.at === 'up' || beat.at === 'down') {
+              lookDir = beat.at;
+            } else {
+              lookDir = beat.at; // left/right directly
+            }
+            setEyeDirection(charPos, lookDir);
+          } else if (beat.do === 'turn') {
+            // Turn character to show front or back
+            const char = currentScript.cast[beat.who];
+            turnCharacter(char.position, beat.to); // 'front' or 'back'
+          } else if (beat.do === 'move') {
+            // Move character to different depth: 'near', 'mid', 'far'
+            const char = currentScript.cast[beat.who];
+            const charEl = document.getElementById(`char-${char.position}`);
+            charEl.classList.remove('depth-near', 'depth-mid', 'depth-far');
+            if (beat.to !== 'near') { // near is default, no class needed
+              charEl.classList.add(`depth-${beat.to}`);
+            }
+          } else if (beat.do === 'emote') {
+            // Change character emotion with animation
+            const char = currentScript.cast[beat.who];
+            setEmotion(char.position, beat.emotion, beat.duration || 300);
+          } else if (beat.do === 'scene') {
+            // Change background/scene mid-skit (all shots, with orientation)
+            setAllBackgrounds(beat.background, beat.orientation || 'landscape');
+            // Optionally reset character positions
+            if (beat.resetPositions) {
+              document.getElementById('char-left').classList.add('offscreen-left');
+              document.getElementById('char-right').classList.add('offscreen-right');
+            }
+          } else if (beat.do === 'shot') {
+            // Switch camera shot
+            switchShot(beat.type, beat.who);
+          } else if (beat.do === 'pose') {
+            // Change character to a specific pose/variant (e.g., "flop")
+            const char = currentScript.cast[beat.who];
+            loadSprite(`char-${char.position}`, char.sprite, beat.pose);
+          } else if (beat.do === 'zoom') {
+            // Zoom on character in closeup shot
+            const char = currentScript.cast[beat.who];
+            const pos = char.position;
+            const closeupChar = document.getElementById(`char-closeup-${pos}`);
+            if (closeupChar) {
+              closeupChar.classList.remove('zoom-full', 'zoom-medium', 'zoom-face');
+              closeupChar.classList.add(`zoom-${beat.level || 'full'}`);
+            }
+          }
+        }
+      });
+      
+      // Lip sync
+      if (currentSpeaker) {
+        const rawAmp = getAmplitude();
+        if (rawAmp > peakAmp) peakAmp = rawAmp;
+        peakAmp = Math.max(30, peakAmp * 0.998);
+        const normalizedAmp = (rawAmp / peakAmp) * 100;
+        
+        const isSpeaking = normalizedAmp > 25;
+        if (isSpeaking) {
+          openDuration++;
+          const dip = (openDuration > 20 && openDuration % 25 < 5);
+          document.getElementById(`char-${currentSpeaker}`).classList.toggle('speaking', !dip);
+          document.getElementById(`char-closeup-${currentSpeaker}`)?.classList.toggle('speaking', !dip);
+        } else {
+          openDuration = 0;
+          document.getElementById(`char-${currentSpeaker}`).classList.remove('speaking');
+          document.getElementById(`char-closeup-${currentSpeaker}`)?.classList.remove('speaking');
+        }
+      }
+      
+      animationId = requestAnimationFrame(animate);
+    }
+
+    // Event listeners
+    document.getElementById('playBtn').addEventListener('click', () => {
+      if (isPlaying) { stop(); } else { triggeredBeats.clear(); play(); }
+    });
+    document.getElementById('stopBtn').addEventListener('click', () => { stop(); triggeredBeats.clear(); });
+    document.getElementById('script1Btn').addEventListener('click', () => loadScript('performanceReview'));
+    document.getElementById('script2Btn').addEventListener('click', () => loadScript('existentialKitchen'));
+    document.getElementById('script3Btn').addEventListener('click', () => loadScript('spaceStation'));
+    document.getElementById('script4Btn').addEventListener('click', () => loadScript('giantCat'));
+    document.getElementById('script5Btn').addEventListener('click', () => loadScript('longWeek'));
+    document.getElementById('script6Btn').addEventListener('click', () => loadScript('luckyCharms'));
+    document.getElementById('script7Btn').addEventListener('click', () => loadScript('spaceWall'));
+
+    // Init
+    init().then(() => loadScript('performanceReview'));
+  </script>
+</body>
+</html>
