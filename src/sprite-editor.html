@@ -824,6 +824,81 @@
       color: white;
     }
 
+    /* Drag handle */
+    .script-line .drag-handle {
+      cursor: grab;
+      color: #555;
+      padding: 0 4px;
+      user-select: none;
+      font-size: 1.1em;
+      letter-spacing: -2px;
+    }
+
+    .script-line .drag-handle:hover {
+      color: #888;
+    }
+
+    .script-line .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .script-line.dragging {
+      opacity: 0.5;
+      background: #0f3460;
+    }
+
+    .script-line.drag-over {
+      border-top: 2px solid #4ecca3;
+      margin-top: -2px;
+    }
+
+    /* Insertion gap between cards */
+    .script-insert-gap {
+      height: 8px;
+      position: relative;
+      margin: 2px 0;
+    }
+
+    .script-insert-gap .insert-btn {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #0f3460;
+      border: 1px dashed #4ecca3;
+      color: #4ecca3;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .script-insert-gap:hover .insert-btn,
+    .script-insert-gap .insert-btn:focus {
+      opacity: 1;
+    }
+
+    .script-insert-gap .insert-btn:hover {
+      background: #4ecca3;
+      color: #111;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+
+    /* Drop zone highlight */
+    .script-insert-gap.drag-over {
+      height: 40px;
+      background: rgba(78, 204, 163, 0.1);
+      border: 2px dashed #4ecca3;
+      border-radius: 4px;
+    }
+
     .add-action-btn {
       width: 100%;
       padding: 10px;
@@ -1684,8 +1759,15 @@
       `).join('') || '<p style="color:#666;font-size:0.85em;">No cast defined</p>';
       document.getElementById('skit-cast-list').innerHTML = castHtml;
 
-      // Script
-      const scriptHtml = (skit.script || []).map((action, i) => {
+      // Script with drag handles and insertion gaps
+      let scriptHtml = '';
+
+      // Initial insertion gap (before first item)
+      scriptHtml += `<div class="script-insert-gap" data-insert-index="0">
+        <button class="insert-btn" onclick="openAddActionModalAt(0)" title="Insert action here">+</button>
+      </div>`;
+
+      (skit.script || []).forEach((action, i) => {
         let content = '';
         let cssClass = '';
 
@@ -1726,20 +1808,128 @@
             content = JSON.stringify(action);
         }
 
-        return `
-          <div class="script-line ${cssClass}" data-index="${i}">
+        scriptHtml += `
+          <div class="script-line ${cssClass}" data-index="${i}" draggable="true">
+            <span class="drag-handle" title="Drag to reorder">⋮⋮</span>
             <span class="content">${content}</span>
             <span class="actions">
               <button class="action-btn edit" onclick="openEditActionModal(${i})" title="Edit">✏️</button>
               <button class="action-btn delete" onclick="deleteScriptAction(${i})" title="Delete">✕</button>
             </span>
+          </div>
+          <div class="script-insert-gap" data-insert-index="${i + 1}">
+            <button class="insert-btn" onclick="openAddActionModalAt(${i + 1})" title="Insert action here">+</button>
           </div>`;
-      }).join('') || '<p style="color:#666;font-size:0.85em;">No script defined</p>';
+      });
+
+      if (!skit.script?.length) {
+        scriptHtml = '<p style="color:#666;font-size:0.85em;">No script defined</p>';
+      }
+
       document.getElementById('skit-script-list').innerHTML = scriptHtml;
+      initDragAndDrop();
     }
 
     // === SKIT EDITING ===
     let editingActionIndex = null;  // null = adding new, number = editing existing
+    let insertAtIndex = null;  // null = append at end, number = insert at specific position
+
+    // === DRAG AND DROP ===
+    let draggedIndex = null;
+
+    function initDragAndDrop() {
+      const scriptList = document.getElementById('skit-script-list');
+      const cards = scriptList.querySelectorAll('.script-line[draggable="true"]');
+      const gaps = scriptList.querySelectorAll('.script-insert-gap');
+
+      cards.forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+      });
+
+      // Allow dropping on gaps
+      gaps.forEach(gap => {
+        gap.addEventListener('dragover', handleDragOver);
+        gap.addEventListener('dragleave', handleDragLeave);
+        gap.addEventListener('drop', handleDrop);
+      });
+
+      // Also allow dropping on cards (insert before)
+      cards.forEach(card => {
+        card.addEventListener('dragover', handleCardDragOver);
+        card.addEventListener('dragleave', handleCardDragLeave);
+        card.addEventListener('drop', handleCardDrop);
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedIndex = parseInt(this.dataset.index);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedIndex);
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+      draggedIndex = null;
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+
+      const targetIndex = parseInt(this.dataset.insertIndex);
+      if (draggedIndex === null || draggedIndex === undefined) return;
+
+      moveAction(draggedIndex, targetIndex);
+    }
+
+    function handleCardDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    }
+
+    function handleCardDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    function handleCardDrop(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+
+      const targetIndex = parseInt(this.dataset.index);
+      if (draggedIndex === null || draggedIndex === undefined) return;
+
+      // Drop on card = insert before that card
+      moveAction(draggedIndex, targetIndex);
+    }
+
+    function moveAction(fromIndex, toIndex) {
+      if (!currentSkitData?.script) return;
+      if (fromIndex === toIndex || fromIndex === toIndex - 1) return; // No change needed
+
+      const script = currentSkitData.script;
+      const [removed] = script.splice(fromIndex, 1);
+
+      // Adjust target index if we removed from before it
+      const adjustedIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
+      script.splice(adjustedIndex, 0, removed);
+
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
 
     function getCharacterOptions() {
       if (!currentSkitData?.cast) return '';
@@ -1879,8 +2069,14 @@
     }
 
     function openAddActionModal() {
+      openAddActionModalAt(null);  // Append at end
+    }
+
+    function openAddActionModalAt(index) {
       editingActionIndex = null;
-      document.getElementById('modal-title').textContent = 'Add Action';
+      insertAtIndex = index;
+      const title = index !== null ? `Insert Action at Position ${index + 1}` : 'Add Action';
+      document.getElementById('modal-title').textContent = title;
       document.getElementById('action-type').value = 'say';
       updateModalFields();
       document.getElementById('action-modal').classList.add('visible');
@@ -1940,6 +2136,7 @@
     function closeActionModal() {
       document.getElementById('action-modal').classList.remove('visible');
       editingActionIndex = null;
+      insertAtIndex = null;
     }
 
     function saveActionFromModal() {
@@ -2011,8 +2208,11 @@
       if (editingActionIndex !== null) {
         // Edit existing
         currentSkitData.script[editingActionIndex] = action;
+      } else if (insertAtIndex !== null) {
+        // Insert at specific position
+        currentSkitData.script.splice(insertAtIndex, 0, action);
       } else {
-        // Add new
+        // Append at end
         currentSkitData.script.push(action);
       }
 
