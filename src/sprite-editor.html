@@ -201,7 +201,7 @@
     /* Main layout */
     .main {
       display: flex;
-      height: calc(100vh - 52px);
+      height: calc(100vh - 110px); /* header + command bar */
     }
     
     /* Left panel - sprite list */
@@ -471,6 +471,112 @@
       background: #4ecca3;
       color: #111;
     }
+
+    /* AI Command Bar */
+    #command-bar {
+      background: linear-gradient(135deg, #1a1a3e 0%, #16213e 100%);
+      border-bottom: 2px solid #4ecca3;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #command-bar .command-context {
+      color: #888;
+      font-size: 0.85em;
+      min-width: 120px;
+    }
+
+    #command-bar .command-context .sprite-name {
+      color: #4ecca3;
+      font-weight: bold;
+    }
+
+    #command-bar .command-input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      padding: 4px 12px;
+      gap: 8px;
+    }
+
+    #command-bar .command-input-wrapper:focus-within {
+      border-color: #4ecca3;
+      box-shadow: 0 0 10px rgba(78, 204, 163, 0.2);
+    }
+
+    #command-bar .command-icon {
+      font-size: 1.2em;
+    }
+
+    #command-bar #command-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #eee;
+      font-size: 0.95em;
+      padding: 8px 0;
+      outline: none;
+    }
+
+    #command-bar #command-input::placeholder {
+      color: #666;
+    }
+
+    #command-bar #command-submit {
+      background: #4ecca3;
+      color: #111;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9em;
+      transition: all 0.2s;
+    }
+
+    #command-bar #command-submit:hover {
+      background: #3db892;
+      transform: translateY(-1px);
+    }
+
+    #command-bar #command-submit:disabled {
+      background: #2a4a4a;
+      color: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #command-bar #command-submit.generating {
+      background: #e94560;
+    }
+
+    #command-bar .command-status {
+      font-size: 0.8em;
+      color: #888;
+      min-width: 100px;
+    }
+
+    #command-bar .command-status.error {
+      color: #e94560;
+    }
+
+    #command-bar .command-status.success {
+      color: #4ecca3;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    #command-bar .generating-text {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
   </style>
 </head>
 <body>
@@ -656,7 +762,21 @@
       <button id="btn-help" title="Keyboard Shortcuts">❓</button>
     </div>
   </header>
-  
+
+  <!-- AI Command Bar -->
+  <div id="command-bar">
+    <div class="command-context">
+      <span id="command-context-text">No sprite selected</span>
+    </div>
+    <div class="command-input-wrapper">
+      <span class="command-icon">🤖</span>
+      <input type="text" id="command-input" placeholder="Describe a character to create..."
+             onkeydown="if(event.key==='Enter') submitCommand()">
+    </div>
+    <button id="command-submit" onclick="submitCommand()">Generate</button>
+    <div class="command-status" id="command-status"></div>
+  </div>
+
   <div class="main">
     <!-- Left Panel: Sprite List -->
     <div class="panel-left">
@@ -745,7 +865,191 @@
     let dragStart = { x: 0, y: 0 };
     let elementStart = { x: 0, y: 0 };
     let zoomLevel = 100;
-    
+    let currentMeta = null;
+    let isGenerating = false;
+
+    // === WEBSOCKET FOR LIVE UPDATES ===
+    let ws = null;
+
+    function connectWebSocket() {
+      const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${wsProtocol}//${location.host}/ws`);
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+      };
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        console.log('WebSocket message:', msg);
+
+        if (msg.type === 'sprite:updated' && msg.name === currentSpriteName) {
+          // Reload the current sprite
+          console.log('Sprite updated, reloading...');
+          loadSprite(currentSpriteName, currentVariant);
+          setCommandStatus('success', 'Updated!');
+        }
+
+        if (msg.type === 'sprite:created') {
+          // Refresh sprite list
+          loadSpriteList();
+        }
+      };
+
+      ws.onerror = (err) => {
+        console.error('WebSocket error:', err);
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket disconnected, reconnecting in 3s...');
+        setTimeout(connectWebSocket, 3000);
+      };
+    }
+
+    // === AI COMMAND BAR ===
+    function updateCommandContext() {
+      const contextEl = document.getElementById('command-context-text');
+      const inputEl = document.getElementById('command-input');
+
+      if (currentSpriteName) {
+        contextEl.innerHTML = `Editing: <span class="sprite-name">${currentSpriteName}</span>`;
+        inputEl.placeholder = 'Describe changes to make...';
+      } else {
+        contextEl.textContent = 'No sprite selected';
+        inputEl.placeholder = 'Describe a character to create...';
+      }
+    }
+
+    function setCommandStatus(type, message) {
+      const statusEl = document.getElementById('command-status');
+      statusEl.className = 'command-status ' + type;
+      statusEl.innerHTML = message;
+
+      // Clear success/error after 3 seconds
+      if (type === 'success' || type === 'error') {
+        setTimeout(() => {
+          if (statusEl.innerHTML === message) {
+            statusEl.innerHTML = '';
+            statusEl.className = 'command-status';
+          }
+        }, 3000);
+      }
+    }
+
+    async function submitCommand() {
+      const input = document.getElementById('command-input');
+      const submitBtn = document.getElementById('command-submit');
+      const command = input.value.trim();
+
+      if (!command || isGenerating) return;
+
+      isGenerating = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Generating...';
+      submitBtn.classList.add('generating');
+      setCommandStatus('', '<span class="generating-text">🤖 AI is working...</span>');
+
+      try {
+        const payload = {
+          type: 'sprite',
+          mode: currentSpriteName ? 'edit' : 'create',
+          command: command
+        };
+
+        // Include current state for edit mode
+        if (currentSpriteName && currentSprite) {
+          payload.current = {
+            name: currentSpriteName,
+            svg: currentSprite,
+            meta: currentMeta || {}
+          };
+        }
+
+        const response = await fetch('/api/agent/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.message || 'Generation failed');
+        }
+
+        if (result.success) {
+          if (result.saved) {
+            // Already saved (edit mode) - WebSocket will handle reload
+            setCommandStatus('success', 'Saved!');
+            input.value = '';
+          } else {
+            // New sprite - prompt for name and save
+            const suggestedName = command.toLowerCase()
+              .replace(/[^a-z0-9\s]/g, '')
+              .split(/\s+/)
+              .slice(0, 3)
+              .join('-');
+
+            const name = prompt('Name for new sprite:', suggestedName);
+
+            if (name && /^[a-z0-9-]+$/.test(name)) {
+              // Save the new sprite
+              const saveResp = await fetch('/api/sprites', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  name: name,
+                  svg: result.asset.svg,
+                  meta: { description: command }
+                })
+              });
+
+              if (saveResp.ok) {
+                setCommandStatus('success', `Created: ${name}`);
+                input.value = '';
+                await loadSpriteList();
+                loadSpriteFromSvg(name, result.asset.svg);
+              } else {
+                const err = await saveResp.json();
+                throw new Error(err.message || 'Failed to save sprite');
+              }
+            } else if (name) {
+              setCommandStatus('error', 'Invalid name (use lowercase, numbers, hyphens)');
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Command error:', err);
+        setCommandStatus('error', err.message);
+      } finally {
+        isGenerating = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Generate';
+        submitBtn.classList.remove('generating');
+      }
+    }
+
+    // Load sprite directly from SVG string (for newly generated sprites)
+    function loadSpriteFromSvg(name, svg) {
+      currentSpriteName = name;
+      currentSprite = svg;
+      currentVariant = 'front';
+      currentVariants = ['front'];
+
+      const canvas = document.getElementById('svg-canvas');
+      canvas.innerHTML = svg;
+
+      setupSvgInteraction();
+      applyZoom();
+      updateCommandContext();
+      updateVariantTabs();
+
+      // Update sprite list selection
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.name === name);
+      });
+    }
+
     // === ZOOM ===
     function zoomIn() {
       zoomLevel = Math.min(400, zoomLevel + 25);
@@ -819,13 +1123,16 @@
         const metaResp = await fetch(`sprites/${name}/meta.json`);
         if (metaResp.ok) {
           currentSpriteMeta = await metaResp.json();
+          currentMeta = currentSpriteMeta; // Also store for AI commands
           currentSpriteType = currentSpriteMeta.type || 'creature';
         } else {
           currentSpriteMeta = null;
+          currentMeta = null;
           currentSpriteType = 'creature';
         }
       } catch (e) {
         currentSpriteMeta = null;
+        currentMeta = null;
         currentSpriteType = 'creature';
       }
 
@@ -836,6 +1143,9 @@
       // Load default variant
       currentVariant = currentVariants.includes('front') ? 'front' : currentVariants[0];
       await loadVariant(name, currentVariant);
+
+      // Update command bar context
+      updateCommandContext();
     }
     
     async function detectVariants(charName) {
@@ -3377,6 +3687,7 @@
     loadSpriteList();
     loadLocalSprites();
     selectCharacter('cat'); // Load default
+    connectWebSocket(); // Connect for live AI updates
     
     // Scroll wheel zoom
     document.querySelector('.canvas-container').addEventListener('wheel', (e) => {
