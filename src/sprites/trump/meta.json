@@ -1,5 +1,6 @@
 {
   "name": "Trump",
+  "type": "human",
   "description": "A caricature of Donald Trump",
   "tags": ["human", "male", "politician", "celebrity", "parody"],
   "voice": {

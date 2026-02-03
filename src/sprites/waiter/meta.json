@@ -1,5 +1,6 @@
 {
   "name": "Waiter",
+  "type": "human",
   "description": "A restaurant server",
   "tags": ["human", "service", "restaurant", "professional"],
   "voice": {

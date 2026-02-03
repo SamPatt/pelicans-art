@@ -1,5 +1,6 @@
 {
   "name": "Man in Suit",
+  "type": "human",
   "description": "A professional businessman",
   "tags": ["human", "male", "professional", "business"],
   "voice": {

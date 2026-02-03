@@ -1,5 +1,6 @@
 {
   "name": "Pelican",
+  "type": "creature",
   "description": "A coastal pelican bird",
   "tags": ["animal", "bird", "pelican", "coastal"],
   "voice": {

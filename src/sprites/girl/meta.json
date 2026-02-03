@@ -1,5 +1,6 @@
 {
   "name": "Girl",
+  "type": "human",
   "description": "A young girl character",
   "tags": ["human", "female", "young", "girl"],
   "voice": {

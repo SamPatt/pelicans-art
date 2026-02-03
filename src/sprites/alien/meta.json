@@ -1,5 +1,6 @@
 {
   "name": "Alien",
+  "type": "creature",
   "description": "A purple extraterrestrial visitor",
   "tags": ["alien", "sci-fi", "space", "fantasy"],
   "voice": {

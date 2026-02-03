@@ -808,16 +808,31 @@
     
     async function selectCharacter(name) {
       currentSpriteName = name;
-      
+
       // Update UI
       document.querySelectorAll('.sprite-item').forEach(item => {
         item.classList.toggle('active', item.dataset.char === name);
       });
-      
+
+      // Load sprite metadata to get type
+      try {
+        const metaResp = await fetch(`sprites/${name}/meta.json`);
+        if (metaResp.ok) {
+          currentSpriteMeta = await metaResp.json();
+          currentSpriteType = currentSpriteMeta.type || 'creature';
+        } else {
+          currentSpriteMeta = null;
+          currentSpriteType = 'creature';
+        }
+      } catch (e) {
+        currentSpriteMeta = null;
+        currentSpriteType = 'creature';
+      }
+
       // Detect variants
       currentVariants = await detectVariants(name);
       renderVariantTabs();
-      
+
       // Load default variant
       currentVariant = currentVariants.includes('front') ? 'front' : currentVariants[0];
       await loadVariant(name, currentVariant);
@@ -2935,7 +2950,8 @@
     };
 
     // === ANIMATION PREVIEW ===
-    const EMOTIONS = {
+    // Emotion configs for creature sprites (cat, alien, robot, etc.)
+    const EMOTIONS_CREATURE = {
       neutral: {
         eyeWhite: { ry: 7, cy: 52 },
         pupil: { ry: 5, cy: 52 },
@@ -3001,10 +3017,84 @@
       }
     };
 
+    // Emotion configs for human sprites (person, girl, waiter, etc.)
+    const EMOTIONS_HUMAN = {
+      neutral: {
+        eyeWhite: { ry: 3, cy: 42 },
+        pupil: { ry: 1.5, cy: 42 },
+        browLeft: "M37 36 Q43 34 49 36",
+        browRight: "M51 36 Q57 34 63 36",
+        mouth: "M46 52 Q50 55 54 52"
+      },
+      happy: {
+        eyeWhite: { ry: 2, cy: 41 },
+        pupil: { ry: 1.5, cy: 41 },
+        browLeft: "M37 34 Q43 31 49 34",
+        browRight: "M51 34 Q57 31 63 34",
+        mouth: "M44 52 Q50 58 56 52"
+      },
+      sad: {
+        eyeWhite: { ry: 3, cy: 44 },
+        pupil: { ry: 1.5, cy: 45 },
+        browLeft: "M37 34 L49 40",
+        browRight: "M51 40 L63 34",
+        mouth: "M46 56 Q50 52 54 56"
+      },
+      angry: {
+        eyeWhite: { ry: 2.5, cy: 42 },
+        pupil: { ry: 1.5, cy: 42 },
+        browLeft: "M37 40 L49 34",
+        browRight: "M51 34 L63 40",
+        mouth: "M46 54 L54 54"
+      },
+      surprised: {
+        eyeWhite: { ry: 5, cy: 42 },
+        pupil: { ry: 2, cy: 42 },
+        browLeft: "M37 30 Q43 26 49 30",
+        browRight: "M51 30 Q57 26 63 30",
+        mouth: "M46 53 Q46 57 50 57 Q54 57 54 53 Q54 51 50 51 Q46 51 46 53"
+      },
+      excited: {
+        eyeWhite: { ry: 5, cy: 40 },
+        pupil: { ry: 2, cy: 40 },
+        browLeft: "M37 28 Q43 24 49 28",
+        browRight: "M51 28 Q57 24 63 28",
+        mouth: "M44 52 Q50 60 56 52"
+      },
+      worried: {
+        eyeWhite: { ry: 3.5, cy: 43 },
+        pupil: { ry: 1.5, cy: 44 },
+        browLeft: "M37 32 L49 38",
+        browRight: "M51 38 L63 32",
+        mouth: "M46 56 Q50 53 54 56"
+      },
+      smug: {
+        eyeWhite: { ry: 2, cy: 42 },
+        pupil: { ry: 1.5, cy: 42 },
+        browLeft: "M37 36 Q43 32 49 38",
+        browRight: "M51 38 Q57 32 63 36",
+        mouth: "M46 52 Q50 56 54 54"
+      },
+      tired: {
+        eyeWhite: { ry: 1.5, cy: 44 },
+        pupil: { ry: 1, cy: 44 },
+        browLeft: "M37 38 Q43 40 49 38",
+        browRight: "M51 38 Q57 40 63 38",
+        mouth: "M46 56 Q50 54 54 56"
+      }
+    };
+
+    let currentSpriteType = 'creature'; // 'human' or 'creature'
+    let currentSpriteMeta = null;
     let currentEmotion = 'neutral';
     let talkingInterval = null;
     let blinkingInterval = null;
     let originalSvgState = null;
+
+    function getEmotionConfig(emotion) {
+      const emotions = currentSpriteType === 'human' ? EMOTIONS_HUMAN : EMOTIONS_CREATURE;
+      return emotions[emotion] || emotions.neutral;
+    }
 
     function saveOriginalState() {
       const svg = document.querySelector('#svg-canvas svg');
@@ -3017,7 +3107,7 @@
       const svg = document.querySelector('#svg-canvas svg');
       if (!svg) return;
 
-      const config = EMOTIONS[emotion];
+      const config = getEmotionConfig(emotion);
       if (!config) return;
 
       // Save original state if not saved yet
@@ -3066,7 +3156,7 @@
       // Apply mouth
       if (mouthClosed) mouthClosed.setAttribute('d', config.mouth);
 
-      setStatus(`Emotion: ${emotion}`);
+      setStatus(`Emotion: ${emotion} (${currentSpriteType})`);
     }
 
     function toggleTalking() {

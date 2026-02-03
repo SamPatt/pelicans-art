@@ -374,27 +374,43 @@
       el.dataset.sprite = config.sprite;
       el.dataset.voice = config.voice;
       el.style.left = `${config.x}%`;
-      
+
       // Add position class for head rotation direction
       el.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
-      
+
       // Apply scale if specified
       if (config.scale) {
         el.style.height = `${40 * config.scale}%`;
       }
-      
+
+      // Load sprite metadata to get type
+      let spriteType = 'creature'; // default
+      try {
+        const metaResp = await fetch(`sprites/${config.sprite}/meta.json`);
+        if (metaResp.ok) {
+          const meta = await metaResp.json();
+          spriteType = meta.type || 'creature';
+        }
+      } catch (e) {
+        // Fallback to hardcoded list for backwards compatibility
+        if (HUMAN_SPRITES.includes(config.sprite)) {
+          spriteType = 'human';
+        }
+      }
+
       // Load sprite as inline SVG
       const svgText = await loadSprite(config.sprite, 'front');
       el.innerHTML = svgText;
-      
+
       stage.appendChild(el);
-      
+
       characters[name] = {
         x: config.x,
         y: 67, // character center
         sprite: config.sprite,
         voice: config.voice,
         scale: config.scale || 1,
+        type: spriteType,
         el: el
       };
       
@@ -729,7 +745,7 @@
       const el = char.el;
       const svg = el.querySelector('svg');
       const isPhotoSprite = svg && svg.dataset.photoSprite === 'true';
-      const isHuman = HUMAN_SPRITES.includes(char.sprite);
+      const isHuman = char.type === 'human';
       const isTrumpV3 = char.sprite === 'trump-v3';
       
       // Handle photo sprite emotions (warp-style transforms + jaw puppet)

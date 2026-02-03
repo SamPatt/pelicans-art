@@ -1,5 +1,6 @@
 {
   "name": "Cat",
+  "type": "creature",
   "description": "A friendly orange tabby cat",
   "tags": ["animal", "cat", "pet", "cute"],
   "voice": {

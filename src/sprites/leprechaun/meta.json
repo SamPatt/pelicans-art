@@ -1,5 +1,6 @@
 {
   "name": "Leprechaun",
+  "type": "human",
   "description": "A mischievous Irish leprechaun",
   "tags": ["fantasy", "irish", "mythology", "magical"],
   "voice": {

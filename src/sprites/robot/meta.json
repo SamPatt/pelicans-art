@@ -1,5 +1,6 @@
 {
   "name": "Robot",
+  "type": "creature",
   "description": "A friendly helper robot",
   "tags": ["robot", "machine", "sci-fi", "helper"],
   "voice": {
