@@ -137,14 +137,38 @@ export async function deleteSprite(name) {
 }
 
 // --- Background Storage ---
+// Backgrounds now use a directory structure with orientation variants:
+// backgrounds/office/landscape.svg, backgrounds/office/portrait.svg
+// For backward compatibility, we also check for flat files: backgrounds/office.svg
 
 export async function listBackgrounds() {
   let backgrounds = [];
   try {
-    const files = await fs.readdir(BACKGROUNDS_DIR);
-    backgrounds = files
-      .filter(f => f.endsWith('.svg'))
-      .map(f => ({ name: f.replace('.svg', '') }));
+    const entries = await fs.readdir(BACKGROUNDS_DIR, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        // New directory-based structure
+        const bgDir = path.join(BACKGROUNDS_DIR, entry.name);
+        const files = await fs.readdir(bgDir);
+        const orientations = files
+          .filter(f => f.endsWith('.svg'))
+          .map(f => f.replace('.svg', ''));
+
+        if (orientations.length > 0) {
+          backgrounds.push({
+            name: entry.name,
+            orientations
+          });
+        }
+      } else if (entry.name.endsWith('.svg')) {
+        // Legacy flat file structure - treat as landscape orientation
+        backgrounds.push({
+          name: entry.name.replace('.svg', ''),
+          orientations: ['landscape']
+        });
+      }
+    }
   } catch (err) {
     if (err.code !== 'ENOENT') throw err;
   }
@@ -152,29 +176,76 @@ export async function listBackgrounds() {
   return backgrounds;
 }
 
-export async function getBackground(name) {
-  const bgPath = path.join(BACKGROUNDS_DIR, `${name}.svg`);
-
-  if (await exists(bgPath)) {
-    return fs.readFile(bgPath, 'utf-8');
+export async function getBackground(name, orientation = 'landscape') {
+  // First try new directory structure
+  const dirPath = path.join(BACKGROUNDS_DIR, name, `${orientation}.svg`);
+  if (await exists(dirPath)) {
+    return fs.readFile(dirPath, 'utf-8');
   }
 
-  throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
+  // Fall back to legacy flat file (only for landscape/default orientation)
+  if (orientation === 'landscape') {
+    const legacyPath = path.join(BACKGROUNDS_DIR, `${name}.svg`);
+    if (await exists(legacyPath)) {
+      return fs.readFile(legacyPath, 'utf-8');
+    }
+  }
+
+  throw Object.assign(new Error(`Background not found: ${name}/${orientation}`), { status: 404 });
 }
 
-export async function saveBackground(name, svg) {
-  await ensureDir(BACKGROUNDS_DIR);
-  await fs.writeFile(path.join(BACKGROUNDS_DIR, `${name}.svg`), svg);
-  return { name };
+export async function saveBackground(name, svg, orientation = 'landscape') {
+  const bgDir = path.join(BACKGROUNDS_DIR, name);
+  await ensureDir(bgDir);
+  await fs.writeFile(path.join(bgDir, `${orientation}.svg`), svg);
+  return { name, orientation };
+}
+
+/**
+ * Save a specific orientation variant of a background
+ */
+export async function saveBackgroundVariant(name, orientation, svg) {
+  const bgDir = path.join(BACKGROUNDS_DIR, name);
+
+  // Check if background directory exists (either new style or we need to create it)
+  if (!await exists(bgDir)) {
+    // Check if legacy flat file exists - if so, migrate it
+    const legacyPath = path.join(BACKGROUNDS_DIR, `${name}.svg`);
+    if (await exists(legacyPath)) {
+      // Migrate legacy file to new structure
+      await ensureDir(bgDir);
+      const legacySvg = await fs.readFile(legacyPath, 'utf-8');
+      await fs.writeFile(path.join(bgDir, 'landscape.svg'), legacySvg);
+      await fs.unlink(legacyPath);
+    } else {
+      throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
+    }
+  }
+
+  await fs.writeFile(path.join(bgDir, `${orientation}.svg`), svg);
+  return { name, orientation };
 }
 
 export async function deleteBackground(name) {
-  const bgPath = path.join(BACKGROUNDS_DIR, `${name}.svg`);
-  if (!await exists(bgPath)) {
-    throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
+  const bgDir = path.join(BACKGROUNDS_DIR, name);
+
+  // Check for new directory structure
+  if (await exists(bgDir)) {
+    const stat = await fs.stat(bgDir);
+    if (stat.isDirectory()) {
+      await fs.rm(bgDir, { recursive: true });
+      return;
+    }
   }
 
-  await fs.unlink(bgPath);
+  // Check for legacy flat file
+  const legacyPath = path.join(BACKGROUNDS_DIR, `${name}.svg`);
+  if (await exists(legacyPath)) {
+    await fs.unlink(legacyPath);
+    return;
+  }
+
+  throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
 }
 
 // --- Skit Storage ---

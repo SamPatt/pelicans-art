@@ -31,7 +31,7 @@ router.get('/status', async (req, res) => {
  */
 router.post('/generate', async (req, res, next) => {
   try {
-    const { type, mode, command, current } = req.body;
+    const { type, mode, command, current, orientation } = req.body;
 
     // Validate required fields
     if (!type || !['sprite', 'background', 'skit'].includes(type)) {
@@ -62,8 +62,8 @@ router.post('/generate', async (req, res, next) => {
       });
     }
 
-    // Generate the asset
-    const result = await generateAsset({ type, mode, command, current });
+    // Generate the asset (pass orientation for backgrounds)
+    const result = await generateAsset({ type, mode, command, current, orientation });
 
     // For edit mode with a name, save automatically and broadcast
     if (mode === 'edit' && current?.name && type === 'sprite') {

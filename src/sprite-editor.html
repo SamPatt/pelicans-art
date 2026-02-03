@@ -841,6 +841,53 @@
       font-size: 0.8em;
     }
 
+    /* Orientation selector in skit editor */
+    .orientation-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 8px;
+      background: #16213e;
+      border-radius: 4px;
+    }
+
+    .orientation-label {
+      color: #888;
+      font-size: 0.85em;
+    }
+
+    .orientation-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
+    .orientation-btn {
+      padding: 4px 12px;
+      background: #0f3460;
+      border: 1px solid #1a3a60;
+      border-radius: 4px;
+      color: #aaa;
+      font-size: 0.8em;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .orientation-btn:hover {
+      background: #1a3a60;
+      color: #eee;
+    }
+
+    .orientation-btn.active {
+      background: #4ecca3;
+      border-color: #4ecca3;
+      color: #111;
+    }
+
+    .skit-background-selector.collapsed .orientation-row {
+      display: none;
+    }
+
     .script-line {
       padding: 8px 12px;
       margin-bottom: 4px;
@@ -1517,6 +1564,10 @@
             </select>
             <button class="ok-btn" onclick="confirmBackgroundSelection()">OK</button>
           </div>
+          <div id="skit-orientation-row" class="orientation-row" style="display:none;">
+            <span class="orientation-label">Orientation:</span>
+            <div id="skit-orientation-buttons" class="orientation-buttons"></div>
+          </div>
           <div id="skit-background-preview" class="skit-background-preview"></div>
           <div class="skit-background-collapsed" onclick="expandBackgroundSelector()">
             <span class="bg-name" id="skit-background-name">No background</span>
@@ -1707,6 +1758,8 @@
 
     // === BACKGROUND MANAGEMENT ===
     let backgroundList = [];
+    let currentBackgroundOrientation = 'landscape';
+    let currentBackgroundOrientations = ['landscape'];
 
     async function loadBackgrounds() {
       try {
@@ -1714,19 +1767,36 @@
         backgroundList = await response.json();
 
         const list = document.getElementById('background-list');
-        list.innerHTML = backgroundList.map(bg => `
-          <div class="background-item" data-name="${bg.name || bg}" onclick="selectBackground('${bg.name || bg}')">
+        list.innerHTML = backgroundList.map(bg => {
+          const name = bg.name || bg;
+          const orientations = bg.orientations || ['landscape'];
+          const defaultOrientation = orientations.includes('landscape') ? 'landscape' : orientations[0];
+          // Build thumbnail path - use directory structure for new format
+          const thumbPath = `/backgrounds/${name}/${defaultOrientation}.svg`;
+          return `
+          <div class="background-item" data-name="${name}" onclick="selectBackground('${name}')">
             <div class="bg-thumbnail">
-              <img src="/backgrounds/${bg.name || bg}.svg" alt="${bg.name || bg}" onerror="this.parentElement.innerHTML='🖼️'">
+              <img src="${thumbPath}" alt="${name}" onerror="handleBgThumbError(this, '${name}')">
             </div>
-            <span>${bg.name || bg}</span>
+            <span>${name}</span>
           </div>
-        `).join('');
+        `;
+        }).join('');
 
         document.getElementById('bg-count').textContent = `(${backgroundList.length})`;
       } catch (e) {
         console.error('Failed to load backgrounds:', e);
         document.getElementById('bg-count').textContent = '(0)';
+      }
+    }
+
+    // Handle background thumbnail load error - try legacy path
+    function handleBgThumbError(img, name) {
+      const legacyPath = `/backgrounds/${name}.svg`;
+      if (!img.src.endsWith(legacyPath)) {
+        img.src = legacyPath;
+      } else {
+        img.parentElement.innerHTML = '🖼️';
       }
     }
 
@@ -1749,24 +1819,103 @@
       document.getElementById('skit-editor-panel').style.display = 'none';
       document.querySelector('.canvas-container').style.display = 'flex';
       document.querySelector('.element-tree').style.display = 'block';
-      document.getElementById('variant-tabs').style.display = 'none'; // Hide variant tabs for backgrounds
+      document.getElementById('variant-tabs').style.display = 'flex'; // Show orientation tabs for backgrounds
       document.querySelector('.zoom-controls').style.display = 'flex';
 
-      // Load background SVG
+      // Detect available orientations for this background
+      currentBackgroundOrientations = await detectBackgroundOrientations(name);
+      currentBackgroundOrientation = currentBackgroundOrientations.includes('landscape')
+        ? 'landscape'
+        : currentBackgroundOrientations[0];
+
+      renderBackgroundOrientationTabs();
+
+      // Load the default orientation
+      await loadBackgroundOrientation(name, currentBackgroundOrientation);
+    }
+
+    async function detectBackgroundOrientations(bgName) {
+      // Check cached background list first
+      const bg = backgroundList.find(b => (b.name || b) === bgName);
+      if (bg && bg.orientations) {
+        return bg.orientations;
+      }
+
+      // Fallback: probe for common orientations
+      const possible = ['landscape', 'portrait'];
+      const found = [];
+
+      await Promise.all(possible.map(async (o) => {
+        try {
+          const resp = await fetch(`/api/backgrounds/${bgName}/${o}`, { method: 'HEAD' });
+          if (resp.ok) found.push(o);
+        } catch (e) {}
+      }));
+
+      // Sort: landscape first, then portrait
+      found.sort((a, b) => {
+        if (a === 'landscape') return -1;
+        if (b === 'landscape') return 1;
+        return a.localeCompare(b);
+      });
+
+      return found.length > 0 ? found : ['landscape'];
+    }
+
+    function renderBackgroundOrientationTabs() {
+      const tabs = document.getElementById('variant-tabs');
+      tabs.innerHTML = '';
+
+      for (const o of currentBackgroundOrientations) {
+        const tab = document.createElement('button');
+        tab.style.cssText = 'padding:6px 12px;background:#0f3460;border:none;color:#eee;border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
+        if (o === currentBackgroundOrientation) tab.style.background = '#e94560';
+        tab.textContent = o.charAt(0).toUpperCase() + o.slice(1);
+        tab.onclick = () => {
+          currentBackgroundOrientation = o;
+          loadBackgroundOrientation(currentBackgroundName, o);
+          renderBackgroundOrientationTabs();
+        };
+        tabs.appendChild(tab);
+      }
+
+      // Add new orientation button only if both orientations don't exist
+      const hasLandscape = currentBackgroundOrientations.includes('landscape');
+      const hasPortrait = currentBackgroundOrientations.includes('portrait');
+
+      if (!hasLandscape || !hasPortrait) {
+        const addBtn = document.createElement('button');
+        addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed #888;color:#888;border-radius:4px;cursor:pointer;font-size:12px;';
+        addBtn.textContent = hasLandscape ? '+ Portrait' : '+ Landscape';
+        addBtn.onclick = addNewBackgroundOrientation;
+        tabs.appendChild(addBtn);
+      }
+    }
+
+    // Background dimensions by orientation (16:9 landscape, 9:16 portrait)
+    const BG_DIMENSIONS = {
+      landscape: { width: 400, height: 225 },
+      portrait: { width: 225, height: 400 }
+    };
+
+    async function loadBackgroundOrientation(bgName, orientation) {
       try {
-        const response = await fetch(`/api/backgrounds/${name}`);
+        const response = await fetch(`/api/backgrounds/${bgName}/${orientation}?v=${Date.now()}`);
         const svg = await response.text();
 
+        currentBackgroundOrientation = orientation;
         currentSprite = svg;
+
         const canvas = document.getElementById('svg-canvas');
         canvas.innerHTML = svg;
 
         // Setup interactions
         const svgEl = canvas.querySelector('svg');
         if (svgEl) {
-          // Scale for editing - backgrounds use 400x300 viewBox
-          svgEl.setAttribute('width', '400');
-          svgEl.setAttribute('height', '300');
+          // Scale for editing based on orientation
+          const dims = BG_DIMENSIONS[orientation] || BG_DIMENSIONS.landscape;
+          svgEl.setAttribute('width', dims.width);
+          svgEl.setAttribute('height', dims.height);
 
           svgEl.querySelectorAll('*').forEach(el => {
             if (el.tagName !== 'g' && el.tagName !== 'svg') {
@@ -1790,11 +1939,57 @@
         clearSelection();
         resetHistory();
         updateCommandContext();
-        updateStatus(`Loaded background: ${name}`);
+        updateStatus(`Loaded: ${bgName}/${orientation}`);
       } catch (e) {
-        console.error('Failed to load background:', e);
-        updateStatus(`Error loading background: ${name}`);
+        console.error('Failed to load background orientation:', e);
+        updateStatus(`Error loading ${bgName}/${orientation}: ${e.message}`);
       }
+    }
+
+    function addNewBackgroundOrientation() {
+      // Only allow landscape or portrait
+      const available = ['landscape', 'portrait'].filter(o => !currentBackgroundOrientations.includes(o));
+
+      if (available.length === 0) {
+        alert('Both orientations (landscape and portrait) already exist for this background.');
+        return;
+      }
+
+      // If only one option left, use it automatically
+      const newOrientation = available.length === 1
+        ? available[0]
+        : (confirm('Add portrait orientation? (Cancel for landscape)') ? 'portrait' : 'landscape');
+
+      if (currentBackgroundOrientations.includes(newOrientation)) {
+        alert(`${newOrientation} orientation already exists.`);
+        return;
+      }
+
+      currentBackgroundOrientation = newOrientation;
+      currentBackgroundOrientations.push(newOrientation);
+
+      // Start with blank or copy current
+      if (confirm('Start with a copy of current background? (Cancel for blank)')) {
+        // Keep currentSprite as is but resize the display
+        const canvas = document.getElementById('svg-canvas');
+        const svgEl = canvas.querySelector('svg');
+        if (svgEl) {
+          const dims = BG_DIMENSIONS[newOrientation] || BG_DIMENSIONS.landscape;
+          svgEl.setAttribute('width', dims.width);
+          svgEl.setAttribute('height', dims.height);
+        }
+      } else {
+        // Use appropriate viewBox for orientation (16:9 landscape, 9:16 portrait)
+        const dims = BG_DIMENSIONS[newOrientation] || BG_DIMENSIONS.landscape;
+        const viewBox = `0 0 ${dims.width} ${dims.height}`;
+        currentSprite = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="${dims.width}" height="${dims.height}"></svg>`;
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = currentSprite;
+      }
+
+      renderBackgroundOrientationTabs();
+      buildElementTree();
+      updateStatus(`New orientation: ${newOrientation} (save to create file)`);
     }
 
     // === SKIT MANAGEMENT ===
@@ -1861,8 +2056,8 @@
       document.getElementById('skit-title').textContent = skit.meta?.title || 'Untitled Skit';
       document.getElementById('skit-description').textContent = skit.meta?.description || '';
 
-      // Background selector
-      populateBackgroundSelector(skit.stage?.background);
+      // Background selector (with orientation)
+      populateBackgroundSelector(skit.stage?.background, skit.stage?.orientation);
 
       // Cast
       const castHtml = Object.entries(skit.cast || {}).map(([id, char]) => `
@@ -2362,8 +2557,9 @@
 
     // === SKIT BACKGROUND ===
     let availableBackgrounds = [];
+    let currentSkitBackgroundOrientations = [];
 
-    async function populateBackgroundSelector(currentBackground) {
+    async function populateBackgroundSelector(currentBackground, currentOrientation) {
       const select = document.getElementById('skit-background-select');
       const selector = document.getElementById('skit-background-selector');
 
@@ -2384,9 +2580,12 @@
           `<option value="${bg.name}" ${bg.name === currentBackground ? 'selected' : ''}>${bg.name}</option>`
         ).join('');
 
+      // Show orientation buttons if background is selected
+      updateSkitOrientationButtons(currentBackground, currentOrientation);
+
       // Show preview and update collapsed name
-      loadBackgroundPreview(currentBackground);
-      updateCollapsedBackgroundName(currentBackground);
+      loadBackgroundPreview(currentBackground, currentOrientation);
+      updateCollapsedBackgroundName(currentBackground, currentOrientation);
 
       // Start collapsed if background is already set
       if (currentBackground) {
@@ -2396,7 +2595,58 @@
       }
     }
 
-    async function loadBackgroundPreview(backgroundName) {
+    function updateSkitOrientationButtons(backgroundName, currentOrientation) {
+      const orientationRow = document.getElementById('skit-orientation-row');
+      const buttonsContainer = document.getElementById('skit-orientation-buttons');
+
+      if (!backgroundName) {
+        orientationRow.style.display = 'none';
+        currentSkitBackgroundOrientations = [];
+        return;
+      }
+
+      // Find orientations for this background
+      const bg = availableBackgrounds.find(b => b.name === backgroundName);
+      const orientations = bg?.orientations || ['landscape'];
+      currentSkitBackgroundOrientations = orientations;
+
+      // If only one orientation, hide the selector
+      if (orientations.length <= 1) {
+        orientationRow.style.display = 'none';
+        return;
+      }
+
+      orientationRow.style.display = 'flex';
+
+      // Default to landscape if no current orientation
+      const selected = currentOrientation || (orientations.includes('landscape') ? 'landscape' : orientations[0]);
+
+      buttonsContainer.innerHTML = orientations.map(o => `
+        <button class="orientation-btn ${o === selected ? 'active' : ''}"
+                onclick="changeSkitOrientation('${o}')">${o.charAt(0).toUpperCase() + o.slice(1)}</button>
+      `).join('');
+    }
+
+    function changeSkitOrientation(orientation) {
+      if (!currentSkitData) return;
+
+      if (!currentSkitData.stage) {
+        currentSkitData.stage = {};
+      }
+      currentSkitData.stage.orientation = orientation;
+
+      // Update button states
+      document.querySelectorAll('#skit-orientation-buttons .orientation-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === orientation);
+      });
+
+      // Update preview
+      loadBackgroundPreview(currentSkitData.stage.background, orientation);
+      updateCollapsedBackgroundName(currentSkitData.stage.background, orientation);
+      markSkitDirty();
+    }
+
+    async function loadBackgroundPreview(backgroundName, orientation) {
       const preview = document.getElementById('skit-background-preview');
 
       if (!backgroundName) {
@@ -2404,13 +2654,23 @@
         return;
       }
 
+      // Use orientation if provided, otherwise default to landscape
+      const orient = orientation || 'landscape';
+
       try {
-        const resp = await fetch(`/api/backgrounds/${backgroundName}`);
+        const resp = await fetch(`/api/backgrounds/${backgroundName}/${orient}`);
         if (resp.ok) {
           const svg = await resp.text();
           preview.innerHTML = svg;
         } else {
-          preview.innerHTML = `<span>Background not found: ${backgroundName}</span>`;
+          // Try legacy path without orientation
+          const legacyResp = await fetch(`/api/backgrounds/${backgroundName}`);
+          if (legacyResp.ok) {
+            const svg = await legacyResp.text();
+            preview.innerHTML = svg;
+          } else {
+            preview.innerHTML = `<span>Background not found: ${backgroundName}</span>`;
+          }
         }
       } catch (e) {
         preview.innerHTML = `<span>Error loading preview</span>`;
@@ -2425,8 +2685,21 @@
       }
       currentSkitData.stage.background = backgroundName || undefined;
 
-      loadBackgroundPreview(backgroundName);
-      updateCollapsedBackgroundName(backgroundName);
+      // Update orientation buttons for new background
+      updateSkitOrientationButtons(backgroundName, currentSkitData.stage.orientation);
+
+      // Get default orientation for this background
+      const bg = availableBackgrounds.find(b => b.name === backgroundName);
+      const orientations = bg?.orientations || ['landscape'];
+      const defaultOrientation = orientations.includes('landscape') ? 'landscape' : orientations[0];
+
+      // Set orientation if not already set or if current orientation isn't available
+      if (!currentSkitData.stage.orientation || !orientations.includes(currentSkitData.stage.orientation)) {
+        currentSkitData.stage.orientation = defaultOrientation;
+      }
+
+      loadBackgroundPreview(backgroundName, currentSkitData.stage.orientation);
+      updateCollapsedBackgroundName(backgroundName, currentSkitData.stage.orientation);
       markSkitDirty();
     }
 
@@ -2440,14 +2713,24 @@
       selector.classList.remove('collapsed');
     }
 
-    function updateCollapsedBackgroundName(backgroundName) {
+    function updateCollapsedBackgroundName(backgroundName, orientation) {
       const nameEl = document.getElementById('skit-background-name');
-      nameEl.textContent = backgroundName || 'No background';
+      if (!backgroundName) {
+        nameEl.textContent = 'No background';
+      } else if (orientation && orientation !== 'landscape') {
+        nameEl.textContent = `${backgroundName} (${orientation})`;
+      } else {
+        nameEl.textContent = backgroundName;
+      }
     }
 
-    // Get list of available background names for AI prompting
+    // Get list of available backgrounds with orientations for AI prompting
     function getAvailableBackgroundNames() {
       return availableBackgrounds.map(bg => bg.name);
+    }
+
+    function getAvailableBackgroundsWithOrientations() {
+      return availableBackgrounds;
     }
 
     let skitDirty = false;
@@ -2756,7 +3039,7 @@
         contextEl.innerHTML = `Editing sprite: <span class="sprite-name">${currentSpriteName}</span>`;
         inputEl.placeholder = 'Describe changes to make...';
       } else if (currentEditMode === 'background' && currentBackgroundName) {
-        contextEl.innerHTML = `Editing background: <span class="sprite-name">${currentBackgroundName}</span>`;
+        contextEl.innerHTML = `Editing background: <span class="sprite-name">${currentBackgroundName}/${currentBackgroundOrientation}</span>`;
         inputEl.placeholder = 'Describe changes to make...';
       } else if (currentEditMode === 'skit' && currentSkitId) {
         const title = currentSkitData?.meta?.title || currentSkitId;
@@ -2854,6 +3137,11 @@
           command: command
         };
 
+        // For new backgrounds, start with landscape orientation
+        if (isCreateMode && assetType === 'background') {
+          payload.orientation = 'landscape';
+        }
+
         // Include current state for edit mode
         if (!isCreateMode) {
           if (assetType === 'sprite' && currentSprite) {
@@ -2867,6 +3155,8 @@
               name: currentBackgroundName,
               svg: currentSprite
             };
+            // Include current orientation for editing
+            payload.orientation = currentBackgroundOrientation || 'landscape';
           } else if (assetType === 'skit' && currentSkitData) {
             payload.current = {
               id: currentSkitId,
@@ -2918,25 +3208,67 @@
               throw new Error(err.message || 'Failed to save sprite');
             }
           } else if (assetType === 'background') {
-            // New background
-            const saveResp = await fetch('/api/backgrounds', {
+            // New background - generate and save both landscape and portrait
+            setCommandStatus('', '<span class="generating-text">🤖 Saving landscape version...</span>');
+
+            // Save landscape first
+            const saveLandscape = await fetch('/api/backgrounds', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 name: assetName,
-                svg: result.asset.svg
+                svg: result.asset.svg,
+                orientation: 'landscape'
               })
             });
 
-            if (saveResp.ok) {
-              setCommandStatus('success', `Created background: ${assetName}`);
-              input.value = '';
-              await loadBackgrounds();
-              selectBackground(assetName);
-            } else {
-              const err = await saveResp.json();
-              throw new Error(err.message || 'Failed to save background');
+            if (!saveLandscape.ok) {
+              const err = await saveLandscape.json();
+              throw new Error(err.message || 'Failed to save landscape background');
             }
+
+            // Now generate portrait version
+            setCommandStatus('', '<span class="generating-text">🤖 Generating portrait version...</span>');
+
+            const portraitResponse = await fetch('/api/agent/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                type: 'background',
+                mode: 'create',
+                command: command,
+                orientation: 'portrait'
+              })
+            });
+
+            const portraitResult = await portraitResponse.json();
+
+            if (portraitResponse.ok && portraitResult.success) {
+              setCommandStatus('', '<span class="generating-text">🤖 Saving portrait version...</span>');
+
+              // Save portrait as a variant
+              const savePortrait = await fetch(`/api/backgrounds/${assetName}/portrait`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  svg: portraitResult.asset.svg
+                })
+              });
+
+              if (savePortrait.ok) {
+                setCommandStatus('success', `Created background: ${assetName} (both orientations)`);
+              } else {
+                // Portrait failed but landscape was saved
+                setCommandStatus('success', `Created background: ${assetName} (landscape only - portrait failed)`);
+              }
+            } else {
+              // Portrait generation failed but landscape was saved
+              setCommandStatus('success', `Created background: ${assetName} (landscape only - portrait generation failed)`);
+            }
+
+            input.value = '';
+            await loadBackgrounds();
+            selectBackground(assetName);
           } else if (assetType === 'skit') {
             // New skit - agent returns { skit: {...} }, extract the skit object
             let skitData;
@@ -3893,14 +4225,17 @@
       }
 
       try {
-        const response = await fetch(`/api/backgrounds/${currentBackgroundName}`, {
+        // Use the orientation-specific endpoint
+        const response = await fetch(`/api/backgrounds/${currentBackgroundName}/${currentBackgroundOrientation}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ svg: currentSprite })
         });
 
         if (response.ok) {
-          updateStatus(`Saved background: ${currentBackgroundName}`);
+          updateStatus(`Saved background: ${currentBackgroundName}/${currentBackgroundOrientation}`);
+          // Refresh background list to update orientations
+          await loadBackgrounds();
         } else {
           const err = await response.text();
           console.error('Background save failed:', err);

@@ -781,10 +781,23 @@
       console.log(`Shot: ${shotType}${who ? ' (' + who + ')' : ''}`);
     }
     
-    function setAllBackgrounds(bgName) {
-      document.getElementById('bg-wide').src = `backgrounds/${bgName}.svg`;
-      document.getElementById('bg-closeup-left').src = `backgrounds/${bgName}.svg`;
-      document.getElementById('bg-closeup-right').src = `backgrounds/${bgName}.svg`;
+    function setAllBackgrounds(bgName, orientation = 'landscape') {
+      const newPath = `backgrounds/${bgName}/${orientation}.svg`;
+      const legacyPath = `backgrounds/${bgName}.svg`;
+
+      // Add onerror handler to fallback to legacy path
+      const onError = function() {
+        if (!this.src.includes(legacyPath)) {
+          console.log(`Background not found at ${newPath}, trying legacy path`);
+          this.src = legacyPath;
+        }
+      };
+
+      ['bg-wide', 'bg-closeup-left', 'bg-closeup-right'].forEach(id => {
+        const el = document.getElementById(id);
+        el.onerror = onError;
+        el.src = newPath;
+      });
     }
     
     async function turnCharacter(charId, toView) {
@@ -1008,8 +1021,8 @@
       document.getElementById('script6Btn').classList.toggle('active', name === 'luckyCharms');
       document.getElementById('script7Btn').classList.toggle('active', name === 'spaceWall');
       
-      // Load background to all shots
-      setAllBackgrounds(currentScript.stage.background);
+      // Load background to all shots (with orientation support)
+      setAllBackgrounds(currentScript.stage.background, currentScript.stage.orientation || 'landscape');
       
       // Reset to wide shot
       switchShot('wide');
@@ -1192,8 +1205,8 @@
             const char = currentScript.cast[beat.who];
             setEmotion(char.position, beat.emotion, beat.duration || 300);
           } else if (beat.do === 'scene') {
-            // Change background/scene mid-skit (all shots)
-            setAllBackgrounds(beat.background);
+            // Change background/scene mid-skit (all shots, with orientation)
+            setAllBackgrounds(beat.background, beat.orientation || 'landscape');
             // Optionally reset character positions
             if (beat.resetPositions) {
               document.getElementById('char-left').classList.add('offscreen-left');

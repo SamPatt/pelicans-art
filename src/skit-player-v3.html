@@ -362,7 +362,23 @@
     
     // === CHARACTER SYSTEM ===
     const CACHE_BUSTER = Date.now();
-    
+
+    // Set background with fallback for legacy flat file structure
+    function setBackground(bgName, orientation = 'landscape') {
+      const bgEl = document.getElementById('background');
+      const newPath = `backgrounds/${bgName}/${orientation}.svg?v=${CACHE_BUSTER}`;
+      const legacyPath = `backgrounds/${bgName}.svg?v=${CACHE_BUSTER}`;
+
+      // Try new path first, fall back to legacy on error
+      bgEl.onerror = function() {
+        if (!this.src.includes(legacyPath)) {
+          console.log(`Background not found at ${newPath}, trying legacy path`);
+          this.src = legacyPath;
+        }
+      };
+      bgEl.src = newPath;
+    }
+
     async function loadSprite(spriteName, view = 'front') {
       const spritePath = `sprites/${spriteName}/${view}.svg?v=${CACHE_BUSTER}`;
       const response = await fetch(spritePath);
@@ -1184,8 +1200,8 @@
       stage.querySelectorAll('.character').forEach(el => el.remove());
       Object.keys(characters).forEach(k => delete characters[k]);
       
-      // Set background
-      document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg?v=${CACHE_BUSTER}`;
+      // Set background (with orientation support and legacy fallback)
+      setBackground(skit.stage.background, skit.stage.orientation || 'landscape');
       
       // Create characters
       for (const [name, config] of Object.entries(skit.cast)) {
@@ -1288,12 +1304,19 @@
         }
       }
       
-      // Load and encode background
+      // Load and encode background (with orientation support and legacy fallback)
       const backgrounds = {};
+      const bgOrientation = skit.stage.orientation || 'landscape';
       try {
-        const bgResp = await fetch(`backgrounds/${backgroundName}.svg?v=${CACHE_BUSTER}`);
-        const bgSvg = await bgResp.text();
-        backgrounds[backgroundName] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(bgSvg)));
+        let bgResp = await fetch(`backgrounds/${backgroundName}/${bgOrientation}.svg?v=${CACHE_BUSTER}`);
+        if (!bgResp.ok) {
+          // Try legacy flat file structure
+          bgResp = await fetch(`backgrounds/${backgroundName}.svg?v=${CACHE_BUSTER}`);
+        }
+        if (bgResp.ok) {
+          const bgSvg = await bgResp.text();
+          backgrounds[backgroundName] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(bgSvg)));
+        }
       } catch (e) {
         console.warn(`Failed to load background ${backgroundName}:`, e);
       }
@@ -1362,12 +1385,13 @@
         stage.querySelectorAll('.character').forEach(el => el.remove());
         Object.keys(characters).forEach(k => delete characters[k]);
         
-        // Set background from embedded asset
+        // Set background from embedded asset (with orientation support)
         const bgName = skit.stage.background;
+        const bgOrientation = skit.stage.orientation || 'landscape';
         if (skit.assets?.backgrounds?.[bgName]) {
           document.getElementById('background').src = skit.assets.backgrounds[bgName];
         } else {
-          document.getElementById('background').src = `backgrounds/${bgName}.svg?v=${CACHE_BUSTER}`;
+          setBackground(bgName, bgOrientation);
         }
         
         // Create characters with embedded sprites
@@ -1893,9 +1917,9 @@
         stage.querySelectorAll('.character').forEach(el => el.remove());
         Object.keys(characters).forEach(k => delete characters[k]);
 
-        // Set background
+        // Set background (with orientation support and legacy fallback)
         if (skit.stage?.background) {
-          document.getElementById('background').src = `backgrounds/${skit.stage.background}.svg?v=${CACHE_BUSTER}`;
+          setBackground(skit.stage.background, skit.stage.orientation || 'landscape');
         }
 
         // Create characters (validate voices - AI may generate invalid ones)

@@ -59,27 +59,42 @@ TYPE GUIDELINES:
 
 Output ONLY valid JSON with type and svg. No explanation, no markdown code blocks.`,
 
-  background: `You are an SVG scene artist creating backgrounds for animated comedy skits.
-
-REQUIREMENTS:
-- viewBox MUST be "0 0 400 300"
-- Simple, flat style suitable for comedy
-- Include depth with layers (background, midground, foreground)
-- Leave space for characters (they appear in front)
-- Avoid complex gradients or patterns that may not render well
-
-SUGGESTED STRUCTURE:
-<svg viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
-  <!-- Sky/backdrop -->
-  <!-- Midground elements (buildings, trees, etc.) -->
-  <!-- Foreground/ground plane -->
-</svg>
-
-Output ONLY the complete SVG element. No explanation, no markdown code blocks, just the raw SVG.`,
+  // Note: background prompt is built dynamically in buildBackgroundPrompt() to support orientations
+  background: null,
 
   // Note: skit prompt is built dynamically in buildSkitPrompt() to include available assets
   skit: null
 };
+
+/**
+ * Build the background system prompt with orientation support
+ * Uses 16:9 for landscape (desktop/TV) and 9:16 for portrait (mobile)
+ */
+function buildBackgroundPrompt(orientation = 'landscape') {
+  const isPortrait = orientation === 'portrait';
+  // 16:9 landscape (400x225), 9:16 portrait (225x400)
+  const width = isPortrait ? 225 : 400;
+  const height = isPortrait ? 400 : 225;
+  const viewBox = `0 0 ${width} ${height}`;
+
+  console.log(`[Agent] Building background prompt for ${orientation}: ${width}x${height}`);
+
+  return `You are an SVG scene artist creating backgrounds for animated comedy skits.
+
+REQUIRED DIMENSIONS - THIS IS CRITICAL:
+- viewBox="${viewBox}" (exactly ${width} wide by ${height} tall)
+- This is a ${isPortrait ? 'PORTRAIT (tall/vertical)' : 'LANDSCAPE (wide/horizontal)'} background
+
+STYLE:
+- Simple, flat cartoon style
+- Include background, midground, and foreground layers
+- Leave space for characters at the bottom
+
+Output ONLY a valid SVG element starting with:
+<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg">
+
+No explanation, no markdown code blocks.`;
+}
 
 /**
  * Build the skit system prompt with available assets
@@ -96,8 +111,13 @@ async function buildSkitPrompt() {
     console.warn('[Agent] Failed to load assets for skit prompt:', e.message);
   }
 
-  const backgroundNames = backgrounds.map(b => b.name);
   const spriteNames = sprites.map(s => s.name);
+
+  // Build background list with orientations
+  const backgroundsList = backgrounds.map(b => {
+    const orientations = b.orientations || ['landscape'];
+    return `- "${b.name}" (orientations: ${orientations.join(', ')})`;
+  }).join('\n');
 
   return `You are a comedy writer creating short animated skits.
 
@@ -113,8 +133,8 @@ CRITICAL: For the "voice" field in cast, you MUST use ONLY these exact voice IDs
 
 Do NOT use any other voice names like "onyx", "shimmer", "echo", etc. They will not work.
 
-AVAILABLE BACKGROUNDS (use one of these for stage.background):
-${backgroundNames.length > 0 ? backgroundNames.map(n => `- "${n}"`).join('\n') : '- (none available - omit background field)'}
+AVAILABLE BACKGROUNDS (use for stage.background and stage.orientation):
+${backgrounds.length > 0 ? backgroundsList : '- (none available - omit background field)'}
 
 AVAILABLE SPRITES (use these for cast character sprites):
 ${spriteNames.length > 0 ? spriteNames.map(n => `- "${n}"`).join('\n') : '- (none available)'}
@@ -126,7 +146,8 @@ OUTPUT FORMAT - Valid JSON with this structure:
     "description": "Brief description"
   },
   "stage": {
-    "background": "background-name"
+    "background": "background-name",
+    "orientation": "landscape"
   },
   "cast": {
     "character-id": {
@@ -141,6 +162,10 @@ OUTPUT FORMAT - Valid JSON with this structure:
     { "do": "emote", "who": "character-id", "emotion": "happy" }
   ]
 }
+
+STAGE NOTES:
+- "background" should be one of the available background names
+- "orientation" should be one of the available orientations for that background (defaults to "landscape" if omitted)
 
 AVAILABLE ACTIONS:
 - shot: type can be "wide", "medium", "closeup", "extreme-closeup", "two-shot"
@@ -186,9 +211,13 @@ function buildUserPrompt(mode, command, current) {
  * Extract SVG from response (handles potential markdown wrapping)
  */
 function extractSvg(content) {
+  console.log('[Agent] Extracting SVG from content length:', content?.length);
+  console.log('[Agent] Content preview:', content?.substring(0, 500));
+
   // Try to find SVG in the content
   const svgMatch = content.match(/<svg[\s\S]*?<\/svg>/i);
   if (svgMatch) {
+    console.log('[Agent] Found SVG directly');
     return svgMatch[0];
   }
 
@@ -198,10 +227,12 @@ function extractSvg(content) {
     const inner = codeBlockMatch[1].trim();
     const innerSvgMatch = inner.match(/<svg[\s\S]*?<\/svg>/i);
     if (innerSvgMatch) {
+      console.log('[Agent] Found SVG in code block');
       return innerSvgMatch[0];
     }
   }
 
+  console.error('[Agent] No SVG found. Full content:', content);
   throw new Error('No valid SVG found in response');
 }
 
@@ -277,16 +308,19 @@ async function callOpenClaw(systemPrompt, userPrompt) {
  * @param {string} request.type - 'sprite', 'background', or 'skit'
  * @param {string} request.mode - 'create' or 'edit'
  * @param {string} request.command - User's instruction
+ * @param {string} [request.orientation] - For backgrounds: 'landscape' or 'portrait'
  * @param {Object} [request.current] - Current asset state (for edit mode)
  * @returns {Promise<Object>} Generated asset
  */
 export async function generateAsset(request) {
-  const { type, mode, command, current } = request;
+  const { type, mode, command, current, orientation = 'landscape' } = request;
 
-  // Skit uses dynamic prompt, others use static
+  // Skit and background use dynamic prompts
   let systemPrompt;
   if (type === 'skit') {
     systemPrompt = await buildSkitPrompt();
+  } else if (type === 'background') {
+    systemPrompt = buildBackgroundPrompt(orientation);
   } else if (SYSTEM_PROMPTS[type]) {
     systemPrompt = SYSTEM_PROMPTS[type];
   } else {
