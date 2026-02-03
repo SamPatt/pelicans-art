@@ -17,3 +17,9 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Data directory (runtime)
+data/
+
+# Node.js
+node_modules/
