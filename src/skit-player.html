@@ -389,6 +389,17 @@
       cameraAnimation = requestAnimationFrame(tick);
     }
     
+    // Calculate camera Y target for a character, accounting for scale
+    // Characters are at bottom:12% (88% from top), height 40% at scale 1
+    // Face is roughly 52.5% down from top of character
+    function getCharacterFaceY(char) {
+      const scale = char.scale || 1;
+      const baseY = 88; // character feet position (100 - 12%)
+      const charHeight = 40 * scale; // character height as % of stage
+      const faceRatio = 0.525; // face position as ratio from top of character
+      return baseY - (charHeight * faceRatio);
+    }
+
     function shot(type, who = null, hardCut = true) {
       const preset = shotPresets[type];
       if (!preset) return;
@@ -405,15 +416,15 @@
         const chars = Object.values(characters).filter(c => !c.el.classList.contains('offscreen'));
         if (chars.length) {
           const xs = chars.map(c => c.x);
-          const ys = chars.map(c => c.y);
+          const ys = chars.map(c => getCharacterFaceY(c));
           camera.x = (Math.min(...xs) + Math.max(...xs)) / 2;
           camera.y = (Math.min(...ys) + Math.max(...ys)) / 2;
         }
         camera.follow = null;
       } else if (who && characters[who]) {
-        // Frame on specific character's actual position
+        // Frame on specific character's face position (adjusted for scale)
         camera.x = characters[who].x;
-        camera.y = characters[who].y;
+        camera.y = getCharacterFaceY(characters[who]);
         camera.follow = who;
       } else {
         // No character specified - try to auto-detect
@@ -422,12 +433,12 @@
         if (visibleChars.length === 1) {
           const [name, char] = visibleChars[0];
           camera.x = char.x;
-          camera.y = char.y;
+          camera.y = getCharacterFaceY(char);
           camera.follow = name;
         } else if (visibleChars.length > 1) {
           // Multiple visible - center between them
           const xs = visibleChars.map(([_, c]) => c.x);
-          const ys = visibleChars.map(([_, c]) => c.y);
+          const ys = visibleChars.map(([_, c]) => getCharacterFaceY(c));
           camera.x = (Math.min(...xs) + Math.max(...xs)) / 2;
           camera.y = (Math.min(...ys) + Math.max(...ys)) / 2;
           camera.follow = null;
@@ -450,7 +461,7 @@
     function followCharacter(name) {
       if (!characters[name]) return;
       camera.follow = name;
-      animateCameraTo(characters[name].x, characters[name].y, 600);
+      animateCameraTo(characters[name].x, getCharacterFaceY(characters[name]), 600);
     }
     
     // === CHARACTER SYSTEM ===
@@ -996,7 +1007,7 @@
       char.el.classList.add(toX < 50 ? 'pos-left' : 'pos-right');
 
       if (camera.follow === name) {
-        animateCameraTo(toX, char.y, duration * 1000);
+        animateCameraTo(toX, getCharacterFaceY(char), duration * 1000);
       }
 
       // Update any held props to follow with same transition
