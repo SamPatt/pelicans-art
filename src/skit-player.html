@@ -194,6 +194,56 @@
     }
     #caption.visible { opacity: 1; }
     body.captions-off #caption { display: none; }
+
+    /* Props */
+    .prop {
+      position: absolute;
+      bottom: 12%;
+      height: 15%;
+      width: auto;
+      transition: left 1s ease-in-out, bottom 1s ease-in-out, transform 0.5s ease-out, opacity 0.3s;
+      transform: translateX(-50%);
+      transform-origin: bottom center;
+      z-index: 5; /* Between background and characters */
+    }
+    .prop svg {
+      height: 100%;
+      width: auto;
+    }
+    .prop.foreground { z-index: 15; }
+    .prop.held {
+      transition: none; /* Follow character smoothly */
+      height: 12%;
+    }
+    .prop.hidden { opacity: 0; pointer-events: none; }
+
+    /* Prop animations */
+    @keyframes prop-bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-15px); }
+    }
+    @keyframes prop-spin {
+      from { transform: translateX(-50%) rotate(0deg); }
+      to { transform: translateX(-50%) rotate(360deg); }
+    }
+    @keyframes prop-shake {
+      0%, 100% { transform: translateX(-50%) translateX(0); }
+      25% { transform: translateX(-50%) translateX(-5px); }
+      75% { transform: translateX(-50%) translateX(5px); }
+    }
+    @keyframes prop-pulse {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.2); }
+    }
+    @keyframes prop-float {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(-10px); }
+    }
+    .prop.animate-bounce { animation: prop-bounce 0.5s ease-in-out infinite; }
+    .prop.animate-spin { animation: prop-spin 1s linear infinite; }
+    .prop.animate-shake { animation: prop-shake 0.2s ease-in-out infinite; }
+    .prop.animate-pulse { animation: prop-pulse 1s ease-in-out infinite; }
+    .prop.animate-float { animation: prop-float 2s ease-in-out infinite; }
     
     /* Controls */
     #controls {
@@ -268,6 +318,8 @@
   <script>
     // === STATE ===
     const characters = {};
+    const props = {}; // propId -> { el, x, y, scale, rotation, visible, layer, heldBy, sprite }
+    const propSvgCache = new Map(); // propName -> svgText
     const camera = { x: 50, y: 50, zoom: 1, follow: null };
     let currentSkit = null;
     let currentSkitName = null;
@@ -556,7 +608,218 @@
       blinkTimers.forEach((timer) => clearTimeout(timer));
       blinkTimers.clear();
     }
-    
+
+    // === PROP SYSTEM ===
+    async function loadPropSvg(propName) {
+      if (propSvgCache.has(propName)) {
+        return propSvgCache.get(propName);
+      }
+      const propPath = `props/${propName}/prop.svg?v=${CACHE_BUSTER}`;
+      try {
+        const response = await fetch(propPath);
+        if (!response.ok) throw new Error('Prop not found');
+        const svgText = await response.text();
+        propSvgCache.set(propName, svgText);
+        return svgText;
+      } catch (e) {
+        console.warn(`Failed to load prop SVG: ${propName}`, e);
+        // Return a placeholder
+        return `<svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="40" height="40" fill="#888" rx="4"/>
+        </svg>`;
+      }
+    }
+
+    async function createProp(id, config) {
+      const stage = document.getElementById('stage');
+      const el = document.createElement('div');
+      el.className = 'prop' + (config.visible ? '' : ' hidden');
+      el.id = `prop-${id}`;
+      el.dataset.prop = config.prop;
+
+      // Set layer
+      if (config.layer === 'foreground') {
+        el.classList.add('foreground');
+      }
+
+      // Load prop SVG
+      const svgText = await loadPropSvg(config.prop);
+      el.innerHTML = svgText;
+
+      // Set initial position
+      const x = config.x ?? 50;
+      const y = config.y ?? 80;
+      el.style.left = `${x}%`;
+      el.style.bottom = `${100 - y}%`;
+
+      // Apply scale if specified
+      if (config.scale && config.scale !== 1) {
+        el.style.transform = `translateX(-50%) scale(${config.scale})`;
+      }
+
+      stage.appendChild(el);
+
+      props[id] = {
+        el: el,
+        x: x,
+        y: y,
+        scale: config.scale ?? 1,
+        rotation: 0,
+        visible: config.visible || false,
+        layer: config.layer || 'background',
+        heldBy: null,
+        sprite: config.prop
+      };
+
+      return props[id];
+    }
+
+    function updatePropPosition(id) {
+      const prop = props[id];
+      if (!prop) return;
+
+      if (prop.heldBy && characters[prop.heldBy]) {
+        // Follow character - position near their hand
+        const char = characters[prop.heldBy];
+        const charEl = char.el;
+        const isFlipped = charEl.classList.contains('facing-left');
+        // Offset to appear in hand
+        const handOffsetX = isFlipped ? -8 : 8;
+        prop.el.style.left = `${char.x + handOffsetX}%`;
+        prop.el.style.bottom = '45%'; // Hand height
+      } else {
+        prop.el.style.left = `${prop.x}%`;
+        prop.el.style.bottom = `${100 - prop.y}%`;
+      }
+
+      // Apply scale and rotation
+      let transform = 'translateX(-50%)';
+      if (prop.scale !== 1) transform += ` scale(${prop.scale})`;
+      if (prop.rotation !== 0) transform += ` rotate(${prop.rotation}deg)`;
+      prop.el.style.transform = transform;
+    }
+
+    function spawnProp(id, at) {
+      const prop = props[id];
+      if (!prop) return;
+
+      if (at) {
+        prop.x = at[0];
+        prop.y = at[1];
+      }
+      prop.visible = true;
+      prop.el.classList.remove('hidden');
+      updatePropPosition(id);
+    }
+
+    function despawnProp(id) {
+      const prop = props[id];
+      if (!prop) return;
+
+      prop.visible = false;
+      prop.el.classList.add('hidden');
+    }
+
+    function moveProp(id, to, duration = 1) {
+      const prop = props[id];
+      if (!prop) return;
+
+      prop.el.style.transition = `left ${duration}s ease-in-out, bottom ${duration}s ease-in-out`;
+      prop.x = to[0];
+      prop.y = to[1];
+      updatePropPosition(id);
+
+      // Reset transition after animation
+      setTimeout(() => {
+        prop.el.style.transition = '';
+      }, duration * 1000);
+    }
+
+    function holdProp(id, who) {
+      const prop = props[id];
+      if (!prop || !characters[who]) return;
+
+      prop.heldBy = who;
+      prop.el.classList.add('held');
+      updatePropPosition(id);
+    }
+
+    function dropProp(id, at) {
+      const prop = props[id];
+      if (!prop) return;
+
+      prop.heldBy = null;
+      prop.el.classList.remove('held');
+
+      if (at) {
+        prop.x = at[0];
+        prop.y = at[1];
+      }
+      updatePropPosition(id);
+    }
+
+    function rotateProp(id, angle, duration = 0.5) {
+      const prop = props[id];
+      if (!prop) return;
+
+      prop.el.style.transition = `transform ${duration}s ease-out`;
+      prop.rotation = angle;
+      updatePropPosition(id);
+
+      setTimeout(() => {
+        prop.el.style.transition = '';
+      }, duration * 1000);
+    }
+
+    function scaleProp(id, scale, duration = 0.5) {
+      const prop = props[id];
+      if (!prop) return;
+
+      prop.el.style.transition = `transform ${duration}s ease-out`;
+      prop.scale = scale;
+      updatePropPosition(id);
+
+      setTimeout(() => {
+        prop.el.style.transition = '';
+      }, duration * 1000);
+    }
+
+    function animateProp(id, animation, duration = 2) {
+      const prop = props[id];
+      if (!prop) return;
+
+      // Remove any existing animation
+      prop.el.classList.remove('animate-bounce', 'animate-spin', 'animate-shake', 'animate-pulse', 'animate-float');
+
+      // Add new animation
+      if (animation) {
+        prop.el.classList.add(`animate-${animation}`);
+
+        // Remove after duration
+        setTimeout(() => {
+          prop.el.classList.remove(`animate-${animation}`);
+        }, duration * 1000);
+      }
+    }
+
+    function clearAllProps() {
+      Object.keys(props).forEach(id => {
+        if (props[id].el) {
+          props[id].el.remove();
+        }
+        delete props[id];
+      });
+    }
+
+    // Update held props each frame to follow characters
+    function updateHeldProps() {
+      Object.keys(props).forEach(id => {
+        if (props[id].heldBy) {
+          updatePropPosition(id);
+        }
+      });
+    }
+
     function getAmplitude() {
       analyser.getByteFrequencyData(dataArray);
       let sum = 0;
@@ -1240,14 +1503,21 @@
       // Clear stage
       const stage = document.getElementById('stage');
       stage.querySelectorAll('.character').forEach(el => el.remove());
+      stage.querySelectorAll('.prop').forEach(el => el.remove());
       Object.keys(characters).forEach(k => delete characters[k]);
-      
+      clearAllProps();
+
       // Set background (with orientation support and legacy fallback)
       setBackground(skit.stage.background, skit.stage.orientation || 'landscape');
-      
+
       // Create characters
       for (const [name, config] of Object.entries(skit.cast)) {
         await createCharacter(name, config);
+      }
+
+      // Create props
+      for (const [id, config] of Object.entries(skit.props || {})) {
+        await createProp(id, config);
       }
       
       // Reset camera
@@ -1425,8 +1695,10 @@
         // Clear stage
         const stage = document.getElementById('stage');
         stage.querySelectorAll('.character').forEach(el => el.remove());
+        stage.querySelectorAll('.prop').forEach(el => el.remove());
         Object.keys(characters).forEach(k => delete characters[k]);
-        
+        clearAllProps();
+
         // Set background from embedded asset (with orientation support)
         const bgName = skit.stage.background;
         const bgOrientation = skit.stage.orientation || 'landscape';
@@ -1440,7 +1712,12 @@
         for (const [name, config] of Object.entries(skit.cast)) {
           await createCharacterFromPublished(name, config, skit.assets);
         }
-        
+
+        // Create props
+        for (const [id, config] of Object.entries(skit.props || {})) {
+          await createProp(id, config);
+        }
+
         // Reset camera
         camera.x = 50; camera.y = 50; camera.zoom = 1; camera.follow = null;
         updateCamera();
@@ -1918,9 +2195,42 @@
         case 'face':
           setFacing(beat.who, beat.dir);
           break;
+
+        // Prop actions
+        case 'spawn':
+          spawnProp(beat.what, beat.at);
+          break;
+
+        case 'despawn':
+          despawnProp(beat.what);
+          break;
+
+        case 'prop-move':
+          moveProp(beat.what, beat.to, beat.duration || 1);
+          break;
+
+        case 'prop-hold':
+          holdProp(beat.what, beat.who);
+          break;
+
+        case 'prop-drop':
+          dropProp(beat.what, beat.at);
+          break;
+
+        case 'prop-rotate':
+          rotateProp(beat.what, beat.angle, beat.duration || 0.5);
+          break;
+
+        case 'prop-scale':
+          scaleProp(beat.what, beat.scale, beat.duration || 0.5);
+          break;
+
+        case 'prop-animate':
+          animateProp(beat.what, beat.animation, beat.duration || 2);
+          break;
       }
     }
-    
+
     // === HELPERS ===
     function publishCurrentSkit() {
       if (currentSkitName) {
@@ -1957,7 +2267,9 @@
         // Clear stage
         const stage = document.getElementById('stage');
         stage.querySelectorAll('.character').forEach(el => el.remove());
+        stage.querySelectorAll('.prop').forEach(el => el.remove());
         Object.keys(characters).forEach(k => delete characters[k]);
+        clearAllProps();
 
         // Set background (with orientation support and legacy fallback)
         if (skit.stage?.background) {
@@ -1972,6 +2284,11 @@
             config.voice = DEFAULT_VOICE;
           }
           await createCharacter(name, config);
+        }
+
+        // Create props
+        for (const [id, config] of Object.entries(skit.props || {})) {
+          await createProp(id, config);
         }
 
         // Reset camera

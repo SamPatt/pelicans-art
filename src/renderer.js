@@ -9,22 +9,25 @@ class SkitRenderer {
     this.ctx = canvas.getContext('2d');
     this.width = canvas.width;
     this.height = canvas.height;
-    
+
     // Playback state
     this.script = null;
     this.currentTime = 0;
     this.isPlaying = false;
     this.lastFrameTime = null;
     this.playbackSpeed = 1;
-    
+
     // Runtime state
     this.characters = {};  // id -> { x, y, sprite, emotion, currentLine, lineEndTime }
-    this.props = {};       // id -> { x, y, sprite, visible }
-    
+    this.props = {};       // id -> { x, y, scale, rotation, visible, layer, heldBy, sprite, animation }
+
+    // Cached prop SVG images
+    this.propImages = {};
+
     // Colors for placeholder sprites
     this.colors = {
       man_suit: '#4a90d9',
-      man_casual: '#5ba55b', 
+      man_casual: '#5ba55b',
       woman_casual: '#d94a8a',
       woman_business: '#9b59b6',
       robot: '#95a5a6',
@@ -32,7 +35,7 @@ class SkitRenderer {
       dog: '#e67e22',
       alien: '#1abc9c'
     };
-    
+
     this.propColors = {
       coffee_mug: '#8b4513',
       laptop: '#2c3e50',
@@ -42,7 +45,7 @@ class SkitRenderer {
       banana: '#f1c40f',
       sword: '#c0c0c0'
     };
-    
+
     this.bgColors = {
       office: '#2c3e50',
       park: '#27ae60',
@@ -50,7 +53,16 @@ class SkitRenderer {
       space_station: '#1a1a2e',
       void: '#0a0a0a'
     };
-    
+
+    // Animation presets for props
+    this.propAnimationPresets = {
+      bounce: (t, duration) => ({ y: Math.sin(t / duration * Math.PI * 4) * 10 }),
+      spin: (t, duration) => ({ rotation: (t / duration) * 360 }),
+      shake: (t, duration) => ({ x: Math.sin(t / duration * Math.PI * 16) * 3 }),
+      pulse: (t, duration) => ({ scale: 1 + Math.sin(t / duration * Math.PI * 4) * 0.2 }),
+      float: (t, duration) => ({ y: Math.sin(t / duration * Math.PI * 2) * 8 })
+    };
+
     // Callbacks
     this.onTimeUpdate = options.onTimeUpdate || null;
     this.onEnd = options.onEnd || null;
@@ -78,10 +90,17 @@ class SkitRenderer {
     this.props = {};
     for (const [id, prop] of Object.entries(script.props || {})) {
       this.props[id] = {
-        x: 0,
-        y: 0,
-        sprite: prop.sprite,
-        visible: prop.visible || false
+        x: prop.x ?? 50,
+        y: prop.y ?? 80,
+        scale: prop.scale ?? 1.0,
+        rotation: 0,
+        visible: prop.visible || false,
+        layer: prop.layer || 'background',
+        heldBy: null,
+        sprite: prop.prop || prop.sprite,
+        animation: null,
+        animationStart: 0,
+        animationDuration: 0
       };
     }
     
@@ -127,13 +146,20 @@ class SkitRenderer {
     
     for (const [id, prop] of Object.entries(this.script.props || {})) {
       this.props[id] = {
-        x: 0,
-        y: 0,
-        sprite: prop.sprite,
-        visible: prop.visible || false
+        x: prop.x ?? 50,
+        y: prop.y ?? 80,
+        scale: prop.scale ?? 1.0,
+        rotation: 0,
+        visible: prop.visible || false,
+        layer: prop.layer || 'background',
+        heldBy: null,
+        sprite: prop.prop || prop.sprite,
+        animation: null,
+        animationStart: 0,
+        animationDuration: 0
       };
     }
-    
+
     // Apply all completed actions
     for (const beat of this.script.script || []) {
       if (beat.t > this.currentTime) break;
@@ -175,14 +201,60 @@ class SkitRenderer {
       case 'spawn':
         if (this.props[beat.what]) {
           this.props[beat.what].visible = true;
-          this.props[beat.what].x = beat.at[0];
-          this.props[beat.what].y = beat.at[1];
+          if (beat.at) {
+            this.props[beat.what].x = beat.at[0];
+            this.props[beat.what].y = beat.at[1];
+          }
         }
         break;
-        
+
       case 'despawn':
         if (this.props[beat.what]) {
           this.props[beat.what].visible = false;
+        }
+        break;
+
+      case 'prop-move':
+        if (this.props[beat.what]) {
+          const endTime = beat.t + (beat.duration || 1);
+          if (this.currentTime >= endTime && beat.to) {
+            this.props[beat.what].x = beat.to[0];
+            this.props[beat.what].y = beat.to[1];
+          }
+        }
+        break;
+
+      case 'prop-hold':
+        if (this.props[beat.what]) {
+          this.props[beat.what].heldBy = beat.who;
+        }
+        break;
+
+      case 'prop-drop':
+        if (this.props[beat.what]) {
+          this.props[beat.what].heldBy = null;
+          if (beat.at) {
+            this.props[beat.what].x = beat.at[0];
+            this.props[beat.what].y = beat.at[1];
+          }
+        }
+        break;
+
+      case 'prop-rotate':
+        if (this.props[beat.what]) {
+          const endTime = beat.t + (beat.duration || 0.5);
+          if (this.currentTime >= endTime) {
+            this.props[beat.what].rotation = beat.angle || 0;
+          }
+        }
+        break;
+
+      case 'prop-scale':
+        if (this.props[beat.what]) {
+          const endTime = beat.t + (beat.duration || 0.5);
+          if (this.currentTime >= endTime) {
+            this.props[beat.what].scale = beat.scale || 1;
+          }
         }
         break;
     }
@@ -310,14 +382,104 @@ class SkitRenderer {
       case 'spawn':
         if (this.props[beat.what] && t >= beat.t) {
           this.props[beat.what].visible = true;
-          this.props[beat.what].x = beat.at[0];
-          this.props[beat.what].y = beat.at[1];
+          if (beat.at) {
+            this.props[beat.what].x = beat.at[0];
+            this.props[beat.what].y = beat.at[1];
+          }
         }
         break;
-        
+
       case 'despawn':
         if (this.props[beat.what] && t >= beat.t) {
           this.props[beat.what].visible = false;
+        }
+        break;
+
+      case 'prop-move':
+        if (this.props[beat.what] && beat.to) {
+          const startTime = beat.t;
+          const duration = beat.duration || 1;
+          const endTime = startTime + duration;
+
+          if (t >= startTime && t <= endTime) {
+            const progress = this.easeInOut((t - startTime) / duration);
+            const startPos = this.getPropPositionBefore(beat.what, startTime);
+            this.props[beat.what].x = startPos[0] + (beat.to[0] - startPos[0]) * progress;
+            this.props[beat.what].y = startPos[1] + (beat.to[1] - startPos[1]) * progress;
+          } else if (t > endTime) {
+            this.props[beat.what].x = beat.to[0];
+            this.props[beat.what].y = beat.to[1];
+          }
+        }
+        break;
+
+      case 'prop-hold':
+        if (this.props[beat.what] && t >= beat.t) {
+          this.props[beat.what].heldBy = beat.who;
+          // Update position to follow character
+          if (this.characters[beat.who]) {
+            const char = this.characters[beat.who];
+            this.props[beat.what].x = char.x + 20; // Offset to hand position
+            this.props[beat.what].y = char.y - 40;
+          }
+        }
+        break;
+
+      case 'prop-drop':
+        if (this.props[beat.what] && t >= beat.t) {
+          this.props[beat.what].heldBy = null;
+          if (beat.at) {
+            this.props[beat.what].x = beat.at[0];
+            this.props[beat.what].y = beat.at[1];
+          }
+        }
+        break;
+
+      case 'prop-rotate':
+        if (this.props[beat.what]) {
+          const startTime = beat.t;
+          const duration = beat.duration || 0.5;
+          const endTime = startTime + duration;
+          const targetAngle = beat.angle || 0;
+
+          if (t >= startTime && t <= endTime) {
+            const progress = this.easeInOut((t - startTime) / duration);
+            const startAngle = this.getPropRotationBefore(beat.what, startTime);
+            this.props[beat.what].rotation = startAngle + (targetAngle - startAngle) * progress;
+          } else if (t > endTime) {
+            this.props[beat.what].rotation = targetAngle;
+          }
+        }
+        break;
+
+      case 'prop-scale':
+        if (this.props[beat.what]) {
+          const startTime = beat.t;
+          const duration = beat.duration || 0.5;
+          const endTime = startTime + duration;
+          const targetScale = beat.scale || 1;
+
+          if (t >= startTime && t <= endTime) {
+            const progress = this.easeInOut((t - startTime) / duration);
+            const startScale = this.getPropScaleBefore(beat.what, startTime);
+            this.props[beat.what].scale = startScale + (targetScale - startScale) * progress;
+          } else if (t > endTime) {
+            this.props[beat.what].scale = targetScale;
+          }
+        }
+        break;
+
+      case 'prop-animate':
+        if (this.props[beat.what] && t >= beat.t) {
+          const duration = beat.duration || 2;
+          const endTime = beat.t + duration;
+          if (t <= endTime) {
+            this.props[beat.what].animation = beat.animation;
+            this.props[beat.what].animationStart = beat.t;
+            this.props[beat.what].animationDuration = duration;
+          } else {
+            this.props[beat.what].animation = null;
+          }
         }
         break;
     }
@@ -326,11 +488,11 @@ class SkitRenderer {
   getPositionBefore(charId, time) {
     const char = this.script.cast[charId];
     let pos = [...char.startPos];
-    
+
     for (const beat of this.script.script) {
       if (beat.t >= time) break;
       if (beat.who !== charId) continue;
-      
+
       if (beat.do === 'move') {
         pos = [...beat.to];
       } else if (beat.do === 'enter') {
@@ -339,8 +501,59 @@ class SkitRenderer {
         pos = [beat.to === 'left' ? -100 : 900, pos[1]];
       }
     }
-    
+
     return pos;
+  }
+
+  getPropPositionBefore(propId, time) {
+    const propDef = this.script.props?.[propId];
+    let pos = [propDef?.x ?? 50, propDef?.y ?? 80];
+
+    for (const beat of this.script.script) {
+      if (beat.t >= time) break;
+      if (beat.what !== propId) continue;
+
+      if (beat.do === 'spawn' && beat.at) {
+        pos = [...beat.at];
+      } else if (beat.do === 'prop-move' && beat.to) {
+        pos = [...beat.to];
+      } else if (beat.do === 'prop-drop' && beat.at) {
+        pos = [...beat.at];
+      }
+    }
+
+    return pos;
+  }
+
+  getPropRotationBefore(propId, time) {
+    let rotation = 0;
+
+    for (const beat of this.script.script) {
+      if (beat.t >= time) break;
+      if (beat.what !== propId) continue;
+
+      if (beat.do === 'prop-rotate') {
+        rotation = beat.angle || 0;
+      }
+    }
+
+    return rotation;
+  }
+
+  getPropScaleBefore(propId, time) {
+    const propDef = this.script.props?.[propId];
+    let scale = propDef?.scale ?? 1.0;
+
+    for (const beat of this.script.script) {
+      if (beat.t >= time) break;
+      if (beat.what !== propId) continue;
+
+      if (beat.do === 'prop-scale') {
+        scale = beat.scale || 1;
+      }
+    }
+
+    return scale;
   }
   
   easeInOut(t) {
@@ -349,31 +562,46 @@ class SkitRenderer {
   
   render() {
     const ctx = this.ctx;
-    
+
     // Draw background
     const bgColor = this.bgColors[this.script?.stage?.background] || '#1a1a2e';
     ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, this.width, this.height);
-    
+
     // Draw floor line
     ctx.strokeStyle = 'rgba(255,255,255,0.2)';
     ctx.beginPath();
     ctx.moveTo(0, 380);
     ctx.lineTo(this.width, 380);
     ctx.stroke();
-    
-    // Draw props
+
+    // Update held prop positions to follow characters
     for (const [id, prop] of Object.entries(this.props)) {
-      if (!prop.visible) continue;
+      if (prop.heldBy && this.characters[prop.heldBy]) {
+        const char = this.characters[prop.heldBy];
+        prop.x = char.x + 20;
+        prop.y = char.y - 40;
+      }
+    }
+
+    // Draw background layer props
+    for (const [id, prop] of Object.entries(this.props)) {
+      if (!prop.visible || prop.layer !== 'background') continue;
       this.drawProp(prop, id);
     }
-    
+
     // Draw characters (sorted by y for basic depth)
     const sortedChars = Object.entries(this.characters)
       .sort((a, b) => a[1].y - b[1].y);
-    
+
     for (const [id, char] of sortedChars) {
       this.drawCharacter(char, id);
+    }
+
+    // Draw foreground layer props
+    for (const [id, prop] of Object.entries(this.props)) {
+      if (!prop.visible || prop.layer === 'background') continue;
+      this.drawProp(prop, id);
     }
   }
   
@@ -479,31 +707,67 @@ class SkitRenderer {
   drawProp(prop, id) {
     const ctx = this.ctx;
     const color = this.propColors[prop.sprite] || '#888';
-    
+
+    // Calculate animation offsets
+    let animOffsetX = 0;
+    let animOffsetY = 0;
+    let animRotation = 0;
+    let animScale = 1;
+
+    if (prop.animation && this.propAnimationPresets[prop.animation]) {
+      const elapsed = this.currentTime - prop.animationStart;
+      const animFunc = this.propAnimationPresets[prop.animation];
+      const animResult = animFunc(elapsed, prop.animationDuration);
+
+      animOffsetX = animResult.x || 0;
+      animOffsetY = animResult.y || 0;
+      animRotation = animResult.rotation || 0;
+      animScale = animResult.scale || 1;
+    }
+
+    const finalX = prop.x + animOffsetX;
+    const finalY = prop.y + animOffsetY;
+    const finalScale = prop.scale * animScale;
+    const finalRotation = prop.rotation + animRotation;
+
+    ctx.save();
+    ctx.translate(finalX, finalY);
+    ctx.rotate(finalRotation * Math.PI / 180);
+    ctx.scale(finalScale, finalScale);
+
     ctx.fillStyle = color;
-    
+
     // Different shapes for different props
     if (prop.sprite === 'sword') {
       // Draw a sword shape
-      ctx.fillRect(prop.x - 3, prop.y - 40, 6, 50);
-      ctx.fillRect(prop.x - 15, prop.y, 30, 6);
+      ctx.fillRect(-3, -40, 6, 50);
+      ctx.fillRect(-15, 0, 30, 6);
     } else if (prop.sprite === 'banana') {
       // Draw a banana (curved rectangle-ish)
       ctx.beginPath();
-      ctx.arc(prop.x, prop.y, 15, 0, Math.PI);
+      ctx.arc(0, 0, 15, 0, Math.PI);
       ctx.fill();
+    } else if (prop.sprite === 'coffee-mug' || prop.sprite === 'coffee_mug') {
+      // Draw a mug
+      ctx.fillRect(-12, -20, 24, 25);
+      ctx.beginPath();
+      ctx.arc(12, -8, 8, -Math.PI / 2, Math.PI / 2, false);
+      ctx.stroke();
     } else {
       // Default: small rectangle
-      ctx.fillRect(prop.x - 15, prop.y - 15, 30, 30);
+      ctx.fillRect(-15, -15, 30, 30);
     }
-    
-    // Label
+
+    ctx.restore();
+
+    // Label (outside transform)
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.font = '10px Courier New';
     ctx.textAlign = 'center';
-    ctx.fillText(id, prop.x, prop.y + 25);
+    ctx.fillText(id, finalX, finalY + 25 * finalScale);
   }
 }
+
 
 // Export for use
 window.SkitRenderer = SkitRenderer;

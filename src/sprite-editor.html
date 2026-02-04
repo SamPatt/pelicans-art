@@ -711,6 +711,95 @@
       object-fit: cover;
     }
 
+    /* Prop sidebar items */
+    .prop-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 0.85em;
+      gap: 8px;
+    }
+
+    .prop-item:hover {
+      background: #0f3460;
+    }
+
+    .prop-item.active {
+      background: #e94560;
+    }
+
+    .prop-thumbnail {
+      width: 30px;
+      height: 30px;
+      background: #0d0d1a;
+      border-radius: 3px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .prop-thumbnail img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* Skit props list */
+    .prop-member {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: #1a4a7a;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      font-size: 0.85em;
+    }
+
+    .prop-id {
+      font-weight: bold;
+      color: #4ecca3;
+    }
+
+    .prop-asset {
+      color: #aaa;
+    }
+
+    .prop-layer {
+      color: #888;
+      font-size: 0.8em;
+    }
+
+    .prop-member .item-delete-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: #666;
+      cursor: pointer;
+      padding: 2px 6px;
+    }
+
+    .prop-member .item-delete-btn:hover {
+      color: #e94560;
+    }
+
+    /* Prop action styling in script */
+    .script-line.prop {
+      border-left: 3px solid #9b59b6;
+    }
+
+    .script-line.prop::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #9b59b6;
+    }
+
     /* === Skit Items === */
     .skit-item {
       display: flex;
@@ -770,7 +859,8 @@
 
     .sprite-item:hover .item-delete-btn,
     .background-item:hover .item-delete-btn,
-    .skit-item:hover .item-delete-btn {
+    .skit-item:hover .item-delete-btn,
+    .prop-item:hover .item-delete-btn {
       opacity: 1;
     }
 
@@ -1754,6 +1844,20 @@
         </div>
       </div>
 
+      <!-- Props Section -->
+      <div class="sidebar-section" data-section="props">
+        <div class="section-header" onclick="toggleSection('props')">
+          <span class="section-icon">&#9662;</span>
+          <span>🎁 Props</span>
+          <span class="section-count" id="prop-count">(0)</span>
+        </div>
+        <div class="section-content">
+          <div class="prop-list" id="prop-list">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
       <!-- Skits Section -->
       <div class="sidebar-section" data-section="skits">
         <div class="section-header" onclick="toggleSection('skits')">
@@ -1817,6 +1921,13 @@
         <h4>🎭 Cast</h4>
         <div id="skit-cast-list"></div>
 
+        <h4>🎁 Props</h4>
+        <div id="skit-props-list"></div>
+        <div class="prop-buttons" style="display: flex; gap: 8px; margin-top: 8px;">
+          <button class="add-prop-btn" onclick="addSkitProp('background')" style="flex:1;padding:6px;background:#0f3460;border:none;color:#eee;border-radius:4px;cursor:pointer;">+ Background Prop</button>
+          <button class="add-prop-btn" onclick="addSkitProp('foreground')" style="flex:1;padding:6px;background:#0f3460;border:none;color:#eee;border-radius:4px;cursor:pointer;">+ Foreground Prop</button>
+        </div>
+
         <h4>📝 Script</h4>
         <div id="skit-script-list"></div>
         <button class="add-action-btn" onclick="openAddActionModal()">+ Add Action</button>
@@ -1830,14 +1941,28 @@
           <div class="form-group">
             <label>Action Type</label>
             <select id="action-type" onchange="updateModalFields()">
-              <option value="say">Say (dialogue)</option>
-              <option value="emote">Emote (expression)</option>
-              <option value="shot">Shot (camera)</option>
-              <option value="pause">Pause</option>
-              <option value="enter">Enter</option>
-              <option value="exit">Exit</option>
-              <option value="move">Move</option>
-              <option value="look">Look</option>
+              <optgroup label="Character Actions">
+                <option value="say">Say (dialogue)</option>
+                <option value="emote">Emote (expression)</option>
+                <option value="enter">Enter</option>
+                <option value="exit">Exit</option>
+                <option value="move">Move</option>
+                <option value="look">Look</option>
+              </optgroup>
+              <optgroup label="Camera">
+                <option value="shot">Shot (camera)</option>
+                <option value="pause">Pause</option>
+              </optgroup>
+              <optgroup label="Prop Actions">
+                <option value="spawn">Spawn (show prop)</option>
+                <option value="despawn">Despawn (hide prop)</option>
+                <option value="prop-move">Prop Move</option>
+                <option value="prop-hold">Prop Hold</option>
+                <option value="prop-drop">Prop Drop</option>
+                <option value="prop-rotate">Prop Rotate</option>
+                <option value="prop-scale">Prop Scale</option>
+                <option value="prop-animate">Prop Animate</option>
+              </optgroup>
             </select>
           </div>
           <div id="modal-fields"></div>
@@ -2059,6 +2184,147 @@
         img.src = legacyPath;
       } else {
         img.parentElement.innerHTML = '🖼️';
+      }
+    }
+
+    // === PROP MANAGEMENT ===
+    let propList = [];
+
+    async function loadProps() {
+      try {
+        const response = await fetch('/api/props');
+        propList = await response.json();
+
+        const list = document.getElementById('prop-list');
+        list.innerHTML = propList.map(prop => {
+          const name = prop.name;
+          const thumbPath = `/props/${name}/prop.svg`;
+          return `
+          <div class="prop-item" data-name="${name}" onclick="selectProp('${name}')">
+            <div class="prop-thumbnail">
+              <img src="${thumbPath}" alt="${name}" onerror="this.parentElement.innerHTML='🎁'">
+            </div>
+            <span style="flex:1">${name}</span>
+            <button class="item-delete-btn" onclick="event.stopPropagation(); showDeleteConfirm(this, 'prop', '${name}')" title="Delete">🗑️</button>
+          </div>
+        `;
+        }).join('');
+
+        document.getElementById('prop-count').textContent = `(${propList.length})`;
+      } catch (e) {
+        console.error('Failed to load props:', e);
+        document.getElementById('prop-count').textContent = '(0)';
+      }
+    }
+
+    async function selectProp(name) {
+      try {
+        const response = await fetch(`/api/props/${name}`);
+        const prop = await response.json();
+
+        currentEditMode = 'prop';
+        currentSpriteName = name;
+        currentSprite = prop.svg;
+        currentMeta = prop.meta || {};
+        currentVariant = 'prop';
+        currentVariants = ['prop'];
+
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = prop.svg;
+
+        // Set up for editing
+        renderSpriteFromCurrent();
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+        applyZoom();
+        updateCommandContext();
+        updateVariantTabs();
+
+        // Update prop list selection
+        document.querySelectorAll('.prop-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.name === name);
+        });
+
+        // Clear other selections
+        document.querySelectorAll('.sprite-item').forEach(item => item.classList.remove('active'));
+        document.querySelectorAll('.background-item').forEach(item => item.classList.remove('active'));
+
+        updateStatus(`Editing prop: ${name}`);
+      } catch (e) {
+        console.error('Failed to load prop:', e);
+        updateStatus(`Error loading prop: ${e.message}`);
+      }
+    }
+
+    function createNewProp() {
+      openNamingModal('Create New Prop', 'Prop name', (name) => {
+        const templateSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50" height="50">
+  <rect x="5" y="5" width="40" height="40" fill="#888" rx="4"/>
+</svg>`;
+
+        currentEditMode = 'prop';
+        currentSpriteName = name;
+        currentSprite = templateSvg;
+        currentMeta = { name, description: '' };
+        currentVariant = 'prop';
+        currentVariants = ['prop'];
+
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = templateSvg;
+
+        renderSpriteFromCurrent();
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+        applyZoom();
+        updateCommandContext();
+        updateVariantTabs();
+
+        updateStatus(`New prop: ${name} - edit and save`);
+      });
+    }
+
+    async function deletePropAsset(name) {
+      try {
+        const response = await fetch(`/api/props/${name}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Failed to delete prop');
+        await loadProps();
+        updateStatus(`Deleted prop: ${name}`);
+      } catch (e) {
+        console.error('Failed to delete prop:', e);
+        updateStatus(`Error deleting prop: ${e.message}`);
+      }
+    }
+
+    async function savePropAsset() {
+      if (!currentSpriteName || !currentSprite) {
+        updateStatus('No prop to save');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/props/${currentSpriteName}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            svg: currentSprite,
+            meta: currentMeta || {}
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || 'Save failed');
+        }
+
+        await loadProps();
+        flashSaveSuccess();
+        updateStatus(`Saved prop: ${currentSpriteName}`);
+      } catch (e) {
+        console.error('Failed to save prop:', e);
+        flashSaveError();
+        updateStatus(`Error saving prop: ${e.message}`);
       }
     }
 
@@ -2331,6 +2597,17 @@
       `).join('') || '<p style="color:#666;font-size:0.85em;">No cast defined</p>';
       document.getElementById('skit-cast-list').innerHTML = castHtml;
 
+      // Props
+      const propsHtml = Object.entries(skit.props || {}).map(([id, prop]) => `
+        <div class="prop-member" data-prop-id="${id}">
+          <span class="prop-id">${id}</span>
+          <span class="prop-asset">→ ${prop.prop}</span>
+          <span class="prop-layer">[${prop.layer || 'background'}]</span>
+          <button class="item-delete-btn" onclick="removeSkitProp('${id}')" title="Remove prop">✕</button>
+        </div>
+      `).join('') || '<p style="color:#666;font-size:0.85em;">No props defined</p>';
+      document.getElementById('skit-props-list').innerHTML = propsHtml;
+
       // Script with drag handles and insertion gaps
       let scriptHtml = '';
 
@@ -2375,6 +2652,38 @@
           case 'look':
             content = `👁 ${action.who} looks ${action.at}`;
             cssClass = 'stage';
+            break;
+          case 'spawn':
+            content = `🎁 spawn ${action.what}${action.at ? ` at (${action.at[0]}, ${action.at[1]})` : ''}`;
+            cssClass = 'prop';
+            break;
+          case 'despawn':
+            content = `🎁 despawn ${action.what}`;
+            cssClass = 'prop';
+            break;
+          case 'prop-move':
+            content = `🎁 ${action.what} moves to (${action.to?.[0] || '?'}, ${action.to?.[1] || '?'})`;
+            cssClass = 'prop';
+            break;
+          case 'prop-hold':
+            content = `🎁 ${action.who} holds ${action.what}`;
+            cssClass = 'prop';
+            break;
+          case 'prop-drop':
+            content = `🎁 ${action.who || 'drop'} ${action.what}${action.at ? ` at (${action.at[0]}, ${action.at[1]})` : ''}`;
+            cssClass = 'prop';
+            break;
+          case 'prop-rotate':
+            content = `🎁 rotate ${action.what} to ${action.angle}°`;
+            cssClass = 'prop';
+            break;
+          case 'prop-scale':
+            content = `🎁 scale ${action.what} to ${action.scale}x`;
+            cssClass = 'prop';
+            break;
+          case 'prop-animate':
+            content = `🎁 animate ${action.what}: ${action.animation}`;
+            cssClass = 'prop';
             break;
           default:
             content = JSON.stringify(action);
@@ -2652,8 +2961,134 @@
               </select>
             </div>`;
           break;
+        // Prop actions
+        case 'spawn':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Position X (0-100)</label>
+              <input type="number" id="action-at-x" value="50" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Position Y (0-100)</label>
+              <input type="number" id="action-at-y" value="80" min="0" max="100">
+            </div>`;
+          break;
+        case 'despawn':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>`;
+          break;
+        case 'prop-move':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Target X (0-100)</label>
+              <input type="number" id="action-to-x" value="50" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Target Y (0-100)</label>
+              <input type="number" id="action-to-y" value="80" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="1" min="0.1" max="10" step="0.1">
+            </div>`;
+          break;
+        case 'prop-hold':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Character Holding</label>
+              <select id="action-who">${charOptions}</select>
+            </div>`;
+          break;
+        case 'prop-drop':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Drop At X (0-100, optional)</label>
+              <input type="number" id="action-at-x" value="" min="0" max="100" placeholder="Current position">
+            </div>
+            <div class="form-group">
+              <label>Drop At Y (0-100, optional)</label>
+              <input type="number" id="action-at-y" value="" min="0" max="100" placeholder="Current position">
+            </div>`;
+          break;
+        case 'prop-rotate':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Angle (degrees)</label>
+              <input type="number" id="action-angle" value="0" min="-360" max="360">
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="0.5" min="0" max="10" step="0.1">
+            </div>`;
+          break;
+        case 'prop-scale':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Scale</label>
+              <input type="number" id="action-scale" value="1" min="0.1" max="5" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="0.5" min="0" max="10" step="0.1">
+            </div>`;
+          break;
+        case 'prop-animate':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Animation</label>
+              <select id="action-animation">
+                <option value="bounce">bounce</option>
+                <option value="spin">spin</option>
+                <option value="shake">shake</option>
+                <option value="pulse">pulse</option>
+                <option value="float">float</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="2" min="0.1" max="10" step="0.1">
+            </div>`;
+          break;
       }
       fieldsDiv.innerHTML = html;
+    }
+
+    function getPropOptions() {
+      if (!currentSkitData?.props) return '<option value="">No props in skit</option>';
+      const props = Object.keys(currentSkitData.props);
+      if (props.length === 0) return '<option value="">No props in skit</option>';
+      return props.map(id => `<option value="${id}">${id}</option>`).join('');
     }
 
     function openAddActionModal() {
@@ -2714,6 +3149,51 @@
           case 'look':
             if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
             if (document.getElementById('action-at')) document.getElementById('action-at').value = action.at || 'audience';
+            break;
+          // Prop actions
+          case 'spawn':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (action.at) {
+              if (document.getElementById('action-at-x')) document.getElementById('action-at-x').value = action.at[0] || 50;
+              if (document.getElementById('action-at-y')) document.getElementById('action-at-y').value = action.at[1] || 80;
+            }
+            break;
+          case 'despawn':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            break;
+          case 'prop-move':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (action.to) {
+              if (document.getElementById('action-to-x')) document.getElementById('action-to-x').value = action.to[0] || 50;
+              if (document.getElementById('action-to-y')) document.getElementById('action-to-y').value = action.to[1] || 80;
+            }
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 1;
+            break;
+          case 'prop-hold':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            break;
+          case 'prop-drop':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (action.at) {
+              if (document.getElementById('action-at-x')) document.getElementById('action-at-x').value = action.at[0];
+              if (document.getElementById('action-at-y')) document.getElementById('action-at-y').value = action.at[1];
+            }
+            break;
+          case 'prop-rotate':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-angle')) document.getElementById('action-angle').value = action.angle || 0;
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 0.5;
+            break;
+          case 'prop-scale':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-scale')) document.getElementById('action-scale').value = action.scale || 1;
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 0.5;
+            break;
+          case 'prop-animate':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-animation')) document.getElementById('action-animation').value = action.animation || 'bounce';
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 2;
             break;
         }
       }, 0);
@@ -2891,6 +3371,84 @@
             return;
           }
           break;
+        // Prop actions
+        case 'spawn':
+          action.what = document.getElementById('action-what')?.value;
+          const spawnX = parseInt(document.getElementById('action-at-x')?.value);
+          const spawnY = parseInt(document.getElementById('action-at-y')?.value);
+          if (!isNaN(spawnX) && !isNaN(spawnY)) {
+            action.at = [spawnX, spawnY];
+          }
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'despawn':
+          action.what = document.getElementById('action-what')?.value;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-move':
+          action.what = document.getElementById('action-what')?.value;
+          const toX = parseInt(document.getElementById('action-to-x')?.value);
+          const toY = parseInt(document.getElementById('action-to-y')?.value);
+          action.to = [toX || 50, toY || 80];
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 1;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-hold':
+          action.what = document.getElementById('action-what')?.value;
+          action.who = document.getElementById('action-who')?.value;
+          if (!action.what || !action.who) {
+            alert('Prop and character are required');
+            return;
+          }
+          break;
+        case 'prop-drop':
+          action.what = document.getElementById('action-what')?.value;
+          const dropX = document.getElementById('action-at-x')?.value;
+          const dropY = document.getElementById('action-at-y')?.value;
+          if (dropX && dropY) {
+            action.at = [parseInt(dropX), parseInt(dropY)];
+          }
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-rotate':
+          action.what = document.getElementById('action-what')?.value;
+          action.angle = parseFloat(document.getElementById('action-angle')?.value) || 0;
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 0.5;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-scale':
+          action.what = document.getElementById('action-what')?.value;
+          action.scale = parseFloat(document.getElementById('action-scale')?.value) || 1;
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 0.5;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-animate':
+          action.what = document.getElementById('action-what')?.value;
+          action.animation = document.getElementById('action-animation')?.value;
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 2;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
       }
 
       if (!currentSkitData.script) currentSkitData.script = [];
@@ -2916,6 +3474,67 @@
       if (!confirm('Delete this action?')) return;
 
       currentSkitData.script.splice(index, 1);
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
+
+    // === SKIT PROPS ===
+
+    function addSkitProp(layer = 'background') {
+      if (!currentSkitData) return;
+
+      // Get list of available props
+      if (propList.length === 0) {
+        alert('No props available. Create a prop first using the command bar.');
+        return;
+      }
+
+      // Simple modal to select prop - for now use prompt
+      const propNames = propList.map(p => p.name);
+      const propName = prompt(`Select a prop:\n${propNames.join('\n')}\n\nEnter prop name:`);
+      if (!propName || !propNames.includes(propName)) {
+        if (propName) alert('Invalid prop name');
+        return;
+      }
+
+      // Generate a unique instance ID
+      let instanceId = propName;
+      let counter = 1;
+      while (currentSkitData.props && currentSkitData.props[instanceId]) {
+        instanceId = `${propName}-${counter}`;
+        counter++;
+      }
+
+      // Initialize props object if needed
+      if (!currentSkitData.props) {
+        currentSkitData.props = {};
+      }
+
+      // Add the prop instance
+      currentSkitData.props[instanceId] = {
+        prop: propName,
+        x: 50,
+        y: 80,
+        scale: 1.0,
+        layer: layer,
+        visible: false
+      };
+
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
+
+    function removeSkitProp(propId) {
+      if (!currentSkitData?.props?.[propId]) return;
+      if (!confirm(`Remove prop "${propId}" from skit?`)) return;
+
+      delete currentSkitData.props[propId];
+
+      // Also remove any script actions referencing this prop
+      if (currentSkitData.script) {
+        currentSkitData.script = currentSkitData.script.filter(action => action.what !== propId);
+      }
+
       renderSkitStructure(currentSkitData);
       markSkitDirty();
     }
@@ -3392,6 +4011,17 @@
               document.getElementById('skit-editor-panel').style.display = 'none';
             }
             break;
+          case 'prop':
+            endpoint = `/api/props/${encodeURIComponent(id)}`;
+            successMsg = `Deleted prop: ${id}`;
+            reloadFn = loadProps;
+            // Clear selection if this was the current prop
+            if (currentSpriteName === id && currentEditMode === 'prop') {
+              currentSpriteName = null;
+              currentEditMode = null;
+              document.getElementById('svg-canvas').innerHTML = '';
+            }
+            break;
           default:
             throw new Error(`Unknown type: ${type}`);
         }
@@ -3473,6 +4103,15 @@
           loadBackgrounds();
           if (msg.type === 'background:updated' && msg.name === currentBackgroundName) {
             selectBackground(msg.name);
+            setCommandStatus('success', 'Updated!');
+          }
+        }
+
+        // Prop updates
+        if (msg.type === 'prop:created' || msg.type === 'prop:updated' || msg.type === 'prop:deleted') {
+          loadProps();
+          if (msg.type === 'prop:updated' && msg.name === currentSpriteName && currentEditMode === 'prop') {
+            selectProp(msg.name);
             setCommandStatus('success', 'Updated!');
           }
         }
@@ -4800,6 +5439,11 @@
       // Handle background saves
       if (currentEditMode === 'background') {
         return saveBackgroundAsset();
+      }
+
+      // Handle prop saves
+      if (currentEditMode === 'prop') {
+        return savePropAsset();
       }
 
       if (!currentSpriteName || !currentSprite) {
@@ -6685,6 +7329,7 @@
     restoreCollapsedState();
     loadSpriteList();
     loadBackgrounds();
+    loadProps();
     loadSkits();
     selectCharacter('cat'); // Load default
     connectWebSocket(); // Connect for live AI updates

@@ -2,7 +2,7 @@
  * Agent Service - Communicates with OpenClaw for AI-assisted generation
  */
 
-import { listBackgrounds, listSprites } from './storage.js';
+import { listBackgrounds, listSprites, listProps } from './storage.js';
 
 // Read config at runtime to ensure .env is loaded
 function getConfig() {
@@ -102,23 +102,31 @@ No explanation, no markdown code blocks.`;
  * Build the skit system prompt with available assets
  */
 async function buildSkitPrompt() {
-  // Get available backgrounds and sprites
+  // Get available backgrounds, sprites, and props
   let backgrounds = [];
   let sprites = [];
+  let props = [];
 
   try {
     backgrounds = await listBackgrounds();
     sprites = await listSprites();
+    props = await listProps();
   } catch (e) {
     console.warn('[Agent] Failed to load assets for skit prompt:', e.message);
   }
 
   const spriteNames = sprites.map(s => s.name);
+  const propNames = props.map(p => p.name);
 
   // Build background list with orientations
   const backgroundsList = backgrounds.map(b => {
     const orientations = b.orientations || ['landscape'];
     return `- "${b.name}" (orientations: ${orientations.join(', ')})`;
+  }).join('\n');
+
+  // Build props list
+  const propsList = props.map(p => {
+    return `- "${p.name}"${p.description !== p.name ? ` (${p.description})` : ''}`;
   }).join('\n');
 
   return `You are a comedy writer creating short animated skits.
@@ -141,6 +149,9 @@ ${backgrounds.length > 0 ? backgroundsList : '- (none available - omit backgroun
 AVAILABLE SPRITES (use these for cast character sprites):
 ${spriteNames.length > 0 ? spriteNames.map(n => `- "${n}"`).join('\n') : '- (none available)'}
 
+AVAILABLE PROPS (use these for props section):
+${propNames.length > 0 ? propsList : '- (none available)'}
+
 OUTPUT FORMAT - Valid JSON with this structure:
 {
   "meta": {
@@ -158,16 +169,33 @@ OUTPUT FORMAT - Valid JSON with this structure:
       "voice": "marius"
     }
   },
+  "props": {
+    "prop-instance-id": {
+      "prop": "prop-asset-name",
+      "x": 50,
+      "y": 80,
+      "scale": 1.0,
+      "layer": "background",
+      "visible": false
+    }
+  },
   "script": [
     { "do": "shot", "type": "wide" },
     { "do": "say", "who": "character-id", "line": "Dialogue here" },
-    { "do": "emote", "who": "character-id", "emotion": "happy" }
+    { "do": "emote", "who": "character-id", "emotion": "happy" },
+    { "do": "spawn", "what": "prop-instance-id", "at": [50, 80] },
+    { "do": "prop-hold", "what": "prop-instance-id", "who": "character-id" }
   ]
 }
 
 STAGE NOTES:
 - "background" should be one of the available background names
 - "orientation" should be one of the available orientations for that background (defaults to "landscape" if omitted)
+
+PROPS NOTES:
+- "props" section defines prop instances with their initial state
+- "layer" can be "background" (behind characters) or "foreground" (in front of characters)
+- Props start invisible unless "visible": true
 
 AVAILABLE ACTIONS:
 - shot: type can be "wide", "medium", "closeup", "extreme-closeup", "two-shot"
@@ -178,6 +206,16 @@ AVAILABLE ACTIONS:
 - exit: character exits (who + to: left/right)
 - move: character moves (who + to: x position)
 - look: eye direction (who + at: left/right/up/down/audience)
+
+PROP ACTIONS:
+- spawn: make prop visible (what + optional at: [x, y])
+- despawn: hide prop (what)
+- prop-move: animate prop to position (what + to: [x, y] + optional duration)
+- prop-hold: attach prop to character's hand (what + who)
+- prop-drop: detach prop from character (what + optional at: [x, y])
+- prop-rotate: rotate prop (what + angle + optional duration)
+- prop-scale: scale prop (what + scale + optional duration)
+- prop-animate: play animation preset (what + animation: bounce/spin/shake/pulse/float + optional duration)
 
 COMEDY GUIDELINES:
 - Find the "game" (central comic idea)

@@ -20,6 +20,7 @@ import skitsRouter from './routes/skits.js';
 import publishRouter from './routes/publish.js';
 import ttsRouter from './routes/tts.js';
 import backgroundsRouter from './routes/backgrounds.js';
+import propsRouter from './routes/props.js';
 import agentRouter from './routes/agent.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,6 +43,7 @@ app.use('/api/skits', skitsRouter);
 app.use('/api/publish', publishRouter);
 app.use('/api/tts', ttsRouter);
 app.use('/api/backgrounds', backgroundsRouter);
+app.use('/api/props', propsRouter);
 app.use('/api/agent', agentRouter);
 
 // TTS proxy for legacy player compatibility (forwards /tts/* to TTS server)
@@ -87,6 +89,7 @@ app.get('/editor', (req, res) => {
 app.use('/published', express.static(path.join(DATA_DIR, 'published')));
 app.use('/sprites', express.static(path.join(SRC_DIR, 'sprites')));
 app.use('/backgrounds', express.static(path.join(SRC_DIR, 'backgrounds')));
+app.use('/props', express.static(path.join(SRC_DIR, 'props')));
 app.use('/', express.static(SRC_DIR));
 
 // WebSocket setup

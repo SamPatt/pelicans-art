@@ -4,6 +4,7 @@ import path from 'path';
 let DATA_DIR = './data';
 let SPRITES_DIR = './src/sprites';
 let BACKGROUNDS_DIR = './src/backgrounds';
+let PROPS_DIR = './src/props';
 
 // --- Helper Functions ---
 
@@ -40,18 +41,20 @@ export async function ensureDataDirs(dataDir) {
     const projectRoot = path.dirname(dataDir);
     SPRITES_DIR = path.join(projectRoot, 'src/sprites');
     BACKGROUNDS_DIR = path.join(projectRoot, 'src/backgrounds');
+    PROPS_DIR = path.join(projectRoot, 'src/props');
   }
 
   // Ensure asset directories exist
   await ensureDir(SPRITES_DIR);
   await ensureDir(BACKGROUNDS_DIR);
+  await ensureDir(PROPS_DIR);
 
   // Ensure data directories for skits and audio
   await ensureDir(path.join(DATA_DIR, 'skits'));
   await ensureDir(path.join(DATA_DIR, 'published'));
   await ensureDir(path.join(DATA_DIR, 'audio-cache'));
 
-  console.log(`Asset directories: sprites=${SPRITES_DIR}, backgrounds=${BACKGROUNDS_DIR}`);
+  console.log(`Asset directories: sprites=${SPRITES_DIR}, backgrounds=${BACKGROUNDS_DIR}, props=${PROPS_DIR}`);
   console.log(`Data directory: ${DATA_DIR}`);
 }
 
@@ -246,6 +249,75 @@ export async function deleteBackground(name) {
   }
 
   throw Object.assign(new Error(`Background not found: ${name}`), { status: 404 });
+}
+
+// --- Prop Storage ---
+// Props use a directory structure: props/coffee-mug/prop.svg, props/coffee-mug/meta.json
+
+export async function listProps() {
+  const propNames = await listDirs(PROPS_DIR);
+
+  const props = [];
+  for (const name of propNames) {
+    const metaPath = path.join(PROPS_DIR, name, 'meta.json');
+    let meta = {};
+    if (await exists(metaPath)) {
+      try {
+        meta = JSON.parse(await fs.readFile(metaPath, 'utf-8'));
+      } catch (e) { /* ignore parse errors */ }
+    }
+    props.push({
+      name,
+      description: meta.description || meta.name || name,
+      defaultScale: meta.defaultScale || 1.0,
+      anchorPoint: meta.anchorPoint || [0.5, 1.0],
+      holdOffset: meta.holdOffset || [0, -10]
+    });
+  }
+
+  return props;
+}
+
+export async function getProp(name) {
+  const propPath = path.join(PROPS_DIR, name);
+
+  if (!await exists(propPath)) {
+    throw Object.assign(new Error(`Prop not found: ${name}`), { status: 404 });
+  }
+
+  const svgPath = path.join(propPath, 'prop.svg');
+  if (!await exists(svgPath)) {
+    throw Object.assign(new Error(`Prop missing prop.svg: ${name}`), { status: 404 });
+  }
+
+  const svg = await fs.readFile(svgPath, 'utf-8');
+
+  const metaPath = path.join(propPath, 'meta.json');
+  let meta = {};
+  if (await exists(metaPath)) {
+    try {
+      meta = JSON.parse(await fs.readFile(metaPath, 'utf-8'));
+    } catch (e) { /* ignore parse errors */ }
+  }
+
+  return { name, svg, meta };
+}
+
+export async function saveProp(name, svg, meta) {
+  const propPath = path.join(PROPS_DIR, name);
+  await ensureDir(propPath);
+  await fs.writeFile(path.join(propPath, 'prop.svg'), svg);
+  await fs.writeFile(path.join(propPath, 'meta.json'), JSON.stringify(meta, null, 2));
+  return { name };
+}
+
+export async function deleteProp(name) {
+  const propPath = path.join(PROPS_DIR, name);
+  if (!await exists(propPath)) {
+    throw Object.assign(new Error(`Prop not found: ${name}`), { status: 404 });
+  }
+
+  await fs.rm(propPath, { recursive: true });
 }
 
 // --- Skit Storage ---
