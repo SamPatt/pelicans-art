@@ -531,11 +531,11 @@
 
       stage.appendChild(el);
 
-      // Use meta.json voice settings as defaults, skit cast config overrides
-      const voiceId = config.voice || metaVoice?.id || DEFAULT_VOICE;
-      const voiceVolume = config.volume !== undefined ? config.volume : (metaVoice?.volume !== undefined ? metaVoice.volume : 1.0);
-      const voiceSpeed = config.speed !== undefined ? config.speed : (metaVoice?.speed !== undefined ? metaVoice.speed : 1.0);
-      const voicePitch = config.pitch !== undefined ? config.pitch : (metaVoice?.pitch !== undefined ? metaVoice.pitch : 0);
+      // Use meta.json voice settings exclusively (voice is per-character, not per-skit)
+      const voiceId = metaVoice?.id || DEFAULT_VOICE;
+      const voiceVolume = metaVoice?.volume !== undefined ? metaVoice.volume : 1.0;
+      const voiceSpeed = metaVoice?.speed !== undefined ? metaVoice.speed : 1.0;
+      const voicePitch = metaVoice?.pitch !== undefined ? metaVoice.pitch : 0;
 
       // Capture original face values for delta-based emotion positioning
       const isHuman = spriteType === 'human';
@@ -2816,13 +2816,8 @@
           setBackground(skit.stage.background, skit.stage.orientation || 'landscape');
         }
 
-        // Create characters (validate voices - AI may generate invalid ones)
+        // Create characters (voice comes from sprite meta.json, not skit)
         for (const [name, config] of Object.entries(skit.cast || {})) {
-          // Validate voice - if invalid, use default
-          if (config.voice && !VALID_VOICES.includes(config.voice) && !config.voice.startsWith('http')) {
-            console.warn(`Invalid voice "${config.voice}" for ${name}, using default "${DEFAULT_VOICE}"`);
-            config.voice = DEFAULT_VOICE;
-          }
           await createCharacter(name, config);
         }
 
@@ -2858,9 +2853,10 @@
             continue;
           }
 
-          // Ensure voice is valid
+          // Use character's voice from meta.json (with fallback validation)
           let voice = char.voice || DEFAULT_VOICE;
           if (!VALID_VOICES.includes(voice) && !voice.startsWith('http')) {
+            console.warn(`Invalid voice "${voice}" for ${beat.who}, using default`);
             voice = DEFAULT_VOICE;
           }
 

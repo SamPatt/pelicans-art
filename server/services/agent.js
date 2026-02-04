@@ -188,18 +188,6 @@ async function buildSkitPrompt() {
 
   return `You are a comedy writer creating short animated skits.
 
-CRITICAL: For the "voice" field in cast, you MUST use ONLY these exact voice IDs:
-- "marius" - male voice
-- "javert" - male voice (deeper)
-- "jean" - male voice
-- "fantine" - female voice
-- "cosette" - female voice (younger)
-- "eponine" - female voice
-- "azelma" - female voice
-- "alba" - neutral voice
-
-Do NOT use any other voice names like "onyx", "shimmer", "echo", etc. They will not work.
-
 AVAILABLE BACKGROUNDS (use for stage.background and stage.orientation):
 ${backgrounds.length > 0 ? backgroundsList : '- (none available - omit background field)'}
 
@@ -223,11 +211,7 @@ OUTPUT FORMAT - Valid JSON with this structure:
     "character-id": {
       "sprite": "sprite-name",
       "x": 30,
-      "startX": -20,
-      "voice": "marius",
-      "volume": 1.0,
-      "speed": 1.0,
-      "pitch": 0
+      "startX": -20
     }
   },
   "props": {
@@ -258,12 +242,6 @@ CAST NOTES:
 - "x" is the character's target position (0-100, where 50 is center)
 - "startX" is the initial position (use -20 for offscreen left, 120 for offscreen right)
 - Characters with startX will start offscreen and can "enter" to their x position
-
-VOICE SETTINGS (optional per character):
-- "volume": 0 to 2 (default 1.0) - audio volume multiplier
-- "speed": 0.5 to 2 (default 1.0) - playback speed (2 = twice as fast)
-- "pitch": -1 to 1 (default 0) - pitch shift (-1 = 6 semitones lower, +1 = 6 semitones higher)
-Use these to differentiate characters: a deep slow villain (speed: 0.8, pitch: -0.5), an excited fast character (speed: 1.3, pitch: 0.2)
 
 PROPS NOTES:
 - "props" section defines prop instances with their initial state
