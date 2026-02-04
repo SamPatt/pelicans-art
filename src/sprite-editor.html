@@ -4870,6 +4870,10 @@
       updateCommandContext();
       updateVariantTabs();
 
+      // Capture original face values for emotion positioning
+      originalFaceValues = null;
+      captureOriginalFaceValues();
+
       // Update sprite list selection (items use data-char attribute)
       document.querySelectorAll('.sprite-item').forEach(item => {
         item.classList.toggle('active', item.dataset.char === name);
@@ -4954,6 +4958,9 @@
     async function selectCharacter(name) {
       // Clear other selections
       clearAllSelections();
+
+      // Clear face values for new sprite
+      originalFaceValues = null;
 
       currentEditMode = 'sprite';
       currentSpriteName = name;
@@ -5064,6 +5071,11 @@
         buildElementTree();
         clearSelection();
         resetHistory();
+
+        // Capture original face values for emotion positioning
+        originalFaceValues = null;
+        captureOriginalFaceValues();
+
         updateStatus(`Loaded: ${charName}/${variant}`);
       } catch (e) {
         updateStatus(`Error loading ${charName}/${variant}: ${e.message}`);
@@ -7425,6 +7437,22 @@
         browLeft: "M30 46 Q40 48 48 46",
         browRight: "M52 46 Q60 48 70 46",
         mouth: "M46 68 Q50 66 54 68"
+      },
+      skeptical: {
+        eyeWhite: { ry: 5, cy: 52 },
+        pupil: { ry: 4, cy: 52 },
+        browLeft: "M30 40 Q40 34 48 40",  // raised left brow, more arched
+        browRight: "M52 46 Q60 48 70 46",  // lowered right brow
+        mouth: "M46 66 L54 66"  // tight small mouth
+      },
+      dead: {
+        eyeWhite: { ry: 5, cy: 52 },
+        pupil: { ry: 4, cy: 52 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",  // open O shape
+        mouthFill: "#5d4037",
+        xEyes: true
       }
     };
 
@@ -7518,10 +7546,45 @@
     let talkingInterval = null;
     let blinkingInterval = null;
     let originalSvgState = null;
+    let originalFaceValues = null;
+
+    // Reference Y position that emotion configs assume (for calculating face offset)
+    const EMOTION_REF_EYE_CY = 52; // Creature emotions assume eyes at y=52
 
     function getEmotionConfig(emotion) {
       const emotions = currentSpriteType === 'human' ? EMOTIONS_HUMAN : EMOTIONS_CREATURE;
       return emotions[emotion] || emotions.neutral;
+    }
+
+    function getNeutralConfig() {
+      const emotions = currentSpriteType === 'human' ? EMOTIONS_HUMAN : EMOTIONS_CREATURE;
+      return emotions.neutral;
+    }
+
+    function captureOriginalFaceValues() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      const eyeL = svg.querySelector('#eye-left-white');
+      const pupilL = svg.querySelector('#eye-left-pupil');
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+      const mouth = svg.querySelector('#mouth-closed');
+
+      const eyeCy = parseFloat(eyeL?.getAttribute('cy') || 52);
+      const refCy = currentSpriteType === 'human' ? 42 : EMOTION_REF_EYE_CY;
+
+      originalFaceValues = {
+        eyeRy: parseFloat(eyeL?.getAttribute('ry') || 7),
+        eyeCy: eyeCy,
+        pupilRy: parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5),
+        pupilCy: parseFloat(pupilL?.getAttribute('cy') || 52),
+        browLeft: browL?.getAttribute('d') || '',
+        browRight: browR?.getAttribute('d') || '',
+        mouth: mouth?.getAttribute('d') || '',
+        // Calculate face offset from reference position
+        faceOffsetY: eyeCy - refCy
+      };
     }
 
     function saveOriginalState() {
@@ -7536,9 +7599,14 @@
       if (!svg) return;
 
       const config = getEmotionConfig(emotion);
-      if (!config) return;
+      const neutral = getNeutralConfig();
+      if (!config || !neutral) return;
 
-      // Save original state if not saved yet
+      // Capture original face values if not done yet
+      if (!originalFaceValues) captureOriginalFaceValues();
+      if (!originalFaceValues) return;
+
+      // Save original SVG state if not saved yet
       if (!originalSvgState) saveOriginalState();
 
       currentEmotion = emotion;
@@ -7547,6 +7615,12 @@
       document.querySelectorAll('.emotion-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.emotion === emotion);
       });
+
+      // Calculate deltas from neutral config
+      const eyeCyDelta = config.eyeWhite.cy - neutral.eyeWhite.cy;
+      const eyeRyDelta = config.eyeWhite.ry - neutral.eyeWhite.ry;
+      const pupilCyDelta = config.pupil.cy - neutral.pupil.cy;
+      const pupilRyDelta = config.pupil.ry - neutral.pupil.ry;
 
       // Get SVG elements
       const eyeLeftWhite = svg.querySelector('#eye-left-white');
@@ -7557,33 +7631,40 @@
       const browRight = svg.querySelector('#brow-right');
       const mouthClosed = svg.querySelector('#mouth-closed');
 
-      // Apply eye whites
+      // Apply eye whites with deltas
       if (eyeLeftWhite) {
-        eyeLeftWhite.setAttribute('ry', config.eyeWhite.ry);
-        eyeLeftWhite.setAttribute('cy', config.eyeWhite.cy);
+        eyeLeftWhite.setAttribute('ry', originalFaceValues.eyeRy + eyeRyDelta);
+        eyeLeftWhite.setAttribute('cy', originalFaceValues.eyeCy + eyeCyDelta);
       }
       if (eyeRightWhite) {
-        eyeRightWhite.setAttribute('ry', config.eyeWhite.ry);
-        eyeRightWhite.setAttribute('cy', config.eyeWhite.cy);
+        eyeRightWhite.setAttribute('ry', originalFaceValues.eyeRy + eyeRyDelta);
+        eyeRightWhite.setAttribute('cy', originalFaceValues.eyeCy + eyeCyDelta);
       }
 
-      // Apply pupils
+      // Apply pupils with deltas
       if (eyeLeftPupil) {
-        eyeLeftPupil.setAttribute('ry', config.pupil.ry);
-        eyeLeftPupil.setAttribute('cy', config.pupil.cy);
+        eyeLeftPupil.setAttribute('ry', originalFaceValues.pupilRy + pupilRyDelta);
+        eyeLeftPupil.setAttribute('cy', originalFaceValues.pupilCy + pupilCyDelta);
       }
       if (eyeRightPupil) {
-        eyeRightPupil.setAttribute('ry', config.pupil.ry);
-        eyeRightPupil.setAttribute('cy', config.pupil.cy);
+        eyeRightPupil.setAttribute('ry', originalFaceValues.pupilRy + pupilRyDelta);
+        eyeRightPupil.setAttribute('cy', originalFaceValues.pupilCy + pupilCyDelta);
       }
 
-      // Apply eyebrows
-      if (browLeft) browLeft.setAttribute('d', config.browLeft);
-      if (browRight) browRight.setAttribute('d', config.browRight);
+      // Apply eyebrows - use emotion path but translate to face position
+      if (browLeft) {
+        browLeft.setAttribute('d', config.browLeft);
+        browLeft.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
+      }
+      if (browRight) {
+        browRight.setAttribute('d', config.browRight);
+        browRight.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
+      }
 
-      // Apply mouth
+      // Apply mouth - use emotion path but translate to face position
       if (mouthClosed) {
         mouthClosed.setAttribute('d', config.mouth);
+        mouthClosed.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
         // Handle filled mouth (for surprised, dead circle mouths)
         if (config.mouthFill) {
           mouthClosed.setAttribute('fill', config.mouthFill);
@@ -7602,7 +7683,7 @@
         if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '0');
         if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '0');
 
-        // Create or show X eyes
+        // Create or show X eyes (translated to face position)
         let xEyesGroup = svg.querySelector('#x-eyes-group');
         if (!xEyesGroup) {
           xEyesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -7615,6 +7696,7 @@
           `;
           svg.appendChild(xEyesGroup);
         }
+        xEyesGroup.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
         xEyesGroup.setAttribute('opacity', '1');
       } else {
         // Show normal eyes, hide X eyes
@@ -7750,8 +7832,9 @@
         document.getElementById('btn-blink-toggle').classList.remove('active');
       }
 
-      // Clear stored eye values
+      // Clear stored eye values and face values
       originalEyeValues = null;
+      originalFaceValues = null;
 
       // Restore original SVG state
       if (originalSvgState) {
