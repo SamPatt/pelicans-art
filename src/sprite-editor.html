@@ -2060,72 +2060,99 @@
         <div class="no-selection">Select an element to edit</div>
       </div>
 
-      <!-- Animation Preview Panel -->
-      <div class="panel-header" style="margin-top:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleAnimPanel()">
-        <span>🎭 Animation Preview</span>
-        <span id="anim-panel-toggle" style="font-size:0.8em;">▼</span>
-      </div>
-      <div id="animation-preview-panel" class="property-group" style="display:none;">
-        <div class="property-row" style="flex-wrap:wrap;gap:5px;">
-          <label style="width:100%;margin-bottom:5px;">Emotions:</label>
-          <button class="emotion-btn" data-emotion="neutral" title="Neutral">😐</button>
-          <button class="emotion-btn" data-emotion="happy" title="Happy">😊</button>
-          <button class="emotion-btn" data-emotion="sad" title="Sad">😢</button>
-          <button class="emotion-btn" data-emotion="angry" title="Angry">😠</button>
-          <button class="emotion-btn" data-emotion="surprised" title="Surprised">😲</button>
-          <button class="emotion-btn" data-emotion="excited" title="Excited">🤩</button>
-          <button class="emotion-btn" data-emotion="worried" title="Worried">😟</button>
-          <button class="emotion-btn" data-emotion="smug" title="Smug">😏</button>
-          <button class="emotion-btn" data-emotion="tired" title="Tired">😴</button>
-          <button class="emotion-btn" data-emotion="skeptical" title="Skeptical">🤨</button>
-          <button class="emotion-btn" data-emotion="dead" title="Dead">💀</button>
+      <!-- Animation Preview Panel (sprites only) -->
+      <div id="sprite-settings-wrapper">
+        <div class="panel-header" style="margin-top:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleAnimPanel()">
+          <span>🎭 Animation Preview</span>
+          <span id="anim-panel-toggle" style="font-size:0.8em;">▼</span>
         </div>
-        <div class="property-row" style="margin-top:10px;flex-wrap:wrap;gap:5px;">
-          <label style="width:100%;margin-bottom:5px;">Talking:</label>
-          <button id="btn-talk-toggle" onclick="toggleTalking(); this.blur();" style="flex:1;">🗣️ Start Talking</button>
-          <button id="btn-blink-toggle" onclick="toggleBlinking(); this.blur();" style="flex:1;">👁️ Blink</button>
+        <div id="animation-preview-panel" class="property-group" style="display:none;">
+          <div class="property-row" style="flex-wrap:wrap;gap:5px;">
+            <label style="width:100%;margin-bottom:5px;">Emotions:</label>
+            <button class="emotion-btn" data-emotion="neutral" title="Neutral">😐</button>
+            <button class="emotion-btn" data-emotion="happy" title="Happy">😊</button>
+            <button class="emotion-btn" data-emotion="sad" title="Sad">😢</button>
+            <button class="emotion-btn" data-emotion="angry" title="Angry">😠</button>
+            <button class="emotion-btn" data-emotion="surprised" title="Surprised">😲</button>
+            <button class="emotion-btn" data-emotion="excited" title="Excited">🤩</button>
+            <button class="emotion-btn" data-emotion="worried" title="Worried">😟</button>
+            <button class="emotion-btn" data-emotion="smug" title="Smug">😏</button>
+            <button class="emotion-btn" data-emotion="tired" title="Tired">😴</button>
+            <button class="emotion-btn" data-emotion="skeptical" title="Skeptical">🤨</button>
+            <button class="emotion-btn" data-emotion="dead" title="Dead">💀</button>
+          </div>
+          <div class="property-row" style="margin-top:10px;flex-wrap:wrap;gap:5px;">
+            <label style="width:100%;margin-bottom:5px;">Talking:</label>
+            <button id="btn-talk-toggle" onclick="toggleTalking(); this.blur();" style="flex:1;">🗣️ Start Talking</button>
+            <button id="btn-blink-toggle" onclick="toggleBlinking(); this.blur();" style="flex:1;">👁️ Blink</button>
+          </div>
+          <div class="property-row" style="margin-top:5px;">
+            <button onclick="resetAnimation(); this.blur();" style="width:100%;background:#e94560;">⟲ Reset to Original</button>
+          </div>
         </div>
-        <div class="property-row" style="margin-top:5px;">
-          <button onclick="resetAnimation(); this.blur();" style="width:100%;background:#e94560;">⟲ Reset to Original</button>
-        </div>
-      </div>
 
-      <!-- Voice Settings Panel -->
-      <div class="panel-header voice-section" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleVoicePanel()">
-        <span>🔊 Voice Settings</span>
-        <span id="voice-panel-toggle" style="font-size:0.8em;">▼</span>
-      </div>
-      <div id="voice-settings-panel" class="property-group" style="display:none;">
-        <div class="voice-selector">
-          <select id="voice-select" onchange="updateVoiceSelection()">
-            <option value="">-- Select Voice --</option>
-          </select>
-          <button class="voice-preview-btn" id="voice-preview-btn" onclick="previewVoice()" disabled>
-            ▶ Preview
+        <!-- Voice Settings Panel -->
+        <div class="panel-header voice-section" style="cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleVoicePanel()">
+          <span>🔊 Voice Settings</span>
+          <span id="voice-panel-toggle" style="font-size:0.8em;">▼</span>
+        </div>
+        <div id="voice-settings-panel" class="property-group" style="display:none;">
+          <div class="voice-selector">
+            <select id="voice-select" onchange="updateVoiceSelection()">
+              <option value="">-- Select Voice --</option>
+            </select>
+          </div>
+          <button class="voice-preview-btn" id="voice-preview-btn" onclick="previewVoice()" disabled style="width:100%;margin-bottom:10px;">
+            ▶ Preview Voice
+          </button>
+
+          <div class="voice-params">
+            <div class="voice-param-row">
+              <label>Pitch</label>
+              <input type="range" id="voice-pitch" min="-1" max="1" step="0.1" value="0" oninput="updateVoiceParamDisplays()">
+              <span id="voice-pitch-val">0</span>
+            </div>
+            <div class="voice-param-row">
+              <label>Speed</label>
+              <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1" oninput="updateVoiceParamDisplays()">
+              <span id="voice-speed-val">1</span>
+            </div>
+            <div class="voice-param-row">
+              <label>Volume</label>
+              <input type="range" id="voice-volume" min="0" max="2" step="0.1" value="1" oninput="updateVoiceParamDisplays()">
+              <span id="voice-volume-val">1</span>
+            </div>
+          </div>
+
+          <button class="save-voice-btn" onclick="saveVoiceSettings()">
+            💾 Save Voice Settings
           </button>
         </div>
+      </div>
 
-        <div class="voice-params">
-          <div class="voice-param-row">
-            <label>Pitch</label>
-            <input type="range" id="voice-pitch" min="-1" max="1" step="0.1" value="0" oninput="updateVoiceParamDisplays()">
-            <span id="voice-pitch-val">0</span>
-          </div>
-          <div class="voice-param-row">
-            <label>Speed</label>
-            <input type="range" id="voice-speed" min="0.5" max="2" step="0.1" value="1" oninput="updateVoiceParamDisplays()">
-            <span id="voice-speed-val">1</span>
-          </div>
-          <div class="voice-param-row">
-            <label>Volume</label>
-            <input type="range" id="voice-volume" min="0" max="2" step="0.1" value="1" oninput="updateVoiceParamDisplays()">
-            <span id="voice-volume-val">1</span>
-          </div>
+      <!-- Prop Settings Panel (props only) -->
+      <div id="prop-settings-wrapper" style="display:none;">
+        <div class="panel-header" style="margin-top:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePropSettingsPanel()">
+          <span>🔧 Prop Settings</span>
+          <span id="prop-panel-toggle" style="font-size:0.8em;">▼</span>
         </div>
-
-        <button class="save-voice-btn" onclick="saveVoiceSettings()">
-          💾 Save Voice Settings
-        </button>
+        <div id="prop-settings-panel" class="property-group" style="display:none;">
+          <div class="property-row">
+            <label>Hold X</label>
+            <input type="number" id="prop-hold-x" value="0" step="1" oninput="updatePropSettingsPreview()">
+          </div>
+          <div class="property-row">
+            <label>Hold Y</label>
+            <input type="number" id="prop-hold-y" value="-10" step="1" oninput="updatePropSettingsPreview()">
+          </div>
+          <div class="property-row">
+            <label>Scale</label>
+            <input type="number" id="prop-default-scale" value="1" step="0.1" min="0.1" oninput="updatePropSettingsPreview()">
+          </div>
+          <button class="save-voice-btn" onclick="savePropSettings()" style="margin-top:10px;">
+            💾 Save Prop Settings
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -2304,6 +2331,10 @@
         document.querySelectorAll('.sprite-item').forEach(item => item.classList.remove('active'));
         document.querySelectorAll('.background-item').forEach(item => item.classList.remove('active'));
 
+        // Load prop settings and update panel visibility
+        loadPropSettings(currentMeta);
+        updatePanelVisibility();
+
         updateStatus(`Editing prop: ${name}`);
       } catch (e) {
         console.error('Failed to load prop:', e);
@@ -2333,6 +2364,10 @@
         resetHistory();
         applyZoom();
         updateCommandContext();
+
+        // Load prop settings and update panel visibility
+        loadPropSettings(currentMeta);
+        updatePanelVisibility();
 
         updateStatus(`New prop: ${name} - edit and save`);
       });
@@ -2413,6 +2448,9 @@
 
       // Load the default orientation
       await loadBackgroundOrientation(name, currentBackgroundOrientation);
+
+      // Hide sprite/prop settings panels for backgrounds
+      updatePanelVisibility();
     }
 
     async function detectBackgroundOrientations(bgName) {
@@ -2619,6 +2657,9 @@
       document.getElementById('variant-tabs').style.display = 'none';
       document.querySelector('.zoom-controls').style.display = 'none';
       document.getElementById('skit-editor-panel').style.display = 'block';
+
+      // Hide sprite/prop settings panels for skits
+      updatePanelVisibility();
 
       // Load skit data
       try {
@@ -4125,6 +4166,91 @@
       }
     }
 
+    // === PROP SETTINGS ===
+    function togglePropSettingsPanel() {
+      const panel = document.getElementById('prop-settings-panel');
+      const toggle = document.getElementById('prop-panel-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggle.textContent = '▲';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '▼';
+      }
+    }
+
+    function loadPropSettings(meta) {
+      const holdOffset = meta?.holdOffset || [0, -10];
+      const defaultScale = meta?.defaultScale ?? 1;
+
+      document.getElementById('prop-hold-x').value = holdOffset[0];
+      document.getElementById('prop-hold-y').value = holdOffset[1];
+      document.getElementById('prop-default-scale').value = defaultScale;
+    }
+
+    function updatePropSettingsPreview() {
+      // Could add live preview here if needed
+    }
+
+    async function savePropSettings() {
+      if (!currentSpriteName || currentEditMode !== 'prop') {
+        updateStatus('Select a prop first');
+        return;
+      }
+
+      const propSettings = {
+        holdOffset: [
+          parseInt(document.getElementById('prop-hold-x').value) || 0,
+          parseInt(document.getElementById('prop-hold-y').value) || -10
+        ],
+        defaultScale: parseFloat(document.getElementById('prop-default-scale').value) || 1
+      };
+
+      try {
+        const updatedMeta = {
+          ...(currentMeta || {}),
+          ...propSettings
+        };
+
+        const saveResponse = await fetch(`/api/props/${currentSpriteName}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            svg: currentSprite,
+            meta: updatedMeta
+          })
+        });
+
+        if (saveResponse.ok) {
+          currentMeta = updatedMeta;
+          updateStatus('Prop settings saved');
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (err) {
+        console.error('Failed to save prop settings:', err);
+        updateStatus('Failed to save prop settings');
+      }
+    }
+
+    // === PANEL VISIBILITY ===
+    function updatePanelVisibility() {
+      const spriteWrapper = document.getElementById('sprite-settings-wrapper');
+      const propWrapper = document.getElementById('prop-settings-wrapper');
+
+      if (currentEditMode === 'sprite') {
+        spriteWrapper.style.display = 'block';
+        propWrapper.style.display = 'none';
+      } else if (currentEditMode === 'prop') {
+        spriteWrapper.style.display = 'none';
+        propWrapper.style.display = 'block';
+      } else {
+        // background or skit - hide both
+        spriteWrapper.style.display = 'none';
+        propWrapper.style.display = 'none';
+      }
+    }
+
     // === HELPER FUNCTIONS ===
     function clearAllSelections() {
       // Clear sprite selection
@@ -4823,6 +4949,7 @@
 
       // Load voice settings into UI
       loadSpriteVoiceSettings(currentMeta);
+      updatePanelVisibility();
 
       // Detect variants
       currentVariants = await detectVariants(name);
@@ -7159,6 +7286,7 @@
 
       // Reset voice settings UI
       loadSpriteVoiceSettings(null);
+      updatePanelVisibility();
 
       renderSprite();
       buildElementTree();
@@ -7167,7 +7295,7 @@
       updateCommandContext();  // Update command bar to show "create" mode
       updateStatus('New sprite - describe what you want to create');
     }
-    
+
     // === INIT ===
     document.getElementById('btn-undo').onclick = undo;
     document.getElementById('btn-redo').onclick = redo;

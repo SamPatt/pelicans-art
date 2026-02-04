@@ -1,0 +1,17 @@
+{
+  "name": "Gang",
+  "type": "human",
+  "description": "A gang member character",
+  "tags": [
+    "human",
+    "person",
+    "gang"
+  ],
+  "defaultVariant": "front",
+  "animation": {
+    "blinkInterval": 4,
+    "blinkDuration": 150,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

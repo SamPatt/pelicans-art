@@ -638,6 +638,27 @@
     }
 
     // === PROP SYSTEM ===
+    const propMetaCache = new Map();
+
+    async function loadPropMeta(propName) {
+      if (propMetaCache.has(propName)) {
+        return propMetaCache.get(propName);
+      }
+      const metaPath = `props/${propName}/meta.json?v=${CACHE_BUSTER}`;
+      try {
+        const response = await fetch(metaPath);
+        if (!response.ok) throw new Error('Meta not found');
+        const meta = await response.json();
+        propMetaCache.set(propName, meta);
+        return meta;
+      } catch (e) {
+        console.warn(`Failed to load prop meta: ${propName}`, e);
+        const defaultMeta = { holdOffset: [0, 0], defaultScale: 1 };
+        propMetaCache.set(propName, defaultMeta);
+        return defaultMeta;
+      }
+    }
+
     async function loadPropSvg(propName) {
       if (propSvgCache.has(propName)) {
         return propSvgCache.get(propName);
@@ -670,8 +691,11 @@
         el.classList.add('foreground');
       }
 
-      // Load prop SVG
-      const svgText = await loadPropSvg(config.prop);
+      // Load prop SVG and meta
+      const [svgText, meta] = await Promise.all([
+        loadPropSvg(config.prop),
+        loadPropMeta(config.prop)
+      ]);
       el.innerHTML = svgText;
 
       // Set initial position
@@ -680,9 +704,10 @@
       el.style.left = `${x}%`;
       el.style.bottom = `${100 - y}%`;
 
-      // Apply scale if specified
-      if (config.scale && config.scale !== 1) {
-        el.style.transform = `translateX(-50%) scale(${config.scale})`;
+      // Get scale from config or meta default
+      const scale = config.scale ?? meta.defaultScale ?? 1;
+      if (scale !== 1) {
+        el.style.transform = `translateX(-50%) scale(${scale})`;
       }
 
       stage.appendChild(el);
@@ -691,12 +716,14 @@
         el: el,
         x: x,
         y: y,
-        scale: config.scale ?? 1,
+        scale: scale,
         rotation: 0,
         visible: config.visible || false,
         layer: config.layer || 'background',
         heldBy: null,
-        sprite: config.prop
+        sprite: config.prop,
+        flipped: false,
+        holdOffset: config.holdOffset || meta.holdOffset || [0, 0]
       };
 
       return props[id];
@@ -711,33 +738,38 @@
         const char = characters[prop.heldBy];
         const charEl = char.el;
         const isFlipped = charEl.classList.contains('facing-left');
-        const scale = char.scale || 1;
+        const charScale = char.scale || 1;
 
-        // Offset to appear in hand
-        // Characters are 40% tall, hands are roughly at waist height
-        // X offset: 5-6% from character center, flipped based on facing direction
-        const baseOffsetX = 6 * scale;
-        const handOffsetX = isFlipped ? -baseOffsetX : baseOffsetX;
-        const heldX = char.x + handOffsetX;
+        // Use prop's holdOffset from meta.json
+        // holdOffset[0] = X offset (positive = right of character center)
+        // holdOffset[1] = Y offset (negative = higher up)
+        const holdOffsetX = prop.holdOffset[0] || 0;
+        const holdOffsetY = prop.holdOffset[1] || 0;
 
-        // Hand height: characters are at bottom:12% with height:40%
-        // Hands are roughly 30-35% up the character body
-        // So hand position is around 12% + (40% * 0.3) = 24% from bottom
-        const baseBottom = 22 + (scale - 1) * 8;
-        const heldY = 100 - baseBottom;
+        // Apply X offset, flip direction if character is facing left
+        const handOffsetX = isFlipped ? -holdOffsetX : holdOffsetX;
+        const heldX = char.x + handOffsetX * charScale * 0.1; // Scale factor to convert to %
+
+        // Base hand height calculation
+        // Characters are at bottom:12% with height:40%, hands roughly at waist
+        const baseBottom = 22 + (charScale - 1) * 8;
+        // Apply Y offset (negative holdOffsetY means higher up)
+        const adjustedBottom = baseBottom - holdOffsetY * charScale * 0.1;
+        const heldY = 100 - adjustedBottom;
 
         // Update stored coordinates so drop without 'at' works correctly
         prop.x = heldX;
         prop.y = heldY;
         prop.el.style.left = `${heldX}%`;
-        prop.el.style.bottom = `${baseBottom}%`;
+        prop.el.style.bottom = `${adjustedBottom}%`;
       } else {
         prop.el.style.left = `${prop.x}%`;
         prop.el.style.bottom = `${100 - prop.y}%`;
       }
 
-      // Apply scale and rotation
+      // Apply scale, rotation, and flip
       let transform = 'translateX(-50%)';
+      if (prop.flipped) transform += ' scaleX(-1)';
       if (prop.scale !== 1) transform += ` scale(${prop.scale})`;
       if (prop.rotation !== 0) transform += ` rotate(${prop.rotation}deg)`;
       prop.el.style.transform = transform;
@@ -786,11 +818,15 @@
       }, duration * 1000);
     }
 
-    function holdProp(id, who) {
+    function holdProp(id, who, holdOffset) {
       const prop = props[id];
       if (!prop || !characters[who]) return;
 
       prop.heldBy = who;
+      // Allow beat to override holdOffset
+      if (holdOffset) {
+        prop.holdOffset = holdOffset;
+      }
       prop.el.classList.add('held');
       updatePropPosition(id);
     }
@@ -851,6 +887,19 @@
           prop.el.classList.remove(`animate-${animation}`);
         }, duration * 1000);
       }
+    }
+
+    function flipProp(id, flipped) {
+      const prop = props[id];
+      if (!prop) return;
+
+      // If explicit value provided, use it; otherwise toggle
+      if (flipped !== undefined) {
+        prop.flipped = flipped;
+      } else {
+        prop.flipped = !prop.flipped;
+      }
+      updatePropPosition(id);
     }
 
     function clearAllProps() {
@@ -1424,12 +1473,9 @@
       const cacheKey = `${voice}:${text}`;
       const cached = await getCachedAudio(cacheKey);
       if (cached) return cached;
-      
-      // Small comma pause to prevent TTS cutoff on first word
-      const paddedText = ', ' + text;
-      
+
       const formData = new FormData();
-      formData.append('text', paddedText);
+      formData.append('text', text);
       formData.append('voice_url', voice);
       const res = await fetch('/tts/tts', { method: 'POST', body: formData });
       if (!res.ok) throw new Error('TTS failed');
@@ -2303,6 +2349,7 @@
           // For sequential mode, use index within say-actions only (matches generation)
           const sayActions = currentSkit.script.filter(b => b.do === 'say');
           const sayIdx = sayActions.indexOf(beat);
+          const beatIndex = currentSkit.script.indexOf(beat);
           const cacheKey = beat.t !== undefined ? `${beat.t}-${beat.who}` : `seq-${sayIdx}-${beat.who}`;
           const cached = audioCache.get(cacheKey);
           if (cached) {
@@ -2331,8 +2378,10 @@
             openDuration = 0;
             
             const onAudioEnd = () => {
+              const isInterrupted = sequentialMode && scheduledAdvanceIndices.has(beatIndex);
+              const shouldClear = currentSpeaker === beat.who;
               const charEl = characters[beat.who]?.el;
-              if (charEl) {
+              if (charEl && shouldClear) {
                 charEl.classList.remove('speaking');
                 const mouthOpen = charEl.querySelector('#mouth-open');
                 const mouthClosed = charEl.querySelector('#mouth-closed');
@@ -2345,10 +2394,15 @@
                   }, 100);
                 }
               }
-              document.getElementById('caption').classList.remove('visible');
-              currentSpeaker = null;
-              currentSourceNode = null;
-              if (onComplete) setTimeout(onComplete, 200);
+              if (shouldClear) {
+                document.getElementById('caption').classList.remove('visible');
+                currentSpeaker = null;
+                currentSourceNode = null;
+              }
+              if (onComplete) {
+                if (isInterrupted) onComplete();
+                else setTimeout(onComplete, 200);
+              }
             };
             
             // Stop any current audio
@@ -2514,7 +2568,7 @@
           break;
 
         case 'prop-hold':
-          holdProp(beat.what, beat.who);
+          holdProp(beat.what, beat.who, beat.holdOffset);
           break;
 
         case 'prop-drop':
@@ -2531,6 +2585,10 @@
 
         case 'prop-animate':
           animateProp(beat.what, beat.animation, beat.duration || 2);
+          break;
+
+        case 'prop-flip':
+          flipProp(beat.what, beat.flipped);
           break;
       }
     }

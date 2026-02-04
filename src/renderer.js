@@ -100,10 +100,12 @@ class SkitRenderer {
         sprite: prop.prop || prop.sprite,
         animation: null,
         animationStart: 0,
-        animationDuration: 0
+        animationDuration: 0,
+        flipped: prop.flipped || false,
+        holdOffset: prop.holdOffset || [20, -40]
       };
     }
-    
+
     this.render();
   }
   
@@ -156,7 +158,9 @@ class SkitRenderer {
         sprite: prop.prop || prop.sprite,
         animation: null,
         animationStart: 0,
-        animationDuration: 0
+        animationDuration: 0,
+        flipped: prop.flipped || false,
+        holdOffset: prop.holdOffset || [20, -40]
       };
     }
 
@@ -207,10 +211,14 @@ class SkitRenderer {
           }
           // Support spawning held by a character
           if (beat.who && this.characters[beat.who]) {
-            this.props[beat.what].heldBy = beat.who;
+            const prop = this.props[beat.what];
+            prop.heldBy = beat.who;
+            if (beat.holdOffset) {
+              prop.holdOffset = beat.holdOffset;
+            }
             const char = this.characters[beat.who];
-            this.props[beat.what].x = char.x + 20;
-            this.props[beat.what].y = char.y - 40;
+            prop.x = char.x + prop.holdOffset[0];
+            prop.y = char.y + prop.holdOffset[1];
           }
         }
         break;
@@ -233,12 +241,16 @@ class SkitRenderer {
 
       case 'prop-hold':
         if (this.props[beat.what]) {
-          this.props[beat.what].heldBy = beat.who;
+          const prop = this.props[beat.what];
+          prop.heldBy = beat.who;
+          if (beat.holdOffset) {
+            prop.holdOffset = beat.holdOffset;
+          }
           // Update position to character's hand
           if (this.characters[beat.who]) {
             const char = this.characters[beat.who];
-            this.props[beat.what].x = char.x + 20;
-            this.props[beat.what].y = char.y - 40;
+            prop.x = char.x + prop.holdOffset[0];
+            prop.y = char.y + prop.holdOffset[1];
           }
         }
         break;
@@ -272,9 +284,19 @@ class SkitRenderer {
           }
         }
         break;
+
+      case 'prop-flip':
+        if (this.props[beat.what] && this.currentTime >= beat.t) {
+          if (beat.flipped !== undefined) {
+            this.props[beat.what].flipped = beat.flipped;
+          } else {
+            this.props[beat.what].flipped = true;
+          }
+        }
+        break;
     }
   }
-  
+
   tick() {
     if (!this.isPlaying) return;
     
@@ -430,12 +452,28 @@ class SkitRenderer {
 
       case 'prop-hold':
         if (this.props[beat.what] && t >= beat.t) {
-          this.props[beat.what].heldBy = beat.who;
+          const prop = this.props[beat.what];
+          prop.heldBy = beat.who;
+          // Allow beat to override holdOffset
+          if (beat.holdOffset) {
+            prop.holdOffset = beat.holdOffset;
+          }
           // Update position to follow character
           if (this.characters[beat.who]) {
             const char = this.characters[beat.who];
-            this.props[beat.what].x = char.x + 20; // Offset to hand position
-            this.props[beat.what].y = char.y - 40;
+            prop.x = char.x + prop.holdOffset[0];
+            prop.y = char.y + prop.holdOffset[1];
+          }
+        }
+        break;
+
+      case 'prop-flip':
+        if (this.props[beat.what] && t >= beat.t) {
+          // Use explicit flipped value if provided, otherwise toggle
+          if (beat.flipped !== undefined) {
+            this.props[beat.what].flipped = beat.flipped;
+          } else {
+            this.props[beat.what].flipped = true;
           }
         }
         break;
@@ -524,6 +562,7 @@ class SkitRenderer {
     const propDef = this.script.props?.[propId];
     let pos = [propDef?.x ?? 50, propDef?.y ?? 80];
     let heldBy = null;
+    let holdOffset = propDef?.holdOffset || [20, -40];
 
     for (const beat of this.script.script) {
       if (beat.t >= time) break;
@@ -532,15 +571,17 @@ class SkitRenderer {
       if (beat.do === 'spawn' && beat.at) {
         pos = [...beat.at];
         heldBy = null;
+        if (beat.holdOffset) holdOffset = beat.holdOffset;
       } else if (beat.do === 'prop-move' && beat.to) {
         pos = [...beat.to];
         heldBy = null;
       } else if (beat.do === 'prop-hold') {
         heldBy = beat.who;
+        if (beat.holdOffset) holdOffset = beat.holdOffset;
         // Get character position at this beat's time
         if (this.script.cast[heldBy]) {
           const charPos = this.getPositionBefore(heldBy, beat.t + 0.001);
-          pos = [charPos[0] + 20, charPos[1] - 40]; // Hand offset
+          pos = [charPos[0] + holdOffset[0], charPos[1] + holdOffset[1]];
         }
       } else if (beat.do === 'prop-drop') {
         if (beat.at) {
@@ -548,7 +589,7 @@ class SkitRenderer {
         } else if (heldBy) {
           // Drop where character is at this time
           const charPos = this.getPositionBefore(heldBy, beat.t + 0.001);
-          pos = [charPos[0] + 20, charPos[1] - 40];
+          pos = [charPos[0] + holdOffset[0], charPos[1] + holdOffset[1]];
         }
         heldBy = null;
       }
@@ -557,7 +598,7 @@ class SkitRenderer {
     // If still held at the query time, get character's current position
     if (heldBy && this.script.cast[heldBy]) {
       const charPos = this.getPositionBefore(heldBy, time);
-      pos = [charPos[0] + 20, charPos[1] - 40];
+      pos = [charPos[0] + holdOffset[0], charPos[1] + holdOffset[1]];
     }
 
     return pos;
@@ -617,8 +658,8 @@ class SkitRenderer {
     for (const [id, prop] of Object.entries(this.props)) {
       if (prop.heldBy && this.characters[prop.heldBy]) {
         const char = this.characters[prop.heldBy];
-        prop.x = char.x + 20;
-        prop.y = char.y - 40;
+        prop.x = char.x + prop.holdOffset[0];
+        prop.y = char.y + prop.holdOffset[1];
       }
     }
 
@@ -779,7 +820,8 @@ class SkitRenderer {
     ctx.save();
     ctx.translate(finalX, finalY);
     ctx.rotate(finalRotation * Math.PI / 180);
-    ctx.scale(finalScale, finalScale);
+    const flipX = prop.flipped ? -1 : 1;
+    ctx.scale(finalScale * flipX, finalScale);
 
     ctx.fillStyle = color;
 
