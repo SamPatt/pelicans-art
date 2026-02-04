@@ -3032,16 +3032,16 @@
             </div>
             <div class="form-group">
               <label>Held By (optional)</label>
-              <select id="action-who">
+              <select id="action-who" onchange="toggleSpawnPositionFields()">
                 <option value="">(not held - use position)</option>
                 ${charOptions}
               </select>
             </div>
-            <div class="form-group" id="spawn-position-group">
+            <div class="form-group spawn-position-field" id="spawn-position-group">
               <label>Position X (0-100)</label>
               <input type="number" id="action-at-x" value="50" min="0" max="100">
             </div>
-            <div class="form-group" id="spawn-position-y-group">
+            <div class="form-group spawn-position-field" id="spawn-position-y-group">
               <label>Position Y (0-100)</label>
               <input type="number" id="action-at-y" value="80" min="0" max="100">
             </div>`;
@@ -3160,6 +3160,15 @@
       return props.map(id => `<option value="${id}">${id}</option>`).join('');
     }
 
+    function toggleSpawnPositionFields() {
+      const whoSelect = document.getElementById('action-who');
+      const positionFields = document.querySelectorAll('.spawn-position-field');
+      const hidePositions = whoSelect && whoSelect.value !== '';
+      positionFields.forEach(field => {
+        field.style.display = hidePositions ? 'none' : 'block';
+      });
+    }
+
     function openAddActionModal() {
       openAddActionModalAt(null);  // Append at end
     }
@@ -3227,6 +3236,8 @@
               if (document.getElementById('action-at-x')) document.getElementById('action-at-x').value = action.at[0] || 50;
               if (document.getElementById('action-at-y')) document.getElementById('action-at-y').value = action.at[1] || 80;
             }
+            // Hide position fields if held by someone
+            toggleSpawnPositionFields();
             break;
           case 'despawn':
             if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
@@ -3447,8 +3458,11 @@
           const spawnWho = document.getElementById('action-who')?.value;
           if (spawnWho) {
             action.who = spawnWho;
-            // Don't set position if held by character
+            // Clear position if held by character
+            delete action.at;
           } else {
+            // Clear who if using position
+            delete action.who;
             const spawnX = parseInt(document.getElementById('action-at-x')?.value);
             const spawnY = parseInt(document.getElementById('action-at-y')?.value);
             if (!isNaN(spawnX) && !isNaN(spawnY)) {
