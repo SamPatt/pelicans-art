@@ -78,7 +78,7 @@ app.post('/tts/tts', async (req, res) => {
 
 // Static route aliases
 app.get('/player', (req, res) => {
-  res.sendFile(path.join(SRC_DIR, 'skit-player-v3.html'));
+  res.sendFile(path.join(SRC_DIR, 'skit-player.html'));
 });
 
 app.get('/editor', (req, res) => {

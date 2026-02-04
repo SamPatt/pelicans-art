@@ -2281,6 +2281,7 @@
     
     // === LOAD RAW SKIT FROM API ===
     async function loadSkitFromApi(id) {
+      console.log('[Player] Loading skit from API:', id);
       document.getElementById('status').textContent = 'Loading skit from API...';
       document.getElementById('playBtn').disabled = true;
 
@@ -2397,26 +2398,29 @@
       const skitParam = params.get('skit');
 
       if (skitParam) {
-        // Hide skit switcher and URL loader
+        // Hide skit switcher and URL loader immediately
         document.querySelectorAll('#controls button:not(#playBtn):not(#captionBtn)').forEach(b => b.style.display = 'none');
         document.getElementById('url-loader').style.display = 'none';
-        document.getElementById('publishBtn').style.display = 'none';
 
-        // Check if it's a UUID (raw skit from API) or a published skit name
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(skitParam);
-
-        if (isUuid) {
-          // Load raw skit from API
+        // Always try to load from API first (works for UUIDs and named skits)
+        try {
           await loadSkitFromApi(skitParam);
-        } else {
-          // Load pre-generated published skit
-          await loadFromUrl(`published/${skitParam}.json`);
+        } catch (apiErr) {
+          console.warn('Failed to load from API, trying published folder:', apiErr);
+          // Fall back to published folder
+          try {
+            await loadFromUrl(`published/${skitParam}.json`);
+          } catch (pubErr) {
+            console.error('Failed to load skit:', pubErr);
+            document.getElementById('status').textContent = `Failed to load skit: ${skitParam}`;
+          }
         }
       } else {
+        // No skit param - show default demo skit
         await loadSkit('luckyCharms');
       }
     }
-    
+
     init();
   </script>
 </body>
