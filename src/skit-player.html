@@ -692,15 +692,17 @@
         const isFlipped = charEl.classList.contains('facing-left');
         const scale = char.scale || 1;
 
-        // Offset to appear in hand - scale with character size
-        // Base offset is 12%, scaled by character scale
-        const baseOffsetX = 12 * scale;
+        // Offset to appear in hand
+        // Characters are 40% tall, hands are roughly at waist height
+        // X offset: 5-6% from character center, flipped based on facing direction
+        const baseOffsetX = 6 * scale;
         const handOffsetX = isFlipped ? -baseOffsetX : baseOffsetX;
         const heldX = char.x + handOffsetX;
 
-        // Hand height scales with character - taller characters have higher hands
-        // Base is 42% from bottom, adjusted for scale
-        const baseBottom = 42 + (scale - 1) * 10;
+        // Hand height: characters are at bottom:12% with height:40%
+        // Hands are roughly 40-50% up the character body
+        // So hand position is around 12% + (40% * 0.45) = 30% from bottom
+        const baseBottom = 28 + (scale - 1) * 8;
         const heldY = 100 - baseBottom;
 
         // Update stored coordinates so drop without 'at' works correctly
