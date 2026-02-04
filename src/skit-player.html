@@ -125,12 +125,17 @@
       transition: opacity 0.4s ease-in, d 0.3s ease-out;
     }
     
-    /* Eye direction via pupil transform */
+    /* Eye direction via pupil transform - supports combining horizontal + vertical */
     .character svg .pupil { transition: transform 0.15s ease-out; }
     .character.look-left svg .pupil { transform: translateX(-1.5px); }
     .character.look-right svg .pupil { transform: translateX(1.5px); }
     .character.look-up svg .pupil { transform: translateY(-1.5px); }
     .character.look-down svg .pupil { transform: translateY(1.5px); }
+    /* Combined directions */
+    .character.look-left.look-up svg .pupil { transform: translate(-1.5px, -1.5px); }
+    .character.look-left.look-down svg .pupil { transform: translate(-1.5px, 1.5px); }
+    .character.look-right.look-up svg .pupil { transform: translate(1.5px, -1.5px); }
+    .character.look-right.look-down svg .pupil { transform: translate(1.5px, 1.5px); }
     
     /* Blinking */
     .character.blinking svg #eye-left-white,
@@ -553,8 +558,24 @@
     function setEyeDirection(charName, direction) {
       const char = characters[charName];
       if (!char || !char.el) return;
-      
+
       char.el.classList.remove('look-left', 'look-right', 'look-up', 'look-down');
+
+      // Handle compound direction object {h: 'left'|'right', v: 'up'|'down'}
+      if (typeof direction === 'object' && direction !== null) {
+        const isFlipped = char.el.classList.contains('facing-left');
+        if (direction.h) {
+          let hDir = direction.h;
+          if (isFlipped) hDir = hDir === 'left' ? 'right' : 'left';
+          char.el.classList.add(`look-${hDir}`);
+        }
+        if (direction.v) {
+          char.el.classList.add(`look-${direction.v}`);
+        }
+        return;
+      }
+
+      // Handle simple direction string
       if (['left', 'right', 'up', 'down'].includes(direction)) {
         // Invert left/right for flipped (facing-left) characters
         let actualDir = direction;
@@ -2241,30 +2262,46 @@
           break;
           
         case 'look':
-          // Handle look directions
+          // Handle look directions with both horizontal and vertical support
           let lookDir = beat.at;
           const looker = characters[beat.who];
           if (!looker) break;
 
+          // Character eye level: characters are at bottom:12%, height:40%
+          // Eyes are ~25% down from top of character, so eye y ≈ 58% from top
+          const CHAR_EYE_Y = 58;
+          const V_THRESHOLD = 10; // Vertical difference needed to trigger up/down
+
+          // Helper to calculate compound direction from target coordinates
+          function calcLookDir(targetX, targetY) {
+            const dir = {};
+            dir.h = targetX > looker.x ? 'right' : 'left';
+            const yDiff = targetY - CHAR_EYE_Y;
+            if (yDiff < -V_THRESHOLD) dir.v = 'up';
+            else if (yDiff > V_THRESHOLD) dir.v = 'down';
+            return dir;
+          }
+
           if (beat.at === 'audience') {
-            // Look away from center (toward camera)
+            // Look away from center (toward camera) - no vertical
             lookDir = looker.x < 50 ? 'left' : 'right';
           } else if (beat.at === 'other') {
-            // Look at the other character (first one that isn't self)
+            // Look at the other character (same eye level, just horizontal)
             const charNames = Object.keys(characters);
             const other = charNames.find(n => n !== beat.who);
             if (other) {
               lookDir = characters[other].x > looker.x ? 'right' : 'left';
             }
           } else if (characters[beat.at]) {
-            // Look at a specific character by name
+            // Look at a specific character by name (same eye level)
             lookDir = characters[beat.at].x > looker.x ? 'right' : 'left';
           } else if (props[beat.at]) {
-            // Look at a prop by name
-            lookDir = props[beat.at].x > looker.x ? 'right' : 'left';
+            // Look at a prop - use both x and y
+            const prop = props[beat.at];
+            lookDir = calcLookDir(prop.x, prop.y);
           } else if (Array.isArray(beat.at)) {
             // Look at a position [x, y]
-            lookDir = beat.at[0] > looker.x ? 'right' : 'left';
+            lookDir = calcLookDir(beat.at[0], beat.at[1]);
           }
           setEyeDirection(beat.who, lookDir);
           break;
