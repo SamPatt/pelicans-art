@@ -2068,6 +2068,8 @@
           <button class="emotion-btn" data-emotion="worried" title="Worried">😟</button>
           <button class="emotion-btn" data-emotion="smug" title="Smug">😏</button>
           <button class="emotion-btn" data-emotion="tired" title="Tired">😴</button>
+          <button class="emotion-btn" data-emotion="skeptical" title="Skeptical">🤨</button>
+          <button class="emotion-btn" data-emotion="dead" title="Dead">💀</button>
         </div>
         <div class="property-row" style="margin-top:10px;flex-wrap:wrap;gap:5px;">
           <label style="width:100%;margin-bottom:5px;">Talking:</label>
@@ -7232,7 +7234,7 @@
         pupil: { ry: 1.5, cy: 42 },
         browLeft: "M37 36 Q43 34 49 36",
         browRight: "M51 36 Q57 34 63 36",
-        mouth: "M46 52 Q50 55 54 52"
+        mouth: "M46 52 L54 52"  // flatter mouth
       },
       happy: {
         eyeWhite: { ry: 2, cy: 41 },
@@ -7258,15 +7260,16 @@
       surprised: {
         eyeWhite: { ry: 5, cy: 42 },
         pupil: { ry: 2, cy: 42 },
-        browLeft: "M37 30 Q43 26 49 30",
-        browRight: "M51 30 Q57 26 63 30",
-        mouth: "M46 53 Q46 57 50 57 Q54 57 54 53 Q54 51 50 51 Q46 51 46 53"
+        browLeft: "M37 34 Q43 30 49 34",  // lowered
+        browRight: "M51 34 Q57 30 63 34",  // lowered
+        mouth: "M50 53 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0",  // solid circle
+        mouthFill: "#5d4037"
       },
       excited: {
         eyeWhite: { ry: 5, cy: 40 },
         pupil: { ry: 2, cy: 40 },
-        browLeft: "M37 28 Q43 24 49 28",
-        browRight: "M51 28 Q57 24 63 28",
+        browLeft: "M37 32 Q43 28 49 32",  // lowered
+        browRight: "M51 32 Q57 28 63 32",  // lowered
         mouth: "M44 52 Q50 60 56 52"
       },
       worried: {
@@ -7289,6 +7292,22 @@
         browLeft: "M37 38 Q43 40 49 38",
         browRight: "M51 38 Q57 40 63 38",
         mouth: "M46 56 Q50 54 54 56"
+      },
+      skeptical: {
+        eyeWhite: { ry: 3, cy: 42 },
+        pupil: { ry: 1.5, cy: 42 },
+        browLeft: "M37 32 Q43 26 49 32",  // raised left brow, more arched
+        browRight: "M51 36 Q57 38 63 36",  // lowered right brow
+        mouth: "M47 52 L53 52"  // tight small mouth
+      },
+      dead: {
+        eyeWhite: { ry: 3, cy: 42 },
+        pupil: { ry: 1.5, cy: 42 },
+        browLeft: "M37 36 Q43 34 49 36",
+        browRight: "M51 36 Q57 34 63 36",
+        mouth: "M50 53 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0",  // solid circle
+        mouthFill: "#5d4037",
+        xEyes: true
       }
     };
 
@@ -7362,7 +7381,49 @@
       if (browRight) browRight.setAttribute('d', config.browRight);
 
       // Apply mouth
-      if (mouthClosed) mouthClosed.setAttribute('d', config.mouth);
+      if (mouthClosed) {
+        mouthClosed.setAttribute('d', config.mouth);
+        // Handle filled mouth (for surprised, dead circle mouths)
+        if (config.mouthFill) {
+          mouthClosed.setAttribute('fill', config.mouthFill);
+          mouthClosed.setAttribute('stroke', 'none');
+        } else {
+          mouthClosed.setAttribute('fill', 'none');
+          mouthClosed.setAttribute('stroke', '#8d6e63');
+        }
+      }
+
+      // Handle X eyes for dead emotion
+      if (config.xEyes) {
+        // Hide normal eyes
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('opacity', '0');
+        if (eyeRightWhite) eyeRightWhite.setAttribute('opacity', '0');
+        if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '0');
+        if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '0');
+
+        // Create or show X eyes
+        let xEyesGroup = svg.querySelector('#x-eyes-group');
+        if (!xEyesGroup) {
+          xEyesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          xEyesGroup.id = 'x-eyes-group';
+          xEyesGroup.innerHTML = `
+            <line x1="40" y1="39" x2="46" y2="45" stroke="#000" stroke-width="2"/>
+            <line x1="46" y1="39" x2="40" y2="45" stroke="#000" stroke-width="2"/>
+            <line x1="54" y1="39" x2="60" y2="45" stroke="#000" stroke-width="2"/>
+            <line x1="60" y1="39" x2="54" y2="45" stroke="#000" stroke-width="2"/>
+          `;
+          svg.appendChild(xEyesGroup);
+        }
+        xEyesGroup.setAttribute('opacity', '1');
+      } else {
+        // Show normal eyes, hide X eyes
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('opacity', '1');
+        if (eyeRightWhite) eyeRightWhite.setAttribute('opacity', '1');
+        if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '1');
+        if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '1');
+        const xEyesGroup = svg.querySelector('#x-eyes-group');
+        if (xEyesGroup) xEyesGroup.setAttribute('opacity', '0');
+      }
 
       setStatus(`Emotion: ${emotion} (${currentSpriteType})`);
     }

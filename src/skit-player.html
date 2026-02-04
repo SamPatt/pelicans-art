@@ -971,7 +971,7 @@
         browLeftHuman: "M37 36 Q43 34 49 36",
         browRightHuman: "M51 36 Q57 34 63 36",
         mouth: "M50 65 L46 70 M50 65 L54 70",
-        mouthHuman: "M46 52 Q50 55 54 52",
+        mouthHuman: "M46 52 L54 52",  // flatter mouth
         highlight: 0
       },
       happy: {
@@ -1020,10 +1020,11 @@
         pupilHuman: { r: 2, cy: 42 },
         browLeft: "M30 38 Q40 34 48 38",
         browRight: "M52 38 Q60 34 70 38",
-        browLeftHuman: "M37 30 Q43 26 49 30",
-        browRightHuman: "M51 30 Q57 26 63 30",
+        browLeftHuman: "M37 34 Q43 30 49 34",  // lowered
+        browRightHuman: "M51 34 Q57 30 63 34",  // lowered
         mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
-        mouthHuman: "M46 53 Q46 57 50 57 Q54 57 54 53 Q54 51 50 51 Q46 51 46 53",
+        mouthHuman: "M50 53 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0",  // solid circle
+        mouthFillHuman: "#5d4037",  // fill color for circle mouth
         highlight: 1
       },
       excited: {
@@ -1033,8 +1034,8 @@
         pupilHuman: { r: 2, cy: 40 },
         browLeft: "M30 38 Q40 32 48 38",
         browRight: "M52 38 Q60 32 70 38",
-        browLeftHuman: "M37 28 Q43 24 49 28",
-        browRightHuman: "M51 28 Q57 24 63 28",
+        browLeftHuman: "M37 32 Q43 28 49 32",  // lowered
+        browRightHuman: "M51 32 Q57 28 63 32",  // lowered
         mouth: "M42 64 Q50 74 58 64",
         mouthHuman: "M44 52 Q50 60 56 52",
         highlight: 1
@@ -1072,10 +1073,38 @@
         pupilHuman: { r: 1, cy: 44 },
         browLeft: "M30 46 Q40 44 48 46",
         browRight: "M52 46 Q60 44 70 46",
-        browLeftHuman: "M37 38 Q43 36 49 38",
-        browRightHuman: "M51 38 Q57 36 63 38",
+        browLeftHuman: "M37 38 Q43 40 49 38",
+        browRightHuman: "M51 38 Q57 40 63 38",
         mouth: "M44 68 Q50 66 56 68",
-        mouthHuman: "M46 54 Q50 52 54 54",
+        mouthHuman: "M46 56 Q50 54 54 56",
+        highlight: 0
+      },
+      skeptical: {
+        eyeWhite: { ry: 7, cy: 52 },
+        eyeWhiteHuman: { ry: 3, cy: 42 },
+        pupil: { ry: 5, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 40 Q40 36 48 40",
+        browRight: "M52 46 Q60 48 70 46",
+        browLeftHuman: "M37 32 Q43 26 49 32",  // raised left brow, more arched
+        browRightHuman: "M51 36 Q57 38 63 36",  // lowered right brow
+        mouth: "M44 68 L56 68",
+        mouthHuman: "M47 52 L53 52",  // tight small mouth
+        highlight: 0
+      },
+      dead: {
+        eyeWhite: { ry: 7, cy: 52 },
+        eyeWhiteHuman: { ry: 3, cy: 42 },
+        pupil: { ry: 5, cy: 52 },
+        pupilHuman: { r: 1.5, cy: 42 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        browLeftHuman: "M37 36 Q43 34 49 36",
+        browRightHuman: "M51 36 Q57 34 63 36",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",
+        mouthHuman: "M50 53 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0",  // solid circle
+        mouthFillHuman: "#5d4037",
+        xEyesHuman: true,  // X eyes for dead
         highlight: 0
       }
     };
@@ -1304,8 +1333,52 @@
       if (browRight) browRight.setAttribute('d', isHuman ? config.browRightHuman : config.browRight);
       
       // Apply mouth
-      if (mouthClosed) mouthClosed.setAttribute('d', isHuman ? config.mouthHuman : config.mouth);
-      
+      if (mouthClosed) {
+        mouthClosed.setAttribute('d', isHuman ? config.mouthHuman : config.mouth);
+        // Handle filled mouth (for surprised, dead circle mouths)
+        const mouthFill = isHuman ? config.mouthFillHuman : config.mouthFill;
+        if (mouthFill) {
+          mouthClosed.setAttribute('fill', mouthFill);
+          mouthClosed.setAttribute('stroke', 'none');
+        } else {
+          mouthClosed.setAttribute('fill', 'none');
+          mouthClosed.setAttribute('stroke', '#8d6e63');
+        }
+      }
+
+      // Handle X eyes for dead emotion
+      if (isHuman && config.xEyesHuman) {
+        // Hide normal eyes
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('opacity', '0');
+        if (eyeRightWhite) eyeRightWhite.setAttribute('opacity', '0');
+        if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '0');
+        if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '0');
+
+        // Create or show X eyes
+        let xEyesGroup = el.querySelector('#x-eyes-group');
+        if (!xEyesGroup) {
+          xEyesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          xEyesGroup.id = 'x-eyes-group';
+          xEyesGroup.innerHTML = `
+            <line x1="40" y1="39" x2="46" y2="45" stroke="#000" stroke-width="2"/>
+            <line x1="46" y1="39" x2="40" y2="45" stroke="#000" stroke-width="2"/>
+            <line x1="54" y1="39" x2="60" y2="45" stroke="#000" stroke-width="2"/>
+            <line x1="60" y1="39" x2="54" y2="45" stroke="#000" stroke-width="2"/>
+          `;
+          const svg = el.querySelector('svg');
+          if (svg) svg.appendChild(xEyesGroup);
+        }
+        xEyesGroup.setAttribute('opacity', '1');
+      } else {
+        // Show normal eyes, hide X eyes
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('opacity', '1');
+        if (eyeRightWhite) eyeRightWhite.setAttribute('opacity', '1');
+        if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '1');
+        if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '1');
+        const xEyesGroup = el.querySelector('#x-eyes-group');
+        if (xEyesGroup) xEyesGroup.setAttribute('opacity', '0');
+      }
+
       // Apply highlights
       if (highlightLeft) highlightLeft.setAttribute('opacity', config.highlight);
       if (highlightRight) highlightRight.setAttribute('opacity', config.highlight);

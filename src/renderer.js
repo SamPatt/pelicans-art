@@ -671,6 +671,14 @@ class SkitRenderer {
       happy: '😊',
       sad: '😢',
       angry: '😠',
+      surprised: '😲',
+      excited: '🤩',
+      worried: '😟',
+      smug: '😏',
+      tired: '😴',
+      skeptical: '🤨',
+      dead: '💀',
+      // Legacy mappings
       shocked: '😲',
       confused: '🤔',
       distressed: '😰'
