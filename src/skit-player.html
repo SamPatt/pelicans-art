@@ -2012,6 +2012,48 @@
     let sequentialIndex = 0;
     let waitingForAudio = false;
     let sequentialMode = false;
+    let playSessionId = 0;
+    let scheduledAdvanceIndices = new Set();
+
+    function getActionDuration(beat) {
+      if (beat.duration !== undefined) {
+        return beat.duration;
+      }
+
+      switch (beat.do) {
+        case 'say': {
+          const sayActions = currentSkit.script.filter(b => b.do === 'say');
+          const sayIdx = sayActions.indexOf(beat);
+          const cacheKey = beat.t !== undefined ? `${beat.t}-${beat.who}` : `seq-${sayIdx}-${beat.who}`;
+          const cached = audioCache.get(cacheKey);
+
+          if (cached?.buffer && Number.isFinite(cached.buffer.duration)) {
+            return cached.buffer.duration;
+          }
+          if (cached?.audio && Number.isFinite(cached.audio.duration)) {
+            return cached.audio.duration;
+          }
+          return 2;
+        }
+        case 'move':
+        case 'prop-move':
+          return 1;
+        case 'enter':
+        case 'exit':
+          return 1.5;
+        case 'pause':
+          return beat.duration || 1;
+        case 'prop-rotate':
+        case 'prop-scale':
+          return 0.5;
+        default:
+          return 0;
+      }
+    }
+
+    function hasMeaningfulDuration(beat) {
+      return beat.do === 'say' || beat.do === 'pause' || beat.do === 'delay';
+    }
     
     function play() {
       if (audioContext.state === 'suspended') audioContext.resume();
@@ -2020,6 +2062,8 @@
       triggeredBeats = new Set();
       sequentialIndex = 0;
       waitingForAudio = false;
+      playSessionId += 1;
+      scheduledAdvanceIndices.clear();
       
       // Check if skit uses sequential mode (first beat has no 't' property)
       sequentialMode = currentSkit.script.length > 0 && currentSkit.script[0].t === undefined;
@@ -2062,6 +2106,7 @@
         try { currentSourceNode.stop(); } catch(e) {}
         currentSourceNode = null;
       }
+      scheduledAdvanceIndices.clear();
     }
     
     let currentSpeaker = null;
@@ -2082,8 +2127,14 @@
         return;
       }
       
+      const beatIndex = sequentialIndex;
+      const sessionId = playSessionId;
       const beat = currentSkit.script[sequentialIndex];
+      const prevBeat = sequentialIndex > 0 ? currentSkit.script[sequentialIndex - 1] : null;
+      const nextBeat = currentSkit.script[sequentialIndex + 1];
       sequentialIndex++;
+
+      const isStaleSession = () => sessionId !== playSessionId;
       
       // If beat has a 't' value, it's timed - let the normal animate loop handle it
       if (beat.t !== undefined) {
@@ -2091,24 +2142,52 @@
         const key = `${beat.t}-${beat.do}-${beat.who || ''}`;
         triggeredBeats.add(key);
       }
+
+      if (beat.offset < 0 && prevBeat && !hasMeaningfulDuration(prevBeat)) {
+        console.warn(`Offset on beat ${beatIndex} ignored: previous action '${prevBeat.do}' has no meaningful duration`);
+      }
       
       // Handle delay/pause beats
       if (beat.do === 'pause' || beat.do === 'delay') {
-        const delay = (beat.duration || beat.delay || 1) * 1000;
-        setTimeout(() => processNextSequentialBeat(), delay);
+        const duration = beat.duration || beat.delay || 1;
+        const durationMs = duration * 1000;
+
+        if (nextBeat?.offset < 0) {
+          const triggerTime = Math.max(0, duration + nextBeat.offset) * 1000;
+          scheduledAdvanceIndices.add(beatIndex);
+          setTimeout(() => {
+            if (isStaleSession()) return;
+            processNextSequentialBeat();
+          }, triggerTime);
+        }
+
+        setTimeout(() => {
+          if (isStaleSession()) return;
+          if (!scheduledAdvanceIndices.has(beatIndex)) {
+            processNextSequentialBeat();
+          }
+        }, durationMs);
         return;
       }
       
       // Process the beat
       processBeat(beat, () => {
         // Callback for when beat completes (used for 'say' to wait for audio)
-        processNextSequentialBeat();
+        if (isStaleSession()) return;
+        if (!scheduledAdvanceIndices.has(beatIndex)) {
+          processNextSequentialBeat();
+        }
       });
       
       // If it's not a 'say' beat, continue immediately (unless it has a delay)
       if (beat.do !== 'say') {
         const delay = (beat.delay || 0) * 1000;
-        setTimeout(() => processNextSequentialBeat(), delay);
+        setTimeout(() => {
+          if (isStaleSession()) return;
+          if (!scheduledAdvanceIndices.has(beatIndex)) {
+            processNextSequentialBeat();
+          }
+        }, delay);
       }
       // For 'say' beats, the callback in processBeat handles continuation
     }
@@ -2285,12 +2364,46 @@
               gainNode.gain.value = cached.volume || 1.0;
               sourceNode.connect(gainNode);
               gainNode.connect(analyser);
+              
+              if (sequentialMode) {
+                const nextBeat = currentSkit.script[sequentialIndex];
+                if (nextBeat?.offset < 0) {
+                  const duration = Number.isFinite(cached.buffer.duration)
+                    ? cached.buffer.duration
+                    : getActionDuration(beat);
+                  const triggerTime = Math.max(0, duration + nextBeat.offset) * 1000;
+                  const currentBeatIndex = sequentialIndex - 1;
+                  const sessionId = playSessionId;
+                  scheduledAdvanceIndices.add(currentBeatIndex);
+                  setTimeout(() => {
+                    if (sessionId !== playSessionId) return;
+                    processNextSequentialBeat();
+                  }, triggerTime);
+                }
+              }
+
               sourceNode.onended = onAudioEnd;
               sourceNode.start(0);
               currentSourceNode = sourceNode;
               currentGainNode = gainNode;
             } else if (cached.audio) {
               // Old-style: Audio element (for live TTS)
+              if (sequentialMode) {
+                const nextBeat = currentSkit.script[sequentialIndex];
+                if (nextBeat?.offset < 0) {
+                  const duration = Number.isFinite(cached.audio.duration)
+                    ? cached.audio.duration
+                    : getActionDuration(beat);
+                  const triggerTime = Math.max(0, duration + nextBeat.offset) * 1000;
+                  const currentBeatIndex = sequentialIndex - 1;
+                  const sessionId = playSessionId;
+                  scheduledAdvanceIndices.add(currentBeatIndex);
+                  setTimeout(() => {
+                    if (sessionId !== playSessionId) return;
+                    processNextSequentialBeat();
+                  }, triggerTime);
+                }
+              }
               cached.audio.onended = onAudioEnd;
               cached.audio.currentTime = 0;
               cached.audio.play().catch(e => {
