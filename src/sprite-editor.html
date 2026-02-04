@@ -5513,6 +5513,27 @@
           const attr = e.target.dataset.attr;
           selectedElement.setAttribute(attr, e.target.value);
           updateSpriteSource();
+
+          // If editing a face element, recapture original face values
+          const faceElementIds = ['eye-left-white', 'eye-right-white', 'eye-left-pupil', 'eye-right-pupil',
+                                   'brow-left', 'brow-right', 'mouth-closed', 'mouth-open'];
+          if (selectedElement.id && faceElementIds.includes(selectedElement.id)) {
+            // Reset emotion to neutral before recapturing
+            currentEmotion = 'neutral';
+            document.querySelectorAll('.emotion-btn').forEach(btn => {
+              btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
+            });
+            // Clear transforms on face elements
+            const svg = document.querySelector('#svg-canvas svg');
+            if (svg) {
+              ['brow-left', 'brow-right', 'mouth-closed'].forEach(id => {
+                const el = svg.querySelector('#' + id);
+                if (el) el.removeAttribute('transform');
+              });
+            }
+            // Recapture with new values
+            captureOriginalFaceValues();
+          }
         });
       });
     }
@@ -5613,6 +5634,17 @@
         document.removeEventListener('touchmove', drag);
         document.removeEventListener('touchend', endDrag);
         updateSpriteSource();
+
+        // If dragged a face element, recapture original face values
+        const faceElementIds = ['eye-left-white', 'eye-right-white', 'eye-left-pupil', 'eye-right-pupil',
+                                 'brow-left', 'brow-right', 'mouth-closed', 'mouth-open'];
+        if (el.id && faceElementIds.includes(el.id)) {
+          currentEmotion = 'neutral';
+          document.querySelectorAll('.emotion-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
+          });
+          captureOriginalFaceValues();
+        }
       }
     }
 
@@ -5933,6 +5965,8 @@
         if (response.ok) {
           updateStatus(`Saved: ${currentSpriteName}/${variant}`);
           showSaveSuccess();
+          // Recapture face values after save so manual edits become the new baseline
+          captureOriginalFaceValues();
           return;
         }
 
@@ -7708,6 +7742,16 @@
         if (xEyesGroup) xEyesGroup.setAttribute('opacity', '0');
       }
 
+      // Update blink original values to match new emotion state
+      originalEyeValues = {
+        leftWhiteRy: eyeLeftWhite ? eyeLeftWhite.getAttribute('ry') : '7',
+        rightWhiteRy: eyeRightWhite ? eyeRightWhite.getAttribute('ry') : '7',
+        leftPupilRy: eyeLeftPupil ? (eyeLeftPupil.getAttribute('ry') || eyeLeftPupil.getAttribute('r')) : '5',
+        rightPupilRy: eyeRightPupil ? (eyeRightPupil.getAttribute('ry') || eyeRightPupil.getAttribute('r')) : '5',
+        leftPupilUsesR: eyeLeftPupil ? !eyeLeftPupil.getAttribute('ry') : false,
+        rightPupilUsesR: eyeRightPupil ? !eyeRightPupil.getAttribute('ry') : false
+      };
+
       setStatus(`Emotion: ${emotion} (${currentSpriteType})`);
     }
 
@@ -7770,8 +7814,14 @@
         if (originalEyeValues) {
           if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', originalEyeValues.leftWhiteRy);
           if (eyeRightWhite) eyeRightWhite.setAttribute('ry', originalEyeValues.rightWhiteRy);
-          if (eyeLeftPupil) eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
-          if (eyeRightPupil) eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+          if (eyeLeftPupil) {
+            if (originalEyeValues.leftPupilUsesR) eyeLeftPupil.setAttribute('r', originalEyeValues.leftPupilRy);
+            else eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
+          }
+          if (eyeRightPupil) {
+            if (originalEyeValues.rightPupilUsesR) eyeRightPupil.setAttribute('r', originalEyeValues.rightPupilRy);
+            else eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+          }
         }
       } else {
         // Start blinking - store current values first
@@ -7779,27 +7829,41 @@
         btn.textContent = '👁️ Stop Blink';
         btn.classList.add('active');
 
-        // Store current eye values
+        // Store current eye values (check both ry and r for pupils)
         originalEyeValues = {
           leftWhiteRy: eyeLeftWhite ? eyeLeftWhite.getAttribute('ry') : '7',
           rightWhiteRy: eyeRightWhite ? eyeRightWhite.getAttribute('ry') : '7',
-          leftPupilRy: eyeLeftPupil ? eyeLeftPupil.getAttribute('ry') : '5',
-          rightPupilRy: eyeRightPupil ? eyeRightPupil.getAttribute('ry') : '5'
+          leftPupilRy: eyeLeftPupil ? (eyeLeftPupil.getAttribute('ry') || eyeLeftPupil.getAttribute('r')) : '5',
+          rightPupilRy: eyeRightPupil ? (eyeRightPupil.getAttribute('ry') || eyeRightPupil.getAttribute('r')) : '5',
+          leftPupilUsesR: eyeLeftPupil ? !eyeLeftPupil.getAttribute('ry') : false,
+          rightPupilUsesR: eyeRightPupil ? !eyeRightPupil.getAttribute('ry') : false
         };
 
         blinkingInterval = setInterval(() => {
           // Blink (close eyes - both whites and pupils)
           if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', '0.5');
           if (eyeRightWhite) eyeRightWhite.setAttribute('ry', '0.5');
-          if (eyeLeftPupil) eyeLeftPupil.setAttribute('ry', '0.3');
-          if (eyeRightPupil) eyeRightPupil.setAttribute('ry', '0.3');
+          if (eyeLeftPupil) {
+            if (originalEyeValues.leftPupilUsesR) eyeLeftPupil.setAttribute('r', '0.3');
+            else eyeLeftPupil.setAttribute('ry', '0.3');
+          }
+          if (eyeRightPupil) {
+            if (originalEyeValues.rightPupilUsesR) eyeRightPupil.setAttribute('r', '0.3');
+            else eyeRightPupil.setAttribute('ry', '0.3');
+          }
 
           // Open eyes after 100ms
           setTimeout(() => {
             if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', originalEyeValues.leftWhiteRy);
             if (eyeRightWhite) eyeRightWhite.setAttribute('ry', originalEyeValues.rightWhiteRy);
-            if (eyeLeftPupil) eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
-            if (eyeRightPupil) eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+            if (eyeLeftPupil) {
+              if (originalEyeValues.leftPupilUsesR) eyeLeftPupil.setAttribute('r', originalEyeValues.leftPupilRy);
+              else eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
+            }
+            if (eyeRightPupil) {
+              if (originalEyeValues.rightPupilUsesR) eyeRightPupil.setAttribute('r', originalEyeValues.rightPupilRy);
+              else eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+            }
           }, 100);
         }, 3000);
       }

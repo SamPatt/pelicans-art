@@ -613,14 +613,54 @@
     
     // Blinking system
     const blinkTimers = new Map();
-    
+    const blinkOriginalValues = new Map();
+
     function blink(charName) {
       const char = characters[charName];
       if (!char || !char.el) return;
-      
-      char.el.classList.add('blinking');
+
+      const el = char.el;
+      const eyeLeftWhite = el.querySelector('#eye-left-white');
+      const eyeRightWhite = el.querySelector('#eye-right-white');
+      const eyeLeftPupil = el.querySelector('#eye-left-pupil');
+      const eyeRightPupil = el.querySelector('#eye-right-pupil');
+
+      // Store original values if not stored
+      if (!blinkOriginalValues.has(charName)) {
+        blinkOriginalValues.set(charName, {
+          leftWhiteRy: eyeLeftWhite?.getAttribute('ry') || '7',
+          rightWhiteRy: eyeRightWhite?.getAttribute('ry') || '7',
+          leftPupilRy: eyeLeftPupil?.getAttribute('ry') || eyeLeftPupil?.getAttribute('r') || '5',
+          rightPupilRy: eyeRightPupil?.getAttribute('ry') || eyeRightPupil?.getAttribute('r') || '5'
+        });
+      }
+
+      // Close eyes (squish ry)
+      if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', '0.5');
+      if (eyeRightWhite) eyeRightWhite.setAttribute('ry', '0.5');
+      if (eyeLeftPupil) {
+        if (eyeLeftPupil.getAttribute('ry')) eyeLeftPupil.setAttribute('ry', '0.3');
+        else eyeLeftPupil.setAttribute('r', '0.3');
+      }
+      if (eyeRightPupil) {
+        if (eyeRightPupil.getAttribute('ry')) eyeRightPupil.setAttribute('ry', '0.3');
+        else eyeRightPupil.setAttribute('r', '0.3');
+      }
+
+      // Open eyes after blink duration
       setTimeout(() => {
-        char.el.classList.remove('blinking');
+        const orig = blinkOriginalValues.get(charName);
+        if (!orig) return;
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', orig.leftWhiteRy);
+        if (eyeRightWhite) eyeRightWhite.setAttribute('ry', orig.rightWhiteRy);
+        if (eyeLeftPupil) {
+          if (eyeLeftPupil.getAttribute('ry')) eyeLeftPupil.setAttribute('ry', orig.leftPupilRy);
+          else eyeLeftPupil.setAttribute('r', orig.leftPupilRy);
+        }
+        if (eyeRightPupil) {
+          if (eyeRightPupil.getAttribute('ry')) eyeRightPupil.setAttribute('ry', orig.rightPupilRy);
+          else eyeRightPupil.setAttribute('r', orig.rightPupilRy);
+        }
       }, 100);
     }
     
@@ -1506,7 +1546,15 @@
       // Apply highlights
       if (highlightLeft) highlightLeft.setAttribute('opacity', config.highlight);
       if (highlightRight) highlightRight.setAttribute('opacity', config.highlight);
-      
+
+      // Update blink original values to match new emotion state
+      blinkOriginalValues.set(charName, {
+        leftWhiteRy: eyeLeftWhite?.getAttribute('ry') || '7',
+        rightWhiteRy: eyeRightWhite?.getAttribute('ry') || '7',
+        leftPupilRy: eyeLeftPupil?.getAttribute('ry') || eyeLeftPupil?.getAttribute('r') || '5',
+        rightPupilRy: eyeRightPupil?.getAttribute('ry') || eyeRightPupil?.getAttribute('r') || '5'
+      });
+
       console.log(`${charName} emotion: ${emotion} (${isHuman ? 'human' : 'non-human'})`);
     }
     
