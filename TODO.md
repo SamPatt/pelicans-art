@@ -23,16 +23,21 @@ Add voice cloning to voice settings:
 - Add saved voice to the approved list of usable voices
 - Store voice samples appropriately (local or server)
 
+## Animation & Visuals
+
+### 5. Rework Emotions System
+Rework the emotion system, specifically the "surprise" emotion which isn't displaying correctly. Review all emotion configs and ensure they work properly across different sprite types (human, creature, trump-v3, etc.).
+
 ## Research & Architecture
 
-### 5. Feature Gap Analysis
+### 6. Feature Gap Analysis
 Research the highest-value missing features to make this a proper comedy skit creation / animation studio tool:
 - Survey similar tools (Plotagon, Vyond, GoAnimate, etc.)
 - Identify key workflows for comedy writers
 - List priority features: sound effects, music, transitions, timing tools, etc.
 - Consider collaboration features
 
-### 6. Codebase Refactoring Investigation
+### 7. Codebase Refactoring Investigation
 The main files (skit-player.html, sprite-editor.html, renderer.js) have grown very large. Investigate refactoring:
 - Identify logical module boundaries
 - Consider component-based architecture
