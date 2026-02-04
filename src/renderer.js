@@ -205,6 +205,13 @@ class SkitRenderer {
             this.props[beat.what].x = beat.at[0];
             this.props[beat.what].y = beat.at[1];
           }
+          // Support spawning held by a character
+          if (beat.who && this.characters[beat.who]) {
+            this.props[beat.what].heldBy = beat.who;
+            const char = this.characters[beat.who];
+            this.props[beat.what].x = char.x + 20;
+            this.props[beat.what].y = char.y - 40;
+          }
         }
         break;
 

@@ -192,6 +192,7 @@ OUTPUT FORMAT - Valid JSON with this structure:
     "character-id": {
       "sprite": "sprite-name",
       "x": 30,
+      "startX": -20,
       "voice": "marius"
     }
   },
@@ -209,14 +210,19 @@ OUTPUT FORMAT - Valid JSON with this structure:
     { "do": "shot", "type": "wide" },
     { "do": "say", "who": "character-id", "line": "Dialogue here" },
     { "do": "emote", "who": "character-id", "emotion": "happy" },
-    { "do": "spawn", "what": "prop-instance-id", "at": [50, 80] },
-    { "do": "prop-hold", "what": "prop-instance-id", "who": "character-id" }
+    { "do": "spawn", "what": "prop-instance-id", "who": "character-id" },
+    { "do": "prop-drop", "what": "prop-instance-id", "at": [50, 80] }
   ]
 }
 
 STAGE NOTES:
 - "background" should be one of the available background names
 - "orientation" should be one of the available orientations for that background (defaults to "landscape" if omitted)
+
+CAST NOTES:
+- "x" is the character's target position (0-100, where 50 is center)
+- "startX" is the initial position (use -20 for offscreen left, 120 for offscreen right)
+- Characters with startX will start offscreen and can "enter" to their x position
 
 PROPS NOTES:
 - "props" section defines prop instances with their initial state
@@ -234,7 +240,7 @@ AVAILABLE ACTIONS:
 - look: eye direction (who + at: left/right/up/down/audience)
 
 PROP ACTIONS:
-- spawn: make prop visible (what + optional at: [x, y])
+- spawn: make prop visible (what + optional at: [x, y] + optional who: character to hold it)
 - despawn: hide prop (what)
 - prop-move: animate prop to position (what + to: [x, y] + optional duration)
 - prop-hold: attach prop to character's hand (what + who)

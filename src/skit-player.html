@@ -487,9 +487,13 @@
       el.id = `char-${name}`;
       el.dataset.sprite = config.sprite;
       el.dataset.voice = config.voice;
-      el.style.left = `${config.x}%`;
 
-      // Add position class for head rotation direction
+      // Use startX for initial position if specified (for offscreen starts)
+      // Otherwise use x as the position
+      const initialX = config.startX !== undefined ? config.startX : config.x;
+      el.style.left = `${initialX}%`;
+
+      // Add position class for head rotation direction (based on target x, not start)
       el.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
 
       // Apply scale if specified
@@ -518,8 +522,12 @@
 
       stage.appendChild(el);
 
+      // Use startX for initial position if specified (for offscreen starts)
+      const initialX = config.startX !== undefined ? config.startX : config.x;
+
       characters[name] = {
-        x: config.x,
+        x: initialX, // Current position (may be offscreen initially)
+        targetX: config.x, // Where the character "belongs" (for enter actions)
         y: 67, // character center
         sprite: config.sprite,
         voice: config.voice,
@@ -683,15 +691,24 @@
         const char = characters[prop.heldBy];
         const charEl = char.el;
         const isFlipped = charEl.classList.contains('facing-left');
-        // Offset to appear in hand
-        const handOffsetX = isFlipped ? -8 : 8;
+        const scale = char.scale || 1;
+
+        // Offset to appear in hand - scale with character size
+        // Base offset is 12%, scaled by character scale
+        const baseOffsetX = 12 * scale;
+        const handOffsetX = isFlipped ? -baseOffsetX : baseOffsetX;
         const heldX = char.x + handOffsetX;
-        const heldY = 55; // Hand height in world coordinates (100 - 45% bottom)
+
+        // Hand height scales with character - taller characters have higher hands
+        // Base is 42% from bottom, adjusted for scale
+        const baseBottom = 42 + (scale - 1) * 10;
+        const heldY = 100 - baseBottom;
+
         // Update stored coordinates so drop without 'at' works correctly
         prop.x = heldX;
         prop.y = heldY;
         prop.el.style.left = `${heldX}%`;
-        prop.el.style.bottom = '45%';
+        prop.el.style.bottom = `${baseBottom}%`;
       } else {
         prop.el.style.left = `${prop.x}%`;
         prop.el.style.bottom = `${100 - prop.y}%`;
@@ -704,7 +721,7 @@
       prop.el.style.transform = transform;
     }
 
-    function spawnProp(id, at) {
+    function spawnProp(id, at, who) {
       const prop = props[id];
       if (!prop) return;
 
@@ -714,6 +731,13 @@
       }
       prop.visible = true;
       prop.el.classList.remove('hidden');
+
+      // If spawning held by someone, immediately attach
+      if (who && characters[who]) {
+        prop.heldBy = who;
+        prop.el.classList.add('held');
+      }
+
       updatePropPosition(id);
     }
 
@@ -852,19 +876,22 @@
     function enterCharacter(name, from, toX) {
       const char = characters[name];
       if (!char) return;
-      
+
+      // Use provided toX, or fall back to character's target position
+      const targetX = toX !== undefined ? toX : (char.targetX !== undefined ? char.targetX : char.x);
+
       // Start offscreen
       char.el.style.transition = 'none';
       char.el.style.left = from === 'left' ? '-20%' : '120%';
       char.el.style.opacity = '0';
       char.el.classList.remove('offscreen');
       char.el.offsetHeight; // reflow
-      
+
       // Animate in
       char.el.style.transition = 'left 1s ease-out, opacity 0.3s';
       char.el.style.opacity = '1';
-      char.x = toX;
-      char.el.style.left = `${toX}%`;
+      char.x = targetX;
+      char.el.style.left = `${targetX}%`;
     }
     
     function exitCharacter(name, to) {
@@ -2203,7 +2230,7 @@
 
         // Prop actions
         case 'spawn':
-          spawnProp(beat.what, beat.at);
+          spawnProp(beat.what, beat.at, beat.who);
           break;
 
         case 'despawn':
