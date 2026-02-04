@@ -316,6 +316,8 @@
   <div id="status">Loading...</div>
 
   <script>
+    console.log('[Player] Script started');
+
     // === STATE ===
     const characters = {};
     const props = {}; // propId -> { el, x, y, scale, rotation, visible, layer, heldBy, sprite }
@@ -521,9 +523,6 @@
       el.innerHTML = svgText;
 
       stage.appendChild(el);
-
-      // Use startX for initial position if specified (for offscreen starts)
-      const initialX = config.startX !== undefined ? config.startX : config.x;
 
       characters[name] = {
         x: initialX, // Current position (may be offscreen initially)
@@ -2386,6 +2385,9 @@
 
     // === INIT ===
     async function init() {
+      console.log('[Player] Init starting...');
+      console.log('[Player] URL:', window.location.href);
+
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       analyser = audioContext.createAnalyser();
       analyser.fftSize = 256;
@@ -2396,29 +2398,38 @@
       // Check for URL parameter to auto-load skit
       const params = new URLSearchParams(window.location.search);
       const skitParam = params.get('skit');
+      console.log('[Player] Skit param:', skitParam);
 
       if (skitParam) {
+        console.log('[Player] Loading skit from param, hiding old buttons...');
         // Hide skit switcher and URL loader immediately
-        document.querySelectorAll('#controls button:not(#playBtn):not(#captionBtn)').forEach(b => b.style.display = 'none');
+        document.querySelectorAll('#controls button:not(#playBtn):not(#captionBtn)').forEach(b => {
+          console.log('[Player] Hiding button:', b.textContent);
+          b.style.display = 'none';
+        });
         document.getElementById('url-loader').style.display = 'none';
 
         // Always try to load from API first (works for UUIDs and named skits)
         try {
+          console.log('[Player] Calling loadSkitFromApi...');
           await loadSkitFromApi(skitParam);
+          console.log('[Player] loadSkitFromApi succeeded');
         } catch (apiErr) {
-          console.warn('Failed to load from API, trying published folder:', apiErr);
+          console.warn('[Player] Failed to load from API, trying published folder:', apiErr);
           // Fall back to published folder
           try {
             await loadFromUrl(`published/${skitParam}.json`);
           } catch (pubErr) {
-            console.error('Failed to load skit:', pubErr);
+            console.error('[Player] Failed to load skit:', pubErr);
             document.getElementById('status').textContent = `Failed to load skit: ${skitParam}`;
           }
         }
       } else {
+        console.log('[Player] No skit param, loading default luckyCharms');
         // No skit param - show default demo skit
         await loadSkit('luckyCharms');
       }
+      console.log('[Player] Init complete');
     }
 
     init();
