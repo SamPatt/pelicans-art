@@ -4684,10 +4684,22 @@
             setCommandStatus('success', 'Saved!');
             input.value = '';
           } else if (assetType === 'sprite') {
-            // New sprite - save with the name we got earlier
+            // New sprite - use AI-generated meta, with fallbacks
+            const aiMeta = result.asset.meta || {};
             const meta = {
-              description: command,
-              type: result.asset.spriteType || 'creature'
+              name: aiMeta.name || assetName,
+              description: aiMeta.description || command,
+              type: result.asset.spriteType || aiMeta.type || 'creature',
+              tags: aiMeta.tags || [],
+              voice: aiMeta.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 },
+              colors: aiMeta.colors || {},
+              defaultVariant: 'front',
+              animation: aiMeta.animation || {
+                blinkInterval: 4,
+                blinkDuration: 150,
+                idleMovement: true,
+                eyeTracking: true
+              }
             };
             const saveResp = await fetch('/api/sprites', {
               method: 'POST',

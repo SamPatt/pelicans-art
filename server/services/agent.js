@@ -50,16 +50,47 @@ STYLE GUIDELINES:
 OUTPUT FORMAT - You must respond with valid JSON:
 {
   "type": "human" or "creature",
-  "svg": "<svg>...</svg>"
+  "svg": "<svg>...</svg>",
+  "meta": {
+    "name": "Character Name",
+    "description": "Brief description of the character",
+    "tags": ["tag1", "tag2"],
+    "voice": {
+      "id": "voice-id",
+      "pitch": 0,
+      "speed": 1,
+      "volume": 1
+    },
+    "colors": {
+      "skin": "#hexcolor",
+      "hair": "#hexcolor",
+      "primary": "#hexcolor"
+    }
+  }
 }
 
-TYPE IS REQUIRED - you MUST include the "type" field:
-- "human": Human characters (people, occupations like doctor/chef/teacher, named individuals, gangs, groups of people)
-- "creature": Non-human characters (animals, robots, aliens, monsters, fantasy beings, objects with faces)
+TYPE IS REQUIRED:
+- "human": Human characters (people, occupations, named individuals)
+- "creature": Non-human characters (animals, robots, aliens, monsters, fantasy beings)
 
-When in doubt, use "human" for any person or group of people.
+VOICE OPTIONS (choose one for voice.id):
+- "marius" - male voice
+- "javert" - male voice (deeper)
+- "jean" - male voice
+- "fantine" - female voice
+- "cosette" - female voice (younger)
+- "eponine" - female voice
+- "azelma" - female voice
+- "alba" - neutral voice
 
-Output ONLY valid JSON with type and svg. No explanation, no markdown code blocks.`,
+VOICE SETTINGS:
+- pitch: -1 to 1 (negative = deeper, positive = higher)
+- speed: 0.5 to 2 (1 = normal)
+- volume: 0.5 to 2 (1 = normal)
+
+Choose voice settings that match the character (e.g., large characters: deeper pitch, excited characters: faster speed).
+
+Output ONLY valid JSON. No explanation, no markdown code blocks.`,
 
   prop: `You are an SVG artist creating props (objects/items) for animated comedy skits.
 
@@ -435,7 +466,7 @@ export async function generateAsset(request) {
     const skit = extractJson(content);
     return { skit };
   } else if (type === 'sprite') {
-    // Sprite returns JSON with type and svg
+    // Sprite returns JSON with type, svg, and meta
     const parsed = extractJson(content);
     if (!parsed.svg) {
       throw new Error('Sprite response missing svg field');
@@ -446,7 +477,25 @@ export async function generateAsset(request) {
     }
     // Extract and validate the SVG
     const svg = extractSvg(parsed.svg);
-    return { svg, spriteType: parsed.type };
+
+    // Build meta object from response or defaults
+    const meta = {
+      type: parsed.type,
+      name: parsed.meta?.name || 'Generated Character',
+      description: parsed.meta?.description || '',
+      tags: parsed.meta?.tags || [],
+      voice: parsed.meta?.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 },
+      colors: parsed.meta?.colors || {},
+      defaultVariant: 'front',
+      animation: {
+        blinkInterval: 4,
+        blinkDuration: 150,
+        idleMovement: true,
+        eyeTracking: true
+      }
+    };
+
+    return { svg, spriteType: parsed.type, meta };
   } else {
     // Background returns raw SVG
     const svg = extractSvg(content);

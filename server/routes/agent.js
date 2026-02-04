@@ -67,10 +67,11 @@ router.post('/generate', async (req, res, next) => {
 
     // For edit mode with a name, save automatically and broadcast
     if (mode === 'edit' && current?.name && type === 'sprite') {
-      // Merge spriteType into meta if provided by AI
+      // Merge AI-generated meta into existing meta (AI values override)
       const updatedMeta = {
         ...(current.meta || {}),
-        ...(result.spriteType ? { type: result.spriteType } : {})
+        ...(result.meta || {}),
+        type: result.spriteType || current.meta?.type || 'human'
       };
 
       await saveSprite(current.name, result.svg, updatedMeta);
