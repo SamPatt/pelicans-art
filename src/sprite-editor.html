@@ -5518,20 +5518,12 @@
           const faceElementIds = ['eye-left-white', 'eye-right-white', 'eye-left-pupil', 'eye-right-pupil',
                                    'brow-left', 'brow-right', 'mouth-closed', 'mouth-open'];
           if (selectedElement.id && faceElementIds.includes(selectedElement.id)) {
-            // Reset emotion to neutral before recapturing
+            // Reset emotion to neutral (visually) but keep transforms intact
             currentEmotion = 'neutral';
             document.querySelectorAll('.emotion-btn').forEach(btn => {
               btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
             });
-            // Clear transforms on face elements
-            const svg = document.querySelector('#svg-canvas svg');
-            if (svg) {
-              ['brow-left', 'brow-right', 'mouth-closed'].forEach(id => {
-                const el = svg.querySelector('#' + id);
-                if (el) el.removeAttribute('transform');
-              });
-            }
-            // Recapture with new values
+            // Recapture face values including current transforms (from manual edits)
             captureOriginalFaceValues();
           }
         });
@@ -7595,6 +7587,14 @@
       return emotions.neutral;
     }
 
+    // Helper to extract translate values from transform attribute
+    function getTranslateFromTransform(transform) {
+      if (!transform) return { x: 0, y: 0 };
+      const match = transform.match(/translate\(\s*([\d.-]+)[,\s]*([\d.-]*)\s*\)/);
+      if (!match) return { x: 0, y: 0 };
+      return { x: parseFloat(match[1]) || 0, y: parseFloat(match[2]) || 0 };
+    }
+
     function captureOriginalFaceValues() {
       const svg = document.querySelector('#svg-canvas svg');
       if (!svg) return;
@@ -7607,6 +7607,16 @@
 
       const eyeCy = parseFloat(eyeL?.getAttribute('cy') || 52);
       const refCy = currentSpriteType === 'human' ? 42 : EMOTION_REF_EYE_CY;
+      const faceOffsetY = eyeCy - refCy;
+
+      // Capture current transforms on path elements
+      const browLTransform = getTranslateFromTransform(browL?.getAttribute('transform'));
+      const browRTransform = getTranslateFromTransform(browR?.getAttribute('transform'));
+      const mouthTransform = getTranslateFromTransform(mouth?.getAttribute('transform'));
+
+      // Subtract faceOffsetY from captured transforms to get just the manual offset
+      // (since emotion application adds faceOffsetY to the transform)
+      const prevFaceOffset = originalFaceValues?.faceOffsetY || 0;
 
       originalFaceValues = {
         eyeRy: parseFloat(eyeL?.getAttribute('ry') || 7),
@@ -7617,7 +7627,11 @@
         browRight: browR?.getAttribute('d') || '',
         mouth: mouth?.getAttribute('d') || '',
         // Calculate face offset from reference position
-        faceOffsetY: eyeCy - refCy
+        faceOffsetY: faceOffsetY,
+        // Store manual transform offsets (subtract the face offset that was applied by emotion system)
+        browLeftOffset: { x: browLTransform.x, y: browLTransform.y - prevFaceOffset },
+        browRightOffset: { x: browRTransform.x, y: browRTransform.y - prevFaceOffset },
+        mouthOffset: { x: mouthTransform.x, y: mouthTransform.y - prevFaceOffset }
       };
     }
 
@@ -7685,20 +7699,24 @@
         eyeRightPupil.setAttribute('cy', originalFaceValues.pupilCy + pupilCyDelta);
       }
 
-      // Apply eyebrows - use emotion path but translate to face position
+      // Apply eyebrows - use emotion path but translate to face position + manual offset
+      const browLOffset = originalFaceValues.browLeftOffset || { x: 0, y: 0 };
+      const browROffset = originalFaceValues.browRightOffset || { x: 0, y: 0 };
+      const mouthOffset = originalFaceValues.mouthOffset || { x: 0, y: 0 };
+
       if (browLeft) {
         browLeft.setAttribute('d', config.browLeft);
-        browLeft.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
+        browLeft.setAttribute('transform', `translate(${browLOffset.x}, ${originalFaceValues.faceOffsetY + browLOffset.y})`);
       }
       if (browRight) {
         browRight.setAttribute('d', config.browRight);
-        browRight.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
+        browRight.setAttribute('transform', `translate(${browROffset.x}, ${originalFaceValues.faceOffsetY + browROffset.y})`);
       }
 
-      // Apply mouth - use emotion path but translate to face position
+      // Apply mouth - use emotion path but translate to face position + manual offset
       if (mouthClosed) {
         mouthClosed.setAttribute('d', config.mouth);
-        mouthClosed.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
+        mouthClosed.setAttribute('transform', `translate(${mouthOffset.x}, ${originalFaceValues.faceOffsetY + mouthOffset.y})`);
         // Handle filled mouth (for surprised, dead circle mouths)
         if (config.mouthFill) {
           mouthClosed.setAttribute('fill', config.mouthFill);
