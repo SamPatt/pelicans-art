@@ -512,7 +512,7 @@
       let spriteType = 'creature'; // default
       let metaVoice = null;
       try {
-        const metaResp = await fetch(`sprites/${config.sprite}/meta.json`);
+        const metaResp = await fetch(`sprites/${config.sprite}/meta.json?v=${CACHE_BUSTER}`);
         if (metaResp.ok) {
           const meta = await metaResp.json();
           spriteType = meta.type || 'creature';
@@ -1297,22 +1297,42 @@
       };
     }
 
+    // Helper to extract translate values from transform attribute
+    function getTranslateFromTransform(transform) {
+      if (!transform) return { x: 0, y: 0 };
+      const match = transform.match(/translate\(\s*([\d.-]+)[,\s]*([\d.-]*)\s*\)/);
+      if (!match) return { x: 0, y: 0 };
+      return { x: parseFloat(match[1]) || 0, y: parseFloat(match[2]) || 0 };
+    }
+
     // Capture original face values from a character's SVG
     function captureOriginalFaceValues(el, isHuman) {
       const eyeL = el.querySelector('#eye-left-white');
       const pupilL = el.querySelector('#eye-left-pupil');
+      const browL = el.querySelector('#brow-left');
+      const browR = el.querySelector('#brow-right');
+      const mouth = el.querySelector('#mouth-closed');
 
       if (!eyeL) return null;
 
       const eyeCy = parseFloat(eyeL.getAttribute('cy') || (isHuman ? 42 : 52));
       const refCy = isHuman ? EMOTION_REF_EYE_CY_HUMAN : EMOTION_REF_EYE_CY_CREATURE;
 
+      // Capture current transforms on path elements (manual edits saved with sprite)
+      const browLTransform = getTranslateFromTransform(browL?.getAttribute('transform'));
+      const browRTransform = getTranslateFromTransform(browR?.getAttribute('transform'));
+      const mouthTransform = getTranslateFromTransform(mouth?.getAttribute('transform'));
+
       return {
         eyeRy: parseFloat(eyeL.getAttribute('ry') || (isHuman ? 3 : 7)),
         eyeCy: eyeCy,
         pupilRy: parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || (isHuman ? 1.5 : 5)),
         pupilCy: parseFloat(pupilL?.getAttribute('cy') || eyeCy),
-        faceOffsetY: eyeCy - refCy
+        faceOffsetY: eyeCy - refCy,
+        // Store manual transform offsets from saved sprite
+        browLeftOffset: browLTransform,
+        browRightOffset: browRTransform,
+        mouthOffset: mouthTransform
       };
     }
 
@@ -1483,20 +1503,24 @@
         eyeRightPupil.setAttribute('cy', orig.pupilCy + pupilCyDelta);
       }
 
-      // Apply eyebrows - use emotion path but translate to face position
+      // Apply eyebrows - use emotion path but translate to face position + manual offset
+      const browLOffset = orig.browLeftOffset || { x: 0, y: 0 };
+      const browROffset = orig.browRightOffset || { x: 0, y: 0 };
+      const mouthOffset = orig.mouthOffset || { x: 0, y: 0 };
+
       if (browLeft) {
         browLeft.setAttribute('d', isHuman ? config.browLeftHuman : config.browLeft);
-        browLeft.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+        browLeft.setAttribute('transform', `translate(${browLOffset.x}, ${orig.faceOffsetY + browLOffset.y})`);
       }
       if (browRight) {
         browRight.setAttribute('d', isHuman ? config.browRightHuman : config.browRight);
-        browRight.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+        browRight.setAttribute('transform', `translate(${browROffset.x}, ${orig.faceOffsetY + browROffset.y})`);
       }
 
-      // Apply mouth - use emotion path but translate to face position
+      // Apply mouth - use emotion path but translate to face position + manual offset
       if (mouthClosed) {
         mouthClosed.setAttribute('d', isHuman ? config.mouthHuman : config.mouth);
-        mouthClosed.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+        mouthClosed.setAttribute('transform', `translate(${mouthOffset.x}, ${orig.faceOffsetY + mouthOffset.y})`);
         // Handle filled mouth (for surprised, dead circle mouths)
         const mouthFill = isHuman ? config.mouthFillHuman : config.mouthFill;
         if (mouthFill) {
