@@ -931,12 +931,18 @@
 
     .cast-member {
       display: flex;
-      gap: 10px;
-      padding: 5px 10px;
+      flex-direction: column;
+      gap: 5px;
+      padding: 8px 10px;
       background: #16213e;
       border-radius: 4px;
       margin-bottom: 5px;
       font-size: 0.85em;
+    }
+
+    .cast-header {
+      display: flex;
+      gap: 10px;
     }
 
     .cast-id {
@@ -946,6 +952,33 @@
 
     .cast-sprite {
       color: #888;
+    }
+
+    .cast-fields {
+      display: flex;
+      gap: 15px;
+      font-size: 0.9em;
+    }
+
+    .cast-fields label {
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .cast-fields input {
+      width: 60px;
+      padding: 3px 5px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      color: #eee;
+      border-radius: 3px;
+    }
+
+    .cast-fields input::placeholder {
+      color: #555;
+      font-size: 0.85em;
     }
 
     /* Background selector in skit editor */
@@ -2595,9 +2628,15 @@
 
       // Cast
       const castHtml = Object.entries(skit.cast || {}).map(([id, char]) => `
-        <div class="cast-member">
-          <span class="cast-id">${id}</span>
-          <span class="cast-sprite">→ ${char.sprite}</span>
+        <div class="cast-member" data-char-id="${id}">
+          <div class="cast-header">
+            <span class="cast-id">${id}</span>
+            <span class="cast-sprite">→ ${char.sprite}</span>
+          </div>
+          <div class="cast-fields">
+            <label>X: <input type="number" class="cast-x" value="${char.x ?? 50}" min="-50" max="150" onchange="updateCastField('${id}', 'x', this.value)"></label>
+            <label>Start X: <input type="number" class="cast-startx" value="${char.startX ?? ''}" min="-50" max="150" placeholder="(same as X)" onchange="updateCastField('${id}', 'startX', this.value)"></label>
+          </div>
         </div>
       `).join('') || '<p style="color:#666;font-size:0.85em;">No cast defined</p>';
       document.getElementById('skit-cast-list').innerHTML = castHtml;
@@ -2659,7 +2698,7 @@
             cssClass = 'stage';
             break;
           case 'spawn':
-            content = `🎁 spawn ${action.what}${action.at ? ` at (${action.at[0]}, ${action.at[1]})` : ''}`;
+            content = `🎁 spawn ${action.what}${action.who ? ` held by ${action.who}` : (action.at ? ` at (${action.at[0]}, ${action.at[1]})` : '')}`;
             cssClass = 'prop';
             break;
           case 'despawn':
@@ -2974,10 +3013,17 @@
               <select id="action-what">${getPropOptions()}</select>
             </div>
             <div class="form-group">
+              <label>Held By (optional)</label>
+              <select id="action-who">
+                <option value="">(not held - use position)</option>
+                ${charOptions}
+              </select>
+            </div>
+            <div class="form-group" id="spawn-position-group">
               <label>Position X (0-100)</label>
               <input type="number" id="action-at-x" value="50" min="0" max="100">
             </div>
-            <div class="form-group">
+            <div class="form-group" id="spawn-position-y-group">
               <label>Position Y (0-100)</label>
               <input type="number" id="action-at-y" value="80" min="0" max="100">
             </div>`;
@@ -3158,6 +3204,7 @@
           // Prop actions
           case 'spawn':
             if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
             if (action.at) {
               if (document.getElementById('action-at-x')) document.getElementById('action-at-x').value = action.at[0] || 50;
               if (document.getElementById('action-at-y')) document.getElementById('action-at-y').value = action.at[1] || 80;
@@ -3379,10 +3426,16 @@
         // Prop actions
         case 'spawn':
           action.what = document.getElementById('action-what')?.value;
-          const spawnX = parseInt(document.getElementById('action-at-x')?.value);
-          const spawnY = parseInt(document.getElementById('action-at-y')?.value);
-          if (!isNaN(spawnX) && !isNaN(spawnY)) {
-            action.at = [spawnX, spawnY];
+          const spawnWho = document.getElementById('action-who')?.value;
+          if (spawnWho) {
+            action.who = spawnWho;
+            // Don't set position if held by character
+          } else {
+            const spawnX = parseInt(document.getElementById('action-at-x')?.value);
+            const spawnY = parseInt(document.getElementById('action-at-y')?.value);
+            if (!isNaN(spawnX) && !isNaN(spawnY)) {
+              action.at = [spawnX, spawnY];
+            }
           }
           if (!action.what) {
             alert('Prop is required');
@@ -3738,6 +3791,21 @@
         btn.textContent = 'Save Skit *';
         btn.style.background = '#e94560';
       }
+    }
+
+    function updateCastField(charId, field, value) {
+      if (!currentSkitData?.cast?.[charId]) return;
+
+      if (field === 'x') {
+        currentSkitData.cast[charId].x = parseInt(value) || 50;
+      } else if (field === 'startX') {
+        if (value === '' || value === null) {
+          delete currentSkitData.cast[charId].startX;
+        } else {
+          currentSkitData.cast[charId].startX = parseInt(value);
+        }
+      }
+      markSkitDirty();
     }
 
     async function saveSkitChanges() {
