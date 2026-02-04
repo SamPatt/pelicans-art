@@ -2246,7 +2246,6 @@
         resetHistory();
         applyZoom();
         updateCommandContext();
-        updateVariantTabs();
 
         // Update prop list selection
         document.querySelectorAll('.prop-item').forEach(item => {
@@ -2286,7 +2285,6 @@
         resetHistory();
         applyZoom();
         updateCommandContext();
-        updateVariantTabs();
 
         updateStatus(`New prop: ${name} - edit and save`);
       });
@@ -2326,11 +2324,11 @@
         }
 
         await loadProps();
-        flashSaveSuccess();
+        showSaveSuccess();
         updateStatus(`Saved prop: ${currentSpriteName}`);
       } catch (e) {
         console.error('Failed to save prop:', e);
-        flashSaveError();
+        showSaveError();
         updateStatus(`Error saving prop: ${e.message}`);
       }
     }
