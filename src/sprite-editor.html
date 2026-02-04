@@ -956,8 +956,9 @@
 
     .cast-fields {
       display: flex;
-      gap: 15px;
+      gap: 10px;
       font-size: 0.9em;
+      align-items: center;
     }
 
     .cast-fields label {
@@ -967,8 +968,7 @@
       gap: 5px;
     }
 
-    .cast-fields input {
-      width: 60px;
+    .cast-fields select {
       padding: 3px 5px;
       background: #0d0d1a;
       border: 1px solid #0f3460;
@@ -976,9 +976,13 @@
       border-radius: 3px;
     }
 
-    .cast-fields input::placeholder {
-      color: #555;
-      font-size: 0.85em;
+    .cast-manual-input input {
+      width: 50px;
+      padding: 3px 5px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      color: #eee;
+      border-radius: 3px;
     }
 
     /* Background selector in skit editor */
@@ -2627,18 +2631,32 @@
       populateBackgroundSelector(skit.stage?.background, skit.stage?.orientation);
 
       // Cast
-      const castHtml = Object.entries(skit.cast || {}).map(([id, char]) => `
+      const castHtml = Object.entries(skit.cast || {}).map(([id, char]) => {
+        const pos = getPositionPreset(char.startX ?? char.x);
+        const isManual = pos === 'manual';
+        return `
         <div class="cast-member" data-char-id="${id}">
           <div class="cast-header">
             <span class="cast-id">${id}</span>
             <span class="cast-sprite">→ ${char.sprite}</span>
           </div>
           <div class="cast-fields">
-            <label>X: <input type="number" class="cast-x" value="${char.x ?? 50}" min="-50" max="150" onchange="updateCastField('${id}', 'x', this.value)"></label>
-            <label>Start X: <input type="number" class="cast-startx" value="${char.startX ?? ''}" min="-50" max="150" placeholder="(same as X)" onchange="updateCastField('${id}', 'startX', this.value)"></label>
+            <label>Start:
+              <select class="cast-position" onchange="updateCastPosition('${id}', this.value, this)">
+                <option value="center" ${pos === 'center' ? 'selected' : ''}>Center</option>
+                <option value="left" ${pos === 'left' ? 'selected' : ''}>Left</option>
+                <option value="right" ${pos === 'right' ? 'selected' : ''}>Right</option>
+                <option value="offscreen-left" ${pos === 'offscreen-left' ? 'selected' : ''}>Offscreen Left</option>
+                <option value="offscreen-right" ${pos === 'offscreen-right' ? 'selected' : ''}>Offscreen Right</option>
+                <option value="manual" ${isManual ? 'selected' : ''}>Manual</option>
+              </select>
+            </label>
+            <span class="cast-manual-input" style="display: ${isManual ? 'inline' : 'none'}">
+              <input type="number" class="cast-manual-x" value="${char.startX ?? char.x ?? 50}" min="-50" max="150" onchange="updateCastManualPosition('${id}', this.value)">
+            </span>
           </div>
         </div>
-      `).join('') || '<p style="color:#666;font-size:0.85em;">No cast defined</p>';
+      `}).join('') || '<p style="color:#666;font-size:0.85em;">No cast defined</p>';
       document.getElementById('skit-cast-list').innerHTML = castHtml;
 
       // Props
@@ -3793,18 +3811,49 @@
       }
     }
 
-    function updateCastField(charId, field, value) {
+    // Position presets for cast members
+    const POSITION_PRESETS = {
+      'center': 50,
+      'left': 25,
+      'right': 75,
+      'offscreen-left': -20,
+      'offscreen-right': 120
+    };
+
+    function getPositionPreset(x) {
+      if (x === undefined || x === null || x === 50) return 'center';
+      if (x === 25) return 'left';
+      if (x === 75) return 'right';
+      if (x <= -10) return 'offscreen-left';
+      if (x >= 110) return 'offscreen-right';
+      return 'manual';
+    }
+
+    function updateCastPosition(charId, preset, selectEl) {
       if (!currentSkitData?.cast?.[charId]) return;
 
-      if (field === 'x') {
-        currentSkitData.cast[charId].x = parseInt(value) || 50;
-      } else if (field === 'startX') {
-        if (value === '' || value === null) {
-          delete currentSkitData.cast[charId].startX;
-        } else {
-          currentSkitData.cast[charId].startX = parseInt(value);
+      const manualInput = selectEl.closest('.cast-fields').querySelector('.cast-manual-input');
+
+      if (preset === 'manual') {
+        manualInput.style.display = 'inline';
+        // Keep current value or use center as default
+        const currentX = currentSkitData.cast[charId].startX ?? currentSkitData.cast[charId].x ?? 50;
+        manualInput.querySelector('input').value = currentX;
+      } else {
+        manualInput.style.display = 'none';
+        const x = POSITION_PRESETS[preset];
+        currentSkitData.cast[charId].startX = x;
+        // Also set x if it's not already set (for new characters)
+        if (currentSkitData.cast[charId].x === undefined) {
+          currentSkitData.cast[charId].x = x;
         }
       }
+      markSkitDirty();
+    }
+
+    function updateCastManualPosition(charId, value) {
+      if (!currentSkitData?.cast?.[charId]) return;
+      currentSkitData.cast[charId].startX = parseInt(value) || 50;
       markSkitDirty();
     }
 
