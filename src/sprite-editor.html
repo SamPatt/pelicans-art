@@ -1804,9 +1804,16 @@
     <div class="command-context">
       <span id="command-context-text">No sprite selected</span>
     </div>
+    <select id="command-type" onchange="updateCommandPlaceholder()" style="background:#0d0d1a;border:1px solid #0f3460;color:#eee;padding:8px 12px;border-radius:6px;font-size:0.9em;cursor:pointer;">
+      <option value="auto">Auto-detect</option>
+      <option value="sprite">Character</option>
+      <option value="prop">Prop</option>
+      <option value="background">Background</option>
+      <option value="skit">Skit</option>
+    </select>
     <div class="command-input-wrapper">
       <span class="command-icon">🤖</span>
-      <input type="text" id="command-input" placeholder="Describe a character to create..."
+      <input type="text" id="command-input" placeholder="Describe what to create..."
              onkeydown="if(event.key==='Enter') submitCommand()">
     </div>
     <button id="command-submit" onclick="submitCommand()">Generate</button>
@@ -4144,6 +4151,22 @@
     }
 
     // === AI COMMAND BAR ===
+    function updateCommandPlaceholder() {
+      const typeSelect = document.getElementById('command-type');
+      const inputEl = document.getElementById('command-input');
+      const type = typeSelect.value;
+
+      const placeholders = {
+        'auto': 'Describe what to create...',
+        'sprite': 'Describe a character (e.g., "angry chef with mustache")',
+        'prop': 'Describe a prop (e.g., "steaming coffee mug")',
+        'background': 'Describe a scene (e.g., "cozy coffee shop interior")',
+        'skit': 'Describe a skit (e.g., "two robots argue about feelings")'
+      };
+
+      inputEl.placeholder = placeholders[type] || placeholders['auto'];
+    }
+
     function updateCommandContext() {
       const contextEl = document.getElementById('command-context-text');
       const inputEl = document.getElementById('command-input');
@@ -4196,14 +4219,25 @@
 
       if (!hasSelection) {
         isCreateMode = true;
-        // Auto-detect type from command text
-        const lowerCmd = command.toLowerCase();
-        if (lowerCmd.includes('background') || lowerCmd.includes('scene') || lowerCmd.includes('setting')) {
-          assetType = 'background';
-        } else if (lowerCmd.includes('skit') || lowerCmd.includes('script') || lowerCmd.includes('dialogue')) {
-          assetType = 'skit';
+
+        // Check dropdown for explicit type selection
+        const typeSelect = document.getElementById('command-type');
+        const selectedType = typeSelect.value;
+
+        if (selectedType !== 'auto') {
+          assetType = selectedType;
         } else {
-          assetType = 'sprite';
+          // Auto-detect type from command text
+          const lowerCmd = command.toLowerCase();
+          if (lowerCmd.includes('background') || lowerCmd.includes('scene') || lowerCmd.includes('setting')) {
+            assetType = 'background';
+          } else if (lowerCmd.includes('skit') || lowerCmd.includes('script') || lowerCmd.includes('dialogue')) {
+            assetType = 'skit';
+          } else if (lowerCmd.includes('prop') || lowerCmd.includes('item') || lowerCmd.includes('object')) {
+            assetType = 'prop';
+          } else {
+            assetType = 'sprite';
+          }
         }
       }
 
@@ -4217,11 +4251,16 @@
           .slice(0, 3)
           .join('-');
 
-        const typeLabel = assetType === 'background' ? 'background' : 'sprite';
+        const typeLabels = {
+          'sprite': 'Character',
+          'prop': 'Prop',
+          'background': 'Background'
+        };
+        const typeLabel = typeLabels[assetType] || 'Asset';
 
         assetName = await showNamingModal({
-          title: `New ${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)}`,
-          label: `${typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1)} name`,
+          title: `New ${typeLabel}`,
+          label: `${typeLabel} name`,
           placeholder: 'lowercase-with-hyphens',
           defaultValue: suggestedName
         });
@@ -4314,6 +4353,34 @@
             } else {
               const err = await saveResp.json();
               throw new Error(err.message || 'Failed to save sprite');
+            }
+          } else if (assetType === 'prop') {
+            // New prop - save with the name we got earlier
+            const meta = {
+              name: assetName,
+              description: command,
+              defaultScale: 1.0,
+              anchorPoint: [0.5, 1.0],
+              holdOffset: [0, -10]
+            };
+            const saveResp = await fetch('/api/props', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: assetName,
+                svg: result.asset.svg,
+                meta
+              })
+            });
+
+            if (saveResp.ok) {
+              setCommandStatus('success', `Created prop: ${assetName}`);
+              input.value = '';
+              await loadProps();
+              selectProp(assetName);
+            } else {
+              const err = await saveResp.json();
+              throw new Error(err.message || 'Failed to save prop');
             }
           } else if (assetType === 'background') {
             // New background - generate and save both landscape and portrait
