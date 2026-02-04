@@ -2200,6 +2200,8 @@
 
     // Audio preview for voice testing
     let currentAudioPreview = null;
+    let previewAudioContext = null;
+    let previewSourceNode = null;
 
     // === COLLAPSIBLE SIDEBAR SECTIONS ===
     function toggleSection(sectionName) {
@@ -4076,12 +4078,16 @@
 
       try {
         // Stop any existing preview
+        if (previewSourceNode) {
+          try { previewSourceNode.stop(); } catch(e) {}
+          previewSourceNode = null;
+        }
         if (currentAudioPreview) {
           currentAudioPreview.pause();
           currentAudioPreview = null;
         }
 
-        const testText = `Hello, I am ${currentSpriteName || 'a character'}.`;
+        const testText = `Hello, I am ${currentSpriteName || 'a character'}. This is a preview of my voice so you can hear how I will sound in the skit.`;
 
         const response = await fetch('/api/tts', {
           method: 'POST',
@@ -4095,17 +4101,43 @@
         if (!response.ok) throw new Error('TTS request failed');
 
         const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
 
-        currentAudioPreview = new Audio(audioUrl);
-        currentAudioPreview.volume = parseFloat(document.getElementById('voice-volume').value);
-        currentAudioPreview.playbackRate = parseFloat(document.getElementById('voice-speed').value);
+        // Use Web Audio API for proper pitch control
+        if (!previewAudioContext) {
+          previewAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (previewAudioContext.state === 'suspended') {
+          await previewAudioContext.resume();
+        }
 
-        currentAudioPreview.onended = () => {
-          URL.revokeObjectURL(audioUrl);
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const audioBuffer = await previewAudioContext.decodeAudioData(arrayBuffer);
+
+        // Create source node with speed and pitch control
+        previewSourceNode = previewAudioContext.createBufferSource();
+        previewSourceNode.buffer = audioBuffer;
+
+        // Apply speed (playbackRate) and pitch (detune in cents)
+        const speed = parseFloat(document.getElementById('voice-speed').value);
+        const pitch = parseFloat(document.getElementById('voice-pitch').value);
+        const volume = parseFloat(document.getElementById('voice-volume').value);
+
+        previewSourceNode.playbackRate.value = speed;
+        // Convert pitch (-1 to 1) to cents (-600 to +600, i.e. 6 semitones)
+        previewSourceNode.detune.value = pitch * 600;
+
+        // Create gain node for volume
+        const gainNode = previewAudioContext.createGain();
+        gainNode.gain.value = volume;
+
+        previewSourceNode.connect(gainNode);
+        gainNode.connect(previewAudioContext.destination);
+
+        previewSourceNode.onended = () => {
+          previewSourceNode = null;
         };
 
-        await currentAudioPreview.play();
+        previewSourceNode.start(0);
 
       } catch (err) {
         console.error('Voice preview failed:', err);

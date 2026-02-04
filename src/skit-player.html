@@ -535,6 +535,9 @@
         y: 67, // character center
         sprite: config.sprite,
         voice: config.voice,
+        volume: config.volume,
+        speed: config.speed,
+        pitch: config.pitch,
         scale: config.scale || 1,
         type: spriteType,
         el: el
@@ -1778,10 +1781,18 @@
           gainNode.connect(analyser);
           
           // Use t-based key if available, otherwise use sequential index
-          const cacheKey = beat.t !== undefined 
-            ? `${beat.t}-${beat.who}` 
+          const cacheKey = beat.t !== undefined
+            ? `${beat.t}-${beat.who}`
             : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
-          audioCache.set(cacheKey, { audio, beat, charName: beat.who, gainNode });
+          audioCache.set(cacheKey, {
+            audio,
+            beat,
+            charName: beat.who,
+            gainNode,
+            volume: char.volume !== undefined ? char.volume : 1.0,
+            speed: char.speed !== undefined ? char.speed : 1.0,
+            pitch: char.pitch !== undefined ? char.pitch : 0
+          });
         } catch (e) {
           console.error('TTS error:', e);
         }
@@ -1968,11 +1979,13 @@
               const cacheKey = beat.t !== undefined 
                 ? `${beat.t}-${beat.who}` 
                 : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
-              audioCache.set(cacheKey, { 
+              audioCache.set(cacheKey, {
                 buffer: audioBuffer,
-                beat, 
-                charName: beat.who, 
-                volume: char.volume !== undefined ? char.volume : 1.0 
+                beat,
+                charName: beat.who,
+                volume: char.volume !== undefined ? char.volume : 1.0,
+                speed: char.speed !== undefined ? char.speed : 1.0,
+                pitch: char.pitch !== undefined ? char.pitch : 0
               });
             } catch (e) {
               console.warn(`Failed to decode audio ${i}:`, e);
@@ -2072,12 +2085,13 @@
           const sayIdx = sayActions.indexOf(beat);
           const cacheKey = beat.t !== undefined ? `${beat.t}-${beat.who}` : `seq-${sayIdx}-${beat.who}`;
           const cached = audioCache.get(cacheKey);
+          const speed = cached?.speed || 1.0;
 
           if (cached?.buffer && Number.isFinite(cached.buffer.duration)) {
-            return cached.buffer.duration;
+            return cached.buffer.duration / speed;
           }
           if (cached?.audio && Number.isFinite(cached.audio.duration)) {
-            return cached.audio.duration;
+            return cached.audio.duration / speed;
           }
           return 2;
         }
@@ -2414,6 +2428,12 @@
               // New-style: AudioBuffer (mobile-friendly)
               const sourceNode = audioContext.createBufferSource();
               sourceNode.buffer = cached.buffer;
+
+              // Apply speed (playbackRate) and pitch (detune in cents)
+              sourceNode.playbackRate.value = cached.speed || 1.0;
+              // Convert pitch (-1 to 1) to cents (-600 to +600, i.e. 6 semitones)
+              sourceNode.detune.value = (cached.pitch || 0) * 600;
+
               const gainNode = audioContext.createGain();
               gainNode.gain.value = cached.volume || 1.0;
               sourceNode.connect(gainNode);
@@ -2422,8 +2442,9 @@
               if (sequentialMode) {
                 const nextBeat = currentSkit.script[sequentialIndex];
                 if (nextBeat?.offset < 0) {
+                  const speed = cached.speed || 1.0;
                   const duration = Number.isFinite(cached.buffer.duration)
-                    ? cached.buffer.duration
+                    ? cached.buffer.duration / speed
                     : getActionDuration(beat);
                   const triggerTime = Math.max(0, duration + nextBeat.offset) * 1000;
                   const currentBeatIndex = sequentialIndex - 1;
@@ -2445,8 +2466,9 @@
               if (sequentialMode) {
                 const nextBeat = currentSkit.script[sequentialIndex];
                 if (nextBeat?.offset < 0) {
+                  const speed = cached.speed || 1.0;
                   const duration = Number.isFinite(cached.audio.duration)
-                    ? cached.audio.duration
+                    ? cached.audio.duration / speed
                     : getActionDuration(beat);
                   const triggerTime = Math.max(0, duration + nextBeat.offset) * 1000;
                   const currentBeatIndex = sequentialIndex - 1;
@@ -2458,6 +2480,8 @@
                   }, triggerTime);
                 }
               }
+              // Apply speed via playbackRate (note: also affects pitch for Audio elements)
+              cached.audio.playbackRate = cached.speed || 1.0;
               cached.audio.onended = onAudioEnd;
               cached.audio.currentTime = 0;
               cached.audio.play().catch(e => {
@@ -2700,7 +2724,15 @@
 
             // Use sequential index for cache key (API skits don't have t values)
             const cacheKey = `seq-${i}-${beat.who}`;
-            audioCache.set(cacheKey, { audio, beat, charName: beat.who, gainNode });
+            audioCache.set(cacheKey, {
+              audio,
+              beat,
+              charName: beat.who,
+              gainNode,
+              volume: char.volume !== undefined ? char.volume : 1.0,
+              speed: char.speed !== undefined ? char.speed : 1.0,
+              pitch: char.pitch !== undefined ? char.pitch : 0
+            });
           } catch (e) {
             console.error('TTS error for', beat.who, ':', e);
           }

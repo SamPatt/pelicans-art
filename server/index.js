@@ -1,11 +1,8 @@
+// Must be first import to ensure env vars are loaded
+import { TTS_URL, PORT, DATA_DIR, CORS_ORIGIN, OPENCLAW_URL, OPENCLAW_TOKEN } from './config.js';
+
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
-
-// Load .env from project root (parent of server/)
-const __dirnameEnv = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirnameEnv, '..', '.env') });
-
 import express from 'express';
 import cors from 'cors';
 import { createServer } from 'http';
@@ -13,8 +10,6 @@ import fetch from 'node-fetch';
 
 import { ensureDataDirs } from './services/storage.js';
 import { setupWebSocket } from './services/websocket.js';
-
-const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
 import spritesRouter from './routes/sprites.js';
 import skitsRouter from './routes/skits.js';
 import publishRouter from './routes/publish.js';
@@ -25,7 +20,6 @@ import agentRouter from './routes/agent.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = path.join(__dirname, '../src');
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../data');
 
 const app = express();
 const server = createServer(app);
@@ -34,7 +28,7 @@ const server = createServer(app);
 app.set('trust proxy', true);
 
 // Middleware
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
+app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json({ limit: '10mb' })); // Large SVGs can be big
 
 // API routes
@@ -112,7 +106,6 @@ async function start() {
   // Ensure data directories exist
   await ensureDataDirs(DATA_DIR);
 
-  const PORT = process.env.PORT || 3000;
   server.listen(PORT, () => {
     console.log(`SkitKit server running on :${PORT}`);
     console.log(`  Player: http://localhost:${PORT}/player`);
@@ -120,9 +113,9 @@ async function start() {
     console.log(`  API:    http://localhost:${PORT}/api`);
     console.log('');
     console.log('Services:');
-    console.log(`  TTS:      ${process.env.TTS_URL || 'http://127.0.0.1:8001'}`);
-    console.log(`  OpenClaw: ${process.env.OPENCLAW_URL || 'http://127.0.0.1:18789'}`);
-    if (!process.env.OPENCLAW_TOKEN) {
+    console.log(`  TTS:      ${TTS_URL}`);
+    console.log(`  OpenClaw: ${OPENCLAW_URL}`);
+    if (!OPENCLAW_TOKEN) {
       console.log('  ⚠️  OPENCLAW_TOKEN not set - AI generation will be unavailable');
     }
   });

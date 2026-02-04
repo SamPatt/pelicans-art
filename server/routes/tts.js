@@ -1,10 +1,9 @@
 import { Router } from 'express';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
+import { TTS_URL } from '../config.js';
 
 const router = Router();
-
-const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
 
 // Available voices from Pocket TTS
 const VOICES = [

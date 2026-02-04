@@ -193,7 +193,10 @@ OUTPUT FORMAT - Valid JSON with this structure:
       "sprite": "sprite-name",
       "x": 30,
       "startX": -20,
-      "voice": "marius"
+      "voice": "marius",
+      "volume": 1.0,
+      "speed": 1.0,
+      "pitch": 0
     }
   },
   "props": {
@@ -209,6 +212,7 @@ OUTPUT FORMAT - Valid JSON with this structure:
   "script": [
     { "do": "shot", "type": "wide" },
     { "do": "say", "who": "character-id", "line": "Dialogue here" },
+    { "do": "say", "who": "other-char", "line": "Interrupting!", "offset": -1.5 },
     { "do": "emote", "who": "character-id", "emotion": "happy" },
     { "do": "spawn", "what": "prop-instance-id", "who": "character-id" },
     { "do": "prop-drop", "what": "prop-instance-id", "at": [50, 80] }
@@ -224,6 +228,12 @@ CAST NOTES:
 - "startX" is the initial position (use -20 for offscreen left, 120 for offscreen right)
 - Characters with startX will start offscreen and can "enter" to their x position
 
+VOICE SETTINGS (optional per character):
+- "volume": 0 to 2 (default 1.0) - audio volume multiplier
+- "speed": 0.5 to 2 (default 1.0) - playback speed (2 = twice as fast)
+- "pitch": -1 to 1 (default 0) - pitch shift (-1 = 6 semitones lower, +1 = 6 semitones higher)
+Use these to differentiate characters: a deep slow villain (speed: 0.8, pitch: -0.5), an excited fast character (speed: 1.3, pitch: 0.2)
+
 PROPS NOTES:
 - "props" section defines prop instances with their initial state
 - "layer" can be "background" (behind characters) or "foreground" (in front of characters)
@@ -231,23 +241,38 @@ PROPS NOTES:
 
 AVAILABLE ACTIONS:
 - shot: type can be "wide", "medium", "closeup", "extreme-closeup", "two-shot"
-- say: character speaks (who + line)
-- emote: change expression (who + emotion: neutral/happy/sad/angry/surprised/worried/excited/smug/tired)
+- say: character speaks (who + line + optional offset)
+- emote: change expression (who + emotion)
 - pause: wait (duration in seconds)
 - enter: character enters (who + from: left/right + to: x position)
 - exit: character exits (who + to: left/right)
 - move: character moves (who + to: x position)
 - look: eye direction (who + at: left/right/up/down/audience)
 
+AVAILABLE EMOTIONS:
+neutral, happy, sad, angry, surprised, excited, worried, smug, tired, scared, thinking, confused
+
+OFFSET TIMING (for interruptions and overlapping dialogue):
+- Add "offset" to any action (negative number in seconds)
+- The action starts that many seconds BEFORE the previous action ends
+- Example: { "do": "say", "who": "bob", "line": "Wait!", "offset": -1.5 } starts 1.5s before the previous line ends
+- Great for: interruptions, reactions during speech, overlapping dialogue
+- The previous speaker's audio is cut when the new speaker starts
+
 PROP ACTIONS:
 - spawn: make prop visible (what + optional at: [x, y] + optional who: character to hold it)
 - despawn: hide prop (what)
 - prop-move: animate prop to position (what + to: [x, y] + optional duration)
-- prop-hold: attach prop to character's hand (what + who)
+- prop-hold: attach prop to character's hand (what + who + optional holdOffset: [x, y])
 - prop-drop: detach prop from character (what + optional at: [x, y])
 - prop-rotate: rotate prop (what + angle + optional duration)
 - prop-scale: scale prop (what + scale + optional duration)
 - prop-animate: play animation preset (what + animation: bounce/spin/shake/pulse/float + optional duration)
+
+PROP HOLD NOTES:
+- Props attached with prop-hold follow the character as they move
+- holdOffset adjusts where prop appears relative to character: [x-offset, y-offset]
+- Positive x = to character's right, negative y = higher up
 
 COMEDY GUIDELINES:
 - Find the "game" (central comic idea)
