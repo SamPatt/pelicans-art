@@ -23,7 +23,7 @@ router.get('/status', async (req, res) => {
  *
  * Body:
  * {
- *   type: 'sprite' | 'background' | 'skit',
+ *   type: 'sprite' | 'prop' | 'background' | 'skit',
  *   mode: 'create' | 'edit',
  *   command: 'user instruction',
  *   current: { name, svg, meta } // for edit mode
@@ -34,10 +34,10 @@ router.post('/generate', async (req, res, next) => {
     const { type, mode, command, current, orientation } = req.body;
 
     // Validate required fields
-    if (!type || !['sprite', 'background', 'skit'].includes(type)) {
+    if (!type || !['sprite', 'prop', 'background', 'skit'].includes(type)) {
       return res.status(400).json({
         error: true,
-        message: 'Invalid type. Must be sprite, background, or skit.'
+        message: 'Invalid type. Must be sprite, prop, background, or skit.'
       });
     }
 
