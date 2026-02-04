@@ -3015,11 +3015,17 @@
             <div class="form-group">
               <label>Look At</label>
               <select id="action-at">
-                <option value="left">left</option>
-                <option value="right">right</option>
-                <option value="up">up</option>
-                <option value="down">down</option>
-                <option value="audience">audience</option>
+                <optgroup label="Directions">
+                  <option value="left">left</option>
+                  <option value="right">right</option>
+                  <option value="up">up</option>
+                  <option value="down">down</option>
+                </optgroup>
+                <optgroup label="Special">
+                  <option value="audience">audience (face outward)</option>
+                  <option value="other">other (the other character)</option>
+                </optgroup>
+                ${getLookTargetOptions()}
               </select>
             </div>`;
           break;
@@ -3158,6 +3164,36 @@
       const props = Object.keys(currentSkitData.props);
       if (props.length === 0) return '<option value="">No props in skit</option>';
       return props.map(id => `<option value="${id}">${id}</option>`).join('');
+    }
+
+    function getLookTargetOptions() {
+      let html = '';
+
+      // Add character options
+      if (currentSkitData?.cast) {
+        const chars = Object.keys(currentSkitData.cast);
+        if (chars.length > 0) {
+          html += '<optgroup label="Characters">';
+          chars.forEach(id => {
+            html += `<option value="${id}">${id}</option>`;
+          });
+          html += '</optgroup>';
+        }
+      }
+
+      // Add prop options
+      if (currentSkitData?.props) {
+        const props = Object.keys(currentSkitData.props);
+        if (props.length > 0) {
+          html += '<optgroup label="Props">';
+          props.forEach(id => {
+            html += `<option value="${id}">${id}</option>`;
+          });
+          html += '</optgroup>';
+        }
+      }
+
+      return html;
     }
 
     function toggleSpawnPositionFields() {

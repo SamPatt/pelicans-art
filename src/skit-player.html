@@ -700,9 +700,9 @@
         const heldX = char.x + handOffsetX;
 
         // Hand height: characters are at bottom:12% with height:40%
-        // Hands are roughly 40-50% up the character body
-        // So hand position is around 12% + (40% * 0.45) = 30% from bottom
-        const baseBottom = 28 + (scale - 1) * 8;
+        // Hands are roughly 30-35% up the character body
+        // So hand position is around 12% + (40% * 0.3) = 24% from bottom
+        const baseBottom = 22 + (scale - 1) * 8;
         const heldY = 100 - baseBottom;
 
         // Update stored coordinates so drop without 'at' works correctly
@@ -2243,16 +2243,28 @@
         case 'look':
           // Handle look directions
           let lookDir = beat.at;
+          const looker = characters[beat.who];
+          if (!looker) break;
+
           if (beat.at === 'audience') {
             // Look away from center (toward camera)
-            lookDir = characters[beat.who].x < 50 ? 'left' : 'right';
+            lookDir = looker.x < 50 ? 'left' : 'right';
           } else if (beat.at === 'other') {
-            // Look at other character
+            // Look at the other character (first one that isn't self)
             const charNames = Object.keys(characters);
             const other = charNames.find(n => n !== beat.who);
             if (other) {
-              lookDir = characters[other].x > characters[beat.who].x ? 'right' : 'left';
+              lookDir = characters[other].x > looker.x ? 'right' : 'left';
             }
+          } else if (characters[beat.at]) {
+            // Look at a specific character by name
+            lookDir = characters[beat.at].x > looker.x ? 'right' : 'left';
+          } else if (props[beat.at]) {
+            // Look at a prop by name
+            lookDir = props[beat.at].x > looker.x ? 'right' : 'left';
+          } else if (Array.isArray(beat.at)) {
+            // Look at a position [x, y]
+            lookDir = beat.at[0] > looker.x ? 'right' : 'left';
           }
           setEyeDirection(beat.who, lookDir);
           break;
