@@ -800,6 +800,147 @@
       background: #9b59b6;
     }
 
+    /* === Stage Setup === */
+    .stage-setup-container {
+      margin-top: 8px;
+      border: 1px solid #1a4a7a;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .stage-setup-preview {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #0d0d1a;
+      overflow: hidden;
+    }
+
+    #stage-setup-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #stage-setup-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #stage-setup-props-bg,
+    #stage-setup-props-fg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .stage-prop-item {
+      position: absolute;
+      cursor: grab;
+      transform: translateX(-50%);
+      transform-origin: bottom center;
+      pointer-events: auto;
+      transition: box-shadow 0.15s, opacity 0.15s;
+      height: 15%;
+    }
+
+    .stage-prop-item:hover {
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+    }
+
+    .stage-prop-item.selected {
+      box-shadow: 0 0 0 3px #e94560;
+    }
+
+    .stage-prop-item.dragging {
+      opacity: 0.8;
+      cursor: grabbing;
+    }
+
+    .stage-prop-item img {
+      height: 100%;
+      width: auto;
+      display: block;
+    }
+
+    .stage-setup-controls {
+      padding: 10px;
+      background: #16213e;
+      border-top: 1px solid #1a4a7a;
+    }
+
+    .stage-prop-select-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .stage-prop-select-row label {
+      font-size: 0.85em;
+      color: #aaa;
+    }
+
+    .stage-prop-select-row select {
+      flex: 1;
+      padding: 4px 8px;
+      background: #0f3460;
+      border: 1px solid #1a4a7a;
+      color: #eee;
+      border-radius: 4px;
+    }
+
+    .stage-prop-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .stage-prop-controls .control-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stage-prop-controls .control-row label {
+      width: 80px;
+      font-size: 0.85em;
+      color: #aaa;
+    }
+
+    .stage-prop-controls .control-row input[type="range"] {
+      flex: 1;
+      accent-color: #4ecca3;
+    }
+
+    .stage-prop-controls .control-row input[type="checkbox"] {
+      accent-color: #4ecca3;
+      width: 18px;
+      height: 18px;
+    }
+
+    .stage-prop-controls .control-row span {
+      width: 40px;
+      font-size: 0.8em;
+      color: #4ecca3;
+      text-align: right;
+    }
+
+    .stage-prop-controls .control-row select {
+      flex: 1;
+      padding: 4px 8px;
+      background: #0f3460;
+      border: 1px solid #1a4a7a;
+      color: #eee;
+      border-radius: 4px;
+    }
+
     /* === Skit Items === */
     .skit-item {
       display: flex;
@@ -1981,6 +2122,52 @@
           <button class="add-prop-btn" onclick="addSkitProp('foreground')" style="flex:1;padding:6px;background:#0f3460;border:none;color:#eee;border-radius:4px;cursor:pointer;">+ Foreground Prop</button>
         </div>
 
+        <h4>🎬 Stage Setup</h4>
+        <div class="stage-setup-container">
+          <div id="stage-setup-preview" class="stage-setup-preview">
+            <div id="stage-setup-bg"></div>
+            <div id="stage-setup-props-bg"></div>
+            <div id="stage-setup-props-fg"></div>
+          </div>
+          <div class="stage-setup-controls">
+            <div class="stage-prop-select-row">
+              <label>Selected Prop:</label>
+              <select id="stage-setup-prop-select" onchange="selectStageProp(this.value)">
+                <option value="">-- Select a prop --</option>
+              </select>
+            </div>
+            <div id="stage-prop-controls" class="stage-prop-controls" style="display:none;">
+              <div class="control-row">
+                <label>X Position:</label>
+                <input type="range" id="stage-prop-x" min="-10" max="110" value="50" oninput="updateStagePropPosition('x', this.value)">
+                <span id="stage-prop-x-val">50%</span>
+              </div>
+              <div class="control-row">
+                <label>Y Position:</label>
+                <input type="range" id="stage-prop-y" min="-10" max="110" value="80" oninput="updateStagePropPosition('y', this.value)">
+                <span id="stage-prop-y-val">80%</span>
+              </div>
+              <div class="control-row">
+                <label>Scale:</label>
+                <input type="range" id="stage-prop-scale" min="0.1" max="6" step="0.1" value="1" oninput="updateStagePropScale(this.value)">
+                <span id="stage-prop-scale-val">1.0x</span>
+              </div>
+              <div class="control-row">
+                <label>Layer:</label>
+                <select id="stage-prop-layer" onchange="updateStagePropLayer(this.value)">
+                  <option value="background">Background</option>
+                  <option value="foreground">Foreground</option>
+                </select>
+              </div>
+              <div class="control-row">
+                <label>Visible:</label>
+                <input type="checkbox" id="stage-prop-visible" onchange="updateStagePropVisible(this.checked)">
+                <span style="flex:1;font-size:0.8em;color:#888;">Show at start (no spawn needed)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <h4>📝 Script</h4>
         <div id="skit-script-list"></div>
         <button class="add-action-btn" onclick="openAddActionModal()">+ Add Action</button>
@@ -2830,6 +3017,9 @@
 
       document.getElementById('skit-script-list').innerHTML = scriptHtml;
       initDragAndDrop();
+
+      // Render Stage Setup preview
+      renderStageSetup();
     }
 
     // === SKIT EDITING ===
@@ -3718,13 +3908,14 @@
       }
 
       // Add the prop instance
+      // Background props are visible by default for easier positioning
       currentSkitData.props[instanceId] = {
         prop: propName,
         x: 50,
         y: 80,
         scale: 1.0,
         layer: layer,
-        visible: false
+        visible: layer === 'background'
       };
 
       renderSkitStructure(currentSkitData);
@@ -3744,6 +3935,243 @@
 
       renderSkitStructure(currentSkitData);
       markSkitDirty();
+    }
+
+    // === STAGE SETUP ===
+    let selectedStageProp = null;
+    let isDraggingStageProp = false;
+    let dragOffset = { x: 0, y: 0 };
+
+    function renderStageSetup() {
+      if (!currentSkitData) return;
+
+      const bgContainer = document.getElementById('stage-setup-bg');
+      const propSelect = document.getElementById('stage-setup-prop-select');
+
+      // Load background
+      const bgName = currentSkitData.stage?.background;
+      const bgOrientation = currentSkitData.stage?.orientation || 'landscape';
+      if (bgName) {
+        const bgInfo = availableBackgrounds.find(b => b.name === bgName);
+        if (bgInfo && bgInfo.orientations?.includes(bgOrientation)) {
+          bgContainer.innerHTML = `<img src="/backgrounds/${bgName}/${bgOrientation}.svg" alt="${bgName}">`;
+        } else {
+          bgContainer.innerHTML = `<img src="/backgrounds/${bgName}.svg" alt="${bgName}">`;
+        }
+      } else {
+        bgContainer.innerHTML = '<div style="width:100%;height:100%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;color:#666;">No background</div>';
+      }
+
+      // Populate prop selector
+      const props = currentSkitData.props || {};
+      const propIds = Object.keys(props);
+      propSelect.innerHTML = '<option value="">-- Select a prop --</option>' +
+        propIds.map(id => `<option value="${id}" ${id === selectedStageProp ? 'selected' : ''}>${id} (${props[id].layer})</option>`).join('');
+
+      // Render props on stage
+      renderStageProps();
+
+      // Update controls if a prop is selected
+      if (selectedStageProp && props[selectedStageProp]) {
+        updateStagePropControls(props[selectedStageProp]);
+        document.getElementById('stage-prop-controls').style.display = 'flex';
+      } else {
+        document.getElementById('stage-prop-controls').style.display = 'none';
+      }
+    }
+
+    function renderStageProps() {
+      const bgContainer = document.getElementById('stage-setup-props-bg');
+      const fgContainer = document.getElementById('stage-setup-props-fg');
+      bgContainer.innerHTML = '';
+      fgContainer.innerHTML = '';
+
+      if (!currentSkitData?.props) return;
+
+      Object.entries(currentSkitData.props).forEach(([id, prop]) => {
+        const propInfo = propList.find(p => p.name === prop.prop);
+        if (!propInfo) return;
+
+        const el = document.createElement('div');
+        el.className = 'stage-prop-item' + (id === selectedStageProp ? ' selected' : '');
+        el.dataset.propId = id;
+        el.style.left = `${prop.x}%`;
+        el.style.bottom = `${100 - prop.y}%`;
+
+        const scale = prop.scale || 1;
+        el.style.transform = `translateX(-50%) scale(${scale})`;
+
+        const img = document.createElement('img');
+        img.src = `/props/${prop.prop}/prop.svg`;
+        img.draggable = false;
+        el.appendChild(img);
+
+        // Mouse event handlers
+        el.addEventListener('mousedown', (e) => startDragStageProp(e, id));
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectStageProp(id);
+        });
+
+        const container = prop.layer === 'foreground' ? fgContainer : bgContainer;
+        container.appendChild(el);
+      });
+    }
+
+    function selectStageProp(id) {
+      selectedStageProp = id || null;
+
+      // Update dropdown
+      document.getElementById('stage-setup-prop-select').value = id || '';
+
+      // Update visual selection
+      document.querySelectorAll('.stage-prop-item').forEach(el => {
+        el.classList.toggle('selected', el.dataset.propId === id);
+      });
+
+      // Show/hide and update controls
+      const controls = document.getElementById('stage-prop-controls');
+      if (id && currentSkitData?.props?.[id]) {
+        updateStagePropControls(currentSkitData.props[id]);
+        controls.style.display = 'flex';
+      } else {
+        controls.style.display = 'none';
+      }
+    }
+
+    function updateStagePropControls(prop) {
+      document.getElementById('stage-prop-x').value = prop.x;
+      document.getElementById('stage-prop-x-val').textContent = `${Math.round(prop.x)}%`;
+      document.getElementById('stage-prop-y').value = prop.y;
+      document.getElementById('stage-prop-y-val').textContent = `${Math.round(prop.y)}%`;
+      document.getElementById('stage-prop-scale').value = prop.scale || 1;
+      document.getElementById('stage-prop-scale-val').textContent = `${(prop.scale || 1).toFixed(1)}x`;
+      document.getElementById('stage-prop-layer').value = prop.layer || 'background';
+      document.getElementById('stage-prop-visible').checked = prop.visible || false;
+    }
+
+    function updateStagePropPosition(axis, value) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      const val = parseFloat(value);
+      currentSkitData.props[selectedStageProp][axis] = val;
+
+      // Update display
+      document.getElementById(`stage-prop-${axis}-val`).textContent = `${Math.round(val)}%`;
+
+      // Update prop position on stage
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+      if (el) {
+        if (axis === 'x') {
+          el.style.left = `${val}%`;
+        } else {
+          el.style.bottom = `${100 - val}%`;
+        }
+      }
+
+      markSkitDirty();
+    }
+
+    function updateStagePropScale(value) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      const scale = parseFloat(value);
+      currentSkitData.props[selectedStageProp].scale = scale;
+
+      // Update display
+      document.getElementById('stage-prop-scale-val').textContent = `${scale.toFixed(1)}x`;
+
+      // Update prop scale on stage
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+      if (el) {
+        el.style.transform = `translateX(-50%) scale(${scale})`;
+      }
+
+      markSkitDirty();
+    }
+
+    function updateStagePropLayer(value) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      currentSkitData.props[selectedStageProp].layer = value;
+
+      // Re-render to move to correct container
+      renderStageProps();
+      markSkitDirty();
+    }
+
+    function updateStagePropVisible(checked) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      currentSkitData.props[selectedStageProp].visible = checked;
+      markSkitDirty();
+    }
+
+    function startDragStageProp(e, id) {
+      e.preventDefault();
+      selectStageProp(id);
+
+      isDraggingStageProp = true;
+      const preview = document.getElementById('stage-setup-preview');
+      const rect = preview.getBoundingClientRect();
+
+      // Calculate offset from prop position (using bottom coordinate system)
+      const prop = currentSkitData.props[id];
+      const propX = (prop.x / 100) * rect.width;
+      const propY = ((100 - prop.y) / 100) * rect.height; // Y from bottom
+      dragOffset.x = e.clientX - rect.left - propX;
+      dragOffset.y = (rect.bottom - e.clientY) - propY; // Calculate from bottom
+
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${id}"]`);
+      if (el) el.classList.add('dragging');
+
+      document.addEventListener('mousemove', handleDragStageProp);
+      document.addEventListener('mouseup', endDragStageProp);
+    }
+
+    function handleDragStageProp(e) {
+      if (!isDraggingStageProp || !selectedStageProp) return;
+
+      const preview = document.getElementById('stage-setup-preview');
+      const rect = preview.getBoundingClientRect();
+
+      // Calculate percentage position (Y is measured from bottom in our coordinate system)
+      let x = ((e.clientX - rect.left - dragOffset.x) / rect.width) * 100;
+      let bottomPct = ((rect.bottom - e.clientY - dragOffset.y) / rect.height) * 100;
+      let y = 100 - bottomPct; // Convert bottom% to our y coordinate
+
+      // Clamp to -10 to 110 range
+      x = Math.max(-10, Math.min(110, x));
+      y = Math.max(-10, Math.min(110, y));
+
+      // Update data
+      currentSkitData.props[selectedStageProp].x = x;
+      currentSkitData.props[selectedStageProp].y = y;
+
+      // Update element position
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+      if (el) {
+        el.style.left = `${x}%`;
+        el.style.bottom = `${100 - y}%`;
+      }
+
+      // Update sliders
+      document.getElementById('stage-prop-x').value = x;
+      document.getElementById('stage-prop-x-val').textContent = `${Math.round(x)}%`;
+      document.getElementById('stage-prop-y').value = y;
+      document.getElementById('stage-prop-y-val').textContent = `${Math.round(y)}%`;
+    }
+
+    function endDragStageProp(e) {
+      if (isDraggingStageProp) {
+        isDraggingStageProp = false;
+        const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+        if (el) el.classList.remove('dragging');
+        markSkitDirty();
+      }
+
+      document.removeEventListener('mousemove', handleDragStageProp);
+      document.removeEventListener('mouseup', endDragStageProp);
     }
 
     // === SKIT BACKGROUND ===
@@ -3834,6 +4262,7 @@
       // Update preview
       loadBackgroundPreview(currentSkitData.stage.background, orientation);
       updateCollapsedBackgroundName(currentSkitData.stage.background, orientation);
+      renderStageSetup();
       markSkitDirty();
     }
 
@@ -3891,6 +4320,7 @@
 
       loadBackgroundPreview(backgroundName, currentSkitData.stage.orientation);
       updateCollapsedBackgroundName(backgroundName, currentSkitData.stage.orientation);
+      renderStageSetup();
       markSkitDirty();
     }
 
