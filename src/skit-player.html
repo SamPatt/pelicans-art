@@ -858,20 +858,23 @@
     function moveCharacter(name, toX, duration = 1) {
       const char = characters[name];
       if (!char) return;
-      
+
       char.el.style.transition = `left ${duration}s ease-in-out, opacity 0.3s`;
       char.x = toX;
       char.el.style.left = `${toX}%`;
-      
+
       // Update position class for head rotation direction
       char.el.classList.remove('pos-left', 'pos-right');
       char.el.classList.add(toX < 50 ? 'pos-left' : 'pos-right');
-      
+
       if (camera.follow === name) {
         animateCameraTo(toX, char.y, duration * 1000);
       }
+
+      // Update any held props to follow with same transition
+      updateHeldPropsForCharacter(name, duration);
     }
-    
+
     function enterCharacter(name, from, toX) {
       const char = characters[name];
       if (!char) return;
@@ -879,11 +882,18 @@
       // Use provided toX, or fall back to character's target position
       const targetX = toX !== undefined ? toX : (char.targetX !== undefined ? char.targetX : char.x);
 
+      const startX = from === 'left' ? -20 : 120;
+
       // Start offscreen
       char.el.style.transition = 'none';
-      char.el.style.left = from === 'left' ? '-20%' : '120%';
+      char.el.style.left = `${startX}%`;
       char.el.style.opacity = '0';
       char.el.classList.remove('offscreen');
+
+      // Position any held props at start position (no transition)
+      char.x = startX;
+      updateHeldPropsForCharacter(name, 0);
+
       char.el.offsetHeight; // reflow
 
       // Animate in
@@ -891,12 +901,38 @@
       char.el.style.opacity = '1';
       char.x = targetX;
       char.el.style.left = `${targetX}%`;
+
+      // Animate held props along with character
+      updateHeldPropsForCharacter(name, 1);
     }
-    
+
     function exitCharacter(name, to) {
       const char = characters[name];
       if (!char) return;
-      char.el.style.left = to === 'left' ? '-20%' : '120%';
+      char.x = to === 'left' ? -20 : 120;
+      char.el.style.left = `${char.x}%`;
+
+      // Update any held props to follow
+      updateHeldPropsForCharacter(name, 1);
+    }
+
+    function updateHeldPropsForCharacter(charName, duration) {
+      Object.keys(props).forEach(id => {
+        if (props[id].heldBy === charName) {
+          if (duration > 0) {
+            props[id].el.style.transition = `left ${duration}s ease-out, bottom ${duration}s ease-out`;
+          } else {
+            props[id].el.style.transition = 'none';
+          }
+          updatePropPosition(id);
+          // Reset transition after animation
+          if (duration > 0) {
+            setTimeout(() => {
+              props[id].el.style.transition = '';
+            }, duration * 1000);
+          }
+        }
+      });
     }
     
     // === EMOTION SYSTEM ===
