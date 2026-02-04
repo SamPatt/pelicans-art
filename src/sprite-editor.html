@@ -3393,9 +3393,11 @@
           break;
         case 'prop-move':
           action.what = document.getElementById('action-what')?.value;
-          const toX = parseInt(document.getElementById('action-to-x')?.value);
-          const toY = parseInt(document.getElementById('action-to-y')?.value);
-          action.to = [toX || 50, toY || 80];
+          const toXVal = document.getElementById('action-to-x')?.value;
+          const toYVal = document.getElementById('action-to-y')?.value;
+          const toX = toXVal !== '' ? parseInt(toXVal) : 50;
+          const toY = toYVal !== '' ? parseInt(toYVal) : 80;
+          action.to = [isNaN(toX) ? 50 : toX, isNaN(toY) ? 80 : toY];
           action.duration = parseFloat(document.getElementById('action-duration')?.value) || 1;
           if (!action.what) {
             alert('Prop is required');
@@ -3412,10 +3414,15 @@
           break;
         case 'prop-drop':
           action.what = document.getElementById('action-what')?.value;
-          const dropX = document.getElementById('action-at-x')?.value;
-          const dropY = document.getElementById('action-at-y')?.value;
-          if (dropX && dropY) {
-            action.at = [parseInt(dropX), parseInt(dropY)];
+          const dropXVal = document.getElementById('action-at-x')?.value;
+          const dropYVal = document.getElementById('action-at-y')?.value;
+          // Allow 0 as a valid coordinate - only set 'at' if both fields have values
+          if (dropXVal !== '' && dropYVal !== '') {
+            const dropX = parseInt(dropXVal);
+            const dropY = parseInt(dropYVal);
+            if (!isNaN(dropX) && !isNaN(dropY)) {
+              action.at = [dropX, dropY];
+            }
           }
           if (!action.what) {
             alert('Prop is required');

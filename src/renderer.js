@@ -227,16 +227,24 @@ class SkitRenderer {
       case 'prop-hold':
         if (this.props[beat.what]) {
           this.props[beat.what].heldBy = beat.who;
+          // Update position to character's hand
+          if (this.characters[beat.who]) {
+            const char = this.characters[beat.who];
+            this.props[beat.what].x = char.x + 20;
+            this.props[beat.what].y = char.y - 40;
+          }
         }
         break;
 
       case 'prop-drop':
         if (this.props[beat.what]) {
-          this.props[beat.what].heldBy = null;
+          // If no explicit position, keep current position (from being held)
           if (beat.at) {
             this.props[beat.what].x = beat.at[0];
             this.props[beat.what].y = beat.at[1];
           }
+          // Position is already set from hold tracking, no change needed if no 'at'
+          this.props[beat.what].heldBy = null;
         }
         break;
 
@@ -508,6 +516,7 @@ class SkitRenderer {
   getPropPositionBefore(propId, time) {
     const propDef = this.script.props?.[propId];
     let pos = [propDef?.x ?? 50, propDef?.y ?? 80];
+    let heldBy = null;
 
     for (const beat of this.script.script) {
       if (beat.t >= time) break;
@@ -515,11 +524,33 @@ class SkitRenderer {
 
       if (beat.do === 'spawn' && beat.at) {
         pos = [...beat.at];
+        heldBy = null;
       } else if (beat.do === 'prop-move' && beat.to) {
         pos = [...beat.to];
-      } else if (beat.do === 'prop-drop' && beat.at) {
-        pos = [...beat.at];
+        heldBy = null;
+      } else if (beat.do === 'prop-hold') {
+        heldBy = beat.who;
+        // Get character position at this beat's time
+        if (this.script.cast[heldBy]) {
+          const charPos = this.getPositionBefore(heldBy, beat.t + 0.001);
+          pos = [charPos[0] + 20, charPos[1] - 40]; // Hand offset
+        }
+      } else if (beat.do === 'prop-drop') {
+        if (beat.at) {
+          pos = [...beat.at];
+        } else if (heldBy) {
+          // Drop where character is at this time
+          const charPos = this.getPositionBefore(heldBy, beat.t + 0.001);
+          pos = [charPos[0] + 20, charPos[1] - 40];
+        }
+        heldBy = null;
       }
+    }
+
+    // If still held at the query time, get character's current position
+    if (heldBy && this.script.cast[heldBy]) {
+      const charPos = this.getPositionBefore(heldBy, time);
+      pos = [charPos[0] + 20, charPos[1] - 40];
     }
 
     return pos;

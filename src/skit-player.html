@@ -685,8 +685,13 @@
         const isFlipped = charEl.classList.contains('facing-left');
         // Offset to appear in hand
         const handOffsetX = isFlipped ? -8 : 8;
-        prop.el.style.left = `${char.x + handOffsetX}%`;
-        prop.el.style.bottom = '45%'; // Hand height
+        const heldX = char.x + handOffsetX;
+        const heldY = 55; // Hand height in world coordinates (100 - 45% bottom)
+        // Update stored coordinates so drop without 'at' works correctly
+        prop.x = heldX;
+        prop.y = heldY;
+        prop.el.style.left = `${heldX}%`;
+        prop.el.style.bottom = '45%';
       } else {
         prop.el.style.left = `${prop.x}%`;
         prop.el.style.bottom = `${100 - prop.y}%`;
