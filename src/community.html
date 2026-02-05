@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community - Pelicans.art</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #1a1a2e;
+      border-bottom: 2px solid #0f3460;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      color: #e94560;
+      font-size: 22px;
+    }
+
+    header h1 span {
+      color: #4ecca3;
+    }
+
+    .header-links a {
+      color: #888;
+      text-decoration: none;
+      font-size: 0.85em;
+      margin-left: 16px;
+    }
+
+    .header-links a:hover { color: #4ecca3; }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* Category tabs */
+    .category-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .category-tab {
+      padding: 8px 16px;
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      color: #888;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9em;
+      transition: all 0.15s;
+    }
+
+    .category-tab:hover {
+      border-color: #4ecca3;
+      color: #ccc;
+    }
+
+    .category-tab.active {
+      background: #0f3460;
+      border-color: #4ecca3;
+      color: #4ecca3;
+      font-weight: bold;
+    }
+
+    /* Asset grid */
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .asset-card {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .asset-card:hover {
+      border-color: #4ecca3;
+      transform: translateY(-2px);
+    }
+
+    .asset-card.selected {
+      border-color: #e94560;
+      box-shadow: 0 0 12px rgba(233, 69, 96, 0.3);
+    }
+
+    .asset-card-preview {
+      width: 100%;
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 8px;
+      background: #0d0d1a;
+      border-radius: 4px;
+    }
+
+    .asset-card-preview svg {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .asset-card-preview img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .asset-card-icon {
+      font-size: 2.5em;
+      color: #333;
+    }
+
+    .asset-card-name {
+      font-size: 0.85em;
+      color: #eee;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    .asset-card-meta {
+      font-size: 0.7em;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    /* Detail panel */
+    .detail-panel {
+      display: none;
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .detail-panel.visible { display: block; }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .detail-header h2 {
+      color: #4ecca3;
+      font-size: 1.2em;
+    }
+
+    .detail-close {
+      background: none;
+      border: 1px solid #333;
+      border-radius: 4px;
+      color: #888;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .detail-close:hover { border-color: #e94560; color: #e94560; }
+
+    .detail-preview {
+      background: #0d0d1a;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 150px;
+      max-height: 400px;
+      overflow: auto;
+    }
+
+    .detail-preview svg {
+      max-width: 100%;
+      max-height: 360px;
+    }
+
+    .detail-preview img {
+      max-width: 100%;
+      max-height: 360px;
+    }
+
+    .detail-info {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px 16px;
+      font-size: 0.85em;
+      margin-bottom: 16px;
+    }
+
+    .detail-label {
+      color: #555;
+    }
+
+    .detail-value {
+      color: #ccc;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .detail-btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.85em;
+      font-weight: bold;
+    }
+
+    .btn-download {
+      background: #4ecca3;
+      color: #111;
+    }
+
+    .btn-download:hover { background: #3db892; }
+
+    .btn-copy-link {
+      background: #0f3460;
+      color: #eee;
+    }
+
+    .btn-copy-link:hover { background: #1a4a80; }
+
+    .btn-play {
+      background: #e94560;
+      color: #fff;
+    }
+
+    .btn-play:hover { background: #d63550; }
+
+    /* Skit detail */
+    .skit-summary {
+      background: #0d0d1a;
+      border-radius: 6px;
+      padding: 16px;
+      margin-bottom: 16px;
+      font-size: 0.85em;
+      line-height: 1.6;
+    }
+
+    .skit-summary strong {
+      color: #4ecca3;
+    }
+
+    /* Loading & empty */
+    .loading, .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: #555;
+    }
+
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #333;
+      border-top-color: #4ecca3;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-left: 10px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .load-more {
+      display: block;
+      margin: 0 auto 24px;
+      padding: 10px 24px;
+      background: #0f3460;
+      border: 1px solid #4ecca3;
+      border-radius: 6px;
+      color: #4ecca3;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.9em;
+    }
+
+    .load-more:hover {
+      background: #1a4a80;
+    }
+
+    /* Published player embed */
+    .published-player {
+      position: relative;
+      width: 100%;
+      background: #0d0d1a;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .published-player canvas {
+      width: 100%;
+      display: block;
+    }
+
+    .player-controls {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      background: #111;
+      align-items: center;
+    }
+
+    .player-controls button {
+      background: #0f3460;
+      border: none;
+      color: #eee;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8em;
+    }
+
+    .player-controls button:hover { background: #1a4a80; }
+
+    .player-timeline {
+      flex: 1;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+
+    .player-timeline-fill {
+      height: 100%;
+      background: #e94560;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s;
+    }
+
+    /* Audio player for voice */
+    .voice-player {
+      margin-bottom: 16px;
+    }
+
+    .voice-player audio {
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .container { padding: 12px; }
+      .asset-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+      header { padding: 12px 16px; flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Pelicans.art <span>Community</span></h1>
+  <div class="header-links">
+    <a href="/">Theater</a>
+    <a href="/sprite-editor.html">Editor</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="category-tabs" id="category-tabs">
+    <button class="category-tab active" data-type="characters" onclick="switchCategory('characters')">Characters</button>
+    <button class="category-tab" data-type="props" onclick="switchCategory('props')">Props</button>
+    <button class="category-tab" data-type="backgrounds" onclick="switchCategory('backgrounds')">Backgrounds</button>
+    <button class="category-tab" data-type="skits" onclick="switchCategory('skits')">Skits</button>
+    <button class="category-tab" data-type="published" onclick="switchCategory('published')">Published</button>
+    <button class="category-tab" data-type="voices" onclick="switchCategory('voices')">Voices</button>
+  </div>
+
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-header">
+      <h2 id="detail-title">Asset</h2>
+      <button class="detail-close" onclick="closeDetail()">Close</button>
+    </div>
+    <div id="detail-content"></div>
+  </div>
+
+  <div id="asset-list">
+    <div class="loading" id="loading-indicator">Loading</div>
+    <div class="asset-grid" id="asset-grid"></div>
+    <div class="empty-state" id="empty-state" style="display:none;">No assets in this category yet.</div>
+    <button class="load-more" id="load-more-btn" style="display:none;" onclick="loadMore()">Load More</button>
+  </div>
+</div>
+
+<script>
+  const API_URL = 'https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community';
+
+  let currentCategory = 'characters';
+  let currentCursor = null;
+  let currentItems = [];
+  let selectedSlug = null;
+
+  // Icons per category for non-visual assets
+  const CATEGORY_ICONS = {
+    characters: '🧑',
+    props: '🎁',
+    backgrounds: '🏞️',
+    skits: '📝',
+    published: '🎬',
+    voices: '🎤',
+  };
+
+  // Which categories have SVG previews in the card grid
+  const VISUAL_CATEGORIES = ['characters', 'props', 'backgrounds'];
+
+  // File to fetch for card thumbnail preview
+  function previewFile(category, slug) {
+    switch (category) {
+      case 'characters': return `${API_URL}/characters/${slug}/front.svg`;
+      case 'props': return `${API_URL}/props/${slug}/prop.svg`;
+      case 'backgrounds': return `${API_URL}/backgrounds/${slug}/landscape.svg`;
+      default: return null;
+    }
+  }
+
+  // === Init ===
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const type = params.get('type');
+    const id = params.get('id');
+
+    if (type && ['characters', 'props', 'backgrounds', 'skits', 'published', 'voices'].includes(type)) {
+      currentCategory = type;
+      document.querySelectorAll('.category-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.type === type);
+      });
+    }
+
+    await loadCategory();
+
+    if (id) {
+      openDetail(id);
+    }
+  }
+
+  // === Category switching ===
+  function switchCategory(category) {
+    currentCategory = category;
+    currentCursor = null;
+    currentItems = [];
+    selectedSlug = null;
+    closeDetail();
+
+    document.querySelectorAll('.category-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.type === category);
+    });
+
+    // Update URL without reload
+    const url = new URL(window.location);
+    url.searchParams.set('type', category);
+    url.searchParams.delete('id');
+    history.replaceState(null, '', url);
+
+    loadCategory();
+  }
+
+  // === Load assets ===
+  async function loadCategory() {
+    const grid = document.getElementById('asset-grid');
+    const loading = document.getElementById('loading-indicator');
+    const empty = document.getElementById('empty-state');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
+    grid.innerHTML = '';
+    loading.style.display = '';
+    empty.style.display = 'none';
+    loadMoreBtn.style.display = 'none';
+    currentItems = [];
+    currentCursor = null;
+
+    try {
+      const resp = await fetch(`${API_URL}/${currentCategory}?limit=50`);
+      const data = await resp.json();
+
+      loading.style.display = 'none';
+      currentItems = data.items;
+      currentCursor = data.cursor;
+
+      if (data.items.length === 0) {
+        empty.style.display = '';
+        return;
+      }
+
+      renderCards(data.items);
+
+      if (data.hasMore && data.cursor) {
+        loadMoreBtn.style.display = '';
+      }
+    } catch (e) {
+      loading.style.display = 'none';
+      empty.style.display = '';
+      empty.textContent = 'Failed to load assets: ' + e.message;
+    }
+  }
+
+  async function loadMore() {
+    if (!currentCursor) return;
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    loadMoreBtn.textContent = 'Loading...';
+    loadMoreBtn.disabled = true;
+
+    try {
+      const resp = await fetch(`${API_URL}/${currentCategory}?limit=50&cursor=${encodeURIComponent(currentCursor)}`);
+      const data = await resp.json();
+      currentItems = currentItems.concat(data.items);
+      currentCursor = data.cursor;
+      renderCards(data.items, true);
+
+      if (data.hasMore && data.cursor) {
+        loadMoreBtn.style.display = '';
+      } else {
+        loadMoreBtn.style.display = 'none';
+      }
+    } catch (e) {
+      console.error('Load more failed:', e);
+    } finally {
+      loadMoreBtn.textContent = 'Load More';
+      loadMoreBtn.disabled = false;
+    }
+  }
+
+  // === Render cards ===
+  function renderCards(items, append = false) {
+    const grid = document.getElementById('asset-grid');
+    if (!append) grid.innerHTML = '';
+
+    for (const item of items) {
+      const card = document.createElement('div');
+      card.className = 'asset-card';
+      if (item.slug === selectedSlug) card.classList.add('selected');
+      card.onclick = () => openDetail(item.slug);
+
+      const preview = document.createElement('div');
+      preview.className = 'asset-card-preview';
+
+      const url = previewFile(currentCategory, item.slug);
+      if (url) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = item.name;
+        img.loading = 'lazy';
+        preview.appendChild(img);
+      } else {
+        const icon = document.createElement('div');
+        icon.className = 'asset-card-icon';
+        icon.textContent = CATEGORY_ICONS[currentCategory] || '📦';
+        preview.appendChild(icon);
+      }
+
+      const name = document.createElement('div');
+      name.className = 'asset-card-name';
+      name.textContent = item.name;
+
+      const meta = document.createElement('div');
+      meta.className = 'asset-card-meta';
+      meta.textContent = item.username;
+
+      card.appendChild(preview);
+      card.appendChild(name);
+      card.appendChild(meta);
+      grid.appendChild(card);
+    }
+  }
+
+  // === Detail view ===
+  async function openDetail(slug) {
+    selectedSlug = slug;
+    const panel = document.getElementById('detail-panel');
+    const title = document.getElementById('detail-title');
+    const content = document.getElementById('detail-content');
+
+    // Update URL
+    const url = new URL(window.location);
+    url.searchParams.set('type', currentCategory);
+    url.searchParams.set('id', slug);
+    history.replaceState(null, '', url);
+
+    // Highlight card
+    document.querySelectorAll('.asset-card').forEach((c, i) => {
+      c.classList.toggle('selected', currentItems[i]?.slug === slug);
+    });
+
+    panel.classList.add('visible');
+    title.textContent = 'Loading...';
+    content.innerHTML = '<div class="loading">Loading</div>';
+
+    try {
+      // Get metadata
+      const metaResp = await fetch(`${API_URL}/${currentCategory}/${slug}`);
+      if (!metaResp.ok) throw new Error('Asset not found');
+      const meta = await metaResp.json();
+
+      title.textContent = meta.name || slug;
+
+      // Build detail content per category
+      switch (currentCategory) {
+        case 'characters': await renderCharacterDetail(content, slug, meta); break;
+        case 'props': await renderPropDetail(content, slug, meta); break;
+        case 'backgrounds': await renderBackgroundDetail(content, slug, meta); break;
+        case 'skits': await renderSkitDetail(content, slug, meta); break;
+        case 'published': await renderPublishedDetail(content, slug, meta); break;
+        case 'voices': await renderVoiceDetail(content, slug, meta); break;
+      }
+    } catch (e) {
+      content.innerHTML = `<div class="empty-state">Error: ${e.message}</div>`;
+    }
+  }
+
+  function closeDetail() {
+    document.getElementById('detail-panel').classList.remove('visible');
+    selectedSlug = null;
+    document.querySelectorAll('.asset-card').forEach(c => c.classList.remove('selected'));
+
+    const url = new URL(window.location);
+    url.searchParams.delete('id');
+    history.replaceState(null, '', url);
+  }
+
+  // === Detail renderers ===
+
+  async function renderCharacterDetail(container, slug, meta) {
+    let html = '<div class="detail-preview" id="char-preview"></div>';
+    html += renderMetaTable(meta);
+    html += `<div class="detail-actions">
+      <button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', 'front.svg')">Download Front SVG</button>
+      <button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', 'back.svg')">Download Back SVG</button>
+      <button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', 'meta.json')">Download Meta</button>
+      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
+    </div>`;
+    container.innerHTML = html;
+
+    // Load front SVG
+    try {
+      const resp = await fetch(`${API_URL}/characters/${slug}/front.svg`);
+      if (resp.ok) {
+        document.getElementById('char-preview').innerHTML = await resp.text();
+      }
+    } catch (e) {}
+  }
+
+  async function renderPropDetail(container, slug, meta) {
+    let html = '<div class="detail-preview" id="prop-preview"></div>';
+    html += renderMetaTable(meta);
+    html += `<div class="detail-actions">
+      <button class="detail-btn btn-download" onclick="downloadFile('props', '${slug}', 'prop.svg')">Download SVG</button>
+      <button class="detail-btn btn-download" onclick="downloadFile('props', '${slug}', 'meta.json')">Download Meta</button>
+      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
+    </div>`;
+    container.innerHTML = html;
+
+    try {
+      const resp = await fetch(`${API_URL}/props/${slug}/prop.svg`);
+      if (resp.ok) {
+        document.getElementById('prop-preview').innerHTML = await resp.text();
+      }
+    } catch (e) {}
+  }
+
+  async function renderBackgroundDetail(container, slug, meta) {
+    let html = '<div class="detail-preview" id="bg-preview"></div>';
+    html += renderMetaTable(meta);
+    html += `<div class="detail-actions">
+      <button class="detail-btn btn-download" onclick="downloadFile('backgrounds', '${slug}', 'landscape.svg')">Download Landscape</button>
+      <button class="detail-btn btn-download" onclick="downloadFile('backgrounds', '${slug}', 'portrait.svg')">Download Portrait</button>
+      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
+    </div>`;
+    container.innerHTML = html;
+
+    try {
+      const resp = await fetch(`${API_URL}/backgrounds/${slug}/landscape.svg`);
+      if (resp.ok) {
+        document.getElementById('bg-preview').innerHTML = await resp.text();
+      }
+    } catch (e) {}
+  }
+
+  async function renderSkitDetail(container, slug, meta) {
+    let html = '';
+    try {
+      const resp = await fetch(`${API_URL}/skits/${slug}/data.json`);
+      if (resp.ok) {
+        const skit = await resp.json();
+        const castNames = skit.cast ? Object.keys(skit.cast).join(', ') : 'none';
+        const scriptLen = skit.script ? skit.script.length : 0;
+        const dialogueCount = skit.script ? skit.script.filter(a => a.type === 'say').length : 0;
+
+        html += `<div class="skit-summary">
+          <strong>Title:</strong> ${skit.meta?.title || 'Untitled'}<br>
+          ${skit.meta?.description ? `<strong>Description:</strong> ${skit.meta.description}<br>` : ''}
+          <strong>Background:</strong> ${skit.stage?.background || 'none'}<br>
+          <strong>Cast:</strong> ${castNames}<br>
+          <strong>Script:</strong> ${scriptLen} actions (${dialogueCount} lines of dialogue)
+        </div>`;
+      }
+    } catch (e) {}
+
+    html += renderMetaTable(meta);
+    html += `<div class="detail-actions">
+      <button class="detail-btn btn-download" onclick="downloadFile('skits', '${slug}', '${slug}.json')">Download JSON</button>
+      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
+    </div>`;
+    container.innerHTML = html;
+  }
+
+  async function renderPublishedDetail(container, slug, meta) {
+    let html = '';
+    try {
+      const resp = await fetch(`${API_URL}/published/${slug}/data.json`);
+      if (resp.ok) {
+        const pub = await resp.json();
+        const castNames = pub.cast ? Object.keys(pub.cast).join(', ') : 'none';
+        const scriptLen = pub.script ? pub.script.length : 0;
+        const dialogueCount = pub.script ? pub.script.filter(a => a.type === 'say').length : 0;
+        const audioCount = pub.assets?.audio ? Object.keys(pub.assets.audio).length : 0;
+        const spriteCount = pub.assets?.sprites ? Object.keys(pub.assets.sprites).length : 0;
+
+        html += `<div class="skit-summary">
+          <strong>Title:</strong> ${pub.meta?.title || 'Untitled'}<br>
+          ${pub.meta?.description ? `<strong>Description:</strong> ${pub.meta.description}<br>` : ''}
+          <strong>Background:</strong> ${pub.stage?.background || 'none'}<br>
+          <strong>Cast:</strong> ${castNames}<br>
+          <strong>Script:</strong> ${scriptLen} actions (${dialogueCount} lines)<br>
+          <strong>Assets:</strong> ${spriteCount} sprites, ${audioCount} audio clips
+        </div>`;
+
+        // Show the background as a preview if available
+        const bgName = pub.stage?.background;
+        if (bgName && pub.assets?.backgrounds?.[bgName]) {
+          html += `<div class="detail-preview"><img src="${pub.assets.backgrounds[bgName]}" alt="Background"></div>`;
+        }
+
+        // Play button opens in skit player
+        html += `<div style="text-align:center;color:#555;font-size:0.8em;margin-bottom:16px;">Full playback coming soon</div>`;
+      }
+    } catch (e) {}
+
+    html += renderMetaTable(meta);
+    html += `<div class="detail-actions">
+      <button class="detail-btn btn-download" onclick="downloadFile('published', '${slug}', '${slug}.json')">Download Bundle</button>
+      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
+    </div>`;
+    container.innerHTML = html;
+  }
+
+  async function renderVoiceDetail(container, slug, meta) {
+    let html = '';
+    const audioUrl = `${API_URL}/voices/${slug}/${slug}.wav`;
+
+    html += `<div class="voice-player">
+      <audio controls src="${audioUrl}" preload="none" style="width:100%;"></audio>
+    </div>`;
+    html += renderMetaTable(meta);
+    html += `<div class="detail-actions">
+      <button class="detail-btn btn-download" onclick="downloadFile('voices', '${slug}', '${slug}.wav')">Download WAV</button>
+      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
+    </div>`;
+    container.innerHTML = html;
+  }
+
+  // === Helpers ===
+
+  function renderMetaTable(meta) {
+    const date = meta.uploadedAt ? new Date(meta.uploadedAt).toLocaleDateString() : 'unknown';
+    const sizeKB = meta.size ? (meta.size / 1024).toFixed(1) + ' KB' : 'unknown';
+    return `<div class="detail-info">
+      <span class="detail-label">Uploaded by</span><span class="detail-value">${meta.username || 'unknown'}</span>
+      <span class="detail-label">Date</span><span class="detail-value">${date}</span>
+      <span class="detail-label">Size</span><span class="detail-value">${sizeKB}</span>
+      <span class="detail-label">Category</span><span class="detail-value">${meta.category || currentCategory}</span>
+    </div>`;
+  }
+
+  function copyAssetLink() {
+    const link = window.location.href;
+    navigator.clipboard.writeText(link).then(() => {
+      const btns = document.querySelectorAll('.btn-copy-link');
+      btns.forEach(b => { b.textContent = 'Copied!'; });
+      setTimeout(() => { btns.forEach(b => { b.textContent = 'Copy Link'; }); }, 2000);
+    }).catch(() => {
+      const tmp = document.createElement('input');
+      tmp.value = link;
+      document.body.appendChild(tmp);
+      tmp.select();
+      document.execCommand('copy');
+      document.body.removeChild(tmp);
+    });
+  }
+
+  async function downloadFile(category, slug, filename) {
+    const url = `${API_URL}/${category}/${slug}/${filename}`;
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        alert('File not found');
+        return;
+      }
+      const blob = await resp.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    } catch (e) {
+      alert('Download failed: ' + e.message);
+    }
+  }
+
+  // === Boot ===
+  init();
+</script>
+
+</body>
+</html>
