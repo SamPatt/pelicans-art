@@ -628,6 +628,87 @@
       animation: pulse 1.5s ease-in-out infinite;
     }
 
+    /* === Asset Picker === */
+    .asset-picker-wrapper {
+      position: relative;
+    }
+
+    #asset-picker-btn {
+      background: transparent;
+      border: 1px solid #0f3460;
+      color: #4ecca3;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85em;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    #asset-picker-btn:hover {
+      background: #0f3460;
+      border-color: #4ecca3;
+    }
+
+    .asset-picker-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      max-height: 320px;
+      overflow-y: auto;
+      z-index: 999;
+      min-width: 240px;
+      padding: 8px 0;
+    }
+
+    .asset-picker-dropdown.open {
+      display: block;
+    }
+
+    .asset-picker-heading {
+      padding: 6px 12px 4px;
+      font-size: 0.75em;
+      font-weight: bold;
+      color: #e94560;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .asset-picker-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 2px 10px 8px;
+    }
+
+    .asset-picker-item {
+      padding: 4px 10px;
+      background: #0f3460;
+      border: 1px solid #1a4a7a;
+      border-radius: 4px;
+      color: #4ecca3;
+      cursor: pointer;
+      font-size: 0.82em;
+      transition: all 0.15s;
+    }
+
+    .asset-picker-item:hover {
+      background: #1a4a7a;
+      border-color: #4ecca3;
+    }
+
+    .asset-picker-empty {
+      padding: 4px 12px 8px;
+      font-size: 0.8em;
+      color: #666;
+      font-style: italic;
+    }
+
     /* === Collapsible Sidebar Sections === */
     .sidebar-section {
       border-bottom: 1px solid #0f3460;
@@ -2361,6 +2442,23 @@
     </select>
     <div class="command-input-wrapper">
       <span class="command-icon">🤖</span>
+      <div class="asset-picker-wrapper">
+        <button id="asset-picker-btn" type="button" onclick="toggleAssetPicker(event)">+ Assets</button>
+        <div class="asset-picker-dropdown" id="asset-picker-dropdown">
+          <div class="asset-picker-section" id="asset-picker-characters">
+            <div class="asset-picker-heading">Characters</div>
+            <div class="asset-picker-items"></div>
+          </div>
+          <div class="asset-picker-section" id="asset-picker-backgrounds">
+            <div class="asset-picker-heading">Backgrounds</div>
+            <div class="asset-picker-items"></div>
+          </div>
+          <div class="asset-picker-section" id="asset-picker-props">
+            <div class="asset-picker-heading">Props</div>
+            <div class="asset-picker-items"></div>
+          </div>
+        </div>
+      </div>
       <input type="text" id="command-input" placeholder="Describe what to create..."
              onkeydown="if(event.key==='Enter') submitCommand()">
     </div>
@@ -6151,6 +6249,96 @@
         }, 3000);
       }
     }
+
+    // === Asset Picker ===
+    function populateAssetPicker() {
+      // Characters
+      const charContainer = document.getElementById('asset-picker-characters').querySelector('.asset-picker-items');
+      if (characterList.length === 0) {
+        charContainer.innerHTML = '<div class="asset-picker-empty">None yet</div>';
+      } else {
+        charContainer.innerHTML = characterList.map(name => {
+          const val = `character: ${name}`;
+          return `<button type="button" class="asset-picker-item" onclick="insertAssetName('${val.replace(/'/g, "\\'")}')">${name}</button>`;
+        }).join('');
+      }
+
+      // Backgrounds — list each orientation as a separate entry with hyphen suffix
+      const bgContainer = document.getElementById('asset-picker-backgrounds').querySelector('.asset-picker-items');
+      if (backgroundList.length === 0) {
+        bgContainer.innerHTML = '<div class="asset-picker-empty">None yet</div>';
+      } else {
+        const bgItems = [];
+        backgroundList.forEach(bg => {
+          const name = bg.name || bg;
+          const orientations = bg.orientations || ['landscape'];
+          orientations.forEach(orient => {
+            const label = `${name}-${orient}`;
+            const val = `background: ${label}`;
+            bgItems.push(`<button type="button" class="asset-picker-item" onclick="insertAssetName('${val.replace(/'/g, "\\'")}')">${label}</button>`);
+          });
+        });
+        bgContainer.innerHTML = bgItems.join('');
+      }
+
+      // Props
+      const propContainer = document.getElementById('asset-picker-props').querySelector('.asset-picker-items');
+      if (propList.length === 0) {
+        propContainer.innerHTML = '<div class="asset-picker-empty">None yet</div>';
+      } else {
+        propContainer.innerHTML = propList.map(p => {
+          const name = p.name || p;
+          const val = `prop: ${name}`;
+          return `<button type="button" class="asset-picker-item" onclick="insertAssetName('${val.replace(/'/g, "\\'")}')">${name}</button>`;
+        }).join('');
+      }
+    }
+
+    function toggleAssetPicker(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById('asset-picker-dropdown');
+      const isOpen = dropdown.classList.contains('open');
+      if (isOpen) {
+        dropdown.classList.remove('open');
+      } else {
+        populateAssetPicker();
+        dropdown.classList.add('open');
+      }
+    }
+
+    function insertAssetName(name) {
+      const input = document.getElementById('command-input');
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const text = input.value;
+
+      // Add space before if cursor is not at start and previous char isn't a space
+      let prefix = '';
+      if (start > 0 && text[start - 1] !== ' ') prefix = ' ';
+
+      // Add space after if cursor is not at end and next char isn't a space
+      let suffix = '';
+      if (end < text.length && text[end] !== ' ') suffix = ' ';
+
+      const insertion = prefix + name + suffix;
+      input.value = text.slice(0, start) + insertion + text.slice(end);
+
+      // Position cursor after the inserted name
+      const newPos = start + insertion.length;
+      input.setSelectionRange(newPos, newPos);
+
+      // Close dropdown and refocus input
+      document.getElementById('asset-picker-dropdown').classList.remove('open');
+      input.focus();
+    }
+
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('asset-picker-dropdown');
+      const btn = document.getElementById('asset-picker-btn');
+      if (dropdown && !dropdown.contains(e.target) && e.target !== btn) {
+        dropdown.classList.remove('open');
+      }
+    });
 
     async function submitCommand() {
       const input = document.getElementById('command-input');
