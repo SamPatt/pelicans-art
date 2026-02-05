@@ -5128,6 +5128,7 @@
     const COMMUNITY_API_URL = 'https://pelicans-community.sampatt.workers.dev/api/community';
     let communityVoiceFile = null;
     let communityPayloadCache = null;
+    let communityPreviewGeneration = 0;
 
     function getCommunityUsername() {
       return localStorage.getItem('pelicans-community-username') || '';
@@ -5190,6 +5191,7 @@
     }
 
     async function updateCommunityPreview(type) {
+      const generation = ++communityPreviewGeneration;
       const preview = document.getElementById('community-preview');
       const nameInput = document.getElementById('community-asset-name');
       const sizeEst = document.getElementById('community-size-estimate');
@@ -5206,8 +5208,9 @@
         }
         sizeEst.textContent = 'Calculating size...';
         try {
-          estimateCommunitySize(await buildCharacterPayload());
-        } catch (e) { sizeEst.textContent = 'Could not estimate size'; }
+          const payload = await buildCharacterPayload();
+          if (generation === communityPreviewGeneration) estimateCommunitySize(payload);
+        } catch (e) { if (generation === communityPreviewGeneration) sizeEst.textContent = 'Could not estimate size'; }
       } else if (type === 'props' && currentEditMode === 'prop' && currentSpriteName) {
         nameInput.value = currentMeta?.name || currentSpriteName;
         if (currentSprite) {
@@ -5221,8 +5224,9 @@
         }
         sizeEst.textContent = 'Calculating size...';
         try {
-          estimateCommunitySize(await buildBackgroundPayload());
-        } catch (e) { sizeEst.textContent = 'Could not estimate size'; }
+          const payload = await buildBackgroundPayload();
+          if (generation === communityPreviewGeneration) estimateCommunitySize(payload);
+        } catch (e) { if (generation === communityPreviewGeneration) sizeEst.textContent = 'Could not estimate size'; }
       } else if (type === 'skits' && currentSkitId && currentSkitData) {
         nameInput.value = currentSkitData.meta?.title || currentSkitId;
         const meta = currentSkitData.meta || {};

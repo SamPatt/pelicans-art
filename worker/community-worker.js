@@ -175,21 +175,38 @@ function indexSuffix(category) {
   }
 }
 
+// Cursor format: JSON { r2Cursor?, skip }
+// r2Cursor = opaque R2 cursor for the current page
+// skip = number of R2 objects to skip within that page (to resume mid-page)
+function encodeCursor(r2Cursor, skip) {
+  return btoa(JSON.stringify({ r: r2Cursor || null, s: skip }));
+}
+
+function decodeCursor(cursor) {
+  if (!cursor) return { r2Cursor: undefined, skip: 0 };
+  try {
+    const parsed = JSON.parse(atob(cursor));
+    return { r2Cursor: parsed.r || undefined, skip: parsed.s || 0 };
+  } catch {
+    return { r2Cursor: undefined, skip: 0 };
+  }
+}
+
 async function listCategory(bucket, category, cursor, limit) {
   limit = Math.min(Math.max(parseInt(limit) || 50, 1), 100);
   const suffix = indexSuffix(category);
   const items = [];
-  let nextCursor = cursor || undefined;
-  let hasMore = false;
+  let { r2Cursor, skip } = decodeCursor(cursor);
 
-  // Page through R2 until we have enough filtered items or exhaust all objects
   while (items.length < limit) {
     const opts = { prefix: `${category}/`, limit: 1000 };
-    if (nextCursor) opts.cursor = nextCursor;
+    if (r2Cursor) opts.cursor = r2Cursor;
 
     const listed = await bucket.list(opts);
+    const objects = listed.objects;
 
-    for (const obj of listed.objects) {
+    for (let i = skip; i < objects.length; i++) {
+      const obj = objects[i];
       if (!obj.key.endsWith(suffix)) continue;
       const meta = obj.customMetadata || {};
       items.push({
@@ -201,29 +218,30 @@ async function listCategory(bucket, category, cursor, limit) {
         size: obj.size,
       });
       if (items.length >= limit) {
-        // We hit the requested limit — there may be more objects remaining
-        hasMore = true;
-        nextCursor = listed.truncated ? listed.cursor : null;
-        break;
+        // Stopped mid-page at R2 object index i. Next request should
+        // re-fetch this same R2 page and skip i+1 objects.
+        const moreInPage = i + 1 < objects.length;
+        const morePages = listed.truncated;
+        if (moreInPage || morePages) {
+          const nextCursor = moreInPage
+            ? encodeCursor(r2Cursor, i + 1)
+            : encodeCursor(listed.cursor, 0);
+          return { items, cursor: nextCursor, hasMore: true };
+        }
+        return { items, cursor: null, hasMore: false };
       }
     }
 
-    if (items.length >= limit) break;
-
+    // Finished scanning this full R2 page without filling limit
+    skip = 0;
     if (listed.truncated) {
-      nextCursor = listed.cursor;
+      r2Cursor = listed.cursor;
     } else {
-      // No more R2 pages
-      nextCursor = null;
       break;
     }
   }
 
-  return {
-    items,
-    cursor: hasMore ? nextCursor : null,
-    hasMore,
-  };
+  return { items, cursor: null, hasMore: false };
 }
 
 function extractSlug(category, key) {
