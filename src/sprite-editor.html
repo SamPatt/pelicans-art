@@ -2632,6 +2632,7 @@
           <div class="modal-buttons">
             <button class="btn-cancel" onclick="closeCommunityModal()">Cancel</button>
             <button class="btn-upload" id="community-upload-btn" onclick="uploadToCommunity()">Upload</button>
+            <button class="btn-upload" id="community-copy-link-btn" onclick="copyCommunityLink()" style="display:none;">Copy Link</button>
           </div>
         </div>
       </div>
@@ -5129,6 +5130,7 @@
     let communityVoiceFile = null;
     let communityPayloadCache = null;
     let communityPreviewGeneration = 0;
+    let communityLastUploadUrl = null;
 
     function getCommunityUsername() {
       return localStorage.getItem('pelicans-community-username') || '';
@@ -5148,10 +5150,14 @@
       // Reset state
       communityVoiceFile = null;
       communityPayloadCache = null;
+      communityLastUploadUrl = null;
       const feedback = document.getElementById('community-feedback');
       feedback.classList.remove('visible', 'success', 'error');
       document.getElementById('community-progress').classList.remove('active');
       document.getElementById('community-upload-btn').disabled = false;
+      document.getElementById('community-upload-btn').style.display = '';
+      document.getElementById('community-copy-link-btn').style.display = 'none';
+      document.getElementById('community-copy-link-btn').textContent = 'Copy Link';
 
       // Auto-detect asset type from current edit mode
       let autoTab = 'characters';
@@ -5481,7 +5487,14 @@
         }
 
         progressFill.style.width = '100%';
-        showCommunityFeedback(`Shared successfully! Slug: ${result.slug}`, 'success');
+
+        // Build viewer link and switch to copy-link state
+        const viewerUrl = `${window.location.origin}/community.html?type=${type}&id=${result.slug}`;
+        communityLastUploadUrl = viewerUrl;
+        uploadBtn.style.display = 'none';
+        const copyBtn = document.getElementById('community-copy-link-btn');
+        copyBtn.style.display = '';
+        showCommunityFeedback(`Shared successfully!`, 'success');
 
       } catch (e) {
         showCommunityFeedback(e.message, 'error');
@@ -5489,6 +5502,26 @@
       } finally {
         uploadBtn.disabled = false;
       }
+    }
+
+    function copyCommunityLink() {
+      if (!communityLastUploadUrl) return;
+      navigator.clipboard.writeText(communityLastUploadUrl).then(() => {
+        const btn = document.getElementById('community-copy-link-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+      }).catch(() => {
+        // Fallback: select from a temp input
+        const tmp = document.createElement('input');
+        tmp.value = communityLastUploadUrl;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        const btn = document.getElementById('community-copy-link-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+      });
     }
 
     function showCommunityFeedback(msg, type) {
