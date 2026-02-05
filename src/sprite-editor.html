@@ -872,7 +872,6 @@
 
     .stage-char-item {
       position: absolute;
-      bottom: 12%;
       height: 40%;
       cursor: grab;
       transform: translateX(-50%);
@@ -2274,6 +2273,11 @@
                 <label>X Position:</label>
                 <input type="range" id="stage-char-x" min="-20" max="120" value="50" oninput="updateStageCharPosition(this.value)">
                 <span id="stage-char-x-val">50%</span>
+              </div>
+              <div class="control-row">
+                <label>Y Position:</label>
+                <input type="range" id="stage-char-y" min="-10" max="110" value="88" oninput="updateStageCharYPosition(this.value)">
+                <span id="stage-char-y-val">88%</span>
               </div>
               <div class="control-row">
                 <label>Scale:</label>
@@ -4173,6 +4177,8 @@
 
         const x = char.startX ?? char.x ?? 50;
         el.style.left = `${x}%`;
+        const y = char.startY ?? char.y ?? 88;
+        el.style.bottom = `${100 - y}%`;
 
         const scale = char.scale || 1;
         el.style.transform = `translateX(-50%) scaleY(${scale}) scaleX(${scale})`;
@@ -4378,6 +4384,9 @@
       const x = char.startX ?? char.x ?? 50;
       document.getElementById('stage-char-x').value = x;
       document.getElementById('stage-char-x-val').textContent = `${Math.round(x)}%`;
+      const y = char.startY ?? char.y ?? 88;
+      document.getElementById('stage-char-y').value = y;
+      document.getElementById('stage-char-y-val').textContent = `${Math.round(y)}%`;
       document.getElementById('stage-char-scale').value = char.scale || 1;
       document.getElementById('stage-char-scale-val').textContent = `${(char.scale || 1).toFixed(1)}x`;
     }
@@ -4397,6 +4406,25 @@
       const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
       if (el) {
         el.style.left = `${x}%`;
+      }
+
+      markSkitDirty();
+    }
+
+    function updateStageCharYPosition(value) {
+      if (!selectedStageChar || !currentSkitData?.cast?.[selectedStageChar]) return;
+
+      const y = parseFloat(value);
+      currentSkitData.cast[selectedStageChar].startY = y;
+      currentSkitData.cast[selectedStageChar].y = y;
+
+      // Update display
+      document.getElementById('stage-char-y-val').textContent = `${Math.round(y)}%`;
+
+      // Update character position on stage
+      const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
+      if (el) {
+        el.style.bottom = `${100 - y}%`;
       }
 
       markSkitDirty();
@@ -4431,6 +4459,8 @@
       const char = currentSkitData.cast[id];
       const charX = ((char.startX ?? char.x ?? 50) / 100) * rect.width;
       dragOffset.x = e.clientX - rect.left - charX;
+      const charY = ((char.startY ?? char.y ?? 88) / 100) * rect.height;
+      dragOffset.y = e.clientY - rect.top - charY;
 
       const el = document.querySelector(`.stage-char-item[data-char-id="${id}"]`);
       if (el) el.classList.add('dragging');
@@ -4445,25 +4475,32 @@
       const preview = document.getElementById('stage-setup-preview');
       const rect = preview.getBoundingClientRect();
 
-      // Calculate percentage position (characters only move horizontally)
+      // Calculate percentage position
       let x = ((e.clientX - rect.left - dragOffset.x) / rect.width) * 100;
+      let y = ((e.clientY - rect.top - dragOffset.y) / rect.height) * 100;
 
-      // Clamp to -20 to 120 range (wider for offscreen positions)
+      // Clamp ranges
       x = Math.max(-20, Math.min(120, x));
+      y = Math.max(-10, Math.min(110, y));
 
       // Update data
       currentSkitData.cast[selectedStageChar].startX = x;
       currentSkitData.cast[selectedStageChar].x = x;
+      currentSkitData.cast[selectedStageChar].startY = y;
+      currentSkitData.cast[selectedStageChar].y = y;
 
       // Update element position
       const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
       if (el) {
         el.style.left = `${x}%`;
+        el.style.bottom = `${100 - y}%`;
       }
 
-      // Update slider
+      // Update sliders
       document.getElementById('stage-char-x').value = x;
       document.getElementById('stage-char-x-val').textContent = `${Math.round(x)}%`;
+      document.getElementById('stage-char-y').value = y;
+      document.getElementById('stage-char-y-val').textContent = `${Math.round(y)}%`;
     }
 
     function endDragStageChar(e) {

@@ -66,7 +66,6 @@
     /* Characters positioned by world x-coordinate */
     .character {
       position: absolute;
-      bottom: 12%;
       height: 40%;
       width: auto;
       transition: left 1s ease-in-out, opacity 0.3s;
@@ -389,15 +388,13 @@
       cameraAnimation = requestAnimationFrame(tick);
     }
     
-    // Calculate camera Y target for a character, accounting for scale
-    // Characters are at bottom:12% (88% from top), height 40% at scale 1
-    // Face is roughly 52.5% down from top of character
+    // Get the camera Y target for a character by reading its actual position in the DOM
+    // offsetTop/offsetHeight are layout values unaffected by camera transforms
     function getCharacterFaceY(char) {
-      const scale = char.scale || 1;
-      const baseY = 88; // character feet position (100 - 12%)
-      const charHeight = 40 * scale; // character height as % of stage
-      const faceRatio = 0.525; // face position as ratio from top of character
-      return baseY - (charHeight * faceRatio);
+      const stage = document.getElementById('stage');
+      const el = char.el;
+      const faceY = el.offsetTop + el.offsetHeight * 0.35;
+      return (faceY / stage.offsetHeight) * 100;
     }
 
     function shot(type, who = null, hardCut = true) {
@@ -506,10 +503,12 @@
       el.dataset.sprite = config.sprite;
       el.dataset.voice = config.voice;
 
-      // Use startX for initial position if specified (for offscreen starts)
-      // Otherwise use x as the position
+      // Use startX/startY for initial position if specified (for offscreen starts)
+      // Otherwise use x/y as the position
       const initialX = config.startX !== undefined ? config.startX : config.x;
       el.style.left = `${initialX}%`;
+      const initialY = config.startY !== undefined ? config.startY : (config.y ?? 88);
+      el.style.bottom = `${100 - initialY}%`;
 
       // Add position class for head rotation direction (based on target x, not start)
       el.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
@@ -555,7 +554,7 @@
       characters[name] = {
         x: initialX, // Current position (may be offscreen initially)
         targetX: config.x, // Where the character "belongs" (for enter actions)
-        y: 67, // character center
+        baseY: config.startY ?? config.y ?? 88, // character feet position from top
         sprite: config.sprite,
         voice: voiceId,
         volume: voiceVolume,
@@ -2175,6 +2174,7 @@
       } catch (e) {
         console.error('Failed to load from URL:', e);
         document.getElementById('status').textContent = 'Failed to load: ' + e.message;
+        throw e;
       }
     }
     
@@ -2213,10 +2213,11 @@
       const originalFaceValues = captureOriginalFaceValues(div, isHuman);
 
       const scale = config.scale || 1;
+      const baseY = config.startY ?? config.y ?? 88;
       characters[name] = {
         el: div,
         x: config.x,
-        y: 67,
+        baseY: baseY,
         scale: scale,
         emotion: 'neutral',
         sprite: config.sprite,
@@ -2225,8 +2226,9 @@
         type: spriteType,
         originalFaceValues: originalFaceValues
       };
-      
+
       div.style.left = config.x + '%';
+      div.style.bottom = `${100 - baseY}%`;
       div.style.setProperty('--char-scale', scale);
       
       if (config.startOffscreen) {
