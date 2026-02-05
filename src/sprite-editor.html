@@ -5189,7 +5189,7 @@
       return active ? active.dataset.type : 'characters';
     }
 
-    function updateCommunityPreview(type) {
+    async function updateCommunityPreview(type) {
       const preview = document.getElementById('community-preview');
       const nameInput = document.getElementById('community-asset-name');
       const sizeEst = document.getElementById('community-size-estimate');
@@ -5204,7 +5204,10 @@
         if (currentSprite) {
           preview.innerHTML = currentSprite;
         }
-        estimateCommunitySize(buildCharacterPayload());
+        sizeEst.textContent = 'Calculating size...';
+        try {
+          estimateCommunitySize(await buildCharacterPayload());
+        } catch (e) { sizeEst.textContent = 'Could not estimate size'; }
       } else if (type === 'props' && currentEditMode === 'prop' && currentSpriteName) {
         nameInput.value = currentMeta?.name || currentSpriteName;
         if (currentSprite) {
@@ -5216,7 +5219,10 @@
         if (currentSprite) {
           preview.innerHTML = currentSprite;
         }
-        estimateCommunitySize(buildBackgroundPayload());
+        sizeEst.textContent = 'Calculating size...';
+        try {
+          estimateCommunitySize(await buildBackgroundPayload());
+        } catch (e) { sizeEst.textContent = 'Could not estimate size'; }
       } else if (type === 'skits' && currentSkitId && currentSkitData) {
         nameInput.value = currentSkitData.meta?.title || currentSkitId;
         const meta = currentSkitData.meta || {};
@@ -5259,15 +5265,34 @@
       }
     }
 
-    function buildCharacterPayload() {
-      if (!currentSpriteName || !currentSprite) return null;
+    async function buildCharacterPayload() {
+      if (!currentSpriteName) return null;
       const username = document.getElementById('community-username').value.trim();
-      return {
+      // Always fetch front.svg from disk to avoid sending the wrong variant
+      let front_svg;
+      try {
+        const resp = await fetch(`sprites/${currentSpriteName}/front.svg?v=${Date.now()}`);
+        if (!resp.ok) throw new Error('front.svg not found');
+        front_svg = await resp.text();
+      } catch (e) {
+        throw new Error('Could not load front.svg for this character.');
+      }
+      // Fetch back.svg if it exists
+      let back_svg = null;
+      if (currentVariants && currentVariants.includes('back')) {
+        try {
+          const resp = await fetch(`sprites/${currentSpriteName}/back.svg?v=${Date.now()}`);
+          if (resp.ok) back_svg = await resp.text();
+        } catch (e) { /* optional */ }
+      }
+      const payload = {
         username,
         name: currentMeta?.name || currentSpriteName,
-        front_svg: currentSprite,
+        front_svg,
         meta: currentMeta || { name: currentSpriteName, type: 'creature' },
       };
+      if (back_svg) payload.back_svg = back_svg;
+      return payload;
     }
 
     function buildPropPayload() {
@@ -5281,14 +5306,32 @@
       };
     }
 
-    function buildBackgroundPayload() {
-      if (!currentBackgroundName || !currentSprite) return null;
+    async function buildBackgroundPayload() {
+      if (!currentBackgroundName) return null;
       const username = document.getElementById('community-username').value.trim();
+      // Always fetch landscape from disk to avoid sending the wrong orientation
+      let landscape_svg;
+      try {
+        const resp = await fetch(`/api/backgrounds/${currentBackgroundName}/landscape?v=${Date.now()}`);
+        if (!resp.ok) throw new Error('landscape not found');
+        landscape_svg = await resp.text();
+      } catch (e) {
+        throw new Error('Could not load landscape orientation for this background.');
+      }
+      // Fetch portrait if it exists
+      let portrait_svg = null;
+      if (currentBackgroundOrientations && currentBackgroundOrientations.includes('portrait')) {
+        try {
+          const resp = await fetch(`/api/backgrounds/${currentBackgroundName}/portrait?v=${Date.now()}`);
+          if (resp.ok) portrait_svg = await resp.text();
+        } catch (e) { /* optional */ }
+      }
       const payload = {
         username,
         name: currentBackgroundName,
-        landscape_svg: currentSprite,
+        landscape_svg,
       };
+      if (portrait_svg) payload.portrait_svg = portrait_svg;
       return payload;
     }
 
@@ -5357,17 +5400,8 @@
 
         switch (type) {
           case 'characters': {
-            payload = buildCharacterPayload();
+            payload = await buildCharacterPayload();
             if (!payload) throw new Error('No character loaded. Select a sprite first.');
-            // Try to also fetch the back variant if it exists
-            if (currentSpriteName && currentVariants && currentVariants.includes('back')) {
-              try {
-                const backResp = await fetch(`sprites/${currentSpriteName}/back.svg?v=${Date.now()}`);
-                if (backResp.ok) {
-                  payload.back_svg = await backResp.text();
-                }
-              } catch (e) { /* no back variant, that's fine */ }
-            }
             break;
           }
           case 'props': {
@@ -5376,17 +5410,8 @@
             break;
           }
           case 'backgrounds': {
-            payload = buildBackgroundPayload();
+            payload = await buildBackgroundPayload();
             if (!payload) throw new Error('No background loaded. Select a background first.');
-            // Try to also fetch portrait orientation if available
-            if (currentBackgroundName && currentBackgroundOrientations && currentBackgroundOrientations.includes('portrait')) {
-              try {
-                const portraitResp = await fetch(`/api/backgrounds/${currentBackgroundName}/portrait?v=${Date.now()}`);
-                if (portraitResp.ok) {
-                  payload.portrait_svg = await portraitResp.text();
-                }
-              } catch (e) { /* no portrait, fine */ }
-            }
             break;
           }
           case 'skits': {

@@ -103,7 +103,8 @@ function validatePublished(body) {
 function validateVoice(body) {
   if (!body.audio_base64 || typeof body.audio_base64 !== 'string') return 'audio_base64 is required';
   try {
-    const raw = atob(body.audio_base64.slice(0, 20));
+    // Validate the entire base64 string is decodable, not just the header
+    const raw = atob(body.audio_base64);
     if (raw.length < 12) return 'Audio data too short';
     if (raw.slice(0, 4) !== 'RIFF' || raw.slice(8, 12) !== 'WAVE') {
       return 'Audio must be WAV format (RIFF/WAVE header required)';
@@ -176,31 +177,52 @@ function indexSuffix(category) {
 
 async function listCategory(bucket, category, cursor, limit) {
   limit = Math.min(Math.max(parseInt(limit) || 50, 1), 100);
-  const opts = { prefix: `${category}/`, limit: 1000 };
-  if (cursor) opts.cursor = cursor;
-
-  const listed = await bucket.list(opts);
   const suffix = indexSuffix(category);
-
   const items = [];
-  for (const obj of listed.objects) {
-    if (!obj.key.endsWith(suffix)) continue;
-    const meta = obj.customMetadata || {};
-    items.push({
-      key: obj.key,
-      slug: extractSlug(category, obj.key),
-      name: meta.assetName || obj.key,
-      username: meta.username || 'unknown',
-      uploadedAt: meta.uploadedAt || obj.uploaded?.toISOString(),
-      size: obj.size,
-    });
+  let nextCursor = cursor || undefined;
+  let hasMore = false;
+
+  // Page through R2 until we have enough filtered items or exhaust all objects
+  while (items.length < limit) {
+    const opts = { prefix: `${category}/`, limit: 1000 };
+    if (nextCursor) opts.cursor = nextCursor;
+
+    const listed = await bucket.list(opts);
+
+    for (const obj of listed.objects) {
+      if (!obj.key.endsWith(suffix)) continue;
+      const meta = obj.customMetadata || {};
+      items.push({
+        key: obj.key,
+        slug: extractSlug(category, obj.key),
+        name: meta.assetName || obj.key,
+        username: meta.username || 'unknown',
+        uploadedAt: meta.uploadedAt || obj.uploaded?.toISOString(),
+        size: obj.size,
+      });
+      if (items.length >= limit) {
+        // We hit the requested limit — there may be more objects remaining
+        hasMore = true;
+        nextCursor = listed.truncated ? listed.cursor : null;
+        break;
+      }
+    }
+
     if (items.length >= limit) break;
+
+    if (listed.truncated) {
+      nextCursor = listed.cursor;
+    } else {
+      // No more R2 pages
+      nextCursor = null;
+      break;
+    }
   }
 
   return {
     items,
-    cursor: listed.truncated ? listed.cursor : null,
-    hasMore: listed.truncated,
+    cursor: hasMore ? nextCursor : null,
+    hasMore,
   };
 }
 
