@@ -2093,6 +2093,13 @@
         const bgOrientation = skit.stage.orientation || 'landscape';
         if (skit.assets?.backgrounds?.[bgName]) {
           document.getElementById('background').src = skit.assets.backgrounds[bgName];
+          // Set viewport orientation (setBackground normally handles this)
+          const viewport = document.getElementById('viewport');
+          if (bgOrientation === 'landscape') {
+            viewport.classList.add('landscape');
+          } else {
+            viewport.classList.remove('landscape');
+          }
         } else {
           setBackground(bgName, bgOrientation);
         }
@@ -2123,16 +2130,12 @@
         // Decode audio into AudioBuffers (mobile-friendly)
         audioCache.clear();
         const sayActions = skit.script.filter(b => b.do === 'say');
-        const beatIndexMap = new Map();
-        skit.script.forEach((b, idx) => {
-          if (b.do === 'say') beatIndexMap.set(b, idx);
-        });
-        
+
         for (let i = 0; i < sayActions.length; i++) {
           const beat = sayActions[i];
           const char = skit.cast[beat.who];
           const audioData = skit.assets?.audio?.[`line-${i}`];
-          
+
           if (audioData) {
             document.getElementById('status').textContent = `Decoding audio ${i+1}/${sayActions.length}...`;
             try {
@@ -2144,10 +2147,11 @@
                 bytes[j] = binaryString.charCodeAt(j);
               }
               const audioBuffer = await audioContext.decodeAudioData(bytes.buffer.slice(0));
-              
-              const cacheKey = beat.t !== undefined 
-                ? `${beat.t}-${beat.who}` 
-                : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+
+              // Use say-action index (matches playback lookup which uses sayActions.indexOf)
+              const cacheKey = beat.t !== undefined
+                ? `${beat.t}-${beat.who}`
+                : `seq-${i}-${beat.who}`;
               audioCache.set(cacheKey, {
                 buffer: audioBuffer,
                 beat,
@@ -2950,18 +2954,19 @@
         });
         document.getElementById('url-loader').style.display = 'none';
 
-        // Always try to load from API first (works for UUIDs and named skits)
+        // Try published version first (pre-bundled assets, no TTS needed)
         try {
-          console.log('[Player] Calling loadSkitFromApi...');
-          await loadSkitFromApi(skitParam);
-          console.log('[Player] loadSkitFromApi succeeded');
-        } catch (apiErr) {
-          console.warn('[Player] Failed to load from API, trying published folder:', apiErr);
-          // Fall back to published folder
+          console.log('[Player] Trying published version...');
+          await loadFromUrl(`published/${skitParam}.json`);
+          console.log('[Player] Loaded from published bundle');
+        } catch (pubErr) {
+          console.warn('[Player] No published version, falling back to API:', pubErr);
+          // Fall back to live API (generates TTS on the fly)
           try {
-            await loadFromUrl(`published/${skitParam}.json`);
-          } catch (pubErr) {
-            console.error('[Player] Failed to load skit:', pubErr);
+            await loadSkitFromApi(skitParam);
+            console.log('[Player] loadSkitFromApi succeeded');
+          } catch (apiErr) {
+            console.error('[Player] Failed to load skit:', apiErr);
             document.getElementById('status').textContent = `Failed to load skit: ${skitParam}`;
           }
         }
