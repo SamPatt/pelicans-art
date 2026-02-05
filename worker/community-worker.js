@@ -205,7 +205,7 @@ async function listCategory(bucket, category, cursor, limit) {
   let { r2Cursor, skip } = decodeCursor(cursor);
 
   while (items.length < limit) {
-    const opts = { prefix: `${category}/`, limit: 1000 };
+    const opts = { prefix: `${category}/`, limit: 1000, include: ['customMetadata'] };
     if (r2Cursor) opts.cursor = r2Cursor;
 
     const listed = await bucket.list(opts);
