@@ -1910,6 +1910,32 @@
       line-height: 1.5;
     }
 
+    .community-variant-grid {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .community-variant-item {
+      text-align: center;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .community-variant-item svg {
+      max-width: 100%;
+      max-height: 140px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .community-variant-label {
+      font-size: 0.7em;
+      color: #4ecca3;
+      margin-top: 6px;
+    }
+
     .community-size-estimate {
       font-size: 0.8em;
       color: #888;
@@ -5209,14 +5235,26 @@
 
       if (type === 'characters' && currentEditMode === 'sprite' && currentSpriteName) {
         nameInput.value = currentMeta?.name || currentSpriteName;
-        if (currentSprite) {
-          preview.innerHTML = currentSprite;
-        }
+        // Show all variants that will be uploaded
+        preview.innerHTML = '<span class="preview-text">Loading variants...</span>';
         sizeEst.textContent = 'Calculating size...';
         try {
           const payload = await buildCharacterPayload();
-          if (generation === communityPreviewGeneration) estimateCommunitySize(payload);
-        } catch (e) { if (generation === communityPreviewGeneration) sizeEst.textContent = 'Could not estimate size'; }
+          if (generation !== communityPreviewGeneration) return;
+          let gridHtml = '<div class="community-variant-grid">';
+          gridHtml += `<div class="community-variant-item">${payload.front_svg}<div class="community-variant-label">front</div></div>`;
+          if (payload.back_svg) {
+            gridHtml += `<div class="community-variant-item">${payload.back_svg}<div class="community-variant-label">back</div></div>`;
+          }
+          gridHtml += '</div>';
+          preview.innerHTML = gridHtml;
+          estimateCommunitySize(payload);
+        } catch (e) {
+          if (generation === communityPreviewGeneration) {
+            preview.innerHTML = `<span class="preview-text">${e.message}</span>`;
+            sizeEst.textContent = 'Could not estimate size';
+          }
+        }
       } else if (type === 'props' && currentEditMode === 'prop' && currentSpriteName) {
         nameInput.value = currentMeta?.name || currentSpriteName;
         if (currentSprite) {
@@ -5225,14 +5263,25 @@
         estimateCommunitySize(buildPropPayload());
       } else if (type === 'backgrounds' && currentEditMode === 'background' && currentBackgroundName) {
         nameInput.value = currentBackgroundName;
-        if (currentSprite) {
-          preview.innerHTML = currentSprite;
-        }
+        preview.innerHTML = '<span class="preview-text">Loading orientations...</span>';
         sizeEst.textContent = 'Calculating size...';
         try {
           const payload = await buildBackgroundPayload();
-          if (generation === communityPreviewGeneration) estimateCommunitySize(payload);
-        } catch (e) { if (generation === communityPreviewGeneration) sizeEst.textContent = 'Could not estimate size'; }
+          if (generation !== communityPreviewGeneration) return;
+          let gridHtml = '<div class="community-variant-grid">';
+          gridHtml += `<div class="community-variant-item">${payload.landscape_svg}<div class="community-variant-label">landscape</div></div>`;
+          if (payload.portrait_svg) {
+            gridHtml += `<div class="community-variant-item">${payload.portrait_svg}<div class="community-variant-label">portrait</div></div>`;
+          }
+          gridHtml += '</div>';
+          preview.innerHTML = gridHtml;
+          estimateCommunitySize(payload);
+        } catch (e) {
+          if (generation === communityPreviewGeneration) {
+            preview.innerHTML = `<span class="preview-text">${e.message}</span>`;
+            sizeEst.textContent = 'Could not estimate size';
+          }
+        }
       } else if (type === 'skits' && currentSkitId && currentSkitData) {
         nameInput.value = currentSkitData.meta?.title || currentSkitId;
         const meta = currentSkitData.meta || {};
