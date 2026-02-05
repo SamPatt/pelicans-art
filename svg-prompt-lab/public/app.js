@@ -3,6 +3,7 @@
    ============================================ */
 
 const API = '';
+const COMMUNITY_API_URL = 'https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community';
 
 // ---- State ----
 const state = {
@@ -515,7 +516,12 @@ function setupFilterButtons() {
   });
 
   document.getElementById('gallery-experiment')?.addEventListener('change', e => {
-    if (e.target.value) loadExperimentInGallery(e.target.value);
+    if (e.target.value) {
+      loadExperimentInGallery(e.target.value);
+    } else {
+      state.currentExperiment = null;
+      renderGallery();
+    }
   });
 }
 
@@ -525,6 +531,14 @@ async function refreshGalleryExperimentList() {
     const sel = document.getElementById('gallery-experiment');
     const currentVal = sel.value;
     sel.innerHTML = '<option value="">-- Select experiment --</option>';
+    // "All" option to show results from every experiment
+    const totalResults = state.experiments.reduce((sum, e) => sum + (e.summary?.completed || 0), 0);
+    if (state.experiments.length > 1) {
+      const allOpt = document.createElement('option');
+      allOpt.value = '__all__';
+      allOpt.textContent = `All experiments (${totalResults} results)`;
+      sel.appendChild(allOpt);
+    }
     for (const exp of state.experiments) {
       const opt = document.createElement('option');
       opt.value = exp.id;
@@ -539,12 +553,48 @@ async function refreshGalleryExperimentList() {
 
 async function loadExperimentInGallery(expId) {
   try {
-    state.currentExperiment = await api(`/api/experiments/${expId}`);
+    if (expId === '__all__') {
+      await loadAllExperiments();
+    } else {
+      state.currentExperiment = await api(`/api/experiments/${expId}`);
+    }
     document.getElementById('gallery-experiment').value = expId;
     renderGallery();
   } catch (err) {
     console.error('Failed to load experiment:', err);
   }
+}
+
+async function loadAllExperiments() {
+  const allResults = [];
+  for (const expSummary of state.experiments) {
+    try {
+      const exp = await api(`/api/experiments/${expSummary.id}`);
+      if (exp.results) {
+        for (const r of exp.results) {
+          if (r) {
+            // Tag each result with its experiment for context
+            r._experimentId = exp.id;
+            r._experimentName = exp.name;
+            allResults.push(r);
+          }
+        }
+      }
+    } catch { /* skip failed loads */ }
+  }
+  // Re-index so gallery card interactions work
+  allResults.forEach((r, i) => { r.index = i; });
+  state.currentExperiment = {
+    id: '__all__',
+    name: 'All experiments',
+    results: allResults,
+    summary: {
+      total: allResults.length,
+      completed: allResults.length,
+      failed: 0,
+      validSvg: allResults.filter(r => r.validation?.valid).length
+    }
+  };
 }
 
 function renderGallery() {
@@ -586,11 +636,13 @@ function renderGallery() {
   }
 
   for (const result of results) {
-    grid.appendChild(createResultCard(result, exp.id));
+    // When viewing "All", use the result's source experiment ID for API calls
+    const cardExpId = result._experimentId || exp.id;
+    grid.appendChild(createResultCard(result, cardExpId, exp.id === '__all__'));
   }
 }
 
-function createResultCard(result, expId) {
+function createResultCard(result, expId, showExpName = false) {
   const card = document.createElement('div');
   card.className = 'result-card';
 
@@ -603,12 +655,16 @@ function createResultCard(result, expId) {
   const vars = result.variableValues
     ? Object.values(result.variableValues).join(', ')
     : '';
+  const expLabel = showExpName && result._experimentName
+    ? `<div class="result-card-exp" title="${escapeHtml(result._experimentName)}">${escapeHtml(result._experimentName)}</div>`
+    : '';
 
   const rating = result.rating || {};
 
   card.innerHTML = `
     <div class="result-card-svg">${svgHtml}</div>
     <div class="result-card-info">
+      ${expLabel}
       <div class="result-card-model" title="${escapeHtml(result.model || '')}">${escapeHtml(modelShort)}</div>
       ${vars ? `<div class="result-card-vars" title="${escapeHtml(vars)}">${escapeHtml(vars)}</div>` : ''}
     </div>
@@ -759,6 +815,20 @@ function openCardModal(result, expId) {
           <textarea class="modal-notes" id="modal-notes" placeholder="Add notes...">${escapeHtml(result.rating?.notes || '')}</textarea>
           <button class="btn btn-sm btn-outline" style="margin-top:0.4rem;" id="modal-save-notes">Save Notes</button>
         </div>
+        ${result.response?.svg ? `
+        <div class="modal-share-section">
+          <div class="modal-field-label">SHARE TO COMMUNITY</div>
+          <div class="share-row">
+            <input type="text" class="input-text" id="modal-share-username" placeholder="Username" value="${escapeHtml(getCommunityUsername())}" style="flex:1;">
+            <input type="text" class="input-text" id="modal-share-name" placeholder="Asset name" value="${escapeHtml(Object.values(result.variableValues || {}).join(' ') || 'Generated SVG')}" style="flex:1;">
+          </div>
+          <div class="share-row" style="margin-top:0.4rem;">
+            <button class="btn btn-sm btn-accent" id="modal-share-btn">Share to pelicans.art</button>
+            <button class="btn btn-sm btn-ghost hidden" id="modal-copy-link-btn">Copy Link</button>
+            <span class="share-feedback" id="modal-share-feedback"></span>
+          </div>
+        </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -779,6 +849,15 @@ function openCardModal(result, expId) {
     } catch (err) {
       setStatus('Failed to save notes', 'error');
     }
+  });
+
+  // Community share handler
+  document.getElementById('modal-share-btn')?.addEventListener('click', () => {
+    shareResultToCommunity(result);
+  });
+
+  document.getElementById('modal-copy-link-btn')?.addEventListener('click', () => {
+    copyCommunityLink();
   });
 
   modal.classList.remove('hidden');
@@ -873,6 +952,163 @@ function setStatus(text, type = 'ready') {
   const label = document.getElementById('status-text');
   label.textContent = text;
   dot.className = 'status-dot' + (type === 'running' ? ' running' : type === 'error' ? ' error' : '');
+}
+
+// ---- Community Share ----
+let communityLastUploadUrl = null;
+
+function getCommunityUsername() {
+  return localStorage.getItem('pelicans-community-username') || '';
+}
+
+function setCommunityUsername(name) {
+  localStorage.setItem('pelicans-community-username', name);
+}
+
+/**
+ * Determine the community asset type from the experiment's template
+ */
+function getAssetTypeForResult(result) {
+  // Check the template that produced this result
+  const exp = state.currentExperiment;
+  if (exp?.config?.templateIds) {
+    const template = state.templates.find(t => t.id === result.templateId);
+    if (template) return template.assetType;
+  }
+  // Fallback: guess from SVG viewBox
+  const svg = result.response?.svg || '';
+  const vbMatch = svg.match(/viewBox=["']([^"']+)["']/);
+  if (vbMatch) {
+    if (vbMatch[1] === '0 0 100 150') return 'sprite';
+    if (vbMatch[1] === '0 0 100 100') return 'prop';
+    if (vbMatch[1].startsWith('0 0 400') || vbMatch[1].startsWith('0 0 225')) return 'background';
+  }
+  return 'sprite';
+}
+
+async function shareResultToCommunity(result) {
+  const username = document.getElementById('modal-share-username')?.value.trim();
+  const assetName = document.getElementById('modal-share-name')?.value.trim();
+  const feedback = document.getElementById('modal-share-feedback');
+  const shareBtn = document.getElementById('modal-share-btn');
+  const copyBtn = document.getElementById('modal-copy-link-btn');
+
+  if (!username) {
+    feedback.textContent = 'Username required';
+    feedback.className = 'share-feedback error';
+    return;
+  }
+  if (!/^[a-zA-Z0-9_-]{1,30}$/.test(username)) {
+    feedback.textContent = 'Username: 1-30 chars (a-z, 0-9, -, _)';
+    feedback.className = 'share-feedback error';
+    return;
+  }
+  if (!result.response?.svg) {
+    feedback.textContent = 'No SVG to share';
+    feedback.className = 'share-feedback error';
+    return;
+  }
+
+  setCommunityUsername(username);
+  shareBtn.disabled = true;
+  feedback.textContent = 'Uploading...';
+  feedback.className = 'share-feedback';
+
+  const assetType = getAssetTypeForResult(result);
+  let communityType, payload;
+
+  if (assetType === 'sprite') {
+    communityType = 'characters';
+    payload = {
+      username,
+      name: assetName || 'Generated character',
+      front_svg: result.response.svg,
+      meta: {
+        name: assetName || 'Generated character',
+        type: 'creature',
+        description: `Generated by ${result.model || 'AI'}`,
+        tags: ['svg-prompt-lab']
+      }
+    };
+  } else if (assetType === 'prop') {
+    communityType = 'props';
+    payload = {
+      username,
+      name: assetName || 'Generated prop',
+      svg: result.response.svg,
+      meta: {
+        name: assetName || 'Generated prop',
+        description: `Generated by ${result.model || 'AI'}`,
+        tags: ['svg-prompt-lab']
+      }
+    };
+  } else if (assetType === 'background') {
+    communityType = 'backgrounds';
+    payload = {
+      username,
+      name: assetName || 'Generated background',
+      landscape_svg: result.response.svg
+    };
+  } else {
+    feedback.textContent = `Unknown asset type: ${assetType}`;
+    feedback.className = 'share-feedback error';
+    shareBtn.disabled = false;
+    return;
+  }
+
+  // Size check
+  const jsonStr = JSON.stringify(payload);
+  const payloadSize = new Blob([jsonStr]).size;
+  if (payloadSize > 3 * 1024 * 1024) {
+    feedback.textContent = `Too large (${(payloadSize / 1024 / 1024).toFixed(1)} MB). Max 3 MB.`;
+    feedback.className = 'share-feedback error';
+    shareBtn.disabled = false;
+    return;
+  }
+
+  try {
+    const resp = await fetch(`${COMMUNITY_API_URL}/${communityType}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: jsonStr
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      throw new Error(data.error || `Upload failed (${resp.status})`);
+    }
+
+    const viewerUrl = `${window.location.origin}/community.html?type=${communityType}&id=${data.slug}`;
+    communityLastUploadUrl = viewerUrl;
+    feedback.textContent = 'Shared!';
+    feedback.className = 'share-feedback success';
+    shareBtn.classList.add('hidden');
+    copyBtn.classList.remove('hidden');
+  } catch (err) {
+    feedback.textContent = err.message;
+    feedback.className = 'share-feedback error';
+  } finally {
+    shareBtn.disabled = false;
+  }
+}
+
+function copyCommunityLink() {
+  if (!communityLastUploadUrl) return;
+  const btn = document.getElementById('modal-copy-link-btn');
+  navigator.clipboard.writeText(communityLastUploadUrl).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+  }).catch(() => {
+    const tmp = document.createElement('input');
+    tmp.value = communityLastUploadUrl;
+    document.body.appendChild(tmp);
+    tmp.select();
+    document.execCommand('copy');
+    document.body.removeChild(tmp);
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+  });
 }
 
 // ---- SVG Sanitization ----

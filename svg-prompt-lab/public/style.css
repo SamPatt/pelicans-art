@@ -1023,6 +1023,49 @@ body {
 
 .modal-notes:focus { border-color: var(--accent); }
 
+/* Share section in modal */
+.modal-share-section {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--bg-0);
+  font-weight: 600;
+}
+
+.btn-accent:hover { filter: brightness(1.15); }
+.btn-accent:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.share-feedback {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-3);
+}
+
+.share-feedback.error { color: var(--error); }
+.share-feedback.success { color: var(--success); }
+
+/* Experiment name label on cards (All view) */
+.result-card-exp {
+  font-size: 0.62rem;
+  font-family: var(--mono);
+  color: var(--accent);
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 1px;
+}
+
 /* ---- HISTORY TABLE ---- */
 .history-header {
   display: flex;
