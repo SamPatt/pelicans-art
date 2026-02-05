@@ -711,6 +711,12 @@
       if (propMetaCache.has(propName)) {
         return propMetaCache.get(propName);
       }
+      // Check published assets first
+      if (window.publishedAssets?.propMeta?.[propName]) {
+        const meta = window.publishedAssets.propMeta[propName];
+        propMetaCache.set(propName, meta);
+        return meta;
+      }
       const metaPath = `props/${propName}/meta.json?v=${CACHE_BUSTER}`;
       try {
         const response = await fetch(metaPath);
@@ -729,6 +735,14 @@
     async function loadPropSvg(propName) {
       if (propSvgCache.has(propName)) {
         return propSvgCache.get(propName);
+      }
+      // Check published assets first
+      if (window.publishedAssets?.props?.[propName]) {
+        const dataUrl = window.publishedAssets.props[propName];
+        const base64 = dataUrl.split(',')[1];
+        const svgText = decodeURIComponent(escape(atob(base64)));
+        propSvgCache.set(propName, svgText);
+        return svgText;
       }
       const propPath = `props/${propName}/prop.svg?v=${CACHE_BUSTER}`;
       try {
@@ -2183,9 +2197,13 @@
       div.appendChild(svg);
       document.getElementById('stage').appendChild(div);
 
-      // Determine sprite type (check if human sprite)
-      const isHuman = HUMAN_SPRITES.includes(config.sprite);
-      const spriteType = isHuman ? 'human' : 'creature';
+      // Determine sprite type from embedded meta or fallback to hardcoded list
+      const spriteMeta = assets?.spriteMeta?.[config.sprite];
+      const spriteType = spriteMeta?.type || (HUMAN_SPRITES.includes(config.sprite) ? 'human' : 'creature');
+      const isHuman = spriteType === 'human';
+
+      // Resolve voice from sprite meta (preferred) or cast config
+      const voice = spriteMeta?.voice?.id || config.voice;
 
       // Capture original face values for delta-based emotion positioning
       const originalFaceValues = captureOriginalFaceValues(div, isHuman);
@@ -2198,7 +2216,7 @@
         scale: scale,
         emotion: 'neutral',
         sprite: config.sprite,
-        voice: config.voice,
+        voice: voice,
         volume: config.volume,
         type: spriteType,
         originalFaceValues: originalFaceValues

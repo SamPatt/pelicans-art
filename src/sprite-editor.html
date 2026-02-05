@@ -1503,6 +1503,76 @@
       cursor: not-allowed;
     }
 
+    .skit-publish-btn {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      background: #e94560;
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.95em;
+      transition: all 0.2s;
+    }
+
+    .skit-publish-btn:hover {
+      background: #d63550;
+    }
+
+    .skit-publish-btn:disabled {
+      background: #4a2a2a;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    .skit-publish-btn.publishing {
+      background: #c49000;
+      color: #111;
+    }
+
+    .skit-publish-btn.publish-success {
+      background: #4ecca3;
+      color: #111;
+    }
+
+    .skit-publish-btn.publish-error {
+      background: #e94560;
+      color: #fff;
+    }
+
+    .publish-progress {
+      display: none;
+      margin-top: 8px;
+    }
+
+    .publish-progress.active {
+      display: block;
+    }
+
+    .publish-progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #1a1a2e;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .publish-progress-fill {
+      height: 100%;
+      background: #e94560;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .publish-progress-text {
+      font-size: 0.75em;
+      color: #888;
+      margin-top: 4px;
+    }
+
     /* Action Edit Modal */
     .action-modal {
       display: none;
@@ -2218,6 +2288,13 @@
         <div id="skit-script-list"></div>
         <button class="add-action-btn" onclick="openAddActionModal()">+ Add Action</button>
         <button class="skit-save-btn" id="skit-save-btn" onclick="saveSkitChanges()">Save Skit</button>
+        <button class="skit-publish-btn" id="skit-publish-btn" onclick="publishCurrentSkit()" disabled>Publish Skit</button>
+        <div class="publish-progress" id="publish-progress">
+          <div class="publish-progress-bar">
+            <div class="publish-progress-fill" id="publish-progress-fill"></div>
+          </div>
+          <div class="publish-progress-text" id="publish-progress-text"></div>
+        </div>
       </div>
 
       <!-- Action Edit Modal -->
@@ -2895,6 +2972,10 @@
 
       // Hide sprite/prop settings panels for skits
       updatePanelVisibility();
+
+      // Enable publish button
+      const publishBtn = document.getElementById('skit-publish-btn');
+      if (publishBtn) publishBtn.disabled = false;
 
       // Load skit data
       try {
@@ -4669,6 +4750,62 @@
       }
     }
 
+    async function publishCurrentSkit() {
+      if (!currentSkitId) return;
+
+      const btn = document.getElementById('skit-publish-btn');
+      const progress = document.getElementById('publish-progress');
+      const progressFill = document.getElementById('publish-progress-fill');
+      const progressText = document.getElementById('publish-progress-text');
+
+      btn.disabled = true;
+      btn.textContent = 'Publishing...';
+      btn.className = 'skit-publish-btn publishing';
+      progress.classList.add('active');
+      progressFill.style.width = '0%';
+      progressText.textContent = 'Starting...';
+
+      try {
+        const response = await fetch(`/api/publish/${currentSkitId}`, {
+          method: 'POST'
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({ error: 'Publish failed' }));
+          throw new Error(err.error || 'Publish failed');
+        }
+
+        const result = await response.json();
+        const sizeKB = (result.size / 1024).toFixed(1);
+
+        btn.textContent = `Published! (${sizeKB} KB)`;
+        btn.className = 'skit-publish-btn publish-success';
+        progressFill.style.width = '100%';
+        progressText.textContent = result.complete ? 'All assets bundled' : 'Published with some warnings';
+        updateStatus(`Skit published: ${sizeKB} KB`);
+
+        setTimeout(() => {
+          btn.textContent = 'Publish Skit';
+          btn.className = 'skit-publish-btn';
+          btn.disabled = false;
+          progress.classList.remove('active');
+        }, 3000);
+      } catch (err) {
+        console.error('Publish error:', err);
+        btn.textContent = 'Publish Failed';
+        btn.className = 'skit-publish-btn publish-error';
+        progressText.textContent = err.message;
+        updateStatus('Error publishing skit: ' + err.message);
+
+        setTimeout(() => {
+          btn.textContent = 'Publish Skit';
+          btn.className = 'skit-publish-btn';
+          btn.disabled = false;
+          progress.classList.remove('active');
+        }, 3000);
+      }
+    }
+
     function openSkitPlayer(id) {
       window.open(`/player?skit=${id}`, '_blank');
     }
@@ -4946,6 +5083,15 @@
       document.querySelectorAll('.skit-item').forEach(el => el.classList.remove('active'));
       // Clear element selection
       clearSelection();
+      // Disable publish button
+      const publishBtn = document.getElementById('skit-publish-btn');
+      if (publishBtn) {
+        publishBtn.disabled = true;
+        publishBtn.className = 'skit-publish-btn';
+        publishBtn.textContent = 'Publish Skit';
+      }
+      const progress = document.getElementById('publish-progress');
+      if (progress) progress.classList.remove('active');
     }
 
     function setStatus(msg) {
@@ -5144,6 +5290,29 @@
             selectSkit(msg.skitId);
             setCommandStatus('success', 'Updated!');
           }
+        }
+
+        // Publish progress updates
+        if (msg.type === 'publish:progress' && msg.skitId === currentSkitId) {
+          const progressFill = document.getElementById('publish-progress-fill');
+          const progressText = document.getElementById('publish-progress-text');
+          if (progressFill && msg.total > 0) {
+            const pct = Math.round((msg.current / msg.total) * 100);
+            progressFill.style.width = pct + '%';
+          }
+          if (progressText && msg.detail) {
+            progressText.textContent = msg.detail;
+          }
+        }
+
+        if (msg.type === 'publish:complete' && msg.skitId === currentSkitId) {
+          const progressFill = document.getElementById('publish-progress-fill');
+          if (progressFill) progressFill.style.width = '100%';
+        }
+
+        if (msg.type === 'publish:error' && msg.skitId === currentSkitId) {
+          const progressText = document.getElementById('publish-progress-text');
+          if (progressText) progressText.textContent = 'Error: ' + (msg.error || 'Unknown error');
         }
       };
 
