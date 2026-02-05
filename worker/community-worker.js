@@ -179,13 +179,19 @@ function indexSuffix(category) {
 // r2Cursor = opaque R2 cursor for the current page
 // skip = number of R2 objects to skip within that page (to resume mid-page)
 function encodeCursor(r2Cursor, skip) {
-  return btoa(JSON.stringify({ r: r2Cursor || null, s: skip }));
+  // Use URL-safe base64 so cursors survive query string round-tripping
+  // (standard base64 +/= get mangled by URL decoding)
+  return btoa(JSON.stringify({ r: r2Cursor || null, s: skip }))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function decodeCursor(cursor) {
   if (!cursor) return { r2Cursor: undefined, skip: 0 };
   try {
-    const parsed = JSON.parse(atob(cursor));
+    // Restore standard base64 from URL-safe encoding
+    let b64 = cursor.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    const parsed = JSON.parse(atob(b64));
     return { r2Cursor: parsed.r || undefined, skip: parsed.s || 0 };
   } catch {
     return { r2Cursor: undefined, skip: 0 };
