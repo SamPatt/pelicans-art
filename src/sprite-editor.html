@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>SkitKit Sprite Editor v3</title>
+  <title>Pelicans.art Sprite Editor v3</title>
   <!-- SVG Sprite Editor -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1794,6 +1794,240 @@
       display: block;
     }
 
+    /* === Community Share Modal === */
+    .community-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.85);
+      z-index: 1002;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .community-modal.visible {
+      display: flex;
+    }
+
+    .community-modal-content {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 24px;
+      width: 480px;
+      max-width: 95vw;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .community-modal h3 {
+      color: #4ecca3;
+      margin-bottom: 16px;
+      font-size: 1.1em;
+    }
+
+    .community-modal .form-group {
+      margin-bottom: 14px;
+    }
+
+    .community-modal label {
+      display: block;
+      color: #888;
+      font-size: 0.85em;
+      margin-bottom: 4px;
+    }
+
+    .community-modal input[type="text"],
+    .community-modal select {
+      width: 100%;
+      padding: 8px 10px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 0.9em;
+      box-sizing: border-box;
+    }
+
+    .community-modal input[type="text"]:focus {
+      border-color: #4ecca3;
+      outline: none;
+    }
+
+    .community-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .community-tab {
+      padding: 6px 12px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.8em;
+      transition: all 0.15s;
+    }
+
+    .community-tab:hover {
+      border-color: #4ecca3;
+      color: #ccc;
+    }
+
+    .community-tab.active {
+      background: #0f3460;
+      border-color: #4ecca3;
+      color: #4ecca3;
+    }
+
+    .community-preview {
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      padding: 12px;
+      min-height: 80px;
+      max-height: 200px;
+      overflow: auto;
+      margin-bottom: 14px;
+    }
+
+    .community-preview svg {
+      max-width: 100%;
+      max-height: 160px;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .community-preview .preview-text {
+      color: #888;
+      font-size: 0.85em;
+      line-height: 1.5;
+    }
+
+    .community-size-estimate {
+      font-size: 0.8em;
+      color: #888;
+      margin-bottom: 14px;
+    }
+
+    .community-size-estimate.over-limit {
+      color: #e94560;
+      font-weight: bold;
+    }
+
+    .community-progress {
+      display: none;
+      margin-bottom: 14px;
+    }
+
+    .community-progress.active {
+      display: block;
+    }
+
+    .community-progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #0d0d1a;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .community-progress-fill {
+      height: 100%;
+      background: #4ecca3;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .community-feedback {
+      font-size: 0.85em;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .community-feedback.visible {
+      display: block;
+    }
+
+    .community-feedback.success {
+      color: #4ecca3;
+    }
+
+    .community-feedback.error {
+      color: #e94560;
+    }
+
+    .community-modal .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .community-modal .modal-buttons button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9em;
+    }
+
+    .community-modal .btn-upload {
+      background: #4ecca3;
+      color: #111;
+    }
+
+    .community-modal .btn-upload:hover {
+      background: #3db892;
+    }
+
+    .community-modal .btn-upload:disabled {
+      background: #2a4a3a;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    .community-modal .btn-cancel {
+      background: #333;
+      color: #eee;
+    }
+
+    .community-modal .btn-cancel:hover {
+      background: #444;
+    }
+
+    .community-share-btn {
+      background: #4ecca3;
+      color: #111;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.85em;
+    }
+
+    .community-share-btn:hover {
+      background: #3db892;
+    }
+
+    .community-voice-input {
+      margin-top: 8px;
+    }
+
+    .community-voice-input input[type="file"] {
+      color: #888;
+      font-size: 0.85em;
+    }
+
     /* === Voice Settings Panel === */
     .voice-section {
       border-top: 1px solid #0f3460;
@@ -2063,7 +2297,7 @@
   </style>
   
   <header>
-    <h1>🎭 SkitKit Sprite Editor</h1>
+    <h1>🎭 Pelicans.art Sprite Editor</h1>
     <div class="toolbar">
       <button id="btn-new">📄 New</button>
       <button id="btn-random">🎲 Random</button>
@@ -2080,6 +2314,7 @@
       <button id="btn-undo" disabled>↩️ Undo</button>
       <button id="btn-redo" disabled>↪️ Redo</button>
       <button id="btn-save">💾 Save</button>
+      <button id="btn-community-share" class="community-share-btn" onclick="openCommunityModal()" title="Share to Community">Share</button>
       <span class="toolbar-divider">|</span>
       <button id="btn-test" title="Test in Skit Player">▶️ Test</button>
       <button id="btn-help" title="Keyboard Shortcuts">❓</button>
@@ -2293,6 +2528,7 @@
         <button class="add-action-btn" onclick="openAddActionModal()">+ Add Action</button>
         <button class="skit-save-btn" id="skit-save-btn" onclick="saveSkitChanges()">Save Skit</button>
         <button class="skit-publish-btn" id="skit-publish-btn" onclick="publishCurrentSkit()" disabled>Publish Skit</button>
+        <button class="skit-publish-btn" id="btn-community-share-skit" onclick="openCommunityModal()" style="background:#4ecca3;color:#111;margin-top:4px;">Share to Community</button>
         <div class="publish-progress" id="publish-progress">
           <div class="publish-progress-bar">
             <div class="publish-progress-fill" id="publish-progress-fill"></div>
@@ -2355,6 +2591,47 @@
           <div class="modal-buttons">
             <button class="btn-cancel" onclick="cancelNamingModal()">Cancel</button>
             <button class="btn-ok" onclick="confirmNamingModal()">OK</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community Share Modal -->
+      <div id="community-modal" class="community-modal">
+        <div class="community-modal-content">
+          <h3>Share to Community</h3>
+          <div class="form-group">
+            <label>Username</label>
+            <input type="text" id="community-username" placeholder="your-username" maxlength="30" autocomplete="off">
+          </div>
+          <div class="community-tabs" id="community-tabs">
+            <button class="community-tab active" data-type="characters" onclick="setActiveCommunityTab('characters')">Character</button>
+            <button class="community-tab" data-type="props" onclick="setActiveCommunityTab('props')">Prop</button>
+            <button class="community-tab" data-type="backgrounds" onclick="setActiveCommunityTab('backgrounds')">Background</button>
+            <button class="community-tab" data-type="skits" onclick="setActiveCommunityTab('skits')">Skit</button>
+            <button class="community-tab" data-type="published" onclick="setActiveCommunityTab('published')">Published</button>
+            <button class="community-tab" data-type="voices" onclick="setActiveCommunityTab('voices')">Voice</button>
+          </div>
+          <div class="form-group">
+            <label>Asset Name</label>
+            <input type="text" id="community-asset-name" readonly>
+          </div>
+          <div class="community-preview" id="community-preview">
+            <span class="preview-text">No asset selected</span>
+          </div>
+          <div class="community-voice-input" id="community-voice-input" style="display:none;">
+            <label>WAV voice file</label>
+            <input type="file" id="community-voice-file" accept=".wav,audio/wav" onchange="handleVoiceFileSelect(event)">
+          </div>
+          <div class="community-size-estimate" id="community-size-estimate"></div>
+          <div class="community-progress" id="community-progress">
+            <div class="community-progress-bar">
+              <div class="community-progress-fill" id="community-progress-fill"></div>
+            </div>
+          </div>
+          <div class="community-feedback" id="community-feedback"></div>
+          <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeCommunityModal()">Cancel</button>
+            <button class="btn-upload" id="community-upload-btn" onclick="uploadToCommunity()">Upload</button>
           </div>
         </div>
       </div>
@@ -2524,14 +2801,14 @@
         section.classList.toggle('collapsed');
 
         // Save state to localStorage
-        const collapsed = JSON.parse(localStorage.getItem('skitkit-collapsed-sections') || '{}');
+        const collapsed = JSON.parse(localStorage.getItem('pelicans-collapsed-sections') || '{}');
         collapsed[sectionName] = section.classList.contains('collapsed');
-        localStorage.setItem('skitkit-collapsed-sections', JSON.stringify(collapsed));
+        localStorage.setItem('pelicans-collapsed-sections', JSON.stringify(collapsed));
       }
     }
 
     function restoreCollapsedState() {
-      const collapsed = JSON.parse(localStorage.getItem('skitkit-collapsed-sections') || '{}');
+      const collapsed = JSON.parse(localStorage.getItem('pelicans-collapsed-sections') || '{}');
       Object.entries(collapsed).forEach(([section, isCollapsed]) => {
         if (isCollapsed) {
           const el = document.querySelector(`[data-section="${section}"]`);
@@ -4845,6 +5122,354 @@
 
     function openSkitPlayer(id) {
       window.open(`/player?skit=${id}`, '_blank');
+    }
+
+    // === COMMUNITY SHARING ===
+    const COMMUNITY_API_URL = 'https://pelicans-community.sampatt.workers.dev/api/community';
+    let communityVoiceFile = null;
+    let communityPayloadCache = null;
+
+    function getCommunityUsername() {
+      return localStorage.getItem('pelicans-community-username') || '';
+    }
+
+    function setCommunityUsername(name) {
+      localStorage.setItem('pelicans-community-username', name);
+    }
+
+    function openCommunityModal() {
+      const modal = document.getElementById('community-modal');
+      modal.classList.add('visible');
+
+      // Restore saved username
+      document.getElementById('community-username').value = getCommunityUsername();
+
+      // Reset state
+      communityVoiceFile = null;
+      communityPayloadCache = null;
+      const feedback = document.getElementById('community-feedback');
+      feedback.classList.remove('visible', 'success', 'error');
+      document.getElementById('community-progress').classList.remove('active');
+      document.getElementById('community-upload-btn').disabled = false;
+
+      // Auto-detect asset type from current edit mode
+      let autoTab = 'characters';
+      if (currentEditMode === 'sprite' && currentSpriteName) {
+        autoTab = 'characters';
+      } else if (currentEditMode === 'prop' || (currentEditMode === 'sprite' && currentVariant === 'prop')) {
+        autoTab = 'props';
+      } else if (currentEditMode === 'background' && currentBackgroundName) {
+        autoTab = 'backgrounds';
+      } else if (currentEditMode === 'skit' && currentSkitId) {
+        autoTab = 'skits';
+      }
+
+      setActiveCommunityTab(autoTab);
+    }
+
+    function closeCommunityModal() {
+      document.getElementById('community-modal').classList.remove('visible');
+      communityVoiceFile = null;
+      communityPayloadCache = null;
+    }
+
+    function setActiveCommunityTab(type) {
+      document.querySelectorAll('.community-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.type === type);
+      });
+
+      // Show/hide voice file input
+      document.getElementById('community-voice-input').style.display = type === 'voices' ? 'block' : 'none';
+
+      updateCommunityPreview(type);
+    }
+
+    function getActiveCommunityTab() {
+      const active = document.querySelector('.community-tab.active');
+      return active ? active.dataset.type : 'characters';
+    }
+
+    function updateCommunityPreview(type) {
+      const preview = document.getElementById('community-preview');
+      const nameInput = document.getElementById('community-asset-name');
+      const sizeEst = document.getElementById('community-size-estimate');
+
+      preview.innerHTML = '<span class="preview-text">No asset loaded</span>';
+      nameInput.value = '';
+      sizeEst.textContent = '';
+      sizeEst.classList.remove('over-limit');
+
+      if (type === 'characters' && currentEditMode === 'sprite' && currentSpriteName) {
+        nameInput.value = currentMeta?.name || currentSpriteName;
+        if (currentSprite) {
+          preview.innerHTML = currentSprite;
+        }
+        estimateCommunitySize(buildCharacterPayload());
+      } else if (type === 'props' && currentEditMode === 'prop' && currentSpriteName) {
+        nameInput.value = currentMeta?.name || currentSpriteName;
+        if (currentSprite) {
+          preview.innerHTML = currentSprite;
+        }
+        estimateCommunitySize(buildPropPayload());
+      } else if (type === 'backgrounds' && currentEditMode === 'background' && currentBackgroundName) {
+        nameInput.value = currentBackgroundName;
+        if (currentSprite) {
+          preview.innerHTML = currentSprite;
+        }
+        estimateCommunitySize(buildBackgroundPayload());
+      } else if (type === 'skits' && currentSkitId && currentSkitData) {
+        nameInput.value = currentSkitData.meta?.title || currentSkitId;
+        const meta = currentSkitData.meta || {};
+        const castCount = currentSkitData.cast ? Object.keys(currentSkitData.cast).length : 0;
+        const scriptLen = currentSkitData.script ? currentSkitData.script.length : 0;
+        preview.innerHTML = `<div class="preview-text">
+          <strong>${meta.title || 'Untitled'}</strong><br>
+          Cast: ${castCount} character(s)<br>
+          Script: ${scriptLen} action(s)<br>
+          Background: ${currentSkitData.stage?.background || 'none'}
+        </div>`;
+        estimateCommunitySize(buildSkitPayload());
+      } else if (type === 'published' && currentSkitId) {
+        nameInput.value = currentSkitData?.meta?.title || currentSkitId;
+        preview.innerHTML = '<div class="preview-text">Will fetch the published bundle for this skit.<br>Must be published first.</div>';
+        sizeEst.textContent = 'Size will be calculated after fetching published data';
+      } else if (type === 'voices') {
+        nameInput.value = '';
+        preview.innerHTML = '<div class="preview-text">Select a .wav voice sample file to upload for voice cloning.</div>';
+      } else {
+        preview.innerHTML = `<span class="preview-text">No ${type.slice(0, -1)} currently loaded in the editor. Switch to the appropriate edit mode first.</span>`;
+      }
+    }
+
+    function estimateCommunitySize(payload) {
+      if (!payload) return;
+      const sizeEst = document.getElementById('community-size-estimate');
+      const jsonStr = JSON.stringify(payload);
+      const bytes = new Blob([jsonStr]).size;
+      const kb = (bytes / 1024).toFixed(1);
+      const mb = (bytes / (1024 * 1024)).toFixed(2);
+      const maxMB = 3;
+
+      if (bytes > maxMB * 1024 * 1024) {
+        sizeEst.textContent = `Size: ${mb} MB / ${maxMB} MB - TOO LARGE`;
+        sizeEst.classList.add('over-limit');
+      } else {
+        sizeEst.textContent = `Size: ${kb} KB / ${maxMB} MB`;
+        sizeEst.classList.remove('over-limit');
+      }
+    }
+
+    function buildCharacterPayload() {
+      if (!currentSpriteName || !currentSprite) return null;
+      const username = document.getElementById('community-username').value.trim();
+      return {
+        username,
+        name: currentMeta?.name || currentSpriteName,
+        front_svg: currentSprite,
+        meta: currentMeta || { name: currentSpriteName, type: 'creature' },
+      };
+    }
+
+    function buildPropPayload() {
+      if (!currentSpriteName || !currentSprite) return null;
+      const username = document.getElementById('community-username').value.trim();
+      return {
+        username,
+        name: currentMeta?.name || currentSpriteName,
+        svg: currentSprite,
+        meta: currentMeta || { name: currentSpriteName },
+      };
+    }
+
+    function buildBackgroundPayload() {
+      if (!currentBackgroundName || !currentSprite) return null;
+      const username = document.getElementById('community-username').value.trim();
+      const payload = {
+        username,
+        name: currentBackgroundName,
+        landscape_svg: currentSprite,
+      };
+      return payload;
+    }
+
+    function buildSkitPayload() {
+      if (!currentSkitId || !currentSkitData) return null;
+      const username = document.getElementById('community-username').value.trim();
+      return {
+        username,
+        name: currentSkitData.meta?.title || currentSkitId,
+        skit: currentSkitData,
+      };
+    }
+
+    function handleVoiceFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) {
+        communityVoiceFile = null;
+        return;
+      }
+      communityVoiceFile = file;
+      const nameInput = document.getElementById('community-asset-name');
+      if (!nameInput.value) {
+        nameInput.value = file.name.replace(/\.wav$/i, '');
+      }
+      const sizeEst = document.getElementById('community-size-estimate');
+      const kb = (file.size / 1024).toFixed(1);
+      // Base64 expands ~33%
+      const estimatedBytes = Math.ceil(file.size * 1.37);
+      const mb = (estimatedBytes / (1024 * 1024)).toFixed(2);
+      if (estimatedBytes > 3 * 1024 * 1024) {
+        sizeEst.textContent = `Estimated upload: ${mb} MB / 3 MB - TOO LARGE`;
+        sizeEst.classList.add('over-limit');
+      } else {
+        sizeEst.textContent = `File: ${kb} KB (estimated upload: ${mb} MB / 3 MB)`;
+        sizeEst.classList.remove('over-limit');
+      }
+
+      const preview = document.getElementById('community-preview');
+      preview.innerHTML = `<div class="preview-text">Selected: ${file.name}<br>Size: ${kb} KB<br>Type: ${file.type || 'audio/wav'}</div>`;
+    }
+
+    async function uploadToCommunity() {
+      const username = document.getElementById('community-username').value.trim();
+      if (!username) {
+        showCommunityFeedback('Username is required', 'error');
+        return;
+      }
+      if (!/^[a-zA-Z0-9_-]{1,30}$/.test(username)) {
+        showCommunityFeedback('Username must be 1-30 characters (letters, numbers, hyphens, underscores)', 'error');
+        return;
+      }
+      setCommunityUsername(username);
+
+      const type = getActiveCommunityTab();
+      const uploadBtn = document.getElementById('community-upload-btn');
+      const progress = document.getElementById('community-progress');
+      const progressFill = document.getElementById('community-progress-fill');
+
+      uploadBtn.disabled = true;
+      progress.classList.add('active');
+      progressFill.style.width = '20%';
+      showCommunityFeedback('', '');
+
+      try {
+        let payload;
+
+        switch (type) {
+          case 'characters': {
+            payload = buildCharacterPayload();
+            if (!payload) throw new Error('No character loaded. Select a sprite first.');
+            // Try to also fetch the back variant if it exists
+            if (currentSpriteName && currentVariants && currentVariants.includes('back')) {
+              try {
+                const backResp = await fetch(`sprites/${currentSpriteName}/back.svg?v=${Date.now()}`);
+                if (backResp.ok) {
+                  payload.back_svg = await backResp.text();
+                }
+              } catch (e) { /* no back variant, that's fine */ }
+            }
+            break;
+          }
+          case 'props': {
+            payload = buildPropPayload();
+            if (!payload) throw new Error('No prop loaded. Select a prop first.');
+            break;
+          }
+          case 'backgrounds': {
+            payload = buildBackgroundPayload();
+            if (!payload) throw new Error('No background loaded. Select a background first.');
+            // Try to also fetch portrait orientation if available
+            if (currentBackgroundName && currentBackgroundOrientations && currentBackgroundOrientations.includes('portrait')) {
+              try {
+                const portraitResp = await fetch(`/api/backgrounds/${currentBackgroundName}/portrait?v=${Date.now()}`);
+                if (portraitResp.ok) {
+                  payload.portrait_svg = await portraitResp.text();
+                }
+              } catch (e) { /* no portrait, fine */ }
+            }
+            break;
+          }
+          case 'skits': {
+            payload = buildSkitPayload();
+            if (!payload) throw new Error('No skit loaded. Open a skit first.');
+            break;
+          }
+          case 'published': {
+            if (!currentSkitId) throw new Error('No skit loaded. Open a skit first.');
+            progressFill.style.width = '30%';
+            showCommunityFeedback('Fetching published data...', 'success');
+            const pubResp = await fetch(`/api/publish/${currentSkitId}`);
+            if (!pubResp.ok) throw new Error('Skit not published yet. Publish it first.');
+            const pubData = await pubResp.json();
+            payload = {
+              username,
+              name: pubData.meta?.title || currentSkitId,
+              published: pubData,
+            };
+            break;
+          }
+          case 'voices': {
+            if (!communityVoiceFile) throw new Error('Select a .wav voice file first.');
+            progressFill.style.width = '30%';
+            showCommunityFeedback('Reading voice file...', 'success');
+            const arrayBuf = await communityVoiceFile.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuf);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+            const name = document.getElementById('community-asset-name').value.trim() || communityVoiceFile.name.replace(/\.wav$/i, '');
+            payload = { username, name, audio_base64: base64 };
+            break;
+          }
+          default:
+            throw new Error('Unknown asset type');
+        }
+
+        // Check payload size
+        const jsonStr = JSON.stringify(payload);
+        const payloadSize = new Blob([jsonStr]).size;
+        if (payloadSize > 3 * 1024 * 1024) {
+          throw new Error(`Payload too large (${(payloadSize / 1024 / 1024).toFixed(1)} MB). Max 3 MB.`);
+        }
+
+        progressFill.style.width = '60%';
+        showCommunityFeedback('Uploading...', 'success');
+
+        const resp = await fetch(`${COMMUNITY_API_URL}/${type}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStr,
+        });
+
+        progressFill.style.width = '90%';
+
+        const result = await resp.json();
+
+        if (!resp.ok) {
+          throw new Error(result.error || `Upload failed (${resp.status})`);
+        }
+
+        progressFill.style.width = '100%';
+        showCommunityFeedback(`Shared successfully! Slug: ${result.slug}`, 'success');
+
+      } catch (e) {
+        showCommunityFeedback(e.message, 'error');
+        progressFill.style.width = '0%';
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    }
+
+    function showCommunityFeedback(msg, type) {
+      const el = document.getElementById('community-feedback');
+      el.textContent = msg;
+      el.classList.remove('visible', 'success', 'error');
+      if (msg) {
+        el.classList.add('visible');
+        if (type) el.classList.add(type);
+      }
     }
 
     // === VOICE SETTINGS ===
