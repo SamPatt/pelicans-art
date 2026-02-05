@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SVG Prompt Lab</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Scanline overlay -->
+  <div class="scanlines"></div>
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="logo-mark">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect x="2" y="2" width="24" height="24" rx="4" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M8 14 L14 8 L20 14 L14 20 Z" fill="var(--accent)" opacity="0.6"/>
+          <circle cx="14" cy="14" r="3" fill="var(--accent)"/>
+        </svg>
+      </div>
+      <span class="brand-text">SVG PROMPT LAB</span>
+      <span class="brand-version">v1.0</span>
+    </div>
+    <nav class="topbar-tabs">
+      <button class="tab-btn active" data-tab="builder">
+        <span class="tab-icon">&#9881;</span>
+        <span>Builder</span>
+        <span class="tab-key">1</span>
+      </button>
+      <button class="tab-btn" data-tab="gallery">
+        <span class="tab-icon">&#9638;</span>
+        <span>Gallery</span>
+        <span class="tab-key">2</span>
+      </button>
+      <button class="tab-btn" data-tab="history">
+        <span class="tab-icon">&#9776;</span>
+        <span>History</span>
+        <span class="tab-key">3</span>
+      </button>
+    </nav>
+    <div class="topbar-status">
+      <span class="status-dot" id="status-dot"></span>
+      <span class="status-text" id="status-text">Ready</span>
+    </div>
+  </header>
+
+  <!-- TAB: BUILDER -->
+  <main class="tab-panel active" id="panel-builder">
+    <div class="builder-layout">
+      <!-- Left: Template + Prompts -->
+      <section class="builder-left">
+        <div class="section-block">
+          <div class="section-header">
+            <label class="section-label">TEMPLATE</label>
+            <button class="btn btn-xs btn-ghost" id="btn-new-template" title="Create new template">+ New</button>
+          </div>
+          <select id="template-select" class="input-select">
+            <option value="">-- Select template --</option>
+          </select>
+        </div>
+
+        <div id="template-editor" class="template-editor hidden">
+          <div class="section-block">
+            <div class="section-header">
+              <label class="section-label">SYSTEM PROMPT</label>
+              <span class="char-count" id="sys-prompt-count">0</span>
+            </div>
+            <textarea id="sys-prompt" class="input-textarea mono" rows="8" placeholder="System prompt..."></textarea>
+          </div>
+
+          <div class="section-block">
+            <div class="section-header">
+              <label class="section-label">USER PROMPT TEMPLATE</label>
+              <span class="hint">Use &#123;&#123;var&#125;&#125; for variables</span>
+            </div>
+            <textarea id="user-prompt" class="input-textarea mono" rows="3" placeholder="{{description}}"></textarea>
+          </div>
+
+          <div class="section-block">
+            <div class="section-header">
+              <label class="section-label">VARIABLES</label>
+            </div>
+            <div id="variables-editor" class="variables-editor"></div>
+          </div>
+
+          <div class="section-block">
+            <div class="section-header">
+              <label class="section-label">REFERENCE EXAMPLES</label>
+              <span class="hint" id="example-count">0 selected</span>
+            </div>
+            <div id="examples-grid" class="examples-grid"></div>
+          </div>
+
+          <div class="section-block">
+            <button class="btn btn-sm btn-outline" id="btn-save-template">Save Template</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Models + Config + Run -->
+      <section class="builder-right">
+        <div class="section-block">
+          <div class="section-header">
+            <label class="section-label">MODELS</label>
+            <input type="text" class="input-search" id="model-search" placeholder="Filter...">
+          </div>
+          <div id="models-list" class="models-list">
+            <div class="loading-placeholder">Loading models...</div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-header">
+            <label class="section-label">CONFIGURATION</label>
+          </div>
+          <div class="config-grid">
+            <div class="config-row">
+              <label>Temperature</label>
+              <div class="config-slider-group">
+                <input type="range" id="cfg-temp" min="0" max="2" step="0.1" value="0.7" class="input-range">
+                <span class="config-value" id="cfg-temp-val">0.7</span>
+              </div>
+            </div>
+            <div class="config-row">
+              <label>Max Tokens</label>
+              <input type="number" id="cfg-tokens" value="4096" min="256" max="16384" step="256" class="input-number">
+            </div>
+            <div class="config-row">
+              <label>Concurrency</label>
+              <input type="number" id="cfg-concurrency" value="3" min="1" max="10" class="input-number">
+            </div>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-header">
+            <label class="section-label">EXPERIMENT NAME</label>
+          </div>
+          <input type="text" id="exp-name" class="input-text" placeholder="e.g. Sprite style comparison">
+        </div>
+
+        <div class="matrix-preview" id="matrix-preview">
+          <span class="matrix-formula">0 combos &times; 0 models = <strong>0 cells</strong></span>
+        </div>
+
+        <button class="btn btn-primary btn-run" id="btn-run" disabled>
+          <span class="btn-run-text">Run Experiment</span>
+          <span class="btn-run-icon">&rarr;</span>
+        </button>
+
+        <!-- Progress overlay -->
+        <div id="run-progress" class="run-progress hidden">
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+          </div>
+          <div class="progress-stats">
+            <span id="progress-text">0 / 0</span>
+            <span id="progress-percent">0%</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- TAB: GALLERY -->
+  <main class="tab-panel" id="panel-gallery">
+    <div class="gallery-toolbar">
+      <div class="toolbar-left">
+        <select id="gallery-experiment" class="input-select">
+          <option value="">-- Select experiment --</option>
+        </select>
+        <div class="filter-group">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="valid">Valid</button>
+          <button class="filter-btn" data-filter="invalid">Invalid</button>
+          <button class="filter-btn" data-filter="winners">Winners</button>
+        </div>
+      </div>
+      <div class="toolbar-right">
+        <label class="toolbar-label">Sort:</label>
+        <select id="gallery-sort" class="input-select input-select-sm">
+          <option value="index">Index</option>
+          <option value="rating">Rating</option>
+          <option value="model">Model</option>
+          <option value="latency">Latency</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Progress bar for running experiments -->
+    <div id="gallery-progress" class="gallery-progress hidden">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="gallery-progress-fill"></div>
+      </div>
+      <span class="progress-label" id="gallery-progress-label">Running...</span>
+    </div>
+
+    <div id="gallery-grid" class="gallery-grid">
+      <div class="empty-state">Select an experiment from the dropdown or run one from the Builder tab.</div>
+    </div>
+
+    <!-- Expanded card modal -->
+    <div id="card-modal" class="card-modal hidden">
+      <div class="card-modal-backdrop"></div>
+      <div class="card-modal-content">
+        <button class="card-modal-close">&times;</button>
+        <div class="card-modal-body" id="card-modal-body"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- TAB: HISTORY -->
+  <main class="tab-panel" id="panel-history">
+    <div class="history-header">
+      <h2 class="section-title">Experiment History</h2>
+      <button class="btn btn-sm btn-ghost" id="btn-refresh-history">Refresh</button>
+    </div>
+    <div id="history-table-wrap" class="history-table-wrap">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Results</th>
+            <th>Valid</th>
+            <th>Avg Rating</th>
+            <th>Date</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="history-tbody">
+          <tr><td colspan="7" class="empty-state">No experiments yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Confirm dialog -->
+  <div id="confirm-dialog" class="confirm-dialog hidden">
+    <div class="confirm-backdrop"></div>
+    <div class="confirm-box">
+      <p id="confirm-text"></p>
+      <div class="confirm-actions">
+        <button class="btn btn-sm btn-ghost" id="confirm-cancel">Cancel</button>
+        <button class="btn btn-sm btn-danger" id="confirm-ok">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
