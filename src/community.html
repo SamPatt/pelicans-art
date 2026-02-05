@@ -149,6 +149,17 @@
       margin-top: 4px;
     }
 
+    .asset-card-category {
+      font-size: 0.65em;
+      color: #4ecca3;
+      background: rgba(78, 204, 163, 0.1);
+      border: 1px solid rgba(78, 204, 163, 0.2);
+      border-radius: 3px;
+      padding: 1px 6px;
+      margin-top: 4px;
+      text-transform: capitalize;
+    }
+
     /* Detail panel */
     .detail-panel {
       display: none;
@@ -308,6 +319,54 @@
       color: #4ecca3;
     }
 
+    /* Script action list (read-only) */
+    .script-list {
+      background: #0d0d1a;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .script-list h4 {
+      margin: 0 0 8px 0;
+      color: #4ecca3;
+      font-size: 0.8em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .script-line {
+      background: #1a1a2e;
+      border-left: 3px solid #333;
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      border-radius: 0 4px 4px 0;
+      font-size: 0.8em;
+      line-height: 1.4;
+      color: #ccc;
+    }
+
+    .script-line.say { border-left-color: #4ecca3; }
+    .script-line.emote { border-left-color: #f0c040; }
+    .script-line.shot { border-left-color: #e74c3c; }
+    .script-line.stage { border-left-color: #9b59b6; }
+    .script-line.prop { border-left-color: #9b59b6; }
+
+    .script-line strong { color: #4ecca3; }
+    .script-line.emote strong { color: #f0c040; }
+    .script-line.shot strong { color: #e74c3c; }
+
+    .script-line .offset-badge {
+      background: #4ecca3;
+      color: #0d0d1a;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      margin-left: 6px;
+    }
+
     /* Loading & empty */
     .loading, .empty-state {
       text-align: center;
@@ -427,7 +486,8 @@
 
 <div class="container">
   <div class="category-tabs" id="category-tabs">
-    <button class="category-tab active" data-type="characters" onclick="switchCategory('characters')">Characters</button>
+    <button class="category-tab active" data-type="all" onclick="switchCategory('all')">All</button>
+    <button class="category-tab" data-type="characters" onclick="switchCategory('characters')">Characters</button>
     <button class="category-tab" data-type="props" onclick="switchCategory('props')">Props</button>
     <button class="category-tab" data-type="backgrounds" onclick="switchCategory('backgrounds')">Backgrounds</button>
     <button class="category-tab" data-type="skits" onclick="switchCategory('skits')">Scripts</button>
@@ -454,7 +514,7 @@
 <script>
   const API_URL = 'https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community';
 
-  let currentCategory = 'characters';
+  let currentCategory = 'all';
   let currentCursor = null;
   let currentItems = [];
   let selectedSlug = null;
@@ -488,7 +548,7 @@
     const type = params.get('type');
     const id = params.get('id');
 
-    if (type && ['characters', 'props', 'backgrounds', 'skits', 'published', 'voices'].includes(type)) {
+    if (type && ['all', 'characters', 'props', 'backgrounds', 'skits', 'published', 'voices'].includes(type)) {
       currentCategory = type;
       document.querySelectorAll('.category-tab').forEach(t => {
         t.classList.toggle('active', t.dataset.type === type);
@@ -523,8 +583,59 @@
     loadCategory();
   }
 
+  // === Load all categories (mixed) ===
+  async function loadAllCategories() {
+    const grid = document.getElementById('asset-grid');
+    const loading = document.getElementById('loading-indicator');
+    const empty = document.getElementById('empty-state');
+    const loadMoreBtn = document.getElementById('load-more-btn');
+
+    grid.innerHTML = '';
+    loading.style.display = '';
+    empty.style.display = 'none';
+    loadMoreBtn.style.display = 'none';
+    currentItems = [];
+    currentCursor = null;
+
+    const categories = ['characters', 'props', 'backgrounds', 'skits', 'published', 'voices'];
+
+    try {
+      const results = await Promise.all(
+        categories.map(cat =>
+          fetch(`${API_URL}/${cat}?limit=8`)
+            .then(r => r.json())
+            .then(data => data.items.map(item => ({ ...item, _category: cat })))
+            .catch(() => [])
+        )
+      );
+
+      loading.style.display = 'none';
+
+      // Combine and shuffle (Fisher-Yates)
+      const combined = results.flat();
+      for (let i = combined.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [combined[i], combined[j]] = [combined[j], combined[i]];
+      }
+
+      currentItems = combined;
+
+      if (combined.length === 0) {
+        empty.style.display = '';
+        return;
+      }
+
+      renderCards(combined);
+    } catch (e) {
+      loading.style.display = 'none';
+      empty.style.display = '';
+      empty.textContent = 'Failed to load assets: ' + e.message;
+    }
+  }
+
   // === Load assets ===
   async function loadCategory() {
+    if (currentCategory === 'all') return loadAllCategories();
     const grid = document.getElementById('asset-grid');
     const loading = document.getElementById('loading-indicator');
     const empty = document.getElementById('empty-state');
@@ -602,7 +713,8 @@
       const preview = document.createElement('div');
       preview.className = 'asset-card-preview';
 
-      const url = previewFile(currentCategory, item.slug);
+      const itemCat = item._category || currentCategory;
+      const url = previewFile(itemCat, item.slug);
       if (url) {
         const img = document.createElement('img');
         img.src = url;
@@ -612,7 +724,7 @@
       } else {
         const icon = document.createElement('div');
         icon.className = 'asset-card-icon';
-        icon.textContent = CATEGORY_ICONS[currentCategory] || '📦';
+        icon.textContent = CATEGORY_ICONS[itemCat] || '📦';
         preview.appendChild(icon);
       }
 
@@ -627,6 +739,15 @@
       card.appendChild(preview);
       card.appendChild(name);
       card.appendChild(meta);
+
+      if (currentCategory === 'all' && item._category) {
+        const CATEGORY_LABELS = { skits: 'Scripts', published: 'Skits' };
+        const badge = document.createElement('div');
+        badge.className = 'asset-card-category';
+        badge.textContent = CATEGORY_LABELS[item._category] || item._category;
+        card.appendChild(badge);
+      }
+
       grid.appendChild(card);
     }
   }
@@ -637,6 +758,10 @@
     const panel = document.getElementById('detail-panel');
     const title = document.getElementById('detail-title');
     const content = document.getElementById('detail-content');
+
+    // Determine the real category for this item
+    const matchedItem = currentItems.find(it => it.slug === slug);
+    const detailCategory = matchedItem?._category || currentCategory;
 
     // Update URL
     const url = new URL(window.location);
@@ -655,14 +780,14 @@
 
     try {
       // Get metadata
-      const metaResp = await fetch(`${API_URL}/${currentCategory}/${slug}`);
+      const metaResp = await fetch(`${API_URL}/${detailCategory}/${slug}`);
       if (!metaResp.ok) throw new Error('Asset not found');
       const meta = await metaResp.json();
 
       title.textContent = meta.name || slug;
 
       // Build detail content per category
-      switch (currentCategory) {
+      switch (detailCategory) {
         case 'characters': await renderCharacterDetail(content, slug, meta); break;
         case 'props': await renderPropDetail(content, slug, meta); break;
         case 'backgrounds': await renderBackgroundDetail(content, slug, meta); break;
@@ -802,7 +927,7 @@
         const skit = await resp.json();
         const castNames = skit.cast ? Object.keys(skit.cast).join(', ') : 'none';
         const scriptLen = skit.script ? skit.script.length : 0;
-        const dialogueCount = skit.script ? skit.script.filter(a => a.type === 'say').length : 0;
+        const dialogueCount = skit.script ? skit.script.filter(a => a.do === 'say').length : 0;
 
         html += `<div class="skit-summary">
           <strong>Title:</strong> ${skit.meta?.title || 'Untitled'}<br>
@@ -811,6 +936,7 @@
           <strong>Cast:</strong> ${castNames}<br>
           <strong>Script:</strong> ${scriptLen} actions (${dialogueCount} lines of dialogue)
         </div>`;
+        html += renderScriptActions(skit.script);
       }
     } catch (e) {}
 
@@ -830,7 +956,7 @@
         const pub = await resp.json();
         const castNames = pub.cast ? Object.keys(pub.cast).join(', ') : 'none';
         const scriptLen = pub.script ? pub.script.length : 0;
-        const dialogueCount = pub.script ? pub.script.filter(a => a.type === 'say').length : 0;
+        const dialogueCount = pub.script ? pub.script.filter(a => a.do === 'say').length : 0;
         const audioCount = pub.assets?.audio ? Object.keys(pub.assets.audio).length : 0;
         const spriteCount = pub.assets?.sprites ? Object.keys(pub.assets.sprites).length : 0;
 
@@ -848,6 +974,8 @@
         if (bgName && pub.assets?.backgrounds?.[bgName]) {
           html += `<div class="detail-preview"><img src="${pub.assets.backgrounds[bgName]}" alt="Background"></div>`;
         }
+
+        html += renderScriptActions(pub.script);
 
         // Play button opens in skit player
         html += `<div style="text-align:center;color:#555;font-size:0.8em;margin-bottom:16px;">Full playback coming soon</div>`;
@@ -888,6 +1016,89 @@
       <span class="detail-label">Size</span><span class="detail-value">${sizeKB}</span>
       <span class="detail-label">Category</span><span class="detail-value">${meta.category || currentCategory}</span>
     </div>`;
+  }
+
+  function renderScriptActions(script) {
+    if (!script || !script.length) return '';
+    let html = '<div class="script-list"><h4>Script</h4>';
+    script.forEach(action => {
+      let content = '';
+      let cssClass = '';
+      switch (action.do) {
+        case 'say':
+          content = `<strong>${action.who}:</strong> "${action.line}"`;
+          cssClass = 'say';
+          break;
+        case 'emote':
+          content = `${action.who} → ${action.emotion}`;
+          cssClass = 'emote';
+          break;
+        case 'shot':
+          content = `📷 ${action.type}${action.who ? ` (${action.who})` : ''}`;
+          cssClass = 'shot';
+          break;
+        case 'enter':
+          content = `↗ ${action.who} enters from ${action.from}`;
+          cssClass = 'stage';
+          break;
+        case 'exit':
+          content = `↘ ${action.who} exits to ${action.to}`;
+          cssClass = 'stage';
+          break;
+        case 'move':
+          content = `→ ${action.who} moves to ${action.to}`;
+          cssClass = 'stage';
+          break;
+        case 'pause':
+          content = `⏸ pause ${action.duration}s`;
+          cssClass = 'stage';
+          break;
+        case 'look':
+          content = `👁 ${action.who} looks ${action.at}`;
+          cssClass = 'stage';
+          break;
+        case 'spawn':
+          content = `🎁 spawn ${action.what}${action.who ? ` held by ${action.who}` : (action.at ? ` at (${action.at[0]}, ${action.at[1]})` : '')}`;
+          cssClass = 'prop';
+          break;
+        case 'despawn':
+          content = `🎁 despawn ${action.what}`;
+          cssClass = 'prop';
+          break;
+        case 'prop-move':
+          content = `🎁 ${action.what} moves to (${action.to?.[0] || '?'}, ${action.to?.[1] || '?'})`;
+          cssClass = 'prop';
+          break;
+        case 'prop-hold':
+          content = `🎁 ${action.who} holds ${action.what}`;
+          cssClass = 'prop';
+          break;
+        case 'prop-drop':
+          content = `🎁 ${action.who || 'drop'} ${action.what}${action.at ? ` at (${action.at[0]}, ${action.at[1]})` : ''}`;
+          cssClass = 'prop';
+          break;
+        case 'prop-rotate':
+          content = `🎁 rotate ${action.what} to ${action.angle}°`;
+          cssClass = 'prop';
+          break;
+        case 'prop-scale':
+          content = `🎁 scale ${action.what} to ${action.scale}x`;
+          cssClass = 'prop';
+          break;
+        case 'prop-animate':
+          content = `🎁 animate ${action.what}: ${action.animation}`;
+          cssClass = 'prop';
+          break;
+        default:
+          content = JSON.stringify(action);
+      }
+      if (action.offset < 0) {
+        content += ` <span class="offset-badge">[${action.offset}s]</span>`;
+      }
+      html += `<div class="script-line ${cssClass}">${content}</div>`;
+    });
+    html += '</div>';
+    return html;
   }
 
   function copyAssetLink() {
