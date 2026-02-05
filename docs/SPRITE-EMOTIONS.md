@@ -1,6 +1,36 @@
 # Sprite Construction & Emotion Reference
 
-Complete guide for building expressive SVG character sprites.
+Complete guide for building expressive SVG character sprites with the transform-based emotion system.
+
+## Transform-Based Emotion System
+
+The emotion system uses **relative transforms** to animate facial expressions. This means emotions work automatically on any sprite, regardless of face position or size. No special configuration needed!
+
+### How It Works
+
+- **Eye size**: Multiplied by a ratio (e.g., 0.7 = 70% of original height for squinting)
+- **Eye position**: Shifted by delta pixels (e.g., -1 = move up 1px)
+- **Brows**: Original path preserved, transformed via translate + rotate
+- **Mouth**: Original path preserved, transformed via translate + scale
+
+### Available Emotions
+
+| Emotion | Eyes | Brows | Mouth |
+|---------|------|-------|-------|
+| neutral | Normal | Flat | Normal |
+| happy | Squint (0.7x) | Raised (-2), outer up | Tall (1.3x) |
+| sad | Slightly closed | Inner raised (+12°) | Compressed (0.7x) |
+| angry | Squint (0.7x) | Lowered, furrowed (-15°/+15°) | Tight (0.5x) |
+| surprised | Wide (1.4x) | Very high (-5) | Big O (1.8x height) |
+| excited | Wide (1.3x) | High (-4) | Tall (1.5x) |
+| worried | Slightly closed | Inner raised (+10°) | Compressed (0.8x) |
+| smug | Squint (0.75x) | Asymmetric | Slight (1.1x) |
+| tired | Very squint (0.5x) | Lowered (+2) | Flat (0.6x) |
+| skeptical | Slight squint (0.8x) | One raised | Compressed (0.7x) |
+| dead | Squint (0.7x) | Flat | Uses mouth-open |
+| scared | Wide (1.3x) | Inner raised | Uses mouth-open |
+| thinking | Slight squint (0.9x) | Asymmetric | Compressed (0.8x) |
+| confused | Slightly wide (1.1x) | Very asymmetric | Compressed (0.9x) |
 
 ## Sprite Structure
 
@@ -10,7 +40,7 @@ All sprites use a `100x150` viewBox:
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
 ```
 - **Width:** 100 units
-- **Height:** 150 units  
+- **Height:** 150 units
 - **Center X:** 50
 - **Head center Y:** ~45-55
 - **Body center Y:** ~100-110
@@ -34,6 +64,41 @@ All sprites use a `100x150` viewBox:
   <!-- Mouth area - separates for head tilt animation -->
   <!-- Must contain #mouth-closed and #mouth-open for lip sync -->
 </g>
+```
+
+## Required Element IDs
+
+The emotion system looks for these element IDs:
+
+### Eyes (required for emotions)
+```svg
+<ellipse id="eye-left-white" cx="40" cy="42" rx="4" ry="3" fill="#fff"/>
+<ellipse id="eye-right-white" cx="60" cy="42" rx="4" ry="3" fill="#fff"/>
+<circle id="eye-left-pupil" cx="40" cy="42" r="2" fill="#000"/>
+<circle id="eye-right-pupil" cx="60" cy="42" r="2" fill="#000"/>
+```
+Note: Pupils can use either `r` (circle) or `rx/ry` (ellipse).
+
+### Eyebrows (optional, enhances expressions)
+```svg
+<path id="brow-left" d="M34 38 Q40 35 46 38" stroke="#5d4037" stroke-width="2" fill="none"/>
+<path id="brow-right" d="M54 38 Q60 35 66 38" stroke="#5d4037" stroke-width="2" fill="none"/>
+```
+
+### Mouth (required for lip sync)
+```svg
+<!-- Closed mouth - visible by default -->
+<path id="mouth-closed" d="M44 67 Q50 70 56 67" stroke="#5d4037" stroke-width="1.5" fill="none"/>
+<!-- Open mouth - hidden by default, shown when speaking or for some emotions -->
+<ellipse id="mouth-open" cx="50" cy="68" rx="5" ry="3" fill="#5d4037" opacity="0"/>
+<!-- Optional: Smile mouth for happy emotion -->
+<path id="mouth-smile" d="M42 54 Q50 62 58 54" stroke="#5d4037" stroke-width="2" fill="none" opacity="0"/>
+```
+
+### Eye Highlights (optional, shown for excited/surprised)
+```svg
+<circle id="eye-left-highlight" cx="38" cy="40" r="1.5" fill="#fff" opacity="0"/>
+<circle id="eye-right-highlight" cx="58" cy="40" r="1.5" fill="#fff" opacity="0"/>
 ```
 
 ## Body Construction
@@ -84,116 +149,6 @@ All sprites use a `100x150` viewBox:
 <polygon points="32,42 36,28 42,42" fill="#ffcc80"/>
 ```
 
-## Eye Construction
-
-### Basic Eye Structure
-```svg
-<!-- Eye white -->
-<ellipse cx="40" cy="42" rx="4" ry="3" fill="#fff"/>
-<!-- Pupil -->
-<circle cx="40" cy="42" r="2" fill="#000"/>
-```
-
-### Eye Sizing by Emotion
-| Emotion | White rx/ry | Pupil r | Notes |
-|---------|-------------|---------|-------|
-| Neutral | 4/3 | 2 | Standard |
-| Surprised | 5/5 | 2 | Rounder, bigger |
-| Angry | 4/2.5 | 2 | Narrower vertically |
-| Tired | 4/2 | 1.5 | Very narrow slit |
-| Excited | 5/5 | 2.5 | Big with highlights |
-
-### Pupil Position for Look Direction
-```svg
-<!-- Looking right: shift pupil cx +1.5 -->
-<circle cx="41.5" cy="42" r="2" fill="#000"/>
-<!-- Looking left: shift pupil cx -1.5 -->
-<circle cx="38.5" cy="42" r="2" fill="#000"/>
-<!-- Looking down: shift pupil cy +1.5 -->
-<circle cx="40" cy="43.5" r="2" fill="#000"/>
-```
-
-### Eye Highlights (for excitement/surprise)
-```svg
-<!-- Small white circle in upper portion of eye -->
-<circle cx="38" cy="40" r="1.5" fill="#fff"/>
-```
-
-### Closed/Happy Eyes (curved lines instead of shapes)
-```svg
-<!-- Replace eye shapes with curved paths -->
-<path d="M36 42 Q40 38 44 42" stroke="#000" stroke-width="2" fill="none"/>
-```
-
-### Alien/Large Eyes
-```svg
-<!-- Larger ellipses, colored pupils -->
-<ellipse cx="38" cy="40" rx="10" ry="14" fill="#000"/>
-<ellipse cx="38" cy="40" rx="5" ry="7" fill="#e8f5e9"/>
-```
-
-## Eyebrow Construction
-
-### Basic Flat Eyebrow
-```svg
-<path d="M34 38 L46 38" stroke="#5d4037" stroke-width="2"/>
-```
-
-### Curved Eyebrow
-```svg
-<path d="M34 38 Q40 35 46 38" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-### Bottom Border Technique (for visibility against hair)
-Draw a skin-tone line 2px below the eyebrow:
-```svg
-<!-- Skin border first (below) -->
-<path d="M34 40 L46 40" stroke="#ffcc80" stroke-width="2"/>
-<!-- Eyebrow on top -->
-<path d="M34 38 L46 38" stroke="#5d4037" stroke-width="2"/>
-```
-
-### Eyebrow Angles by Emotion
-
-**Neutral** — Flat horizontal:
-```svg
-<path d="M34 38 L46 38" stroke="#5d4037" stroke-width="2"/>
-```
-
-**Happy** — Arched up:
-```svg
-<path d="M34 38 Q40 35 46 38" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-**Sad** — Inner ends HIGH, outer ends low (∩ shape):
-```svg
-<!-- Left brow: starts outer-low, ends inner-high -->
-<path d="M34 40 L46 34" stroke="#5d4037" stroke-width="2"/>
-<!-- Right brow: starts inner-high, ends outer-low -->
-<path d="M54 34 L66 40" stroke="#5d4037" stroke-width="2"/>
-```
-
-**Angry** — Inner ends LOW, outer ends high (V shape pointing down):
-```svg
-<!-- Left brow: starts outer-high, ends inner-low -->
-<path d="M34 36 L46 42" stroke="#5d4037" stroke-width="3"/>
-<!-- Right brow: starts inner-low, ends outer-high -->
-<path d="M54 42 L66 36" stroke="#5d4037" stroke-width="3"/>
-```
-
-**Surprised** — High and arched:
-```svg
-<path d="M34 34 Q40 30 46 34" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-**Skeptical** — One raised, one flat:
-```svg
-<!-- Left: normal -->
-<path d="M34 38 Q40 36 46 38" stroke="#5d4037" stroke-width="2" fill="none"/>
-<!-- Right: raised high -->
-<path d="M54 36 Q60 32 66 36" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
 ## Nose Construction
 
 ### Simple Dot/Circle
@@ -210,75 +165,6 @@ Draw a skin-tone line 2px below the eyebrow:
 ```svg
 <ellipse cx="50" cy="53" rx="2" ry="1.5" fill="#ffb74d"/>
 ```
-
-## Mouth Construction
-
-### Required IDs for Lip Sync
-The animation system requires these two elements:
-```svg
-<g id="head-bottom">
-  <!-- Closed mouth - visible by default -->
-  <path d="M44 67 Q50 70 56 67" stroke="#5d4037" stroke-width="1.5" fill="none" id="mouth-closed"/>
-  <!-- Open mouth - hidden by default, shown when speaking -->
-  <ellipse cx="50" cy="68" rx="5" ry="3" fill="#5d4037" opacity="0" id="mouth-open"/>
-</g>
-```
-
-### Mouth Shapes by Emotion
-
-**Neutral** — Slight curve or flat:
-```svg
-<path d="M44 55 Q50 58 56 55" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-**Happy/Smile** — Upward curve:
-```svg
-<path d="M42 54 Q50 62 58 54" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-**Sad/Frown** — Downward curve:
-```svg
-<path d="M42 58 Q50 52 58 58" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-**Surprised/O** — Open ellipse:
-```svg
-<ellipse cx="50" cy="56" rx="4" ry="5" fill="#5d4037"/>
-```
-
-**Angry/Grimace** — Flat line, optionally with teeth:
-```svg
-<path d="M42 56 L58 56" stroke="#5d4037" stroke-width="2"/>
-<!-- Optional teeth marks -->
-<path d="M46 58 L46 54" stroke="#5d4037" stroke-width="1"/>
-<path d="M54 58 L54 54" stroke="#5d4037" stroke-width="1"/>
-```
-
-**Worried/Wavy** — Squiggle:
-```svg
-<path d="M42 56 Q46 54 50 56 Q54 58 58 56" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-**Smirk** — Asymmetric:
-```svg
-<path d="M44 55 Q54 60 60 54" stroke="#5d4037" stroke-width="2" fill="none"/>
-```
-
-## Complete Emotion Quick Reference
-
-| Emotion | Eyes | Eyebrows | Mouth |
-|---------|------|----------|-------|
-| Neutral | Normal, centered | Flat | Slight curve |
-| Happy | Curved/squint | Arched up | Smile |
-| Sad | Droopy, pupils down | ∩ (inner high) | Frown |
-| Angry | Narrow | V (inner low) | Grimace |
-| Surprised | Wide + highlights | High arch | Open O |
-| Worried | Asymmetric | Uneven ∩ | Wavy |
-| Skeptical | One narrow | One raised | Smirk |
-| Smug | Half-closed | One cocked | Smirk |
-| Confused | Different sizes | Asymmetric | Squiggle |
-| Tired | Droopy slits | Flat/sag | Slight frown |
-| Excited | Big + sparkle | Very high | Big smile |
 
 ## Color Palettes
 
@@ -319,8 +205,9 @@ Pupils need class `.pupil` for look direction:
 ### Naming Convention
 ```
 sprites/
-  character-front.svg
-  character-back.svg
+  character-name/
+    front.svg
+    back.svg
 ```
 
 ### Back Sprite Simplifications
@@ -336,6 +223,34 @@ sprites/
 
 ## Testing Sprites
 
-View examples at:
-- `/skit/sprite-showcase.html` — Style comparison
-- `/skit/emotion-showcase.html` — Emotion reference
+1. **emotion-test.html** - Compare emotion approaches across different sprites
+2. **sprite-editor.html** - Load sprite, use emotion buttons to test all expressions
+3. **skit-player.html** - Play a skit with emote actions to see emotions in action
+
+### Quick Test
+To verify your sprite works with emotions:
+1. Open `sprite-editor.html`
+2. Select your sprite
+3. Click through all emotion buttons
+4. Verify eyes, brows, and mouth all animate appropriately
+
+## meta.json (Optional)
+
+The `meta.json` file is optional and used primarily for voice settings:
+
+```json
+{
+  "name": "Character Name",
+  "description": "Brief description",
+  "tags": ["human", "office"],
+  "type": "human",
+  "voice": {
+    "id": "marius",
+    "pitch": 0,
+    "speed": 1,
+    "volume": 1
+  }
+}
+```
+
+**Note:** The `type` field is for voice selection hints only. Emotions work universally regardless of type.

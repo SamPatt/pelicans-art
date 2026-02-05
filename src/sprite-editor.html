@@ -2126,6 +2126,192 @@
       background: #3db892;
     }
 
+    .import-btn {
+      background: #0f3460;
+      color: #4ecca3;
+      border: 1px solid #4ecca3;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.85em;
+    }
+
+    .import-btn:hover {
+      background: #1a4a7a;
+    }
+
+    /* Import Modal */
+    .import-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .import-modal.visible {
+      display: flex;
+    }
+
+    .import-modal-content {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 24px;
+      width: 480px;
+      max-width: 95vw;
+    }
+
+    .import-modal h3 {
+      color: #4ecca3;
+      margin-bottom: 16px;
+      font-size: 1.1em;
+    }
+
+    .import-modal .form-group {
+      margin-bottom: 14px;
+    }
+
+    .import-modal label {
+      display: block;
+      color: #888;
+      font-size: 0.85em;
+      margin-bottom: 4px;
+    }
+
+    .import-modal input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 0.9em;
+      font-family: monospace;
+    }
+
+    .import-modal input[type="text"]:focus {
+      border-color: #4ecca3;
+      outline: none;
+    }
+
+    .import-modal input[type="text"]::placeholder {
+      color: #555;
+    }
+
+    .import-preview {
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 14px;
+      min-height: 60px;
+    }
+
+    .import-preview-empty {
+      color: #555;
+      font-size: 0.85em;
+      text-align: center;
+    }
+
+    .import-preview-info {
+      font-size: 0.85em;
+    }
+
+    .import-preview-info .type-badge {
+      display: inline-block;
+      background: #4ecca3;
+      color: #111;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      font-weight: bold;
+      margin-bottom: 8px;
+      text-transform: capitalize;
+    }
+
+    .import-preview-info .name {
+      color: #eee;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .import-preview-info .id {
+      color: #888;
+      font-family: monospace;
+      font-size: 0.8em;
+    }
+
+    .import-feedback {
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 0.85em;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    .import-feedback.visible {
+      display: block;
+    }
+
+    .import-feedback.success {
+      background: rgba(78, 204, 163, 0.15);
+      color: #4ecca3;
+      border: 1px solid rgba(78, 204, 163, 0.3);
+    }
+
+    .import-feedback.error {
+      background: rgba(233, 69, 96, 0.15);
+      color: #e94560;
+      border: 1px solid rgba(233, 69, 96, 0.3);
+    }
+
+    .import-modal .modal-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .import-modal .modal-buttons button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: bold;
+    }
+
+    .import-modal .btn-import {
+      background: #4ecca3;
+      color: #111;
+    }
+
+    .import-modal .btn-import:hover {
+      background: #3db892;
+    }
+
+    .import-modal .btn-import:disabled {
+      background: #2a4a3a;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    .import-modal .btn-cancel {
+      background: #333;
+      color: #eee;
+    }
+
+    .import-modal .btn-cancel:hover {
+      background: #444;
+    }
+
     .community-voice-input {
       margin-top: 8px;
     }
@@ -2422,6 +2608,7 @@
       <button id="btn-redo" disabled>↪️ Redo</button>
       <button id="btn-save">💾 Save</button>
       <button id="btn-community-share" class="community-share-btn" onclick="openCommunityModal()" title="Share to Community">Share</button>
+      <button id="btn-import" class="import-btn" onclick="openImportModal()" title="Import from Community">Import</button>
       <span class="toolbar-divider">|</span>
       <button id="btn-test" title="Test in Skit Player">▶️ Test</button>
       <button id="btn-help" title="Keyboard Shortcuts">❓</button>
@@ -2757,6 +2944,25 @@
             <button class="btn-cancel" onclick="closeCommunityModal()">Cancel</button>
             <button class="btn-upload" id="community-upload-btn" onclick="uploadToCommunity()">Upload</button>
             <button class="btn-upload" id="community-copy-link-btn" onclick="copyCommunityLink()" style="display:none;">Copy Link</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import from Community Modal -->
+      <div id="import-modal" class="import-modal">
+        <div class="import-modal-content">
+          <h3>Import from Community</h3>
+          <div class="form-group">
+            <label>Community URL</label>
+            <input type="text" id="import-url-input" placeholder="https://pelicans.art/community.html?type=characters&id=..." oninput="parseImportUrl()">
+          </div>
+          <div class="import-preview" id="import-preview">
+            <div class="import-preview-empty">Paste a community link to preview</div>
+          </div>
+          <div class="import-feedback" id="import-feedback"></div>
+          <div class="modal-buttons">
+            <button class="btn-cancel" onclick="closeImportModal()">Cancel</button>
+            <button class="btn-import" id="import-btn" onclick="importFromCommunity()" disabled>Import</button>
           </div>
         </div>
       </div>
@@ -5681,6 +5887,329 @@
       }
     }
 
+    // === IMPORT FROM COMMUNITY ===
+    let importParsedUrl = null;
+
+    function openImportModal() {
+      const modal = document.getElementById('import-modal');
+      modal.classList.add('visible');
+
+      // Reset state
+      importParsedUrl = null;
+      document.getElementById('import-url-input').value = '';
+      document.getElementById('import-preview').innerHTML = '<div class="import-preview-empty">Paste a community link to preview</div>';
+      document.getElementById('import-btn').disabled = true;
+      showImportFeedback('', '');
+    }
+
+    function closeImportModal() {
+      document.getElementById('import-modal').classList.remove('visible');
+      importParsedUrl = null;
+    }
+
+    function parseImportUrl() {
+      const input = document.getElementById('import-url-input').value.trim();
+      const preview = document.getElementById('import-preview');
+      const importBtn = document.getElementById('import-btn');
+
+      importParsedUrl = null;
+      showImportFeedback('', '');
+
+      if (!input) {
+        preview.innerHTML = '<div class="import-preview-empty">Paste a community link to preview</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      // Parse URL - support both full URLs and just query strings
+      let url;
+      try {
+        // Handle relative URLs like /community.html?...
+        if (input.startsWith('/') || input.startsWith('community.html')) {
+          url = new URL(input, 'https://pelicans.art');
+        } else {
+          url = new URL(input);
+        }
+      } catch (e) {
+        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Invalid URL format</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      const type = url.searchParams.get('type');
+      const id = url.searchParams.get('id');
+
+      // Validate type
+      const validTypes = ['characters', 'props', 'backgrounds', 'skits'];
+      if (!type || !validTypes.includes(type)) {
+        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Unsupported asset type. Supported: characters, props, backgrounds, skits</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      if (!id) {
+        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Missing asset ID in URL</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      // Extract display name from slug
+      const displayName = id.replace(/-[a-f0-9]{6}$/, '').replace(/-/g, ' ');
+
+      importParsedUrl = { type, id, displayName };
+
+      preview.innerHTML = `
+        <div class="import-preview-info">
+          <div class="type-badge">${type.slice(0, -1)}</div>
+          <div class="name">${displayName}</div>
+          <div class="id">${id}</div>
+        </div>
+      `;
+      importBtn.disabled = false;
+    }
+
+    async function importFromCommunity() {
+      if (!importParsedUrl) return;
+
+      const { type, id, displayName } = importParsedUrl;
+      const importBtn = document.getElementById('import-btn');
+      importBtn.disabled = true;
+      importBtn.textContent = 'Importing...';
+      showImportFeedback('', '');
+
+      try {
+        switch (type) {
+          case 'characters':
+            await importCharacter(id, displayName);
+            break;
+          case 'props':
+            await importProp(id, displayName);
+            break;
+          case 'backgrounds':
+            await importBackground(id, displayName);
+            break;
+          case 'skits':
+            await importSkit(id, displayName);
+            break;
+        }
+      } catch (e) {
+        showImportFeedback(e.message || 'Import failed', 'error');
+        importBtn.disabled = false;
+        importBtn.textContent = 'Import';
+      }
+    }
+
+    async function importCharacter(slug, displayName) {
+      // Fetch front SVG
+      const frontResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/front.svg`);
+      if (!frontResp.ok) throw new Error('Failed to fetch character SVG');
+      const frontSvg = await frontResp.text();
+
+      // Try to fetch back SVG (optional)
+      let backSvg = null;
+      try {
+        const backResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/back.svg`);
+        if (backResp.ok) backSvg = await backResp.text();
+      } catch (e) {}
+
+      // Fetch meta.json
+      let meta = { name: displayName };
+      try {
+        const metaResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/meta.json`);
+        if (metaResp.ok) meta = await metaResp.json();
+      } catch (e) {}
+
+      // Generate a local name (remove hash suffix from slug)
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      // Save to local API
+      const saveResp = await fetch('/api/sprites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: localName,
+          svg: frontSvg,
+          meta
+        })
+      });
+
+      if (!saveResp.ok) {
+        const err = await saveResp.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to save character locally');
+      }
+
+      // Save back variant if exists
+      if (backSvg) {
+        try {
+          await fetch(`/api/sprites/${localName}/variant/back`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ svg: backSvg })
+          });
+        } catch (e) {
+          console.warn('Failed to save back variant:', e);
+        }
+      }
+
+      showImportFeedback(`Imported character: ${localName}`, 'success');
+      await loadSpriteList();
+      loadSpriteFromSvg(localName, frontSvg);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importProp(slug, displayName) {
+      // Fetch prop SVG
+      const svgResp = await fetch(`${COMMUNITY_API_URL}/props/${slug}/prop.svg`);
+      if (!svgResp.ok) throw new Error('Failed to fetch prop SVG');
+      const svg = await svgResp.text();
+
+      // Fetch meta.json
+      let meta = { name: displayName };
+      try {
+        const metaResp = await fetch(`${COMMUNITY_API_URL}/props/${slug}/meta.json`);
+        if (metaResp.ok) meta = await metaResp.json();
+      } catch (e) {}
+
+      // Generate a local name
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      // Save to local API
+      const saveResp = await fetch('/api/props', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: localName,
+          svg,
+          meta
+        })
+      });
+
+      if (!saveResp.ok) {
+        const err = await saveResp.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to save prop locally');
+      }
+
+      showImportFeedback(`Imported prop: ${localName}`, 'success');
+      await loadProps();
+      selectProp(localName);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importBackground(slug, displayName) {
+      // Fetch landscape SVG
+      const landscapeResp = await fetch(`${COMMUNITY_API_URL}/backgrounds/${slug}/landscape.svg`);
+      if (!landscapeResp.ok) throw new Error('Failed to fetch background SVG');
+      const landscapeSvg = await landscapeResp.text();
+
+      // Try to fetch portrait SVG (optional)
+      let portraitSvg = null;
+      try {
+        const portraitResp = await fetch(`${COMMUNITY_API_URL}/backgrounds/${slug}/portrait.svg`);
+        if (portraitResp.ok) portraitSvg = await portraitResp.text();
+      } catch (e) {}
+
+      // Fetch meta.json
+      let meta = { name: displayName };
+      try {
+        const metaResp = await fetch(`${COMMUNITY_API_URL}/backgrounds/${slug}/meta.json`);
+        if (metaResp.ok) meta = await metaResp.json();
+      } catch (e) {}
+
+      // Generate a local name
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      // Save to local API
+      const saveResp = await fetch('/api/backgrounds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: localName,
+          svg: landscapeSvg,
+          orientation: 'landscape',
+          meta
+        })
+      });
+
+      if (!saveResp.ok) {
+        const err = await saveResp.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to save background locally');
+      }
+
+      // Save portrait variant if exists
+      if (portraitSvg) {
+        try {
+          await fetch(`/api/backgrounds/${localName}/portrait`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ svg: portraitSvg })
+          });
+        } catch (e) {
+          console.warn('Failed to save portrait variant:', e);
+        }
+      }
+
+      showImportFeedback(`Imported background: ${localName}`, 'success');
+      await loadBackgrounds();
+      selectBackground(localName);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importSkit(slug, displayName) {
+      // Fetch skit data
+      const dataResp = await fetch(`${COMMUNITY_API_URL}/skits/${slug}/data.json`);
+      if (!dataResp.ok) throw new Error('Failed to fetch skit data');
+      const skitData = await dataResp.json();
+
+      // Generate a local name
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      // Save to local API
+      const saveResp = await fetch('/api/skits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: localName,
+          ...skitData
+        })
+      });
+
+      if (!saveResp.ok) {
+        const err = await saveResp.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to save skit locally');
+      }
+
+      const result = await saveResp.json();
+      const skitId = result.id || localName;
+
+      showImportFeedback(`Imported skit: ${localName}`, 'success');
+      await loadSkits();
+      selectSkit(skitId);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    function showImportFeedback(msg, type) {
+      const el = document.getElementById('import-feedback');
+      const importBtn = document.getElementById('import-btn');
+
+      el.textContent = msg;
+      el.classList.remove('visible', 'success', 'error');
+
+      if (msg) {
+        el.classList.add('visible');
+        if (type) el.classList.add(type);
+      }
+
+      // Reset button state
+      importBtn.textContent = 'Import';
+      if (type !== 'error') {
+        importBtn.disabled = !importParsedUrl;
+      }
+    }
+
     // === VOICE SETTINGS ===
     function toggleVoicePanel() {
       const panel = document.getElementById('voice-settings-panel');
@@ -6651,7 +7180,7 @@
       resetHistory();
       applyZoom();
       updateCommandContext();
-      updateVariantTabs();
+      renderVariantTabs();
 
       // Capture original face values for emotion positioning
       originalFaceValues = null;
@@ -6763,22 +7292,19 @@
       document.getElementById('variant-tabs').style.display = 'flex'; // Show variant tabs for sprites
       document.querySelector('.zoom-controls').style.display = 'flex';
 
-      // Load sprite metadata to get type
+      // Load sprite metadata for voice settings
       try {
         const metaResp = await fetch(`sprites/${name}/meta.json`);
         if (metaResp.ok) {
           currentSpriteMeta = await metaResp.json();
           currentMeta = currentSpriteMeta; // Also store for AI commands
-          currentSpriteType = currentSpriteMeta.type || 'creature';
         } else {
           currentSpriteMeta = null;
           currentMeta = null;
-          currentSpriteType = 'creature';
         }
       } catch (e) {
         currentSpriteMeta = null;
         currentMeta = null;
-        currentSpriteType = 'creature';
       }
 
       // Load voice settings into UI
@@ -9182,174 +9708,84 @@
     };
 
     // === ANIMATION PREVIEW ===
-    // Emotion configs for creature sprites (cat, alien, robot, etc.)
-    const EMOTIONS_CREATURE = {
+    // Transform-based emotion config - works for any sprite regardless of face position
+    const TRANSFORM_EMOTIONS = {
       neutral: {
-        eyeWhite: { ry: 7, cy: 52 },
-        pupil: { ry: 5, cy: 52 },
-        browLeft: "M30 44 Q40 42 48 44",
-        browRight: "M52 44 Q60 42 70 44",
-        mouth: "M50 65 L46 70 M50 65 L54 70"
+        eyeRyRatio: 1.0, eyeCyDelta: 0, pupilRyRatio: 1.0, pupilCyDelta: 0,
+        browY: 0, browRotateL: 0, browRotateR: 0,
+        mouthY: 0, mouthScaleY: 1.0, mouthScaleX: 1.0
       },
       happy: {
-        eyeWhite: { ry: 5, cy: 50 },
-        pupil: { ry: 4, cy: 50 },
-        browLeft: "M30 42 Q40 38 48 42",
-        browRight: "M52 42 Q60 38 70 42",
-        mouth: "M44 66 Q50 72 56 66"
+        eyeRyRatio: 0.7, eyeCyDelta: -1, pupilRyRatio: 0.8, pupilCyDelta: -1,
+        browY: -2, browRotateL: -8, browRotateR: 8,
+        mouthY: 1, mouthScaleY: 1.3, mouthScaleX: 1.1
       },
       sad: {
-        eyeWhite: { ry: 6, cy: 54 },
-        pupil: { ry: 5, cy: 55 },
-        browLeft: "M30 48 L48 42",
-        browRight: "M52 42 L70 48",
-        mouth: "M44 70 Q50 65 56 70"
+        eyeRyRatio: 0.85, eyeCyDelta: 2, pupilRyRatio: 0.9, pupilCyDelta: 2,
+        browY: 0, browRotateL: 12, browRotateR: -12,
+        mouthY: 2, mouthScaleY: 0.7, mouthScaleX: 0.9
       },
       angry: {
-        eyeWhite: { ry: 5, cy: 52 },
-        pupil: { ry: 4, cy: 52 },
-        browLeft: "M30 40 L48 46",
-        browRight: "M52 46 L70 40",
-        mouth: "M44 68 L56 68"
+        eyeRyRatio: 0.7, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
+        browY: 2, browRotateL: -15, browRotateR: 15,
+        mouthY: 0, mouthScaleY: 0.5, mouthScaleX: 1.0
       },
       surprised: {
-        eyeWhite: { ry: 9, cy: 52 },
-        pupil: { ry: 6, cy: 52 },
-        browLeft: "M30 38 Q40 34 48 38",
-        browRight: "M52 38 Q60 34 70 38",
-        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66"
+        eyeRyRatio: 1.4, eyeCyDelta: 0, pupilRyRatio: 1.3, pupilCyDelta: 0,
+        browY: -5, browRotateL: -5, browRotateR: 5,
+        mouthY: 3, mouthScaleY: 1.8, mouthScaleX: 0.8,
+        useMouthOpen: true, highlight: 1
       },
       excited: {
-        eyeWhite: { ry: 9, cy: 50 },
-        pupil: { ry: 6, cy: 50 },
-        browLeft: "M30 38 Q40 32 48 38",
-        browRight: "M52 38 Q60 32 70 38",
-        mouth: "M42 64 Q50 74 58 64"
+        eyeRyRatio: 1.3, eyeCyDelta: -1, pupilRyRatio: 1.2, pupilCyDelta: -1,
+        browY: -4, browRotateL: -6, browRotateR: 6,
+        mouthY: 2, mouthScaleY: 1.5, mouthScaleX: 1.1,
+        highlight: 1
       },
       worried: {
-        eyeWhite: { ry: 7, cy: 53 },
-        pupil: { ry: 5, cy: 54 },
-        browLeft: "M30 46 L48 42",
-        browRight: "M52 42 L70 46",
-        mouth: "M44 68 Q50 66 56 68"
+        eyeRyRatio: 0.9, eyeCyDelta: 1, pupilRyRatio: 0.9, pupilCyDelta: 1,
+        browY: -1, browRotateL: 10, browRotateR: -10,
+        mouthY: 1, mouthScaleY: 0.8, mouthScaleX: 0.85
       },
       smug: {
-        eyeWhite: { ry: 5, cy: 52 },
-        pupil: { ry: 4, cy: 52 },
-        browLeft: "M30 44 Q40 40 48 46",
-        browRight: "M52 46 Q60 40 70 44",
-        mouth: "M44 66 Q50 70 56 68"
+        eyeRyRatio: 0.75, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
+        browY: 0, browRotateL: -10, browRotateR: 5,
+        mouthY: 0, mouthScaleY: 1.1, mouthScaleX: 1.05
       },
       tired: {
-        eyeWhite: { ry: 4, cy: 54 },
-        pupil: { ry: 3, cy: 54 },
-        browLeft: "M30 46 Q40 48 48 46",
-        browRight: "M52 46 Q60 48 70 46",
-        mouth: "M46 68 Q50 66 54 68"
+        eyeRyRatio: 0.5, eyeCyDelta: 2, pupilRyRatio: 0.6, pupilCyDelta: 2,
+        browY: 2, browRotateL: 5, browRotateR: -5,
+        mouthY: 1, mouthScaleY: 0.6, mouthScaleX: 0.9
       },
       skeptical: {
-        eyeWhite: { ry: 5, cy: 52 },
-        pupil: { ry: 4, cy: 52 },
-        browLeft: "M30 40 Q40 34 48 40",  // raised left brow, more arched
-        browRight: "M52 46 Q60 48 70 46",  // lowered right brow
-        mouth: "M46 66 L54 66"  // tight small mouth
+        eyeRyRatio: 0.8, eyeCyDelta: 0, pupilRyRatio: 0.85, pupilCyDelta: 0,
+        browY: 0, browRotateL: -12, browRotateR: 8,
+        mouthY: 0, mouthScaleY: 0.7, mouthScaleX: 0.85
       },
       dead: {
-        eyeWhite: { ry: 5, cy: 52 },
-        pupil: { ry: 4, cy: 52 },
-        browLeft: "M30 44 Q40 42 48 44",
-        browRight: "M52 44 Q60 42 70 44",
-        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66",  // open O shape
-        mouthFill: "#5d4037",
-        xEyes: true
+        eyeRyRatio: 0.7, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
+        browY: 0, browRotateL: 0, browRotateR: 0,
+        mouthY: 2, mouthScaleY: 1.5, mouthScaleX: 0.7,
+        xEyes: true, useMouthOpen: true
+      },
+      scared: {
+        eyeRyRatio: 1.3, eyeCyDelta: -1, pupilRyRatio: 1.2, pupilCyDelta: -1,
+        browY: -3, browRotateL: 8, browRotateR: -8,
+        mouthY: 2, mouthScaleY: 1.4, mouthScaleX: 0.75,
+        useMouthOpen: true
+      },
+      thinking: {
+        eyeRyRatio: 0.9, eyeCyDelta: -1, pupilRyRatio: 0.9, pupilCyDelta: -1,
+        browY: -1, browRotateL: -8, browRotateR: 3,
+        mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 0.9
+      },
+      confused: {
+        eyeRyRatio: 1.1, eyeCyDelta: 0, pupilRyRatio: 1.0, pupilCyDelta: 0,
+        browY: -1, browRotateL: 10, browRotateR: -5,
+        mouthY: 1, mouthScaleY: 0.9, mouthScaleX: 0.8
       }
     };
 
-    // Emotion configs for human sprites (person, girl, waiter, etc.)
-    const EMOTIONS_HUMAN = {
-      neutral: {
-        eyeWhite: { ry: 3, cy: 42 },
-        pupil: { ry: 1.5, cy: 42 },
-        browLeft: "M37 36 Q43 34 49 36",
-        browRight: "M51 36 Q57 34 63 36",
-        mouth: "M46 52 L54 52"  // flatter mouth
-      },
-      happy: {
-        eyeWhite: { ry: 2, cy: 41 },
-        pupil: { ry: 1.5, cy: 41 },
-        browLeft: "M37 34 Q43 31 49 34",
-        browRight: "M51 34 Q57 31 63 34",
-        mouth: "M44 52 Q50 58 56 52"
-      },
-      sad: {
-        eyeWhite: { ry: 3, cy: 44 },
-        pupil: { ry: 1.5, cy: 45 },
-        browLeft: "M37 40 L49 34",
-        browRight: "M51 34 L63 40",
-        mouth: "M46 56 Q50 52 54 56"
-      },
-      angry: {
-        eyeWhite: { ry: 2.5, cy: 42 },
-        pupil: { ry: 1.5, cy: 42 },
-        browLeft: "M37 34 L49 40",
-        browRight: "M51 40 L63 34",
-        mouth: "M46 54 L54 54"
-      },
-      surprised: {
-        eyeWhite: { ry: 5, cy: 42 },
-        pupil: { ry: 2, cy: 42 },
-        browLeft: "M37 34 Q43 30 49 34",  // lowered
-        browRight: "M51 34 Q57 30 63 34",  // lowered
-        mouth: "M50 53 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0",  // solid circle
-        mouthFill: "#5d4037"
-      },
-      excited: {
-        eyeWhite: { ry: 5, cy: 40 },
-        pupil: { ry: 2, cy: 40 },
-        browLeft: "M37 32 Q43 28 49 32",  // lowered
-        browRight: "M51 32 Q57 28 63 32",  // lowered
-        mouth: "M44 52 Q50 60 56 52"
-      },
-      worried: {
-        eyeWhite: { ry: 3.5, cy: 43 },
-        pupil: { ry: 1.5, cy: 44 },
-        browLeft: "M37 38 L49 32",
-        browRight: "M51 32 L63 38",
-        mouth: "M46 56 Q50 53 54 56"
-      },
-      smug: {
-        eyeWhite: { ry: 2, cy: 42 },
-        pupil: { ry: 1.5, cy: 42 },
-        browLeft: "M37 36 Q43 32 49 38",
-        browRight: "M51 38 Q57 32 63 36",
-        mouth: "M46 52 Q50 56 54 54"
-      },
-      tired: {
-        eyeWhite: { ry: 1.5, cy: 44 },
-        pupil: { ry: 1, cy: 44 },
-        browLeft: "M37 38 Q43 40 49 38",
-        browRight: "M51 38 Q57 40 63 38",
-        mouth: "M46 56 Q50 54 54 56"
-      },
-      skeptical: {
-        eyeWhite: { ry: 3, cy: 42 },
-        pupil: { ry: 1.5, cy: 42 },
-        browLeft: "M37 32 Q43 26 49 32",  // raised left brow, more arched
-        browRight: "M51 36 Q57 38 63 36",  // lowered right brow
-        mouth: "M47 52 L53 52"  // tight small mouth
-      },
-      dead: {
-        eyeWhite: { ry: 3, cy: 42 },
-        pupil: { ry: 1.5, cy: 42 },
-        browLeft: "M37 36 Q43 34 49 36",
-        browRight: "M51 36 Q57 34 63 36",
-        mouth: "M50 53 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0",  // solid circle
-        mouthFill: "#5d4037",
-        xEyes: true
-      }
-    };
-
-    let currentSpriteType = 'creature'; // 'human' or 'creature'
     let currentSpriteMeta = null;
     let currentEmotion = 'neutral';
     let talkingInterval = null;
@@ -9357,25 +9793,19 @@
     let originalSvgState = null;
     let originalFaceValues = null;
 
-    // Reference Y position that emotion configs assume (for calculating face offset)
-    const EMOTION_REF_EYE_CY = 52; // Creature emotions assume eyes at y=52
-
-    function getEmotionConfig(emotion) {
-      const emotions = currentSpriteType === 'human' ? EMOTIONS_HUMAN : EMOTIONS_CREATURE;
-      return emotions[emotion] || emotions.neutral;
-    }
-
-    function getNeutralConfig() {
-      const emotions = currentSpriteType === 'human' ? EMOTIONS_HUMAN : EMOTIONS_CREATURE;
-      return emotions.neutral;
-    }
-
-    // Helper to extract translate values from transform attribute
-    function getTranslateFromTransform(transform) {
-      if (!transform) return { x: 0, y: 0 };
-      const match = transform.match(/translate\(\s*([\d.-]+)[,\s]*([\d.-]*)\s*\)/);
-      if (!match) return { x: 0, y: 0 };
-      return { x: parseFloat(match[1]) || 0, y: parseFloat(match[2]) || 0 };
+    // Get center point of a path for rotation pivot
+    function getPathCenter(d) {
+      if (!d) return { cx: 50, cy: 50 };
+      const nums = d.match(/[\d.]+/g);
+      if (!nums || nums.length < 2) return { cx: 50, cy: 50 };
+      let sumX = 0, sumY = 0, count = 0;
+      for (let i = 0; i < nums.length - 1; i += 2) {
+        sumX += parseFloat(nums[i]);
+        sumY += parseFloat(nums[i + 1]);
+        count++;
+      }
+      if (count === 0) return { cx: 50, cy: 50 };
+      return { cx: sumX / count, cy: sumY / count };
     }
 
     function captureOriginalFaceValues() {
@@ -9383,38 +9813,46 @@
       if (!svg) return;
 
       const eyeL = svg.querySelector('#eye-left-white');
+      const eyeR = svg.querySelector('#eye-right-white');
       const pupilL = svg.querySelector('#eye-left-pupil');
       const browL = svg.querySelector('#brow-left');
       const browR = svg.querySelector('#brow-right');
       const mouth = svg.querySelector('#mouth-closed');
+      const mouthOpen = svg.querySelector('#mouth-open');
 
-      const eyeCy = parseFloat(eyeL?.getAttribute('cy') || 52);
-      const refCy = currentSpriteType === 'human' ? 42 : EMOTION_REF_EYE_CY;
-      const faceOffsetY = eyeCy - refCy;
+      if (!eyeL) return;
 
-      // Capture current transforms on path elements
-      const browLTransform = getTranslateFromTransform(browL?.getAttribute('transform'));
-      const browRTransform = getTranslateFromTransform(browR?.getAttribute('transform'));
-      const mouthTransform = getTranslateFromTransform(mouth?.getAttribute('transform'));
+      // Get eye values
+      const eyeRy = parseFloat(eyeL.getAttribute('ry') || 7);
+      const eyeCy = parseFloat(eyeL.getAttribute('cy') || 50);
+      const eyeRx = parseFloat(eyeL.getAttribute('rx') || eyeRy);
+      const eyeCx = parseFloat(eyeL.getAttribute('cx') || 40);
+      const eyeRCx = parseFloat(eyeR?.getAttribute('cx') || 60);
 
-      // Subtract faceOffsetY from captured transforms to get just the manual offset
-      // (since emotion application adds faceOffsetY to the transform)
-      const prevFaceOffset = originalFaceValues?.faceOffsetY || 0;
+      // Get pupil values
+      const pupilRy = parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5);
+      const pupilCy = parseFloat(pupilL?.getAttribute('cy') || eyeCy);
+      const pupilUsesR = pupilL && !pupilL.hasAttribute('ry');
+
+      // Get brow path data and centers
+      const browLeftD = browL?.getAttribute('d') || '';
+      const browRightD = browR?.getAttribute('d') || '';
+      const browLeftCenter = getPathCenter(browLeftD);
+      const browRightCenter = getPathCenter(browRightD);
+
+      // Get mouth path data and center
+      const mouthD = mouth?.getAttribute('d') || '';
+      const mouthCenter = getPathCenter(mouthD);
+
+      // Get mouth-open values
+      const mouthOpenRy = parseFloat(mouthOpen?.getAttribute('ry') || 3);
+      const mouthOpenRx = parseFloat(mouthOpen?.getAttribute('rx') || 5);
 
       originalFaceValues = {
-        eyeRy: parseFloat(eyeL?.getAttribute('ry') || 7),
-        eyeCy: eyeCy,
-        pupilRy: parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5),
-        pupilCy: parseFloat(pupilL?.getAttribute('cy') || 52),
-        browLeft: browL?.getAttribute('d') || '',
-        browRight: browR?.getAttribute('d') || '',
-        mouth: mouth?.getAttribute('d') || '',
-        // Calculate face offset from reference position
-        faceOffsetY: faceOffsetY,
-        // Store manual transform offsets (subtract the face offset that was applied by emotion system)
-        browLeftOffset: { x: browLTransform.x, y: browLTransform.y - prevFaceOffset },
-        browRightOffset: { x: browRTransform.x, y: browRTransform.y - prevFaceOffset },
-        mouthOffset: { x: mouthTransform.x, y: mouthTransform.y - prevFaceOffset }
+        eyeRy, eyeCy, eyeRx, eyeCx, eyeRCx,
+        pupilRy, pupilCy, pupilUsesR,
+        browLeftD, browRightD, browLeftCenter, browRightCenter,
+        mouthD, mouthCenter, mouthOpenRy, mouthOpenRx
       };
     }
 
@@ -9429,9 +9867,8 @@
       const svg = document.querySelector('#svg-canvas svg');
       if (!svg) return;
 
-      const config = getEmotionConfig(emotion);
-      const neutral = getNeutralConfig();
-      if (!config || !neutral) return;
+      const cfg = TRANSFORM_EMOTIONS[emotion];
+      if (!cfg) return;
 
       // Capture original face values if not done yet
       if (!originalFaceValues) captureOriginalFaceValues();
@@ -9447,11 +9884,7 @@
         btn.classList.toggle('active', btn.dataset.emotion === emotion);
       });
 
-      // Calculate deltas from neutral config
-      const eyeCyDelta = config.eyeWhite.cy - neutral.eyeWhite.cy;
-      const eyeRyDelta = config.eyeWhite.ry - neutral.eyeWhite.ry;
-      const pupilCyDelta = config.pupil.cy - neutral.pupil.cy;
-      const pupilRyDelta = config.pupil.ry - neutral.pupil.ry;
+      const orig = originalFaceValues;
 
       // Get SVG elements
       const eyeLeftWhite = svg.querySelector('#eye-left-white');
@@ -9461,77 +9894,107 @@
       const browLeft = svg.querySelector('#brow-left');
       const browRight = svg.querySelector('#brow-right');
       const mouthClosed = svg.querySelector('#mouth-closed');
+      const mouthOpen = svg.querySelector('#mouth-open');
+      const mouthSmile = svg.querySelector('#mouth-smile');
+      const highlightLeft = svg.querySelector('#eye-left-highlight');
+      const highlightRight = svg.querySelector('#eye-right-highlight');
 
-      // Apply eye whites with deltas
+      // Apply eye whites - use ratio for ry, delta for cy
+      const newEyeRy = orig.eyeRy * cfg.eyeRyRatio;
+      const newEyeCy = orig.eyeCy + cfg.eyeCyDelta;
+
       if (eyeLeftWhite) {
-        eyeLeftWhite.setAttribute('ry', originalFaceValues.eyeRy + eyeRyDelta);
-        eyeLeftWhite.setAttribute('cy', originalFaceValues.eyeCy + eyeCyDelta);
+        eyeLeftWhite.setAttribute('ry', newEyeRy);
+        eyeLeftWhite.setAttribute('cy', newEyeCy);
       }
       if (eyeRightWhite) {
-        eyeRightWhite.setAttribute('ry', originalFaceValues.eyeRy + eyeRyDelta);
-        eyeRightWhite.setAttribute('cy', originalFaceValues.eyeCy + eyeCyDelta);
+        eyeRightWhite.setAttribute('ry', newEyeRy);
+        eyeRightWhite.setAttribute('cy', newEyeCy);
       }
 
-      // Apply pupils with deltas
+      // Apply pupils - use ratio for ry/r, delta for cy
+      const newPupilRy = orig.pupilRy * cfg.pupilRyRatio;
+      const newPupilCy = orig.pupilCy + cfg.pupilCyDelta;
+
       if (eyeLeftPupil) {
-        eyeLeftPupil.setAttribute('ry', originalFaceValues.pupilRy + pupilRyDelta);
-        eyeLeftPupil.setAttribute('cy', originalFaceValues.pupilCy + pupilCyDelta);
+        if (orig.pupilUsesR) {
+          eyeLeftPupil.setAttribute('r', newPupilRy);
+        } else {
+          eyeLeftPupil.setAttribute('ry', newPupilRy);
+        }
+        eyeLeftPupil.setAttribute('cy', newPupilCy);
       }
       if (eyeRightPupil) {
-        eyeRightPupil.setAttribute('ry', originalFaceValues.pupilRy + pupilRyDelta);
-        eyeRightPupil.setAttribute('cy', originalFaceValues.pupilCy + pupilCyDelta);
-      }
-
-      // Apply eyebrows - use emotion path but translate to face position + manual offset
-      const browLOffset = originalFaceValues.browLeftOffset || { x: 0, y: 0 };
-      const browROffset = originalFaceValues.browRightOffset || { x: 0, y: 0 };
-      const mouthOffset = originalFaceValues.mouthOffset || { x: 0, y: 0 };
-
-      if (browLeft) {
-        browLeft.setAttribute('d', config.browLeft);
-        browLeft.setAttribute('transform', `translate(${browLOffset.x}, ${originalFaceValues.faceOffsetY + browLOffset.y})`);
-      }
-      if (browRight) {
-        browRight.setAttribute('d', config.browRight);
-        browRight.setAttribute('transform', `translate(${browROffset.x}, ${originalFaceValues.faceOffsetY + browROffset.y})`);
-      }
-
-      // Apply mouth - use emotion path but translate to face position + manual offset
-      if (mouthClosed) {
-        mouthClosed.setAttribute('d', config.mouth);
-        mouthClosed.setAttribute('transform', `translate(${mouthOffset.x}, ${originalFaceValues.faceOffsetY + mouthOffset.y})`);
-        // Handle filled mouth (for surprised, dead circle mouths)
-        if (config.mouthFill) {
-          mouthClosed.setAttribute('fill', config.mouthFill);
-          mouthClosed.setAttribute('stroke', 'none');
+        if (orig.pupilUsesR) {
+          eyeRightPupil.setAttribute('r', newPupilRy);
         } else {
-          mouthClosed.setAttribute('fill', 'none');
-          mouthClosed.setAttribute('stroke', '#8d6e63');
+          eyeRightPupil.setAttribute('ry', newPupilRy);
         }
+        eyeRightPupil.setAttribute('cy', newPupilCy);
+      }
+
+      // Apply brows - keep original path, use transforms
+      if (browLeft && orig.browLeftD) {
+        browLeft.setAttribute('d', orig.browLeftD);
+        const { cx, cy } = orig.browLeftCenter;
+        browLeft.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateL}, ${cx}, ${cy})`);
+      }
+      if (browRight && orig.browRightD) {
+        browRight.setAttribute('d', orig.browRightD);
+        const { cx, cy } = orig.browRightCenter;
+        browRight.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateR}, ${cx}, ${cy})`);
+      }
+
+      // Apply mouth - check for alternate mouth elements first
+      if (cfg.useMouthOpen && mouthOpen) {
+        if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
+        if (mouthSmile) mouthSmile.setAttribute('opacity', '0');
+        mouthOpen.setAttribute('opacity', '1');
+        mouthOpen.setAttribute('ry', orig.mouthOpenRy * cfg.mouthScaleY);
+        mouthOpen.setAttribute('rx', orig.mouthOpenRx * cfg.mouthScaleX);
+      } else if (emotion === 'happy' && mouthSmile) {
+        if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+        mouthSmile.setAttribute('opacity', '1');
+      } else if (mouthClosed && orig.mouthD) {
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+        if (mouthSmile) mouthSmile.setAttribute('opacity', '0');
+        mouthClosed.setAttribute('opacity', '1');
+        mouthClosed.setAttribute('d', orig.mouthD);
+        const { cx, cy } = orig.mouthCenter;
+        mouthClosed.setAttribute('transform',
+          `translate(0, ${cfg.mouthY}) translate(${cx}, ${cy}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
+        mouthClosed.setAttribute('fill', 'none');
+        mouthClosed.setAttribute('stroke', mouthClosed.dataset.originalStroke || '#8d6e63');
       }
 
       // Handle X eyes for dead emotion
-      if (config.xEyes) {
+      if (cfg.xEyes) {
         // Hide normal eyes
         if (eyeLeftWhite) eyeLeftWhite.setAttribute('opacity', '0');
         if (eyeRightWhite) eyeRightWhite.setAttribute('opacity', '0');
         if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '0');
         if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '0');
 
-        // Create or show X eyes (translated to face position)
+        // Create or show X eyes positioned based on actual eye locations
         let xEyesGroup = svg.querySelector('#x-eyes-group');
         if (!xEyesGroup) {
           xEyesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
           xEyesGroup.id = 'x-eyes-group';
+          const leftCx = orig.eyeCx;
+          const rightCx = orig.eyeRCx;
+          const cy = orig.eyeCy;
+          const size = Math.max(3, orig.eyeRy * 0.8);
           xEyesGroup.innerHTML = `
-            <line x1="40" y1="39" x2="46" y2="45" stroke="#000" stroke-width="2"/>
-            <line x1="46" y1="39" x2="40" y2="45" stroke="#000" stroke-width="2"/>
-            <line x1="54" y1="39" x2="60" y2="45" stroke="#000" stroke-width="2"/>
-            <line x1="60" y1="39" x2="54" y2="45" stroke="#000" stroke-width="2"/>
+            <line x1="${leftCx - size}" y1="${cy - size}" x2="${leftCx + size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${leftCx + size}" y1="${cy - size}" x2="${leftCx - size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${rightCx - size}" y1="${cy - size}" x2="${rightCx + size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${rightCx + size}" y1="${cy - size}" x2="${rightCx - size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
           `;
           svg.appendChild(xEyesGroup);
         }
-        xEyesGroup.setAttribute('transform', `translate(0, ${originalFaceValues.faceOffsetY})`);
         xEyesGroup.setAttribute('opacity', '1');
       } else {
         // Show normal eyes, hide X eyes
@@ -9543,17 +10006,23 @@
         if (xEyesGroup) xEyesGroup.setAttribute('opacity', '0');
       }
 
+      // Apply highlights if specified
+      if (cfg.highlight !== undefined) {
+        if (highlightLeft) highlightLeft.setAttribute('opacity', cfg.highlight);
+        if (highlightRight) highlightRight.setAttribute('opacity', cfg.highlight);
+      }
+
       // Update blink original values to match new emotion state
       originalEyeValues = {
-        leftWhiteRy: eyeLeftWhite ? eyeLeftWhite.getAttribute('ry') : '7',
-        rightWhiteRy: eyeRightWhite ? eyeRightWhite.getAttribute('ry') : '7',
-        leftPupilRy: eyeLeftPupil ? (eyeLeftPupil.getAttribute('ry') || eyeLeftPupil.getAttribute('r')) : '5',
-        rightPupilRy: eyeRightPupil ? (eyeRightPupil.getAttribute('ry') || eyeRightPupil.getAttribute('r')) : '5',
-        leftPupilUsesR: eyeLeftPupil ? !eyeLeftPupil.getAttribute('ry') : false,
-        rightPupilUsesR: eyeRightPupil ? !eyeRightPupil.getAttribute('ry') : false
+        leftWhiteRy: newEyeRy,
+        rightWhiteRy: newEyeRy,
+        leftPupilRy: newPupilRy,
+        rightPupilRy: newPupilRy,
+        leftPupilUsesR: orig.pupilUsesR,
+        rightPupilUsesR: orig.pupilUsesR
       };
 
-      setStatus(`Emotion: ${emotion} (${currentSpriteType})`);
+      setStatus(`Emotion: ${emotion}`);
     }
 
     function toggleTalking() {

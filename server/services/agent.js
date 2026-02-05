@@ -69,9 +69,10 @@ OUTPUT FORMAT - You must respond with valid JSON:
   }
 }
 
-TYPE IS REQUIRED:
-- "human": Human characters (people, occupations, named individuals)
-- "creature": Non-human characters (animals, robots, aliens, monsters, fantasy beings)
+TYPE FIELD (optional, for voice hints only):
+- "human": Human characters - helps suggest appropriate voice settings
+- "creature": Non-human characters - helps suggest appropriate voice settings
+Note: The type field does NOT affect emotion animations. Emotions work universally on all sprites regardless of type.
 
 VOICE OPTIONS (choose one for voice.id):
 - "marius" - male voice
