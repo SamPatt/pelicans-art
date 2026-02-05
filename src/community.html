@@ -261,6 +261,39 @@
 
     .btn-play:hover { background: #d63550; }
 
+    /* Variant tabs in detail view */
+    .variant-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+
+    .variant-tab {
+      padding: 5px 14px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #888;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.8em;
+      transition: all 0.15s;
+    }
+
+    .variant-tab:hover { border-color: #4ecca3; color: #ccc; }
+
+    .variant-tab.active {
+      background: #0f3460;
+      border-color: #4ecca3;
+      color: #4ecca3;
+    }
+
+    .variant-tab.unavailable {
+      color: #333;
+      cursor: default;
+      border-color: #1a1a2e;
+    }
+
     /* Skit detail */
     .skit-summary {
       background: #0d0d1a;
@@ -655,23 +688,48 @@
   // === Detail renderers ===
 
   async function renderCharacterDetail(container, slug, meta) {
-    let html = '<div class="detail-preview" id="char-preview"></div>';
+    // Probe which variants exist
+    const variants = [];
+    const frontResp = await fetch(`${API_URL}/characters/${slug}/front.svg`);
+    if (frontResp.ok) variants.push({ name: 'front', label: 'Front', svg: await frontResp.text() });
+    const backResp = await fetch(`${API_URL}/characters/${slug}/back.svg`);
+    if (backResp.ok) variants.push({ name: 'back', label: 'Back', svg: await backResp.text() });
+
+    let tabsHtml = '';
+    if (variants.length > 1) {
+      tabsHtml = '<div class="variant-tabs" id="char-variant-tabs">';
+      variants.forEach((v, i) => {
+        tabsHtml += `<button class="variant-tab${i === 0 ? ' active' : ''}" onclick="switchCharVariant('${v.name}')">${v.label}</button>`;
+      });
+      tabsHtml += '</div>';
+    }
+
+    let html = tabsHtml;
+    html += '<div class="detail-preview" id="char-preview"></div>';
     html += renderMetaTable(meta);
-    html += `<div class="detail-actions">
-      <button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', 'front.svg')">Download Front SVG</button>
-      <button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', 'back.svg')">Download Back SVG</button>
-      <button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', 'meta.json')">Download Meta</button>
-      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
-    </div>`;
+    html += '<div class="detail-actions">';
+    variants.forEach(v => {
+      html += `<button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', '${v.name}.svg')">Download ${v.label}</button>`;
+    });
+    html += `<button class="detail-btn btn-download" onclick="downloadFile('characters', '${slug}', 'meta.json')">Download Meta</button>`;
+    html += `<button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>`;
+    html += '</div>';
     container.innerHTML = html;
 
-    // Load front SVG
-    try {
-      const resp = await fetch(`${API_URL}/characters/${slug}/front.svg`);
-      if (resp.ok) {
-        document.getElementById('char-preview').innerHTML = await resp.text();
-      }
-    } catch (e) {}
+    // Store variant SVGs for tab switching
+    window._charVariants = {};
+    variants.forEach(v => { window._charVariants[v.name] = v.svg; });
+    if (variants.length > 0) {
+      document.getElementById('char-preview').innerHTML = variants[0].svg;
+    }
+  }
+
+  function switchCharVariant(name) {
+    const svg = window._charVariants?.[name];
+    if (svg) document.getElementById('char-preview').innerHTML = svg;
+    document.querySelectorAll('#char-variant-tabs .variant-tab').forEach(t => {
+      t.classList.toggle('active', t.textContent.toLowerCase() === name);
+    });
   }
 
   async function renderPropDetail(container, slug, meta) {
@@ -693,21 +751,47 @@
   }
 
   async function renderBackgroundDetail(container, slug, meta) {
-    let html = '<div class="detail-preview" id="bg-preview"></div>';
+    // Probe which orientations exist
+    const orientations = [];
+    const landResp = await fetch(`${API_URL}/backgrounds/${slug}/landscape.svg`);
+    if (landResp.ok) orientations.push({ name: 'landscape', label: 'Landscape', svg: await landResp.text() });
+    const portResp = await fetch(`${API_URL}/backgrounds/${slug}/portrait.svg`);
+    if (portResp.ok) orientations.push({ name: 'portrait', label: 'Portrait', svg: await portResp.text() });
+
+    let tabsHtml = '';
+    if (orientations.length > 1) {
+      tabsHtml = '<div class="variant-tabs" id="bg-variant-tabs">';
+      orientations.forEach((o, i) => {
+        tabsHtml += `<button class="variant-tab${i === 0 ? ' active' : ''}" onclick="switchBgVariant('${o.name}')">${o.label}</button>`;
+      });
+      tabsHtml += '</div>';
+    }
+
+    let html = tabsHtml;
+    html += '<div class="detail-preview" id="bg-preview"></div>';
     html += renderMetaTable(meta);
-    html += `<div class="detail-actions">
-      <button class="detail-btn btn-download" onclick="downloadFile('backgrounds', '${slug}', 'landscape.svg')">Download Landscape</button>
-      <button class="detail-btn btn-download" onclick="downloadFile('backgrounds', '${slug}', 'portrait.svg')">Download Portrait</button>
-      <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
-    </div>`;
+    html += '<div class="detail-actions">';
+    orientations.forEach(o => {
+      html += `<button class="detail-btn btn-download" onclick="downloadFile('backgrounds', '${slug}', '${o.name}.svg')">Download ${o.label}</button>`;
+    });
+    html += `<button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>`;
+    html += '</div>';
     container.innerHTML = html;
 
-    try {
-      const resp = await fetch(`${API_URL}/backgrounds/${slug}/landscape.svg`);
-      if (resp.ok) {
-        document.getElementById('bg-preview').innerHTML = await resp.text();
-      }
-    } catch (e) {}
+    // Store for tab switching
+    window._bgVariants = {};
+    orientations.forEach(o => { window._bgVariants[o.name] = o.svg; });
+    if (orientations.length > 0) {
+      document.getElementById('bg-preview').innerHTML = orientations[0].svg;
+    }
+  }
+
+  function switchBgVariant(name) {
+    const svg = window._bgVariants?.[name];
+    if (svg) document.getElementById('bg-preview').innerHTML = svg;
+    document.querySelectorAll('#bg-variant-tabs .variant-tab').forEach(t => {
+      t.classList.toggle('active', t.textContent.toLowerCase() === name);
+    });
   }
 
   async function renderSkitDetail(container, slug, meta) {

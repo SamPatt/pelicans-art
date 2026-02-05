@@ -9,8 +9,8 @@ const SVG_EVENT_HANDLER = /\bon\w+\s*=/i;
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key',
   };
 }
 
@@ -298,7 +298,42 @@ async function handleRequest(request, env) {
     return handleGetFile(env, fileMatch[1], fileMatch[2], fileMatch[3]);
   }
 
+  // Route: DELETE /api/community/:category/:id
+  const deleteMatch = path.match(/^\/api\/community\/([a-z]+)\/([a-z0-9-]+)$/);
+  if (deleteMatch && request.method === 'DELETE') {
+    return handleDelete(request, env, deleteMatch[1], deleteMatch[2]);
+  }
+
   return err('Not found', 404);
+}
+
+async function handleDelete(request, env, category, slug) {
+  if (!CATEGORIES.includes(category)) return err('Unknown category', 404);
+
+  // Require admin key
+  const adminKey = env.ADMIN_KEY;
+  const provided = request.headers.get('X-Admin-Key');
+  if (!adminKey || provided !== adminKey) {
+    return err('Unauthorized', 401);
+  }
+
+  // List all objects under this slug's prefix and delete them
+  let prefix;
+  if (category === 'skits' || category === 'published') {
+    prefix = `${category}/${slug}.json`;
+  } else if (category === 'voices') {
+    prefix = `${category}/${slug}.wav`;
+  } else {
+    prefix = `${category}/${slug}/`;
+  }
+
+  const listed = await env.BUCKET.list({ prefix });
+  if (listed.objects.length === 0) return err('Not found', 404);
+
+  const keys = listed.objects.map(o => o.key);
+  await Promise.all(keys.map(k => env.BUCKET.delete(k)));
+
+  return json({ ok: true, deleted: keys });
 }
 
 async function handleUpload(request, env, category) {

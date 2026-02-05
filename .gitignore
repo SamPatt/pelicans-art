@@ -28,3 +28,6 @@ node_modules/
 .env
 .env.local
 .env.*.local
+
+# Admin pages (contain secrets)
+src/admin-*.html
