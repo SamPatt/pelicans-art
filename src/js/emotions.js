@@ -222,10 +222,12 @@ export function captureOriginalFaceValues(container) {
   // Get right eye cx for X eye positioning
   const eyeRCx = parseFloat(eyeR?.getAttribute('cx') || 60);
 
-  // Get pupil values - could be circle (r) or ellipse (ry)
-  const pupilRy = parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5);
+  // Get pupil values - check each eye independently for circle vs ellipse
+  const pupilLRy = parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5);
+  const pupilRRy = parseFloat(pupilR?.getAttribute('ry') || pupilR?.getAttribute('r') || 5);
   const pupilCy = parseFloat(pupilL?.getAttribute('cy') || eyeCy);
-  const pupilUsesR = pupilL && !pupilL.hasAttribute('ry');
+  const pupilLUsesR = pupilL && !pupilL.hasAttribute('ry');
+  const pupilRUsesR = pupilR && !pupilR.hasAttribute('ry');
 
   // Get brow path data and centers for rotation
   const browLeftD = browL?.getAttribute('d') || '';
@@ -233,9 +235,10 @@ export function captureOriginalFaceValues(container) {
   const browLeftCenter = getPathCenter(browLeftD);
   const browRightCenter = getPathCenter(browRightD);
 
-  // Get mouth path data and center
+  // Get mouth path data, center, and original stroke
   const mouthD = mouth?.getAttribute('d') || '';
   const mouthCenter = getPathCenter(mouthD);
+  const mouthStroke = mouth?.getAttribute('stroke') || '#8d6e63';
 
   // Get mouth-open values if present
   const mouthOpenRy = parseFloat(mouthOpen?.getAttribute('ry') || 3);
@@ -247,15 +250,18 @@ export function captureOriginalFaceValues(container) {
     eyeRx,
     eyeCx,
     eyeRCx,
-    pupilRy,
+    pupilLRy,
+    pupilRRy,
     pupilCy,
-    pupilUsesR,
+    pupilLUsesR,
+    pupilRUsesR,
     browLeftD,
     browRightD,
     browLeftCenter,
     browRightCenter,
     mouthD,
     mouthCenter,
+    mouthStroke,
     mouthOpenRy,
     mouthOpenRx
   };
@@ -302,23 +308,24 @@ export function applyEmotion(container, emotion, origValues) {
     eyeRightWhite.setAttribute('cy', newEyeCy);
   }
 
-  // Apply pupils - use ratio for ry/r, delta for cy
-  const newPupilRy = origValues.pupilRy * cfg.pupilRyRatio;
+  // Apply pupils - use ratio for ry/r, delta for cy (check each eye independently)
+  const newPupilLRy = origValues.pupilLRy * cfg.pupilRyRatio;
+  const newPupilRRy = origValues.pupilRRy * cfg.pupilRyRatio;
   const newPupilCy = origValues.pupilCy + cfg.pupilCyDelta;
 
   if (eyeLeftPupil) {
-    if (origValues.pupilUsesR) {
-      eyeLeftPupil.setAttribute('r', newPupilRy);
+    if (origValues.pupilLUsesR) {
+      eyeLeftPupil.setAttribute('r', newPupilLRy);
     } else {
-      eyeLeftPupil.setAttribute('ry', newPupilRy);
+      eyeLeftPupil.setAttribute('ry', newPupilLRy);
     }
     eyeLeftPupil.setAttribute('cy', newPupilCy);
   }
   if (eyeRightPupil) {
-    if (origValues.pupilUsesR) {
-      eyeRightPupil.setAttribute('r', newPupilRy);
+    if (origValues.pupilRUsesR) {
+      eyeRightPupil.setAttribute('r', newPupilRRy);
     } else {
-      eyeRightPupil.setAttribute('ry', newPupilRy);
+      eyeRightPupil.setAttribute('ry', newPupilRRy);
     }
     eyeRightPupil.setAttribute('cy', newPupilCy);
   }
@@ -360,9 +367,9 @@ export function applyEmotion(container, emotion, origValues) {
     const { cx, cy } = origValues.mouthCenter;
     mouthClosed.setAttribute('transform',
       `translate(0, ${cfg.mouthY}) translate(${cx}, ${cy}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
-    // Reset fill/stroke to defaults
+    // Reset fill/stroke to captured originals
     mouthClosed.setAttribute('fill', 'none');
-    mouthClosed.setAttribute('stroke', mouthClosed.dataset.originalStroke || '#8d6e63');
+    mouthClosed.setAttribute('stroke', origValues.mouthStroke);
   }
 
   // Handle X eyes for dead emotion
@@ -404,25 +411,26 @@ export function applyEmotion(container, emotion, origValues) {
     if (xEyesGroup) xEyesGroup.setAttribute('opacity', '0');
   }
 
-  // Apply highlights if specified
-  if (cfg.highlight !== undefined) {
-    if (highlightLeft) highlightLeft.setAttribute('opacity', cfg.highlight);
-    if (highlightRight) highlightRight.setAttribute('opacity', cfg.highlight);
-  }
+  // Apply highlights (default to 0 if not specified to reset after emotions like excited)
+  const highlightOpacity = cfg.highlight ?? 0;
+  if (highlightLeft) highlightLeft.setAttribute('opacity', highlightOpacity);
+  if (highlightRight) highlightRight.setAttribute('opacity', highlightOpacity);
 
   // Return updated eye values for blink system
   return {
     leftWhiteRy: newEyeRy,
     rightWhiteRy: newEyeRy,
-    leftPupilRy: newPupilRy,
-    rightPupilRy: newPupilRy,
-    pupilUsesR: origValues.pupilUsesR
+    leftPupilRy: newPupilLRy,
+    rightPupilRy: newPupilRRy,
+    pupilLUsesR: origValues.pupilLUsesR,
+    pupilRUsesR: origValues.pupilRUsesR
   };
 }
 
 /**
  * Get the center point of a path for rotation pivot.
  * Parses the path d attribute to find coordinate pairs and averages them.
+ * Handles negative numbers and filters out arc flags.
  *
  * @param {string} d - SVG path d attribute
  * @returns {Object} Center point {cx, cy}
@@ -430,20 +438,48 @@ export function applyEmotion(container, emotion, origValues) {
 export function getPathCenter(d) {
   if (!d) return { cx: 50, cy: 50 };
 
-  // Extract all numbers from the path
-  const nums = d.match(/[\d.]+/g);
-  if (!nums || nums.length < 2) return { cx: 50, cy: 50 };
+  // Extract coordinates after path commands (M, L, Q, C, etc.)
+  // This regex finds numbers (including negatives) that follow commands or commas
+  const coords = [];
+  const commandRegex = /([MLHVCSQTAZ])\s*([-\d.,\s]+)/gi;
+  let match;
 
-  // Parse coordinate pairs
-  let sumX = 0, sumY = 0, count = 0;
-  for (let i = 0; i < nums.length - 1; i += 2) {
-    sumX += parseFloat(nums[i]);
-    sumY += parseFloat(nums[i + 1]);
-    count++;
+  while ((match = commandRegex.exec(d)) !== null) {
+    const cmd = match[1].toUpperCase();
+    const numStr = match[2];
+    // Extract all numbers including negatives
+    const nums = numStr.match(/-?[\d.]+/g);
+    if (!nums) continue;
+
+    // Skip arc commands (A) as their parameters include flags, not just coords
+    if (cmd === 'A') continue;
+
+    // For H (horizontal), only x coord; for V (vertical), only y coord
+    if (cmd === 'H') {
+      nums.forEach(n => coords.push({ x: parseFloat(n), y: null }));
+    } else if (cmd === 'V') {
+      nums.forEach(n => coords.push({ x: null, y: parseFloat(n) }));
+    } else {
+      // Treat as coordinate pairs
+      for (let i = 0; i < nums.length - 1; i += 2) {
+        coords.push({ x: parseFloat(nums[i]), y: parseFloat(nums[i + 1]) });
+      }
+    }
   }
 
-  if (count === 0) return { cx: 50, cy: 50 };
-  return { cx: sumX / count, cy: sumY / count };
+  if (coords.length === 0) return { cx: 50, cy: 50 };
+
+  // Average all coordinates (skip nulls from H/V commands)
+  let sumX = 0, sumY = 0, countX = 0, countY = 0;
+  for (const c of coords) {
+    if (c.x !== null) { sumX += c.x; countX++; }
+    if (c.y !== null) { sumY += c.y; countY++; }
+  }
+
+  return {
+    cx: countX > 0 ? sumX / countX : 50,
+    cy: countY > 0 ? sumY / countY : 50
+  };
 }
 
 /**
