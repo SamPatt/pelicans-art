@@ -1,3 +1,4 @@
+import { spawn } from 'child_process';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
 import {
@@ -44,11 +45,41 @@ function svgToDataUrl(svg) {
 }
 
 /**
- * Convert audio buffer to data URL
+ * Convert WAV buffer to MP3 using ffmpeg
  */
-function audioToDataUrl(buffer) {
-  const base64 = buffer.toString('base64');
-  return `data:audio/wav;base64,${base64}`;
+function wavToMp3(wavBuffer) {
+  return new Promise((resolve, reject) => {
+    const ffmpeg = spawn('ffmpeg', [
+      '-i', 'pipe:0',
+      '-f', 'mp3',
+      '-ab', '64k',
+      '-ac', '1',
+      'pipe:1'
+    ], { stdio: ['pipe', 'pipe', 'pipe'] });
+
+    const chunks = [];
+    ffmpeg.stdout.on('data', chunk => chunks.push(chunk));
+    ffmpeg.stderr.on('data', () => {}); // suppress ffmpeg logs
+    ffmpeg.on('close', code => {
+      if (code === 0) {
+        resolve(Buffer.concat(chunks));
+      } else {
+        reject(new Error(`ffmpeg exited with code ${code}`));
+      }
+    });
+    ffmpeg.on('error', reject);
+    ffmpeg.stdin.write(wavBuffer);
+    ffmpeg.stdin.end();
+  });
+}
+
+/**
+ * Convert audio buffer to MP3 data URL
+ */
+async function audioToDataUrl(wavBuffer) {
+  const mp3Buffer = await wavToMp3(wavBuffer);
+  const base64 = mp3Buffer.toString('base64');
+  return `data:audio/mpeg;base64,${base64}`;
 }
 
 /**
@@ -163,7 +194,7 @@ export async function publishSkit(skitId, skit, onProgress) {
 
     try {
       const audioBuffer = await generateTTS(beat.line, voice);
-      assets.audio[`line-${i}`] = audioToDataUrl(audioBuffer);
+      assets.audio[`line-${i}`] = await audioToDataUrl(audioBuffer);
     } catch (err) {
       console.warn(`Failed to generate audio for line ${i}:`, err.message);
       failures.push({ type: 'audio', line: i, error: err.message });
