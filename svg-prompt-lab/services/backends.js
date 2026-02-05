@@ -45,12 +45,15 @@ async function callOpenRouter(model, messages, options) {
     throw new Error('OPENROUTER_API_KEY not configured');
   }
 
+  const temp = Number.isFinite(options.temperature) ? options.temperature : 0.7;
+  const maxTok = Number.isFinite(options.maxTokens) ? options.maxTokens : 4096;
+
   const body = {
     model,
     messages,
     stream: false,
-    temperature: options.temperature ?? 0.7,
-    max_tokens: options.maxTokens ?? 4096
+    temperature: temp,
+    max_tokens: maxTok
   };
 
   const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {

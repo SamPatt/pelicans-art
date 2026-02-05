@@ -4,6 +4,21 @@ import { DATA_DIR } from '../config.js';
 
 const TEMPLATES_DIR = path.join(DATA_DIR, 'templates');
 
+function safePath(baseDir, id) {
+  if (!id || typeof id !== 'string' || /[\/\\]/.test(id) || id.includes('..') || path.isAbsolute(id)) {
+    const err = new Error(`Invalid ID: ${id}`);
+    err.status = 400;
+    throw err;
+  }
+  const resolved = path.join(baseDir, `${id}.json`);
+  if (!resolved.startsWith(path.resolve(baseDir) + path.sep)) {
+    const err = new Error(`Invalid path for ID: ${id}`);
+    err.status = 400;
+    throw err;
+  }
+  return resolved;
+}
+
 async function exists(p) {
   try { await fs.access(p); return true; } catch { return false; }
 }
@@ -25,7 +40,7 @@ export async function listTemplates() {
 }
 
 export async function getTemplate(id) {
-  const filePath = path.join(TEMPLATES_DIR, `${id}.json`);
+  const filePath = safePath(TEMPLATES_DIR, id);
   if (!await exists(filePath)) {
     const err = new Error(`Template not found: ${id}`);
     err.status = 404;
@@ -35,20 +50,18 @@ export async function getTemplate(id) {
 }
 
 export async function saveTemplate(template) {
+  const filePath = safePath(TEMPLATES_DIR, template.id);
   await fs.mkdir(TEMPLATES_DIR, { recursive: true });
   const now = new Date().toISOString();
   if (!template.createdAt) template.createdAt = now;
   template.updatedAt = now;
 
-  await fs.writeFile(
-    path.join(TEMPLATES_DIR, `${template.id}.json`),
-    JSON.stringify(template, null, 2)
-  );
+  await fs.writeFile(filePath, JSON.stringify(template, null, 2));
   return template;
 }
 
 export async function deleteTemplate(id) {
-  const filePath = path.join(TEMPLATES_DIR, `${id}.json`);
+  const filePath = safePath(TEMPLATES_DIR, id);
   if (!await exists(filePath)) {
     const err = new Error(`Template not found: ${id}`);
     err.status = 404;

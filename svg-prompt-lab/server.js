@@ -16,7 +16,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
-app.use(cors());
+// Only allow same-origin requests (frontend is served from same server)
+app.use(cors({ origin: false }));
 app.use(express.json({ limit: '10mb' }));
 
 // API routes

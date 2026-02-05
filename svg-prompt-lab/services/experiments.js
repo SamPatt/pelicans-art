@@ -15,6 +15,21 @@ async function exists(p) {
   try { await fs.access(p); return true; } catch { return false; }
 }
 
+function safePath(baseDir, id) {
+  if (!id || typeof id !== 'string' || /[\/\\]/.test(id) || id.includes('..') || path.isAbsolute(id)) {
+    const err = new Error(`Invalid ID: ${id}`);
+    err.status = 400;
+    throw err;
+  }
+  const resolved = path.join(baseDir, `${id}.json`);
+  if (!resolved.startsWith(path.resolve(baseDir) + path.sep)) {
+    const err = new Error(`Invalid path for ID: ${id}`);
+    err.status = 400;
+    throw err;
+  }
+  return resolved;
+}
+
 /**
  * Extract SVG from model response
  */
@@ -65,7 +80,7 @@ function expandVariables(variables, overrides = {}) {
   if (keys.length === 0) return [{}];
 
   const values = keys.map(k => {
-    if (overrides[k]) return Array.isArray(overrides[k]) ? overrides[k] : [overrides[k]];
+    if (Object.hasOwn(overrides, k)) return Array.isArray(overrides[k]) ? overrides[k] : [overrides[k]];
     return variables[k].values || [''];
   });
 
@@ -216,8 +231,10 @@ export async function createExperiment(config) {
         cell.variableValues,
         exampleSvgs.slice(0, config.exampleCount || 1),
         {
-          temperature: config.temperature ?? cell.template.defaults?.temperature ?? 0.7,
-          maxTokens: config.maxTokens ?? cell.template.defaults?.maxTokens ?? 4096
+          temperature: Number.isFinite(config.temperature) ? config.temperature
+            : Number.isFinite(cell.template.defaults?.temperature) ? cell.template.defaults.temperature : 0.7,
+          maxTokens: Number.isFinite(config.maxTokens) ? config.maxTokens
+            : Number.isFinite(cell.template.defaults?.maxTokens) ? cell.template.defaults.maxTokens : 4096
         }
       );
       result.index = index;
@@ -281,15 +298,13 @@ export function getProgressEmitter(id) {
 }
 
 async function saveExperiment(experiment) {
+  const filePath = safePath(EXPERIMENTS_DIR, experiment.id);
   await fs.mkdir(EXPERIMENTS_DIR, { recursive: true });
-  await fs.writeFile(
-    path.join(EXPERIMENTS_DIR, `${experiment.id}.json`),
-    JSON.stringify(experiment, null, 2)
-  );
+  await fs.writeFile(filePath, JSON.stringify(experiment, null, 2));
 }
 
 export async function getExperiment(id) {
-  const filePath = path.join(EXPERIMENTS_DIR, `${id}.json`);
+  const filePath = safePath(EXPERIMENTS_DIR, id);
   if (!await exists(filePath)) {
     const err = new Error(`Experiment not found: ${id}`);
     err.status = 404;
@@ -324,7 +339,7 @@ export async function listExperiments() {
 }
 
 export async function deleteExperiment(id) {
-  const filePath = path.join(EXPERIMENTS_DIR, `${id}.json`);
+  const filePath = safePath(EXPERIMENTS_DIR, id);
   if (!await exists(filePath)) {
     const err = new Error(`Experiment not found: ${id}`);
     err.status = 404;

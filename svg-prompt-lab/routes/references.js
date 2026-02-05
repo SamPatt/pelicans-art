@@ -17,6 +17,23 @@ async function listDirs(dirPath) {
 }
 
 /**
+ * Validate that a resolved path stays within the allowed base directory
+ */
+function assertWithin(base, resolved) {
+  const realBase = path.resolve(base);
+  const realResolved = path.resolve(resolved);
+  if (!realResolved.startsWith(realBase + path.sep) && realResolved !== realBase) {
+    const err = new Error('Invalid path');
+    err.status = 400;
+    throw err;
+  }
+}
+
+function hasTraversal(name) {
+  return name.includes('..') || path.isAbsolute(name);
+}
+
+/**
  * GET /api/references/:type
  * type: sprites, backgrounds, props
  */
@@ -83,6 +100,11 @@ router.get('/:type', async (req, res) => {
  */
 router.get('/:type/:name(*)', async (req, res) => {
   const { type, name } = req.params;
+
+  if (hasTraversal(name)) {
+    return res.status(400).json({ error: true, message: 'Invalid name' });
+  }
+
   let svgPath;
 
   if (type === 'sprites') {
@@ -90,7 +112,6 @@ router.get('/:type/:name(*)', async (req, res) => {
   } else if (type === 'props') {
     svgPath = path.join(PARENT_SRC, 'props', name, 'prop.svg');
   } else if (type === 'backgrounds') {
-    // name could be "park" or "apartment/landscape"
     if (name.includes('/')) {
       const [bgName, orient] = name.split('/');
       svgPath = path.join(PARENT_SRC, 'backgrounds', bgName, `${orient}.svg`);
@@ -99,7 +120,17 @@ router.get('/:type/:name(*)', async (req, res) => {
     }
   }
 
-  if (!svgPath || !await exists(svgPath)) {
+  if (!svgPath) {
+    return res.status(400).json({ error: true, message: `Unknown reference type: ${type}` });
+  }
+
+  try {
+    assertWithin(PARENT_SRC, svgPath);
+  } catch {
+    return res.status(400).json({ error: true, message: 'Invalid path' });
+  }
+
+  if (!await exists(svgPath)) {
     return res.status(404).json({ error: true, message: 'Reference not found' });
   }
 

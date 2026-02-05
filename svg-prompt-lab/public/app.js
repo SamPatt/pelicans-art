@@ -231,7 +231,7 @@ function renderExamples() {
     const card = document.createElement('div');
     card.className = 'example-card';
     card.dataset.name = ref.name;
-    card.innerHTML = `${ref.svg}<div class="example-card-name">${escapeHtml(ref.name)}</div>`;
+    card.innerHTML = `${sanitizeSvg(ref.svg)}<div class="example-card-name">${escapeHtml(ref.name)}</div>`;
     card.addEventListener('click', () => toggleExample(ref, card));
     grid.appendChild(card);
   }
@@ -295,9 +295,9 @@ function renderModels() {
 
       item.querySelector('input').addEventListener('change', e => {
         if (e.target.checked) {
-          state.selectedModels.add(`${m.backend}:${m.id}`);
+          state.selectedModels.add(`${m.backend}||${m.id}`);
         } else {
-          state.selectedModels.delete(`${m.backend}:${m.id}`);
+          state.selectedModels.delete(`${m.backend}||${m.id}`);
         }
         updateMatrix();
       });
@@ -395,8 +395,8 @@ async function runExperiment() {
   if (!t || state.selectedModels.size === 0) return;
 
   const models = Array.from(state.selectedModels).map(key => {
-    const [backend, ...idParts] = key.split(':');
-    return { backend, model: idParts.join(':') };
+    const [backend, model] = key.split('||', 2);
+    return { backend, model };
   });
 
   const config = {
@@ -406,9 +406,12 @@ async function runExperiment() {
     variableOverrides: {},
     exampleCount: state.selectedExamples.length,
     exampleRefs: state.selectedExamples.map(e => ({ name: e.name, svg: e.svg })),
-    temperature: parseFloat(document.getElementById('cfg-temp').value),
-    maxTokens: parseInt(document.getElementById('cfg-tokens').value, 10),
-    concurrency: parseInt(document.getElementById('cfg-concurrency').value, 10)
+    temperature: Number.isFinite(parseFloat(document.getElementById('cfg-temp').value))
+      ? parseFloat(document.getElementById('cfg-temp').value) : 0.7,
+    maxTokens: Number.isFinite(parseInt(document.getElementById('cfg-tokens').value, 10))
+      ? parseInt(document.getElementById('cfg-tokens').value, 10) : 4096,
+    concurrency: Number.isFinite(parseInt(document.getElementById('cfg-concurrency').value, 10))
+      ? parseInt(document.getElementById('cfg-concurrency').value, 10) : 3
   };
 
   // Update template prompts in case they were edited
@@ -592,7 +595,7 @@ function createResultCard(result, expId) {
   card.className = 'result-card';
 
   const svgHtml = result.response?.svg
-    ? result.response.svg
+    ? sanitizeSvg(result.response.svg) || '<span class="no-svg">Invalid SVG</span>'
     : '<span class="no-svg">No SVG</span>';
 
   const validationBadge = getValidationBadge(result.validation);
@@ -703,7 +706,7 @@ function openCardModal(result, expId) {
   const modal = document.getElementById('card-modal');
   const body = document.getElementById('card-modal-body');
 
-  const svgHtml = result.response?.svg || '<span class="no-svg">No SVG generated</span>';
+  const svgHtml = (result.response?.svg && sanitizeSvg(result.response.svg)) || '<span class="no-svg">No SVG generated</span>';
   const validation = result.validation || { valid: false, errors: ['Unknown'], warnings: [] };
 
   const validationItems = [
@@ -870,6 +873,50 @@ function setStatus(text, type = 'ready') {
   const label = document.getElementById('status-text');
   label.textContent = text;
   dot.className = 'status-dot' + (type === 'running' ? ' running' : type === 'error' ? ' error' : '');
+}
+
+// ---- SVG Sanitization ----
+function sanitizeSvg(svgString) {
+  if (!svgString) return '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgString, 'image/svg+xml');
+
+  // Check for parse errors
+  const parseError = doc.querySelector('parsererror');
+  if (parseError) return '';
+
+  const svg = doc.documentElement;
+  if (svg.tagName !== 'svg') return '';
+
+  stripDangerous(svg);
+  return new XMLSerializer().serializeToString(svg);
+}
+
+function stripDangerous(el) {
+  const dangerousTags = new Set([
+    'script', 'foreignobject', 'iframe', 'object', 'embed',
+    'use', 'image', 'feimage', 'set', 'animate', 'animatetransform',
+    'animatemotion'
+  ]);
+
+  // Remove dangerous child elements
+  const toRemove = [];
+  for (const child of el.children) {
+    if (dangerousTags.has(child.tagName.toLowerCase())) {
+      toRemove.push(child);
+    } else {
+      stripDangerous(child);
+    }
+  }
+  toRemove.forEach(c => c.remove());
+
+  // Remove on* event handler attributes and external refs
+  for (const attr of Array.from(el.attributes)) {
+    const name = attr.name.toLowerCase();
+    if (name.startsWith('on') || name === 'href' || name === 'xlink:href') {
+      el.removeAttribute(attr.name);
+    }
+  }
 }
 
 // ---- Helpers ----
