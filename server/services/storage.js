@@ -49,10 +49,11 @@ export async function ensureDataDirs(dataDir) {
   await ensureDir(BACKGROUNDS_DIR);
   await ensureDir(PROPS_DIR);
 
-  // Ensure data directories for skits and audio
+  // Ensure data directories for skits, audio, and voices
   await ensureDir(path.join(DATA_DIR, 'skits'));
   await ensureDir(path.join(DATA_DIR, 'published'));
   await ensureDir(path.join(DATA_DIR, 'audio-cache'));
+  await ensureDir(path.join(DATA_DIR, 'voices'));
 
   console.log(`Asset directories: sprites=${SPRITES_DIR}, backgrounds=${BACKGROUNDS_DIR}, props=${PROPS_DIR}`);
   console.log(`Data directory: ${DATA_DIR}`);
@@ -445,4 +446,118 @@ export async function deletePublished(id) {
     throw Object.assign(new Error(`Published skit not found: ${id}`), { status: 404 });
   }
   await fs.unlink(filePath);
+}
+
+// --- Voice Storage ---
+
+/**
+ * Get the path to the voices index file
+ */
+function getVoicesIndexPath() {
+  return path.join(DATA_DIR, 'voices', 'voices.json');
+}
+
+/**
+ * Load the voices index, creating it if it doesn't exist
+ */
+async function loadVoicesIndex() {
+  const indexPath = getVoicesIndexPath();
+  if (!await exists(indexPath)) {
+    return {};
+  }
+  try {
+    const content = await fs.readFile(indexPath, 'utf-8');
+    return JSON.parse(content);
+  } catch (e) {
+    console.warn('Failed to parse voices.json, returning empty:', e.message);
+    return {};
+  }
+}
+
+/**
+ * Save the voices index
+ */
+async function saveVoicesIndex(index) {
+  const indexPath = getVoicesIndexPath();
+  await ensureDir(path.dirname(indexPath));
+  await fs.writeFile(indexPath, JSON.stringify(index, null, 2));
+}
+
+/**
+ * List all custom voices
+ */
+export async function listVoices() {
+  const index = await loadVoicesIndex();
+  return Object.entries(index).map(([name, data]) => ({
+    name,
+    displayName: data.displayName || name,
+    createdAt: data.createdAt,
+    sourceFile: data.sourceFile
+  }));
+}
+
+/**
+ * Get a specific voice's metadata
+ */
+export async function getVoice(name) {
+  const index = await loadVoicesIndex();
+  if (!index[name]) {
+    throw Object.assign(new Error(`Voice not found: ${name}`), { status: 404 });
+  }
+  return { name, ...index[name] };
+}
+
+/**
+ * Get path to a voice's safetensors file
+ */
+export function getVoicePath(name) {
+  return path.join(DATA_DIR, 'voices', `${name}.safetensors`);
+}
+
+/**
+ * Check if a voice's safetensors file exists
+ */
+export async function voiceFileExists(name) {
+  return exists(getVoicePath(name));
+}
+
+/**
+ * Save voice metadata to the index
+ */
+export async function saveVoice(name, metadata) {
+  const index = await loadVoicesIndex();
+  index[name] = {
+    displayName: metadata.displayName || name,
+    createdAt: metadata.createdAt || new Date().toISOString(),
+    sourceFile: metadata.sourceFile || null
+  };
+  await saveVoicesIndex(index);
+  return { name, ...index[name] };
+}
+
+/**
+ * Delete a voice (metadata and safetensors file)
+ */
+export async function deleteVoice(name) {
+  const index = await loadVoicesIndex();
+  if (!index[name]) {
+    throw Object.assign(new Error(`Voice not found: ${name}`), { status: 404 });
+  }
+
+  // Delete the safetensors file if it exists
+  const safetensorsPath = getVoicePath(name);
+  if (await exists(safetensorsPath)) {
+    await fs.unlink(safetensorsPath);
+  }
+
+  // Remove from index
+  delete index[name];
+  await saveVoicesIndex(index);
+}
+
+/**
+ * Get the voices directory path
+ */
+export function getVoicesDir() {
+  return path.join(DATA_DIR, 'voices');
 }

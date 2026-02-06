@@ -101,17 +101,37 @@ function validatePublished(body) {
 }
 
 function validateVoice(body) {
-  if (!body.audio_base64 || typeof body.audio_base64 !== 'string') return 'audio_base64 is required';
-  try {
-    // Validate the entire base64 string is decodable, not just the header
-    const raw = atob(body.audio_base64);
-    if (raw.length < 12) return 'Audio data too short';
-    if (raw.slice(0, 4) !== 'RIFF' || raw.slice(8, 12) !== 'WAVE') {
-      return 'Audio must be WAV format (RIFF/WAVE header required)';
-    }
-  } catch {
-    return 'Invalid base64 in audio_base64';
+  // Support both audio_base64 (WAV) and safetensors_base64 (processed voice)
+  const hasAudio = body.audio_base64 && typeof body.audio_base64 === 'string';
+  const hasSafetensors = body.safetensors_base64 && typeof body.safetensors_base64 === 'string';
+
+  if (!hasAudio && !hasSafetensors) {
+    return 'Either audio_base64 or safetensors_base64 is required';
   }
+
+  if (hasAudio) {
+    try {
+      const raw = atob(body.audio_base64);
+      if (raw.length < 12) return 'Audio data too short';
+      if (raw.slice(0, 4) !== 'RIFF' || raw.slice(8, 12) !== 'WAVE') {
+        return 'Audio must be WAV format (RIFF/WAVE header required)';
+      }
+    } catch {
+      return 'Invalid base64 in audio_base64';
+    }
+  }
+
+  if (hasSafetensors) {
+    try {
+      const raw = atob(body.safetensors_base64);
+      if (raw.length < 8) return 'Safetensors data too short';
+      // Safetensors files start with an 8-byte header (little-endian u64)
+      // We just check it's decodable and has reasonable size
+    } catch {
+      return 'Invalid base64 in safetensors_base64';
+    }
+  }
+
   return null;
 }
 
@@ -157,9 +177,23 @@ async function storePublished(bucket, slug, body) {
 
 async function storeVoice(bucket, slug, body) {
   const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: body.name || slug, category: 'voices' };
-  const audioBytes = Uint8Array.from(atob(body.audio_base64), c => c.charCodeAt(0));
-  await bucket.put(`voices/${slug}.wav`, audioBytes, { customMetadata: commonMeta, httpMetadata: { contentType: 'audio/wav' } });
-  return { slug, files: [`${slug}.wav`] };
+
+  // Support both WAV audio and processed safetensors
+  if (body.safetensors_base64) {
+    const safetensorsBytes = Uint8Array.from(atob(body.safetensors_base64), c => c.charCodeAt(0));
+    await bucket.put(`voices/${slug}.safetensors`, safetensorsBytes, {
+      customMetadata: commonMeta,
+      httpMetadata: { contentType: 'application/octet-stream' }
+    });
+    return { slug, files: [`${slug}.safetensors`] };
+  } else {
+    const audioBytes = Uint8Array.from(atob(body.audio_base64), c => c.charCodeAt(0));
+    await bucket.put(`voices/${slug}.wav`, audioBytes, {
+      customMetadata: commonMeta,
+      httpMetadata: { contentType: 'audio/wav' }
+    });
+    return { slug, files: [`${slug}.wav`] };
+  }
 }
 
 // === Listing helpers ===
@@ -171,7 +205,7 @@ function indexSuffix(category) {
     case 'backgrounds': return 'landscape.svg';
     case 'skits': return '.json';
     case 'published': return '.json';
-    case 'voices': return '.wav';
+    case 'voices': return null; // Voices can be .wav or .safetensors
   }
 }
 
@@ -213,7 +247,12 @@ async function listCategory(bucket, category, cursor, limit) {
 
     for (let i = skip; i < objects.length; i++) {
       const obj = objects[i];
-      if (!obj.key.endsWith(suffix)) continue;
+      // For voices, accept both .wav and .safetensors
+      if (suffix === null) {
+        if (!obj.key.endsWith('.wav') && !obj.key.endsWith('.safetensors')) continue;
+      } else if (!obj.key.endsWith(suffix)) {
+        continue;
+      }
       const meta = obj.customMetadata || {};
       items.push({
         key: obj.key,
@@ -322,15 +361,23 @@ async function handleDelete(request, env, category, slug) {
   if (category === 'skits' || category === 'published') {
     prefix = `${category}/${slug}.json`;
   } else if (category === 'voices') {
-    prefix = `${category}/${slug}.wav`;
+    // Voices can be .wav or .safetensors - list by prefix to find either
+    prefix = `${category}/${slug}`;
   } else {
     prefix = `${category}/${slug}/`;
   }
 
   const listed = await env.BUCKET.list({ prefix });
-  if (listed.objects.length === 0) return err('Not found', 404);
+  // For voices, filter to only exact matches
+  let objectsToDelete = listed.objects;
+  if (category === 'voices') {
+    objectsToDelete = listed.objects.filter(o =>
+      o.key === `voices/${slug}.wav` || o.key === `voices/${slug}.safetensors`
+    );
+  }
+  if (objectsToDelete.length === 0) return err('Not found', 404);
 
-  const keys = listed.objects.map(o => o.key);
+  const keys = objectsToDelete.map(o => o.key);
   await Promise.all(keys.map(k => env.BUCKET.delete(k)));
 
   return json({ ok: true, deleted: keys });
@@ -390,6 +437,7 @@ async function handleGetMeta(env, category, slug) {
   if (!CATEGORIES.includes(category)) return err('Unknown category', 404);
 
   let key;
+  let obj;
   switch (category) {
     case 'characters':
     case 'props':
@@ -400,10 +448,17 @@ async function handleGetMeta(env, category, slug) {
     case 'published':
       key = `${category}/${slug}.json`; break;
     case 'voices':
-      key = `${category}/${slug}.wav`; break;
+      // Try safetensors first, then wav
+      obj = await env.BUCKET.get(`${category}/${slug}.safetensors`);
+      if (!obj) {
+        obj = await env.BUCKET.get(`${category}/${slug}.wav`);
+      }
+      break;
   }
 
-  const obj = await env.BUCKET.get(key);
+  if (category !== 'voices') {
+    obj = await env.BUCKET.get(key);
+  }
   if (!obj) return err('Not found', 404);
 
   const meta = obj.customMetadata || {};
@@ -422,15 +477,22 @@ async function handleGetFile(env, category, slug, filename) {
   if (!CATEGORIES.includes(category)) return err('Unknown category', 404);
 
   let key;
+  let obj;
   if (category === 'skits' || category === 'published') {
     key = `${category}/${slug}.json`;
   } else if (category === 'voices') {
-    key = `${category}/${slug}.wav`;
+    // Try safetensors first, then wav
+    obj = await env.BUCKET.get(`${category}/${slug}.safetensors`);
+    if (!obj) {
+      obj = await env.BUCKET.get(`${category}/${slug}.wav`);
+    }
   } else {
     key = `${category}/${slug}/${filename}`;
   }
 
-  const obj = await env.BUCKET.get(key);
+  if (category !== 'voices') {
+    obj = await env.BUCKET.get(key);
+  }
   if (!obj) return err('File not found', 404);
 
   const headers = {

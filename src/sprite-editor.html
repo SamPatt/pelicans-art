@@ -2407,6 +2407,364 @@
       background: #3a8a3a;
     }
 
+    .create-voice-btn {
+      width: 100%;
+      padding: 8px;
+      background: #4a1a6a;
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.85em;
+      margin-top: 8px;
+    }
+
+    .create-voice-btn:hover {
+      background: #6a2a8a;
+    }
+
+    /* === Voice Creator Modal === */
+    .voice-creator-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 1002;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .voice-creator-modal.visible {
+      display: flex;
+    }
+
+    .voice-creator-content {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 20px;
+      width: 600px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .voice-creator-content h3 {
+      color: #4ecca3;
+      margin-bottom: 15px;
+      font-size: 1.2em;
+    }
+
+    .voice-creator-tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+
+    .voice-creator-tab {
+      flex: 1;
+      padding: 10px;
+      background: #0f3460;
+      border: 1px solid #1a4a7a;
+      border-radius: 4px;
+      color: #888;
+      cursor: pointer;
+      font-size: 0.9em;
+      text-align: center;
+    }
+
+    .voice-creator-tab.active {
+      background: #1a4a7a;
+      color: #4ecca3;
+      border-color: #4ecca3;
+    }
+
+    .voice-input-section {
+      margin-bottom: 20px;
+    }
+
+    .voice-input-section.hidden {
+      display: none;
+    }
+
+    .voice-input-section label {
+      display: block;
+      color: #888;
+      font-size: 0.85em;
+      margin-bottom: 6px;
+    }
+
+    .voice-input-section input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #888;
+    }
+
+    .voice-input-section input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    .voice-waveform-container {
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    .voice-waveform-container canvas {
+      width: 100%;
+      height: 100px;
+      cursor: crosshair;
+    }
+
+    .voice-selection-overlay {
+      position: absolute;
+      top: 10px;
+      height: 100px;
+      background: rgba(78, 204, 163, 0.2);
+      border-left: 2px solid #4ecca3;
+      border-right: 2px solid #4ecca3;
+      pointer-events: none;
+    }
+
+    .voice-selection-handle {
+      position: absolute;
+      top: 10px;
+      width: 10px;
+      height: 100px;
+      background: #4ecca3;
+      cursor: ew-resize;
+    }
+
+    .voice-selection-handle.left {
+      border-radius: 4px 0 0 4px;
+    }
+
+    .voice-selection-handle.right {
+      border-radius: 0 4px 4px 0;
+    }
+
+    .voice-quality-meter {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      padding: 10px;
+      background: #0d0d1a;
+      border-radius: 4px;
+    }
+
+    .quality-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .quality-item label {
+      display: block;
+      font-size: 0.75em;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .quality-item span {
+      font-size: 1.1em;
+      font-weight: bold;
+    }
+
+    .quality-good { color: #4ecca3; }
+    .quality-ok { color: #ffd93d; }
+    .quality-bad { color: #e94560; }
+
+    .voice-segment-info {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .voice-segment-info input {
+      width: 80px;
+      padding: 6px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      text-align: center;
+    }
+
+    .voice-segment-info button {
+      padding: 6px 12px;
+      background: #0f3460;
+      border: none;
+      border-radius: 4px;
+      color: #eee;
+      cursor: pointer;
+    }
+
+    .voice-segment-info button:hover {
+      background: #1a4a7a;
+    }
+
+    .voice-name-input {
+      margin-bottom: 15px;
+    }
+
+    .voice-name-input input {
+      width: 100%;
+      padding: 10px 12px;
+      background: #0d0d1a;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      font-size: 1em;
+    }
+
+    .voice-preview-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #0d0d1a;
+      border-radius: 4px;
+    }
+
+    .voice-preview-section h4 {
+      color: #888;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+    }
+
+    .voice-preview-section textarea {
+      width: 100%;
+      height: 60px;
+      padding: 8px;
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      color: #eee;
+      resize: none;
+      margin-bottom: 10px;
+    }
+
+    .voice-preview-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .voice-preview-controls button {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .voice-preview-play {
+      background: #4a4a4a;
+      color: #eee;
+    }
+
+    .voice-preview-play:hover {
+      background: #5a5a5a;
+    }
+
+    .voice-preview-play:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+    }
+
+    .voice-creator-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .voice-creator-actions button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .voice-creator-actions .btn-cancel {
+      background: #333;
+      color: #eee;
+    }
+
+    .voice-creator-actions .btn-save {
+      background: #2a6a2a;
+      color: #fff;
+    }
+
+    .voice-creator-actions .btn-upload {
+      background: #4ecca3;
+      color: #111;
+    }
+
+    .voice-creator-actions button:hover {
+      filter: brightness(1.1);
+    }
+
+    .voice-creator-actions button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      filter: none;
+    }
+
+    .voice-creator-status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 0.9em;
+    }
+
+    .voice-creator-status.info {
+      background: #16213e;
+      color: #4ecca3;
+    }
+
+    .voice-creator-status.error {
+      background: #3a1a1a;
+      color: #e94560;
+    }
+
+    .voice-creator-status.success {
+      background: #1a3a1a;
+      color: #4ecca3;
+    }
+
+    .voice-processing-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #4ecca3;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* === Edit Mode Indicator === */
     .edit-mode-indicator {
       padding: 5px 10px;
@@ -2967,6 +3325,89 @@
         </div>
       </div>
 
+      <!-- Voice Creator Modal -->
+      <div id="voice-creator-modal" class="voice-creator-modal">
+        <div class="voice-creator-content">
+          <h3>🎤 Create Custom Voice</h3>
+
+          <div class="voice-creator-tabs">
+            <button class="voice-creator-tab active" data-tab="upload" onclick="switchVoiceCreatorTab('upload')">📁 Upload File</button>
+            <button class="voice-creator-tab" data-tab="url" onclick="switchVoiceCreatorTab('url')">🔗 Enter URL</button>
+          </div>
+
+          <div id="voice-input-upload" class="voice-input-section">
+            <label>Upload audio file (WAV or MP3, at least 15 seconds)</label>
+            <input type="file" id="voice-upload-file" accept=".wav,.mp3,audio/wav,audio/mpeg" onchange="handleVoiceCreatorFileSelect(event)">
+          </div>
+
+          <div id="voice-input-url" class="voice-input-section hidden">
+            <label>Enter URL to audio file</label>
+            <input type="text" id="voice-upload-url" placeholder="https://example.com/voice-sample.wav">
+            <button onclick="loadVoiceFromUrl()" style="margin-top:8px;padding:8px 16px;background:#0f3460;border:none;color:#eee;border-radius:4px;cursor:pointer;">Load Audio</button>
+          </div>
+
+          <div id="voice-waveform-section" style="display:none;">
+            <div class="voice-waveform-container" id="voice-waveform-container">
+              <canvas id="voice-waveform-canvas"></canvas>
+              <div id="voice-selection-overlay" class="voice-selection-overlay"></div>
+            </div>
+
+            <div class="voice-quality-meter" id="voice-quality-meter">
+              <div class="quality-item">
+                <label>Duration</label>
+                <span id="voice-duration">0s</span>
+              </div>
+              <div class="quality-item">
+                <label>Loudness</label>
+                <span id="voice-rms" class="quality-good">--</span>
+              </div>
+              <div class="quality-item">
+                <label>Clipping</label>
+                <span id="voice-clipping" class="quality-good">--</span>
+              </div>
+              <div class="quality-item">
+                <label>Silence</label>
+                <span id="voice-silence" class="quality-good">--</span>
+              </div>
+            </div>
+
+            <div class="voice-segment-info">
+              <label style="color:#888;font-size:0.85em;">Segment:</label>
+              <input type="number" id="voice-segment-start" value="0" min="0" step="0.5" onchange="updateVoiceSegment()"> s
+              <span style="color:#666;">to</span>
+              <input type="number" id="voice-segment-end" value="15" min="1" step="0.5" onchange="updateVoiceSegment()"> s
+              <button onclick="autoSelectBestSegment()">🎯 Auto-Select Best</button>
+            </div>
+
+            <div class="voice-name-input">
+              <label style="display:block;color:#888;font-size:0.85em;margin-bottom:6px;">Voice Name</label>
+              <input type="text" id="voice-creator-name" placeholder="my-custom-voice" oninput="validateVoiceName(this)">
+            </div>
+
+            <button id="voice-process-btn" onclick="processVoice()" style="width:100%;padding:12px;background:#4a1a6a;border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:bold;margin-bottom:15px;">
+              ⚙️ Process Voice
+            </button>
+          </div>
+
+          <div id="voice-preview-section" class="voice-preview-section" style="display:none;">
+            <h4>🔊 Preview Processed Voice</h4>
+            <textarea id="voice-preview-text" placeholder="Enter text to test the voice...">Hello, this is a test of my custom voice. How does it sound?</textarea>
+            <div class="voice-preview-controls">
+              <button id="voice-test-play-btn" class="voice-preview-play" onclick="playVoicePreview()" disabled>▶ Play Preview</button>
+            </div>
+            <audio id="voice-preview-audio" style="display:none;"></audio>
+          </div>
+
+          <div id="voice-creator-status" class="voice-creator-status" style="display:none;"></div>
+
+          <div class="voice-creator-actions">
+            <button class="btn-cancel" onclick="closeVoiceCreatorModal()">Cancel</button>
+            <button id="voice-save-btn" class="btn-save" onclick="saveVoiceLocally()" disabled>💾 Save Locally</button>
+            <button id="voice-upload-btn" class="btn-upload" onclick="uploadVoiceToCommunity()" disabled>☁️ Upload to Community</button>
+          </div>
+        </div>
+      </div>
+
       <div class="element-tree">
         <div class="panel-header">🌳 Elements</div>
         <div id="element-tree">
@@ -3050,6 +3491,9 @@
 
           <button class="save-voice-btn" onclick="saveVoiceSettings()">
             💾 Save Voice Settings
+          </button>
+          <button class="create-voice-btn" onclick="openVoiceCreatorModal()">
+            🎤 Create Custom Voice
           </button>
         </div>
       </div>
@@ -6225,12 +6669,37 @@
       }
     }
 
-    function populateVoiceSelector() {
+    async function populateVoiceSelector() {
       const select = document.getElementById('voice-select');
-      select.innerHTML = '<option value="">-- Select Voice --</option>' +
-        AVAILABLE_VOICES.map(v =>
-          `<option value="${v.id}">${v.name} - ${v.description}</option>`
-        ).join('');
+
+      // Start with default option
+      let html = '<option value="">-- Select Voice --</option>';
+
+      // Add built-in voices
+      html += '<optgroup label="Built-in Voices">';
+      html += AVAILABLE_VOICES.map(v =>
+        `<option value="${v.id}">${v.name} - ${v.description}</option>`
+      ).join('');
+      html += '</optgroup>';
+
+      // Fetch custom voices
+      try {
+        const response = await fetch('/api/voice/list');
+        if (response.ok) {
+          const customVoices = await response.json();
+          if (customVoices.length > 0) {
+            html += '<optgroup label="Custom Voices">';
+            html += customVoices.map(v =>
+              `<option value="custom:${v.name}">${v.displayName || v.name}</option>`
+            ).join('');
+            html += '</optgroup>';
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch custom voices:', err);
+      }
+
+      select.innerHTML = html;
     }
 
     function loadSpriteVoiceSettings(meta) {
@@ -6281,14 +6750,30 @@
 
         const testText = `Hello, I am ${currentSpriteName || 'a character'}. This is a preview of my voice so you can hear how I will sound in the skit.`;
 
-        const response = await fetch('/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: testText,
-            voice: voiceId
-          })
-        });
+        let response;
+
+        // Check if this is a custom voice
+        if (voiceId.startsWith('custom:')) {
+          const customVoiceName = voiceId.replace('custom:', '');
+          response = await fetch('/api/voice/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: testText,
+              voice: customVoiceName
+            })
+          });
+        } else {
+          // Built-in voice
+          response = await fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: testText,
+              voice: voiceId
+            })
+          });
+        }
 
         if (!response.ok) throw new Error('TTS request failed');
 
@@ -6388,6 +6873,451 @@
         console.error('Failed to save voice settings:', err);
         updateStatus('Failed to save voice settings');
       }
+    }
+
+    // === VOICE CREATOR ===
+    let voiceCreatorState = {
+      audioBuffer: null,
+      audioBlob: null,
+      waveformData: null,
+      duration: 0,
+      suggestedStart: 0,
+      suggestedEnd: 15,
+      quality: null,
+      processedVoiceName: null,
+      processedVoiceUrl: null
+    };
+
+    function openVoiceCreatorModal() {
+      // Reset state
+      voiceCreatorState = {
+        audioBuffer: null,
+        audioBlob: null,
+        waveformData: null,
+        duration: 0,
+        suggestedStart: 0,
+        suggestedEnd: 15,
+        quality: null,
+        processedVoiceName: null,
+        processedVoiceUrl: null
+      };
+
+      // Reset UI
+      document.getElementById('voice-upload-file').value = '';
+      document.getElementById('voice-upload-url').value = '';
+      document.getElementById('voice-creator-name').value = '';
+      document.getElementById('voice-waveform-section').style.display = 'none';
+      document.getElementById('voice-preview-section').style.display = 'none';
+      document.getElementById('voice-creator-status').style.display = 'none';
+      document.getElementById('voice-save-btn').disabled = true;
+      document.getElementById('voice-upload-btn').disabled = true;
+
+      switchVoiceCreatorTab('upload');
+      document.getElementById('voice-creator-modal').classList.add('visible');
+    }
+
+    function closeVoiceCreatorModal() {
+      document.getElementById('voice-creator-modal').classList.remove('visible');
+    }
+
+    function switchVoiceCreatorTab(tab) {
+      document.querySelectorAll('.voice-creator-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+      });
+      document.getElementById('voice-input-upload').classList.toggle('hidden', tab !== 'upload');
+      document.getElementById('voice-input-url').classList.toggle('hidden', tab !== 'url');
+    }
+
+    async function handleVoiceCreatorFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      showVoiceCreatorStatus('Analyzing audio...', 'info');
+
+      try {
+        const formData = new FormData();
+        formData.append('audio', file);
+
+        const response = await fetch('/api/voice/analyze', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || 'Analysis failed');
+        }
+
+        const analysis = await response.json();
+
+        // Store the file as blob for later processing
+        voiceCreatorState.audioBlob = file;
+        voiceCreatorState.waveformData = analysis.waveform;
+        voiceCreatorState.duration = analysis.duration;
+        voiceCreatorState.suggestedStart = analysis.suggestedStart;
+        voiceCreatorState.suggestedEnd = analysis.suggestedEnd;
+        voiceCreatorState.quality = analysis.quality;
+
+        displayVoiceWaveform();
+        updateQualityMeter();
+
+        document.getElementById('voice-segment-start').value = analysis.suggestedStart.toFixed(1);
+        document.getElementById('voice-segment-end').value = analysis.suggestedEnd.toFixed(1);
+
+        document.getElementById('voice-waveform-section').style.display = 'block';
+        hideVoiceCreatorStatus();
+      } catch (err) {
+        console.error('Voice analysis error:', err);
+        showVoiceCreatorStatus('Analysis failed: ' + err.message, 'error');
+      }
+    }
+
+    async function loadVoiceFromUrl() {
+      const url = document.getElementById('voice-upload-url').value.trim();
+      if (!url) {
+        showVoiceCreatorStatus('Please enter a URL', 'error');
+        return;
+      }
+
+      showVoiceCreatorStatus('Fetching audio from URL...', 'info');
+
+      try {
+        // Fetch the audio file
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error('Failed to fetch audio');
+        }
+
+        const blob = await response.blob();
+
+        // Create a fake file input event
+        const file = new File([blob], 'audio-from-url.wav', { type: blob.type });
+
+        const formData = new FormData();
+        formData.append('audio', file);
+
+        const analyzeResponse = await fetch('/api/voice/analyze', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!analyzeResponse.ok) {
+          const err = await analyzeResponse.json();
+          throw new Error(err.message || 'Analysis failed');
+        }
+
+        const analysis = await analyzeResponse.json();
+
+        voiceCreatorState.audioBlob = file;
+        voiceCreatorState.waveformData = analysis.waveform;
+        voiceCreatorState.duration = analysis.duration;
+        voiceCreatorState.suggestedStart = analysis.suggestedStart;
+        voiceCreatorState.suggestedEnd = analysis.suggestedEnd;
+        voiceCreatorState.quality = analysis.quality;
+
+        displayVoiceWaveform();
+        updateQualityMeter();
+
+        document.getElementById('voice-segment-start').value = analysis.suggestedStart.toFixed(1);
+        document.getElementById('voice-segment-end').value = analysis.suggestedEnd.toFixed(1);
+
+        document.getElementById('voice-waveform-section').style.display = 'block';
+        hideVoiceCreatorStatus();
+      } catch (err) {
+        console.error('URL load error:', err);
+        showVoiceCreatorStatus('Failed to load audio: ' + err.message, 'error');
+      }
+    }
+
+    function displayVoiceWaveform() {
+      const canvas = document.getElementById('voice-waveform-canvas');
+      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('voice-waveform-container');
+
+      canvas.width = container.clientWidth - 20;
+      canvas.height = 100;
+
+      const waveform = voiceCreatorState.waveformData;
+      if (!waveform || waveform.length === 0) return;
+
+      const barWidth = canvas.width / waveform.length;
+
+      ctx.fillStyle = '#0d0d1a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#4ecca3';
+      for (let i = 0; i < waveform.length; i++) {
+        const height = waveform[i] * canvas.height * 0.9;
+        const y = (canvas.height - height) / 2;
+        ctx.fillRect(i * barWidth, y, barWidth - 1, height);
+      }
+
+      updateSelectionOverlay();
+    }
+
+    function updateSelectionOverlay() {
+      const container = document.getElementById('voice-waveform-container');
+      const overlay = document.getElementById('voice-selection-overlay');
+      const containerWidth = container.clientWidth - 20;
+
+      const start = parseFloat(document.getElementById('voice-segment-start').value) || 0;
+      const end = parseFloat(document.getElementById('voice-segment-end').value) || 15;
+      const duration = voiceCreatorState.duration || 1;
+
+      const startPct = (start / duration) * 100;
+      const endPct = (end / duration) * 100;
+
+      overlay.style.left = `${10 + (startPct / 100) * containerWidth}px`;
+      overlay.style.width = `${((endPct - startPct) / 100) * containerWidth}px`;
+    }
+
+    function updateQualityMeter() {
+      const q = voiceCreatorState.quality;
+      if (!q) return;
+
+      document.getElementById('voice-duration').textContent = voiceCreatorState.duration.toFixed(1) + 's';
+
+      const rmsEl = document.getElementById('voice-rms');
+      rmsEl.textContent = (q.avgRms * 100).toFixed(0) + '%';
+      rmsEl.className = q.avgRms > 0.1 ? 'quality-good' : q.avgRms > 0.05 ? 'quality-ok' : 'quality-bad';
+
+      const clipEl = document.getElementById('voice-clipping');
+      clipEl.textContent = q.clippingCount > 0 ? q.clippingCount : 'None';
+      clipEl.className = q.clippingCount === 0 ? 'quality-good' : q.clippingCount < 100 ? 'quality-ok' : 'quality-bad';
+
+      const silenceEl = document.getElementById('voice-silence');
+      silenceEl.textContent = (q.silenceRatio * 100).toFixed(0) + '%';
+      silenceEl.className = q.silenceRatio < 0.3 ? 'quality-good' : q.silenceRatio < 0.5 ? 'quality-ok' : 'quality-bad';
+    }
+
+    function updateVoiceSegment() {
+      updateSelectionOverlay();
+    }
+
+    function autoSelectBestSegment() {
+      document.getElementById('voice-segment-start').value = voiceCreatorState.suggestedStart.toFixed(1);
+      document.getElementById('voice-segment-end').value = voiceCreatorState.suggestedEnd.toFixed(1);
+      updateSelectionOverlay();
+    }
+
+    function validateVoiceName(input) {
+      const value = input.value.toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
+      input.value = value;
+    }
+
+    async function processVoice() {
+      const name = document.getElementById('voice-creator-name').value.trim();
+      if (!name) {
+        showVoiceCreatorStatus('Please enter a voice name', 'error');
+        return;
+      }
+
+      if (!voiceCreatorState.audioBlob) {
+        showVoiceCreatorStatus('No audio loaded', 'error');
+        return;
+      }
+
+      const start = parseFloat(document.getElementById('voice-segment-start').value) || 0;
+      const end = parseFloat(document.getElementById('voice-segment-end').value) || 15;
+
+      if (end - start < 5) {
+        showVoiceCreatorStatus('Segment must be at least 5 seconds', 'error');
+        return;
+      }
+
+      showVoiceCreatorStatus('<span class="voice-processing-spinner"></span>Processing voice... This may take a moment', 'info');
+      document.getElementById('voice-process-btn').disabled = true;
+
+      try {
+        // Read the audio blob as base64
+        const base64 = await blobToBase64(voiceCreatorState.audioBlob);
+
+        const response = await fetch('/api/voice/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            audio: base64,
+            start,
+            end,
+            name,
+            displayName: name
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || 'Processing failed');
+        }
+
+        const result = await response.json();
+
+        voiceCreatorState.processedVoiceName = result.name;
+        voiceCreatorState.processedVoiceUrl = result.url;
+
+        // Show preview section
+        document.getElementById('voice-preview-section').style.display = 'block';
+        document.getElementById('voice-test-play-btn').disabled = false;
+        document.getElementById('voice-save-btn').disabled = false;
+        document.getElementById('voice-upload-btn').disabled = false;
+
+        showVoiceCreatorStatus('Voice processed successfully! You can preview it below.', 'success');
+
+        // Refresh voice selector
+        await populateVoiceSelector();
+
+      } catch (err) {
+        console.error('Voice processing error:', err);
+        showVoiceCreatorStatus('Processing failed: ' + err.message, 'error');
+      } finally {
+        document.getElementById('voice-process-btn').disabled = false;
+      }
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function playVoicePreview() {
+      const text = document.getElementById('voice-preview-text').value.trim();
+      if (!text) {
+        showVoiceCreatorStatus('Enter some text to preview', 'error');
+        return;
+      }
+
+      const voiceName = voiceCreatorState.processedVoiceName;
+      if (!voiceName) {
+        showVoiceCreatorStatus('Process a voice first', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('voice-test-play-btn');
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        const response = await fetch('/api/voice/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            voice: voiceName,
+            text
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Preview failed');
+        }
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        const audio = document.getElementById('voice-preview-audio');
+        audio.src = audioUrl;
+        audio.play();
+
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+        };
+
+      } catch (err) {
+        console.error('Voice preview error:', err);
+        showVoiceCreatorStatus('Preview failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '▶ Play Preview';
+      }
+    }
+
+    async function saveVoiceLocally() {
+      // Voice is already saved during processing
+      showVoiceCreatorStatus('Voice saved! It\'s now available in the voice dropdown.', 'success');
+
+      // Refresh voice selector
+      await populateVoiceSelector();
+
+      // Close after a delay
+      setTimeout(() => closeVoiceCreatorModal(), 1500);
+    }
+
+    async function uploadVoiceToCommunity() {
+      const voiceName = voiceCreatorState.processedVoiceName;
+      if (!voiceName) {
+        showVoiceCreatorStatus('Process a voice first', 'error');
+        return;
+      }
+
+      // Get username from community modal storage
+      let username = localStorage.getItem('pelicans-community-username') || '';
+      if (!username) {
+        username = prompt('Enter your username for the community:');
+        if (!username) return;
+        localStorage.setItem('pelicans-community-username', username);
+      }
+
+      showVoiceCreatorStatus('Uploading to community...', 'info');
+      document.getElementById('voice-upload-btn').disabled = true;
+
+      try {
+        // Fetch the safetensors file
+        const fileResponse = await fetch(`/api/voice/${voiceName}/file`);
+        if (!fileResponse.ok) {
+          throw new Error('Failed to fetch voice file');
+        }
+
+        const fileBlob = await fileResponse.blob();
+        const arrayBuf = await fileBlob.arrayBuffer();
+
+        // Convert to base64
+        const bytes = new Uint8Array(arrayBuf);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const base64 = btoa(binary);
+
+        // Upload to community
+        const response = await fetch('https://community.pelicans.art/api/community/voices', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username,
+            name: voiceName,
+            safetensors_base64: base64
+          })
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Upload failed');
+        }
+
+        const result = await response.json();
+        showVoiceCreatorStatus(`Uploaded! Voice slug: ${result.slug}`, 'success');
+
+        setTimeout(() => closeVoiceCreatorModal(), 2000);
+
+      } catch (err) {
+        console.error('Community upload error:', err);
+        showVoiceCreatorStatus('Upload failed: ' + err.message, 'error');
+      } finally {
+        document.getElementById('voice-upload-btn').disabled = false;
+      }
+    }
+
+    function showVoiceCreatorStatus(message, type) {
+      const status = document.getElementById('voice-creator-status');
+      status.innerHTML = message;
+      status.className = 'voice-creator-status ' + type;
+      status.style.display = 'block';
+    }
+
+    function hideVoiceCreatorStatus() {
+      document.getElementById('voice-creator-status').style.display = 'none';
     }
 
     // === PROP SETTINGS ===

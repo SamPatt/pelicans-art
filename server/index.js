@@ -17,6 +17,7 @@ import ttsRouter from './routes/tts.js';
 import backgroundsRouter from './routes/backgrounds.js';
 import propsRouter from './routes/props.js';
 import agentRouter from './routes/agent.js';
+import voiceRouter from './routes/voice.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = path.join(__dirname, '../src');
@@ -39,6 +40,7 @@ app.use('/api/tts', ttsRouter);
 app.use('/api/backgrounds', backgroundsRouter);
 app.use('/api/props', propsRouter);
 app.use('/api/agent', agentRouter);
+app.use('/api/voice', voiceRouter);
 
 // TTS proxy for legacy player compatibility (forwards /tts/* to TTS server)
 app.post('/tts/tts', async (req, res) => {
@@ -81,6 +83,7 @@ app.get('/editor', (req, res) => {
 
 // Static file serving
 app.use('/published', express.static(path.join(DATA_DIR, 'published')));
+app.use('/voices', express.static(path.join(DATA_DIR, 'voices')));
 app.use('/sprites', express.static(path.join(SRC_DIR, 'sprites')));
 app.use('/backgrounds', express.static(path.join(SRC_DIR, 'backgrounds')));
 app.use('/props', express.static(path.join(SRC_DIR, 'props')));
