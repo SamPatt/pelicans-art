@@ -146,6 +146,10 @@ router.post('/analyze', upload.single('audio'), async (req, res, next) => {
  */
 router.post('/process', async (req, res, next) => {
   try {
+    if (!req.body || typeof req.body !== 'object') {
+      return res.status(400).json({ error: true, message: 'Request body must be a JSON object' });
+    }
+
     const { audio, start, end, name, displayName } = req.body;
 
     if (!audio || typeof audio !== 'string') {
