@@ -148,12 +148,12 @@ router.post('/process', async (req, res, next) => {
   try {
     const { audio, start, end, name, displayName } = req.body;
 
-    if (!audio) {
-      return res.status(400).json({ error: true, message: 'No audio data provided' });
+    if (!audio || typeof audio !== 'string') {
+      return res.status(400).json({ error: true, message: 'Audio data must be a base64 string' });
     }
 
-    if (!name) {
-      return res.status(400).json({ error: true, message: 'Voice name is required' });
+    if (!name || typeof name !== 'string') {
+      return res.status(400).json({ error: true, message: 'Voice name must be a string' });
     }
 
     // Sanitize name: lowercase, replace invalid chars, strip leading/trailing non-alphanumeric
