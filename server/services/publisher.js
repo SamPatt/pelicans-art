@@ -1,13 +1,15 @@
 import { spawn } from 'child_process';
 import FormData from 'form-data';
 import fetch from 'node-fetch';
+import fs from 'fs/promises';
 import {
   getSprite,
   getBackground,
   getProp,
   savePublished,
   getVoicePath,
-  voiceFileExists
+  voiceFileExists,
+  getVoiceFileInfo
 } from './storage.js';
 
 const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
@@ -24,6 +26,9 @@ async function generateTTS(text, voice) {
 
   // Handle custom voices (prefixed with 'custom:')
   let voiceUrl = voice;
+  let useWavUpload = false;
+  let wavBuffer = null;
+
   if (voice && voice.startsWith('custom:')) {
     const customVoiceName = voice.replace('custom:', '');
     // Validate voice name to prevent path traversal
@@ -33,14 +38,30 @@ async function generateTTS(text, voice) {
     if (!await voiceFileExists(customVoiceName)) {
       throw new Error(`Custom voice not found: ${customVoiceName}`);
     }
-    // Construct HTTP URL for the voice file that TTS server can fetch
-    // URL must end with .safetensors for pocket-tts to recognize the file type
-    voiceUrl = `http://127.0.0.1:${PORT}/api/voice/${customVoiceName}/voice.safetensors`;
+
+    // Check which file type exists (prefer WAV since user chose it as winner)
+    const fileInfo = await getVoiceFileInfo(customVoiceName);
+    if (fileInfo.type === 'wav') {
+      // Use direct WAV upload for better quality
+      useWavUpload = true;
+      wavBuffer = await fs.readFile(fileInfo.path);
+    } else {
+      // Use safetensors URL - must end with .safetensors for pocket-tts
+      voiceUrl = `http://127.0.0.1:${PORT}/api/voice/${customVoiceName}/voice.safetensors`;
+    }
   }
 
   const formData = new FormData();
   formData.append('text', paddedText);
-  formData.append('voice_url', voiceUrl);
+
+  if (useWavUpload && wavBuffer) {
+    formData.append('voice_wav', wavBuffer, {
+      filename: 'voice.wav',
+      contentType: 'audio/wav'
+    });
+  } else {
+    formData.append('voice_url', voiceUrl);
+  }
 
   const response = await fetch(`${TTS_URL}/tts`, {
     method: 'POST',

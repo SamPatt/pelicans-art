@@ -2766,7 +2766,7 @@
 
           // Use character's voice from meta.json (with fallback validation)
           let voice = char.voice || DEFAULT_VOICE;
-          if (!VALID_VOICES.includes(voice) && !voice.startsWith('http')) {
+          if (!VALID_VOICES.includes(voice) && !voice.startsWith('http') && !voice.startsWith('custom:')) {
             console.warn(`Invalid voice "${voice}" for ${beat.who}, using default`);
             voice = DEFAULT_VOICE;
           }

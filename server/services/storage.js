@@ -515,10 +515,35 @@ export function getVoicePath(name) {
 }
 
 /**
- * Check if a voice's safetensors file exists
+ * Get path to a voice's WAV file
+ */
+export function getVoiceWavPath(name) {
+  return path.join(DATA_DIR, 'voices', `${name}.wav`);
+}
+
+/**
+ * Check if a voice file exists (either WAV or safetensors)
  */
 export async function voiceFileExists(name) {
-  return exists(getVoicePath(name));
+  const safetensorsExists = await exists(getVoicePath(name));
+  if (safetensorsExists) return true;
+  return exists(getVoiceWavPath(name));
+}
+
+/**
+ * Get voice file info (path and type)
+ * Prefers WAV over safetensors since user chose it as winner
+ */
+export async function getVoiceFileInfo(name) {
+  const wavPath = getVoiceWavPath(name);
+  if (await exists(wavPath)) {
+    return { path: wavPath, type: 'wav' };
+  }
+  const safetensorsPath = getVoicePath(name);
+  if (await exists(safetensorsPath)) {
+    return { path: safetensorsPath, type: 'safetensors' };
+  }
+  return null;
 }
 
 /**
@@ -536,7 +561,7 @@ export async function saveVoice(name, metadata) {
 }
 
 /**
- * Delete a voice (metadata and safetensors file)
+ * Delete a voice (metadata and audio files)
  */
 export async function deleteVoice(name) {
   const index = await loadVoicesIndex();
@@ -548,6 +573,12 @@ export async function deleteVoice(name) {
   const safetensorsPath = getVoicePath(name);
   if (await exists(safetensorsPath)) {
     await fs.unlink(safetensorsPath);
+  }
+
+  // Delete the WAV file if it exists
+  const wavPath = getVoiceWavPath(name);
+  if (await exists(wavPath)) {
+    await fs.unlink(wavPath);
   }
 
   // Remove from index

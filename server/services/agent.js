@@ -251,6 +251,8 @@ PROPS NOTES:
 
 AVAILABLE ACTIONS:
 - shot: type can be "wide", "medium", "closeup", "extreme-closeup", "two-shot"
+  - For closeup and extreme-closeup, add "who" to focus on a specific character: { "do": "shot", "type": "closeup", "who": "character-id" }
+  - For two-shot, optionally specify "who" as an array: { "do": "shot", "type": "two-shot", "who": ["char1", "char2"] }
 - say: character speaks (who + line + optional offset)
 - emote: change expression (who + emotion)
 - pause: wait (duration in seconds)
