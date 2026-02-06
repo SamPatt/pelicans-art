@@ -2438,11 +2438,11 @@
             // Stop previous speaker animation and audio
             if (currentSpeaker && characters[currentSpeaker]) {
               characters[currentSpeaker].el.classList.remove('speaking');
-              // Stop any currently playing audio
-              audioCache.forEach(({ audio }) => { 
-                if (!audio.paused) {
-                  audio.pause(); 
-                  audio.currentTime = 0; 
+              // Stop any currently playing audio (only for entries with Audio elements, not AudioBuffers)
+              audioCache.forEach(({ audio }) => {
+                if (audio && !audio.paused) {
+                  audio.pause();
+                  audio.currentTime = 0;
                 }
               });
             }
