@@ -3577,6 +3577,33 @@
 
     // Audio preview for voice testing
     let currentAudioPreview = null;
+
+    // === HELPER FUNCTIONS FOR SVG METADATA ===
+    function extractMetaFromSvg(svgText) {
+      if (!svgText || typeof svgText !== 'string') return {};
+      const match = svgText.match(/data-meta='([^']*)'/);
+      if (match) {
+        try {
+          return JSON.parse(match[1].replace(/&#39;/g, "'"));
+        } catch (e) {
+          console.warn('Failed to parse data-meta:', e.message);
+          return {};
+        }
+      }
+      return {};
+    }
+
+    function embedMetaInSvg(svgText, meta) {
+      if (!svgText || typeof svgText !== 'string') return svgText;
+      if (!meta || Object.keys(meta).length === 0) return svgText;
+
+      const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
+
+      if (svgText.includes('data-meta=')) {
+        return svgText.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
+      }
+      return svgText.replace('<svg', `<svg data-meta='${jsonStr}'`);
+    }
     let previewAudioContext = null;
     let previewSourceNode = null;
 
@@ -8121,17 +8148,8 @@
             const meta = {
               name: aiMeta.name || assetName,
               description: aiMeta.description || command,
-              type: result.asset.spriteType || aiMeta.type || 'creature',
               tags: aiMeta.tags || [],
-              voice: aiMeta.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 },
-              colors: aiMeta.colors || {},
-              defaultVariant: 'front',
-              animation: aiMeta.animation || {
-                blinkInterval: 4,
-                blinkDuration: 150,
-                idleMovement: true,
-                eyeTracking: true
-              }
+              voice: aiMeta.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 }
             };
             const saveResp = await fetch('/api/sprites', {
               method: 'POST',
@@ -8416,25 +8434,6 @@
       document.getElementById('variant-tabs').style.display = 'flex'; // Show variant tabs for sprites
       document.querySelector('.zoom-controls').style.display = 'flex';
 
-      // Load sprite metadata for voice settings
-      try {
-        const metaResp = await fetch(`sprites/${name}/meta.json`);
-        if (metaResp.ok) {
-          currentSpriteMeta = await metaResp.json();
-          currentMeta = currentSpriteMeta; // Also store for AI commands
-        } else {
-          currentSpriteMeta = null;
-          currentMeta = null;
-        }
-      } catch (e) {
-        currentSpriteMeta = null;
-        currentMeta = null;
-      }
-
-      // Load voice settings into UI
-      loadSpriteVoiceSettings(currentMeta);
-      updatePanelVisibility();
-
       // Detect variants
       currentVariants = await detectVariants(name);
       renderVariantTabs();
@@ -8442,6 +8441,28 @@
       // Load default variant
       currentVariant = currentVariants.includes('front') ? 'front' : currentVariants[0];
       await loadVariant(name, currentVariant);
+
+      // Try to extract meta from embedded data-meta attribute in loaded SVG
+      let embeddedMeta = extractMetaFromSvg(currentSprite);
+
+      // Fall back to meta.json if no embedded metadata
+      if (Object.keys(embeddedMeta).length === 0) {
+        try {
+          const metaResp = await fetch(`sprites/${name}/meta.json`);
+          if (metaResp.ok) {
+            embeddedMeta = await metaResp.json();
+          }
+        } catch (e) {
+          // No meta available - use empty object
+        }
+      }
+
+      currentSpriteMeta = Object.keys(embeddedMeta).length > 0 ? embeddedMeta : null;
+      currentMeta = currentSpriteMeta;
+
+      // Load voice settings into UI
+      loadSpriteVoiceSettings(currentMeta);
+      updatePanelVisibility();
 
       // Update command bar context
       updateCommandContext();
@@ -9346,10 +9367,17 @@
         return;
       }
 
+      // Embed meta in SVG before saving (for front variant)
+      const variant = currentVariant || 'front';
+      let svgToSave = currentSprite;
+      if (variant === 'front' && currentMeta) {
+        svgToSave = embedMetaInSvg(currentSprite, currentMeta);
+        currentSprite = svgToSave; // Update local state too
+      }
+
       // Try to save via API
       try {
         let response;
-        const variant = currentVariant || 'front';
 
         if (variant === 'front') {
           // Use the main sprite endpoint for front variant
@@ -9357,7 +9385,7 @@
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              svg: currentSprite,
+              svg: svgToSave,
               meta: currentMeta || {}
             })
           });
@@ -9367,7 +9395,7 @@
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              svg: currentSprite
+              svg: svgToSave
             })
           });
         }

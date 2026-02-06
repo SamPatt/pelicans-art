@@ -42,6 +42,40 @@ function hasId(svg, id) {
 }
 
 /**
+ * Validate data-meta attribute in SVG (warning, not error)
+ * Returns { valid: boolean, warnings: string[], meta: Object|null }
+ */
+export function validateDataMeta(svg) {
+  const warnings = [];
+  let meta = null;
+
+  if (!svg || typeof svg !== 'string') {
+    return { valid: true, warnings: ['SVG content is empty'], meta: null };
+  }
+
+  const match = svg.match(/data-meta='([^']*)'/);
+  if (!match) {
+    return { valid: true, warnings: ['No data-meta attribute found'], meta: null };
+  }
+
+  try {
+    meta = JSON.parse(match[1].replace(/&#39;/g, "'"));
+
+    // Check for recommended fields
+    if (!meta.name) {
+      warnings.push('data-meta missing name field');
+    }
+    if (!meta.voice) {
+      warnings.push('data-meta missing voice field');
+    }
+
+    return { valid: true, warnings, meta };
+  } catch (e) {
+    return { valid: false, errors: ['Invalid JSON in data-meta attribute: ' + e.message], meta: null };
+  }
+}
+
+/**
  * Validate sprite SVG structure
  * Returns { valid: boolean, errors: string[], warnings: string[] }
  */

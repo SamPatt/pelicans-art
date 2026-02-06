@@ -4,6 +4,38 @@
 
 import { listBackgrounds, listSprites, listProps } from './storage.js';
 
+/**
+ * Extract metadata from SVG data-meta attribute
+ */
+function extractMetaFromSvgString(svg) {
+  if (!svg || typeof svg !== 'string') return {};
+  const match = svg.match(/data-meta='([^']*)'/);
+  if (match) {
+    try {
+      return JSON.parse(match[1].replace(/&#39;/g, "'"));
+    } catch (e) {
+      console.warn('Failed to parse data-meta:', e.message);
+      return {};
+    }
+  }
+  return {};
+}
+
+/**
+ * Embed metadata into SVG as data-meta attribute
+ */
+function embedMetaInSvgString(svg, meta) {
+  if (!svg || typeof svg !== 'string') return svg;
+  if (!meta || Object.keys(meta).length === 0) return svg;
+
+  const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
+
+  if (svg.includes('data-meta=')) {
+    return svg.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
+  }
+  return svg.replace('<svg', `<svg data-meta='${jsonStr}'`);
+}
+
 // Read config at runtime to ensure .env is loaded
 function getConfig() {
   return {
@@ -47,30 +79,19 @@ STYLE GUIDELINES:
 
 OUTPUT FORMAT - You must respond with valid JSON:
 {
-  "type": "human" or "creature",
-  "svg": "<svg>...</svg>",
-  "meta": {
-    "name": "Character Name",
-    "description": "Brief description of the character",
-    "tags": ["tag1", "tag2"],
-    "voice": {
-      "id": "voice-id",
-      "pitch": 0,
-      "speed": 1,
-      "volume": 1
-    },
-    "colors": {
-      "skin": "#hexcolor",
-      "hair": "#hexcolor",
-      "primary": "#hexcolor"
-    }
-  }
+  "svg": "<svg data-meta='...' viewBox='0 0 100 150'>...</svg>"
 }
 
-TYPE FIELD (optional, for voice hints only):
-- "human": Human characters - helps suggest appropriate voice settings
-- "creature": Non-human characters - helps suggest appropriate voice settings
-Note: The type field does NOT affect emotion animations. Emotions work universally on all sprites regardless of type.
+IMPORTANT: The SVG MUST include a data-meta attribute with embedded JSON containing:
+- name: Character display name
+- description: Brief description
+- tags: Array of descriptive tags
+- voice: { id, pitch, speed, volume }
+
+Example data-meta attribute:
+data-meta='{"name":"Bob","description":"A friendly neighbor","tags":["male","adult"],"voice":{"id":"marius","pitch":0,"speed":1,"volume":1}}'
+
+Note: Escape single quotes in JSON values as &#39;
 
 VOICE OPTIONS (choose one for voice.id):
 - "marius" - male voice
@@ -445,36 +466,39 @@ export async function generateAsset(request) {
     const skit = extractJson(content);
     return { skit };
   } else if (type === 'sprite') {
-    // Sprite returns JSON with type, svg, and meta
+    // Sprite returns JSON with svg (meta embedded in SVG data-meta attribute)
     const parsed = extractJson(content);
     if (!parsed.svg) {
       throw new Error('Sprite response missing svg field');
     }
-    if (!parsed.type || !['human', 'creature'].includes(parsed.type)) {
-      // Default to human if not specified (most sprites are people)
-      parsed.type = 'human';
-    }
     // Extract and validate the SVG
-    const svg = extractSvg(parsed.svg);
+    let svg = extractSvg(parsed.svg);
 
-    // Build meta object from response or defaults
-    const meta = {
-      type: parsed.type,
-      name: parsed.meta?.name || 'Generated Character',
-      description: parsed.meta?.description || '',
-      tags: parsed.meta?.tags || [],
-      voice: parsed.meta?.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 },
-      colors: parsed.meta?.colors || {},
-      defaultVariant: 'front',
-      animation: {
-        blinkInterval: 4,
-        blinkDuration: 150,
-        idleMovement: true,
-        eyeTracking: true
-      }
+    // Try to extract meta from embedded data-meta attribute
+    let meta = extractMetaFromSvgString(svg);
+
+    // Fall back to separate meta object if AI didn't embed it
+    if (Object.keys(meta).length === 0 && parsed.meta) {
+      meta = {
+        name: parsed.meta?.name || 'Generated Character',
+        description: parsed.meta?.description || '',
+        tags: parsed.meta?.tags || [],
+        voice: parsed.meta?.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 }
+      };
+    }
+
+    // Ensure meta has required fields with defaults
+    meta = {
+      name: meta.name || 'Generated Character',
+      description: meta.description || '',
+      tags: meta.tags || [],
+      voice: meta.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 }
     };
 
-    return { svg, spriteType: parsed.type, meta };
+    // Ensure meta is embedded in SVG before returning
+    svg = embedMetaInSvgString(svg, meta);
+
+    return { svg, meta };
   } else {
     // Background returns raw SVG
     const svg = extractSvg(content);

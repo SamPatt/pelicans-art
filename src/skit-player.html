@@ -518,21 +518,37 @@
         el.style.height = `${40 * config.scale}%`;
       }
 
-      // Load sprite metadata to get voice settings
-      let metaVoice = null;
-      try {
-        const metaResp = await fetch(`sprites/${config.sprite}/meta.json?v=${CACHE_BUSTER}`);
-        if (metaResp.ok) {
-          const meta = await metaResp.json();
-          metaVoice = meta.voice || null;
-        }
-      } catch (e) {
-        // Meta not available - that's fine, emotions work without it now
-      }
-
       // Load sprite as inline SVG
       const svgText = await loadSprite(config.sprite, 'front');
       el.innerHTML = svgText;
+
+      // Extract voice settings from embedded data-meta attribute
+      let metaVoice = null;
+      const svgEl = el.querySelector('svg');
+      if (svgEl) {
+        const metaStr = svgEl.getAttribute('data-meta');
+        if (metaStr) {
+          try {
+            const meta = JSON.parse(metaStr.replace(/&#39;/g, "'"));
+            metaVoice = meta.voice || null;
+          } catch (e) {
+            // Invalid JSON - that's fine, use defaults
+          }
+        }
+      }
+
+      // Fall back to meta.json if no embedded metadata
+      if (!metaVoice) {
+        try {
+          const metaResp = await fetch(`sprites/${config.sprite}/meta.json?v=${CACHE_BUSTER}`);
+          if (metaResp.ok) {
+            const meta = await metaResp.json();
+            metaVoice = meta.voice || null;
+          }
+        } catch (e) {
+          // Meta not available - that's fine, use defaults
+        }
+      }
 
       stage.appendChild(el);
 

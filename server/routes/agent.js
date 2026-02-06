@@ -70,8 +70,7 @@ router.post('/generate', async (req, res, next) => {
       // Merge AI-generated meta into existing meta (AI values override)
       const updatedMeta = {
         ...(current.meta || {}),
-        ...(result.meta || {}),
-        type: result.spriteType || current.meta?.type || 'human'
+        ...(result.meta || {})
       };
 
       await saveSprite(current.name, result.svg, updatedMeta);

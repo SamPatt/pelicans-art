@@ -39,6 +39,19 @@ function validateSvg(svg) {
   return null;
 }
 
+function extractMetaFromSvg(svg) {
+  if (!svg || typeof svg !== 'string') return null;
+  const match = svg.match(/data-meta='([^']*)'/);
+  if (match) {
+    try {
+      return JSON.parse(match[1].replace(/&#39;/g, "'"));
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+}
+
 function validateUsername(username) {
   if (!username || typeof username !== 'string') return 'username is required';
   if (!USERNAME_RE.test(username)) return 'username must be 1-30 alphanumeric, hyphen, or underscore characters';
@@ -55,9 +68,14 @@ function validateCharacter(body) {
     const backErr = validateSvg(body.back_svg);
     if (backErr) return 'back_svg: ' + backErr;
   }
-  if (!body.meta || typeof body.meta !== 'object') return 'meta object is required';
-  if (!body.meta.name || typeof body.meta.name !== 'string') return 'meta.name (string) is required';
-  if (!body.meta.type || typeof body.meta.type !== 'string') return 'meta.type (string) is required';
+  // Try to extract meta from embedded data-meta attribute if not provided separately
+  let meta = body.meta;
+  if (!meta || typeof meta !== 'object') {
+    meta = extractMetaFromSvg(body.front_svg);
+  }
+  if (!meta || typeof meta !== 'object') return 'meta object is required (either in body.meta or embedded in SVG data-meta attribute)';
+  if (!meta.name || typeof meta.name !== 'string') return 'meta.name (string) is required';
+  // type is optional for backwards compatibility
   return null;
 }
 
@@ -65,8 +83,13 @@ function validateProp(body) {
   if (!body.svg) return 'svg is required';
   const svgErr = validateSvg(body.svg);
   if (svgErr) return svgErr;
-  if (!body.meta || typeof body.meta !== 'object') return 'meta object is required';
-  if (!body.meta.name || typeof body.meta.name !== 'string') return 'meta.name (string) is required';
+  // Try to extract meta from embedded data-meta attribute if not provided separately
+  let meta = body.meta;
+  if (!meta || typeof meta !== 'object') {
+    meta = extractMetaFromSvg(body.svg);
+  }
+  if (!meta || typeof meta !== 'object') return 'meta object is required (either in body.meta or embedded in SVG data-meta attribute)';
+  if (!meta.name || typeof meta.name !== 'string') return 'meta.name (string) is required';
   return null;
 }
 
@@ -138,19 +161,25 @@ function validateVoice(body) {
 // === Store files per category ===
 
 async function storeCharacter(bucket, slug, body, meta) {
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: body.meta.name, category: 'characters' };
+  // Use provided meta or extract from SVG
+  const charMeta = body.meta || extractMetaFromSvg(body.front_svg) || {};
+  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: charMeta.name, category: 'characters' };
   await bucket.put(`characters/${slug}/front.svg`, body.front_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
   if (body.back_svg) {
     await bucket.put(`characters/${slug}/back.svg`, body.back_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
   }
-  await bucket.put(`characters/${slug}/meta.json`, JSON.stringify(body.meta, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
+  // Store meta.json for backwards compatibility
+  await bucket.put(`characters/${slug}/meta.json`, JSON.stringify(charMeta, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
   return { slug, files: ['front.svg', body.back_svg ? 'back.svg' : null, 'meta.json'].filter(Boolean) };
 }
 
 async function storeProp(bucket, slug, body) {
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: body.meta.name, category: 'props' };
+  // Use provided meta or extract from SVG
+  const propMeta = body.meta || extractMetaFromSvg(body.svg) || {};
+  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: propMeta.name, category: 'props' };
   await bucket.put(`props/${slug}/prop.svg`, body.svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
-  await bucket.put(`props/${slug}/meta.json`, JSON.stringify(body.meta, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
+  // Store meta.json for backwards compatibility
+  await bucket.put(`props/${slug}/meta.json`, JSON.stringify(propMeta, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
   return { slug, files: ['prop.svg', 'meta.json'] };
 }
 
