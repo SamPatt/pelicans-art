@@ -3579,12 +3579,16 @@
     let currentAudioPreview = null;
 
     // === HELPER FUNCTIONS FOR SVG METADATA ===
+    // Handles both single and double quoted attributes (DOM serialization uses double quotes)
     function extractMetaFromSvg(svgText) {
       if (!svgText || typeof svgText !== 'string') return {};
-      const match = svgText.match(/data-meta='([^']*)'/);
+      // Match both single-quoted and double-quoted attributes
+      const match = svgText.match(/data-meta=["']([^"']*)["']/);
       if (match) {
         try {
-          return JSON.parse(match[1].replace(/&#39;/g, "'"));
+          // Unescape both &#39; (single quote) and &quot; (double quote)
+          const unescaped = match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+          return JSON.parse(unescaped);
         } catch (e) {
           console.warn('Failed to parse data-meta:', e.message);
           return {};
@@ -3593,14 +3597,17 @@
       return {};
     }
 
+    // Uses single quotes for the attribute to avoid conflicts with JSON double quotes
     function embedMetaInSvg(svgText, meta) {
       if (!svgText || typeof svgText !== 'string') return svgText;
       if (!meta || Object.keys(meta).length === 0) return svgText;
 
+      // Escape single quotes in JSON for single-quoted attribute
       const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
 
-      if (svgText.includes('data-meta=')) {
-        return svgText.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
+      // Match both single-quoted and double-quoted existing attributes
+      if (/data-meta=["']/.test(svgText)) {
+        return svgText.replace(/data-meta=["'][^"']*["']/, `data-meta='${jsonStr}'`);
       }
       return svgText.replace('<svg', `<svg data-meta='${jsonStr}'`);
     }

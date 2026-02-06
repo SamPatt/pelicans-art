@@ -10,15 +10,19 @@ let PROPS_DIR = './src/props';
 
 /**
  * Extract metadata from SVG data-meta attribute
+ * Handles both single and double quoted attributes (DOM serialization uses double quotes)
  * @param {string} svg - SVG content
  * @returns {Object} Parsed metadata or empty object
  */
 export function extractMetaFromSvg(svg) {
   if (!svg || typeof svg !== 'string') return {};
-  const match = svg.match(/data-meta='([^']*)'/);
+  // Match both single-quoted and double-quoted attributes
+  const match = svg.match(/data-meta=["']([^"']*)["']/);
   if (match) {
     try {
-      return JSON.parse(match[1].replace(/&#39;/g, "'"));
+      // Unescape both &#39; (single quote) and &quot; (double quote)
+      const unescaped = match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+      return JSON.parse(unescaped);
     } catch (e) {
       console.warn('Failed to parse data-meta:', e.message);
       return {};
@@ -29,6 +33,7 @@ export function extractMetaFromSvg(svg) {
 
 /**
  * Embed metadata into SVG as data-meta attribute
+ * Uses single quotes for the attribute to avoid conflicts with JSON double quotes
  * @param {string} svg - SVG content
  * @param {Object} meta - Metadata to embed
  * @returns {string} SVG with embedded metadata
@@ -37,11 +42,12 @@ export function embedMetaInSvg(svg, meta) {
   if (!svg || typeof svg !== 'string') return svg;
   if (!meta || Object.keys(meta).length === 0) return svg;
 
+  // Escape single quotes in JSON for single-quoted attribute
   const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
 
-  if (svg.includes('data-meta=')) {
-    // Replace existing data-meta attribute
-    return svg.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
+  // Match both single-quoted and double-quoted existing attributes
+  if (/data-meta=["']/.test(svg)) {
+    return svg.replace(/data-meta=["'][^"']*["']/, `data-meta='${jsonStr}'`);
   }
   // Insert data-meta after <svg
   return svg.replace('<svg', `<svg data-meta='${jsonStr}'`);

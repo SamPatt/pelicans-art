@@ -529,7 +529,9 @@
         const metaStr = svgEl.getAttribute('data-meta');
         if (metaStr) {
           try {
-            const meta = JSON.parse(metaStr.replace(/&#39;/g, "'"));
+            // Unescape both &#39; and &quot; (defensive - getAttribute usually decodes these)
+            const unescaped = metaStr.replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+            const meta = JSON.parse(unescaped);
             metaVoice = meta.voice || null;
           } catch (e) {
             // Invalid JSON - that's fine, use defaults
@@ -722,6 +724,22 @@
     // === PROP SYSTEM ===
     const propMetaCache = new Map();
 
+    // Helper to extract meta from SVG data-meta attribute
+    // Handles both single and double quoted attributes (DOM serialization uses double quotes)
+    function extractMetaFromSvg(svgText) {
+      if (!svgText || typeof svgText !== 'string') return null;
+      const match = svgText.match(/data-meta=["']([^"']*)["']/);
+      if (match) {
+        try {
+          const unescaped = match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"');
+          return JSON.parse(unescaped);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
+
     async function loadPropMeta(propName) {
       if (propMetaCache.has(propName)) {
         return propMetaCache.get(propName);
@@ -732,6 +750,25 @@
         propMetaCache.set(propName, meta);
         return meta;
       }
+
+      // Try to extract meta from SVG data-meta attribute first
+      try {
+        const svgText = await loadPropSvg(propName);
+        const embeddedMeta = extractMetaFromSvg(svgText);
+        if (embeddedMeta && (embeddedMeta.holdOffset || embeddedMeta.defaultScale)) {
+          const meta = {
+            holdOffset: embeddedMeta.holdOffset || [0, 0],
+            defaultScale: embeddedMeta.defaultScale || 1,
+            ...embeddedMeta
+          };
+          propMetaCache.set(propName, meta);
+          return meta;
+        }
+      } catch (e) {
+        // SVG load failed, try meta.json
+      }
+
+      // Fall back to meta.json
       const metaPath = `props/${propName}/meta.json?v=${CACHE_BUSTER}`;
       try {
         const response = await fetch(metaPath);
