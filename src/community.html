@@ -97,6 +97,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
     }
 
     .asset-card:hover {
@@ -160,6 +161,37 @@
       text-transform: capitalize;
     }
 
+    .card-play-overlay {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      background: rgba(233, 69, 96, 0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s;
+      z-index: 2;
+    }
+
+    .card-play-overlay:hover {
+      background: rgba(214, 53, 80, 1);
+    }
+
+    .card-play-overlay::after {
+      content: '';
+      display: block;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 6px 0 6px 10px;
+      border-color: transparent transparent transparent #fff;
+      margin-left: 2px;
+    }
+
     /* Detail panel */
     .detail-panel {
       display: none;
@@ -174,14 +206,15 @@
 
     .detail-header {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
+      gap: 8px;
       margin-bottom: 16px;
     }
 
     .detail-header h2 {
       color: #4ecca3;
       font-size: 1.2em;
+      flex: 1;
     }
 
     .detail-close {
@@ -195,6 +228,20 @@
     }
 
     .detail-close:hover { border-color: #e94560; color: #e94560; }
+
+    .detail-header-play {
+      background: #e94560;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 0.85em;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .detail-header-play:hover { background: #d63550; }
 
     .detail-preview {
       background: #0d0d1a;
@@ -740,6 +787,18 @@
       card.appendChild(name);
       card.appendChild(meta);
 
+      if (itemCat === 'published') {
+        const playOverlay = document.createElement('div');
+        playOverlay.className = 'card-play-overlay';
+        playOverlay.title = 'Play skit';
+        playOverlay.onclick = (e) => {
+          e.stopPropagation();
+          const dataUrl = `${API_URL}/published/${item.slug}/data.json`;
+          window.open(`/player?url=${encodeURIComponent(dataUrl)}`, '_blank');
+        };
+        card.appendChild(playOverlay);
+      }
+
       if (currentCategory === 'all' && item._category) {
         const CATEGORY_LABELS = { skits: 'Scripts', published: 'Skits' };
         const badge = document.createElement('div');
@@ -763,9 +822,9 @@
     const matchedItem = currentItems.find(it => it.slug === slug);
     const detailCategory = matchedItem?._category || currentCategory;
 
-    // Update URL
+    // Update URL with the actual category (not "all") so copy link works correctly
     const url = new URL(window.location);
-    url.searchParams.set('type', currentCategory);
+    url.searchParams.set('type', detailCategory);
     url.searchParams.set('id', slug);
     history.replaceState(null, '', url);
 
@@ -778,6 +837,11 @@
     title.textContent = 'Loading...';
     content.innerHTML = '<div class="loading">Loading</div>';
 
+    // Remove any previous play button from header
+    const header = document.querySelector('.detail-header');
+    const oldPlayBtn = header.querySelector('.detail-header-play');
+    if (oldPlayBtn) oldPlayBtn.remove();
+
     try {
       // Get metadata
       const metaResp = await fetch(`${API_URL}/${detailCategory}/${slug}`);
@@ -785,6 +849,16 @@
       const meta = await metaResp.json();
 
       title.textContent = meta.name || slug;
+
+      // Add play button to header for published skits
+      if (detailCategory === 'published') {
+        const playBtn = document.createElement('button');
+        playBtn.className = 'detail-header-play';
+        playBtn.innerHTML = '&#9654; Play';
+        const dataUrl = `${API_URL}/published/${slug}/data.json`;
+        playBtn.onclick = () => window.open(`/player?url=${encodeURIComponent(dataUrl)}`, '_blank');
+        header.insertBefore(playBtn, header.querySelector('.detail-close'));
+      }
 
       // Build detail content per category
       switch (detailCategory) {
@@ -976,9 +1050,6 @@
         }
 
         html += renderScriptActions(pub.script);
-
-        // Play button opens in skit player
-        html += `<div style="text-align:center;color:#555;font-size:0.8em;margin-bottom:16px;">Full playback coming soon</div>`;
       }
     } catch (e) {}
 
