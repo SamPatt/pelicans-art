@@ -262,7 +262,7 @@ AVAILABLE ACTIONS:
 - look: eye direction (who + at: left/right/up/down/audience)
 
 AVAILABLE EMOTIONS:
-neutral, happy, sad, angry, surprised, excited, worried, smug, tired, scared, thinking, confused
+neutral, happy, sad, angry, worried, skeptical, tired, smug, dead, surprised, excited
 
 OFFSET TIMING (for interruptions and overlapping dialogue):
 - Add "offset" to any action (negative number in seconds)

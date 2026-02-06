@@ -536,6 +536,12 @@
 
       stage.appendChild(el);
 
+      // Create mouth group for unified mouth positioning
+      const svg = el.querySelector('svg');
+      if (svg) {
+        createMouthGroup(svg);
+      }
+
       // Use meta.json voice settings exclusively (voice is per-character, not per-skit)
       const voiceId = metaVoice?.id || DEFAULT_VOICE;
       const voiceVolume = metaVoice?.volume !== undefined ? metaVoice.volume : 1.0;
@@ -556,7 +562,8 @@
         pitch: voicePitch,
         scale: config.scale || 1,
         el: el,
-        originalFaceValues: originalFaceValues
+        originalFaceValues: originalFaceValues,
+        currentEmotion: 'neutral'
       };
 
       // Auto-face character toward center (left characters face right, right face left)
@@ -1140,24 +1147,161 @@
         browY: 0, browRotateL: 0, browRotateR: 0,
         mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 0.7,
         xEyes: true, useMouthOpen: true
-      },
-      scared: {
-        eyeRyRatio: 1.3, eyeCyDelta: -1, pupilRyRatio: 1.2, pupilCyDelta: -1,
-        browY: -3, browRotateL: -8, browRotateR: 8,
-        mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 0.75,
-        useMouthOpen: true
-      },
-      thinking: {
-        eyeRyRatio: 0.9, eyeCyDelta: -1, pupilRyRatio: 0.9, pupilCyDelta: -1,
-        browY: -1, browRotateL: -8, browRotateR: 3,
-        mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 0.9
-      },
-      confused: {
-        eyeRyRatio: 1.1, eyeCyDelta: 0, pupilRyRatio: 1.0, pupilCyDelta: 0,
-        browY: -1, browRotateL: 10, browRotateR: -5,
-        mouthY: 1, mouthScaleY: 0.9, mouthScaleX: 0.8
       }
     };
+
+    // === MOUTH GROUP SYSTEM ===
+    // All mouth shapes at origin (0,0), positioned by group transform
+    const MOUTH_SHAPES = {
+      neutral:  { type: 'path', d: 'M-5 0 Q0 1 5 0', strokeWidth: 1.5 },
+      smile:    { type: 'path', d: 'M-6 -1 Q0 5 6 -1', strokeWidth: 1.5 },
+      bigsmile: { type: 'path', d: 'M-7 -2 Q0 6 7 -2', strokeWidth: 1.5 },
+      frown:    { type: 'path', d: 'M-5 2 Q0 -2 5 2', strokeWidth: 1.5 },
+      grimace:  { type: 'path', d: 'M-5 0 L5 0', strokeWidth: 2.5 },
+      worried:  { type: 'path', d: 'M-5 1 Q-2 -1 0 1 Q2 3 5 1', strokeWidth: 1.5 },
+      flat:     { type: 'path', d: 'M-4 0 L4 0', strokeWidth: 1.5 },
+      tired:    { type: 'path', d: 'M-4 1 Q0 -1 4 1', strokeWidth: 1.5 },
+      smirk:    { type: 'path', d: 'M-2 0 Q2 3 6 -1', strokeWidth: 1.5 },
+      open:     { type: 'ellipse', rx: 4, ry: 1 }
+    };
+
+    const EMOTION_MOUTH_MAP = {
+      neutral: 'neutral',
+      happy: 'smile',
+      sad: 'frown',
+      angry: 'grimace',
+      worried: 'worried',
+      skeptical: 'flat',
+      tired: 'tired',
+      smug: 'smirk',
+      dead: 'open',
+      surprised: 'open',
+      excited: 'bigsmile'
+    };
+
+    // Create mouth group for a sprite, positioning all shapes at a single point
+    function createMouthGroup(svg) {
+      if (!svg) return null;
+      if (svg.querySelector('#mouth-group')) return svg.querySelector('#mouth-group');
+
+      const mouthOpen = svg.querySelector('#mouth-open');
+      const mouthClosed = svg.querySelector('#mouth-closed');
+
+      // Get position from mouth-open (preferred) or mouth-closed
+      let cx = 50, cy = 70;
+      if (mouthOpen) {
+        cx = parseFloat(mouthOpen.getAttribute('cx') || 50);
+        cy = parseFloat(mouthOpen.getAttribute('cy') || 70);
+      } else if (mouthClosed) {
+        const d = mouthClosed.getAttribute('d');
+        if (d) {
+          const center = getPathCenter(d);
+          cx = center.cx;
+          cy = center.cy;
+        }
+      }
+
+      // Get stroke color from existing mouth
+      const strokeColor = mouthClosed?.getAttribute('stroke') || '#8d6e63';
+
+      // Create mouth group
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      group.id = 'mouth-group';
+      group.setAttribute('transform', `translate(${cx}, ${cy})`);
+
+      // Add all mouth shapes at origin
+      for (const [name, shape] of Object.entries(MOUTH_SHAPES)) {
+        let el;
+        if (shape.type === 'path') {
+          el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          el.setAttribute('d', shape.d);
+          el.setAttribute('stroke', strokeColor);
+          el.setAttribute('stroke-width', shape.strokeWidth);
+          el.setAttribute('fill', 'none');
+          el.setAttribute('stroke-linecap', 'round');
+        } else if (shape.type === 'ellipse') {
+          el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+          el.setAttribute('cx', '0');
+          el.setAttribute('cy', '0');
+          el.setAttribute('rx', shape.rx);
+          el.setAttribute('ry', shape.ry);
+          el.setAttribute('fill', '#4a1a1a');
+        }
+        el.id = `mouth-${name}`;
+        el.setAttribute('opacity', name === 'neutral' ? '1' : '0');
+        group.appendChild(el);
+      }
+
+      // Insert into SVG (in head-bottom if present)
+      const headBottom = svg.querySelector('#head-bottom');
+      if (headBottom) {
+        headBottom.appendChild(group);
+      } else {
+        svg.appendChild(group);
+      }
+
+      // Hide original mouth elements
+      if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
+      if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+
+      return group;
+    }
+
+    // Apply mouth shape for an emotion using the mouth group
+    function applyMouthEmotion(svg, emotion) {
+      const group = svg.querySelector('#mouth-group');
+      if (!group) return;
+
+      const shapeName = EMOTION_MOUTH_MAP[emotion] || 'neutral';
+
+      // Hide all mouth shapes in group
+      group.querySelectorAll('[id^="mouth-"]').forEach(el => {
+        el.setAttribute('opacity', '0');
+      });
+
+      // Show the correct shape
+      const shape = group.querySelector(`#mouth-${shapeName}`);
+      if (shape) {
+        shape.setAttribute('opacity', '1');
+
+        // For open mouth emotions, adjust the size
+        if (shapeName === 'open') {
+          if (emotion === 'dead') {
+            shape.setAttribute('ry', '3');
+            shape.setAttribute('rx', '4');
+          } else if (emotion === 'surprised') {
+            shape.setAttribute('ry', '4');
+            shape.setAttribute('rx', '5');
+          }
+        }
+      }
+    }
+
+    // Animate mouth for speaking using the mouth group
+    function animateMouthForSpeaking(svg, amplitude) {
+      const group = svg.querySelector('#mouth-group');
+      if (!group) return;
+
+      const mouthOpen = group.querySelector('#mouth-open');
+      if (!mouthOpen) return;
+
+      // Hide all other mouth shapes, show mouth-open
+      group.querySelectorAll('[id^="mouth-"]').forEach(el => {
+        if (el !== mouthOpen) el.setAttribute('opacity', '0');
+      });
+
+      // Scale ry based on amplitude (1 = nearly closed, 4 = wide open)
+      const ry = Math.max(1, Math.min(4, amplitude));
+      const rx = 3 + (amplitude - 1) * 0.5;
+      mouthOpen.setAttribute('ry', ry.toFixed(1));
+      mouthOpen.setAttribute('rx', rx.toFixed(1));
+      mouthOpen.setAttribute('opacity', '1');
+    }
+
+    // Reset mouth after speaking to show the emotion's mouth shape
+    function resetMouthAfterSpeaking(svg, emotion = 'neutral') {
+      applyMouthEmotion(svg, emotion);
+    }
 
     // Get center point of a path for rotation pivot
     // Handles negative numbers and filters out arc flags
@@ -1299,7 +1443,6 @@
             }
             break;
           case 'surprised':
-          case 'scared':
             if (faceUpper) faceUpper.style.transform = 'scaleY(1.03) translateY(-2px)';
             if (headBottom) headBottom.style.transform = 'rotate(12deg)';
             if (mouthOpen) {
@@ -1307,9 +1450,6 @@
               mouthOpen.setAttribute('rx', '10');
               mouthOpen.setAttribute('opacity', '1');
             }
-            break;
-          case 'thinking':
-            if (headTop) headTop.style.transform = 'rotate(-2deg)';
             break;
           case 'smug':
             if (faceUpper) faceUpper.style.transform = 'scaleY(0.96)';
@@ -1338,9 +1478,6 @@
       const eyeRightPupil = el.querySelector('#eye-right-pupil');
       const browLeft = el.querySelector('#brow-left');
       const browRight = el.querySelector('#brow-right');
-      const mouthClosed = el.querySelector('#mouth-closed');
-      const mouthOpen = el.querySelector('#mouth-open');
-      const mouthSmile = el.querySelector('#mouth-smile');
       const highlightLeft = el.querySelector('#eye-left-highlight');
       const highlightRight = el.querySelector('#eye-right-highlight');
 
@@ -1393,34 +1530,11 @@
           `translate(0, ${cfg.browY}) rotate(${cfg.browRotateR}, ${cx}, ${cy})`);
       }
 
-      // Apply mouth - check for alternate mouth elements first
-      if (cfg.useMouthOpen && mouthOpen) {
-        // Use mouth-open element (scale it up)
-        if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
-        if (mouthSmile) mouthSmile.setAttribute('opacity', '0');
-        mouthOpen.setAttribute('opacity', '1');
-        mouthOpen.setAttribute('ry', orig.mouthOpenRy * cfg.mouthScaleY);
-        mouthOpen.setAttribute('rx', orig.mouthOpenRx * cfg.mouthScaleX);
-      } else if (emotion === 'happy' && mouthSmile) {
-        // Use smile mouth if available
-        if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
-        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
-        mouthSmile.setAttribute('opacity', '1');
-      } else if (mouthClosed && orig.mouthD) {
-        // Transform the closed mouth
-        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
-        if (mouthSmile) mouthSmile.setAttribute('opacity', '0');
-        mouthClosed.setAttribute('opacity', '1');
-        mouthClosed.setAttribute('d', orig.mouthD);
-        const { cx, cy } = orig.mouthCenter;
-        const mouthRotate = cfg.mouthRotate || 0;
-        const mouthX = cfg.mouthX || 0;
-        mouthClosed.setAttribute('transform',
-          `translate(${mouthX}, ${cfg.mouthY}) translate(${cx}, ${cy}) rotate(${mouthRotate}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
-        // Reset fill/stroke to captured originals
-        mouthClosed.setAttribute('fill', 'none');
-        mouthClosed.setAttribute('stroke', orig.mouthStroke);
-      }
+      // Apply mouth using mouth group system
+      applyMouthEmotion(svg, emotion);
+
+      // Store current emotion on character for speaking animation reset
+      char.currentEmotion = emotion;
 
       // Handle X eyes for dead emotion
       if (cfg.xEyes) {
@@ -2214,11 +2328,12 @@
       document.getElementById('caption').classList.remove('visible');
       Object.values(characters).forEach(c => {
         c.el.classList.remove('speaking', 'look-left', 'look-right', 'look-up', 'look-down', 'blinking');
-        // Reset mouth state
-        const mouthOpen = c.el.querySelector('#mouth-open');
-        const mouthClosed = c.el.querySelector('#mouth-closed');
-        if (mouthOpen) { mouthOpen.setAttribute('opacity', '0'); mouthOpen.setAttribute('ry', '3'); }
-        if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+        // Reset mouth state using mouth group
+        const svg = c.el.querySelector('svg');
+        if (svg) {
+          resetMouthAfterSpeaking(svg, 'neutral');
+          c.currentEmotion = 'neutral';
+        }
       });
       audioCache.forEach((cached) => { 
         if (cached.audio) {
@@ -2383,31 +2498,53 @@
             }
           }
         } else {
-          // Regular sprite: use SVG mouth elements
-          const mouthOpen = charEl.querySelector('#mouth-open');
-          const mouthClosed = charEl.querySelector('#mouth-closed');
-          
-          if (mouthOpen && mouthClosed) {
+          // Regular sprite: use mouth group system
+          const svg = charEl.querySelector('svg');
+          const mouthGroup = svg?.querySelector('#mouth-group');
+
+          if (mouthGroup) {
             if (isOpen) {
               openDuration++;
-              
+
               // Scale mouth opening based on amplitude
               const mouthScale = 1 + (normalizedAmp - threshold) * 4;
-              const mouthRy = Math.min(4, Math.max(1, mouthScale));
-              const mouthRx = 3 + (normalizedAmp - threshold) * 2;
-              
-              mouthOpen.setAttribute('ry', mouthRy.toFixed(1));
-              mouthOpen.setAttribute('rx', mouthRx.toFixed(1));
-              mouthOpen.setAttribute('opacity', '1');
-              mouthClosed.setAttribute('opacity', '0');
+              const amplitude = Math.min(4, Math.max(1, mouthScale));
+
+              animateMouthForSpeaking(svg, amplitude);
               charEl.classList.add('speaking');
             } else {
               openDuration = 0;
-              mouthOpen.setAttribute('ry', '1');
-              mouthOpen.setAttribute('rx', '2');
-              mouthOpen.setAttribute('opacity', '0');
-              mouthClosed.setAttribute('opacity', '1');
+              // Reset to character's current emotion mouth shape
+              const char = characters[currentSpeaker];
+              const emotion = char?.currentEmotion || 'neutral';
+              resetMouthAfterSpeaking(svg, emotion);
               charEl.classList.remove('speaking');
+            }
+          } else {
+            // Fallback for sprites without mouth group (legacy)
+            const mouthOpen = charEl.querySelector('#mouth-open');
+            const mouthClosed = charEl.querySelector('#mouth-closed');
+
+            if (mouthOpen && mouthClosed) {
+              if (isOpen) {
+                openDuration++;
+                const mouthScale = 1 + (normalizedAmp - threshold) * 4;
+                const mouthRy = Math.min(4, Math.max(1, mouthScale));
+                const mouthRx = 3 + (normalizedAmp - threshold) * 2;
+
+                mouthOpen.setAttribute('ry', mouthRy.toFixed(1));
+                mouthOpen.setAttribute('rx', mouthRx.toFixed(1));
+                mouthOpen.setAttribute('opacity', '1');
+                mouthClosed.setAttribute('opacity', '0');
+                charEl.classList.add('speaking');
+              } else {
+                openDuration = 0;
+                mouthOpen.setAttribute('ry', '1');
+                mouthOpen.setAttribute('rx', '2');
+                mouthOpen.setAttribute('opacity', '0');
+                mouthClosed.setAttribute('opacity', '1');
+                charEl.classList.remove('speaking');
+              }
             }
           }
         }
@@ -2459,16 +2596,15 @@
               const isInterrupted = sequentialMode && scheduledAdvanceIndices.has(beatIndex);
               const shouldClear = currentSpeaker === beat.who;
               const charEl = characters[beat.who]?.el;
+              const char = characters[beat.who];
               if (charEl && shouldClear) {
                 charEl.classList.remove('speaking');
-                const mouthOpen = charEl.querySelector('#mouth-open');
-                const mouthClosed = charEl.querySelector('#mouth-closed');
-                if (mouthOpen) {
-                  mouthOpen.setAttribute('ry', '1');
-                  mouthOpen.setAttribute('rx', '2');
+                const svg = charEl.querySelector('svg');
+                if (svg) {
+                  // Reset mouth to character's current emotion
+                  const emotion = char?.currentEmotion || 'neutral';
                   setTimeout(() => {
-                    mouthOpen.setAttribute('opacity', '0');
-                    if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+                    resetMouthAfterSpeaking(svg, emotion);
                   }, 100);
                 }
               }
