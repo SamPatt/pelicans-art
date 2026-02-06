@@ -87,7 +87,7 @@ router.get('/:name', async (req, res, next) => {
 
 /**
  * GET /api/voice/:name/file
- * Serve the safetensors file for a voice
+ * Serve the safetensors file for a voice (legacy endpoint)
  */
 router.get('/:name/file', async (req, res, next) => {
   try {
@@ -106,6 +106,63 @@ router.get('/:name/file', async (req, res, next) => {
     res.setHeader('Content-Disposition', `attachment; filename="${name}.safetensors"`);
 
     const stream = createReadStream(filePath);
+    stream.pipe(res);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/voice/:name/voice.safetensors
+ * Serve the safetensors file with .safetensors extension in URL
+ * (pocket-tts checks URL extension to determine file type)
+ */
+router.get('/:name/voice.safetensors', async (req, res, next) => {
+  try {
+    const name = req.params.name;
+    const validation = validateVoiceName(name);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
+    const filePath = getVoicePath(name);
+
+    if (!await voiceFileExists(name)) {
+      return res.status(404).json({ error: true, message: 'Voice file not found' });
+    }
+
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', `attachment; filename="${name}.safetensors"`);
+
+    const stream = createReadStream(filePath);
+    stream.pipe(res);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/voice/:name/wav
+ * Serve the cleaned WAV file for direct TTS
+ */
+router.get('/:name/wav', async (req, res, next) => {
+  try {
+    const name = req.params.name;
+    const validation = validateVoiceName(name);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
+    const wavPath = path.join(getVoicesDir(), `${name}.wav`);
+
+    try {
+      await fs.access(wavPath);
+    } catch {
+      return res.status(404).json({ error: true, message: 'WAV file not found' });
+    }
+
+    res.setHeader('Content-Type', 'audio/wav');
+    res.setHeader('Content-Disposition', `attachment; filename="${name}.wav"`);
+
+    const stream = createReadStream(wavPath);
     stream.pipe(res);
   } catch (err) {
     next(err);
@@ -173,12 +230,11 @@ router.post('/process', async (req, res, next) => {
       return res.status(400).json({ error: true, message: validation.error });
     }
 
-    // Check if voice already exists
-    try {
-      await getVoice(safeName);
-      return res.status(409).json({ error: true, message: 'Voice with this name already exists' });
-    } catch (e) {
-      // Voice doesn't exist, good to proceed
+    // If voice already exists, we'll overwrite it
+    // Delete existing file if present (orphaned or from previous save)
+    if (await voiceFileExists(safeName)) {
+      const existingPath = getVoicePath(safeName);
+      await fs.unlink(existingPath).catch(() => {});
     }
 
     // Decode base64 audio - handle various data URL formats
@@ -198,20 +254,32 @@ router.post('/process', async (req, res, next) => {
 
       // Trim and process with ffmpeg
       const trimStart = start || 0;
-      const duration = (end || 15) - trimStart;
+      const duration = (end || 10) - trimStart;
 
       await runFfmpeg([
         '-i', tempInputPath,
         '-ss', String(trimStart),
-        '-t', String(Math.min(duration, 15)), // Max 15 seconds
-        '-af', 'loudnorm,highpass=f=80,lowpass=f=8000',
+        '-t', String(Math.min(duration, 10)), // Max 30 seconds
+        '-af', [
+          'aformat=channel_layouts=mono',
+          'aresample=24000',
+          'highpass=f=80',
+          'lowpass=f=8000',
+          'loudnorm=I=-16:TP=-1.5:LRA=11',
+          'alimiter=limit=0.95'
+        ].join(','),
         '-ar', '24000',
         '-ac', '1',
+        '-c:a', 'pcm_s16le',
         '-y',
         tempTrimmedPath
       ]);
 
-      // Run pocket-tts export-voice
+      // Keep the cleaned WAV for direct TTS comparison
+      const cleanWavPath = path.join(voicesDir, `${safeName}.wav`);
+      await fs.copyFile(tempTrimmedPath, cleanWavPath);
+
+      // Run pocket-tts export-voice to create safetensors
       await runPocketTtsExport(tempTrimmedPath, outputPath);
 
       // Save voice metadata
@@ -227,11 +295,12 @@ router.post('/process', async (req, res, next) => {
       res.json({
         name: safeName,
         displayName: displayName || name,
-        url: voiceUrl
+        url: voiceUrl,
+        wavUrl: `/api/voice/${safeName}/wav`
       });
 
     } finally {
-      // Cleanup temp files
+      // Cleanup temp files (but keep the cleaned WAV and safetensors)
       try { await fs.unlink(tempInputPath); } catch (e) {}
       try { await fs.unlink(tempTrimmedPath); } catch (e) {}
     }
@@ -260,20 +329,41 @@ router.post('/preview', async (req, res, next) => {
       return res.status(400).json({ error: true, message: 'Text is required' });
     }
 
-    // Determine voice URL
+    // Determine voice type and how to send to TTS
+    let useWavUpload = false;
     let voiceUrl = voice;
+    let wavPath = null;
+
     if (!voice.startsWith('http') && !voice.startsWith('/')) {
       // It's a voice name - validate to prevent path traversal
       const validation = validateVoiceName(voice);
       if (!validation.valid) {
         return res.status(400).json({ error: true, message: validation.error });
       }
-      const filePath = getVoicePath(voice);
-      if (!await voiceFileExists(voice)) {
+
+      // Check which file type exists
+      const voicesDir = getVoicesDir();
+      const safetensorsExists = await voiceFileExists(voice);
+      wavPath = path.join(voicesDir, `${voice}.wav`);
+      let wavExists = false;
+      try {
+        await fs.access(wavPath);
+        wavExists = true;
+      } catch {}
+
+      if (!safetensorsExists && !wavExists) {
         return res.status(404).json({ error: true, message: 'Voice not found' });
       }
-      // Use file:// URL for local TTS server
-      voiceUrl = `file://${filePath}`;
+
+      // Prefer WAV if it exists (user chose it as winner), otherwise use safetensors
+      if (wavExists) {
+        useWavUpload = true;
+      } else {
+        // Construct HTTP URL for the safetensors file
+        const host = req.get('host') || 'localhost:3000';
+        const protocol = req.protocol || 'http';
+        voiceUrl = `${protocol}://${host}/api/voice/${voice}/voice.safetensors`;
+      }
     }
 
     // Add small pause prefix to prevent TTS cutoff
@@ -281,7 +371,17 @@ router.post('/preview', async (req, res, next) => {
 
     const formData = new FormData();
     formData.append('text', paddedText);
-    formData.append('voice_url', voiceUrl);
+
+    // Use WAV upload if available, otherwise use URL
+    if (useWavUpload && wavPath) {
+      const wavBuffer = await fs.readFile(wavPath);
+      formData.append('voice_wav', wavBuffer, {
+        filename: `${voice}.wav`,
+        contentType: 'audio/wav'
+      });
+    } else {
+      formData.append('voice_url', voiceUrl);
+    }
 
     const response = await fetch(`${TTS_URL}/tts`, {
       method: 'POST',
@@ -308,6 +408,187 @@ router.post('/preview', async (req, res, next) => {
         message: 'TTS service unavailable'
       });
     }
+    next(err);
+  }
+});
+
+/**
+ * POST /api/voice/preview-wav
+ * Generate TTS preview using direct WAV upload (bypasses safetensors)
+ *
+ * Body: { voice: string (name), text: string }
+ * Returns: audio/wav
+ */
+router.post('/preview-wav', async (req, res, next) => {
+  try {
+    const { voice, text } = req.body;
+
+    if (!voice) {
+      return res.status(400).json({ error: true, message: 'Voice is required' });
+    }
+
+    if (!text) {
+      return res.status(400).json({ error: true, message: 'Text is required' });
+    }
+
+    // Validate voice name
+    const validation = validateVoiceName(voice);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
+
+    // Check if WAV file exists
+    const wavPath = path.join(getVoicesDir(), `${voice}.wav`);
+    try {
+      await fs.access(wavPath);
+    } catch {
+      return res.status(404).json({ error: true, message: 'WAV file not found for this voice' });
+    }
+
+    // Add small pause prefix to prevent TTS cutoff
+    const paddedText = ', ' + text;
+
+    // Read WAV file and send as multipart upload
+    const wavBuffer = await fs.readFile(wavPath);
+
+    const formData = new FormData();
+    formData.append('text', paddedText);
+    formData.append('voice_wav', wavBuffer, {
+      filename: `${voice}.wav`,
+      contentType: 'audio/wav'
+    });
+
+    const response = await fetch(`${TTS_URL}/tts`, {
+      method: 'POST',
+      body: formData,
+      headers: formData.getHeaders()
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('TTS preview-wav error:', response.status, errorText);
+      return res.status(502).json({
+        error: true,
+        message: `TTS service error: ${response.status}`
+      });
+    }
+
+    res.set('Content-Type', 'audio/wav');
+    response.body.pipe(res);
+  } catch (err) {
+    console.error('Voice preview-wav error:', err);
+    if (err.code === 'ECONNREFUSED') {
+      return res.status(503).json({
+        error: true,
+        message: 'TTS service unavailable'
+      });
+    }
+    next(err);
+  }
+});
+
+/**
+ * POST /api/voice/import
+ * Import a voice file (WAV or safetensors) from community
+ *
+ * Body: { name: string, displayName: string, fileType: 'wav'|'safetensors', data: base64 }
+ */
+router.post('/import', async (req, res, next) => {
+  try {
+    const { name, displayName, fileType, data } = req.body;
+
+    if (!name || !data || !fileType) {
+      return res.status(400).json({ error: true, message: 'name, fileType, and data are required' });
+    }
+
+    // Sanitize name
+    const safeName = name.toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^[^a-z0-9]+/, '')
+      .replace(/[^a-z0-9]+$/, '');
+
+    const validation = validateVoiceName(safeName);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
+
+    // Decode base64
+    const buffer = Buffer.from(data, 'base64');
+    const voicesDir = getVoicesDir();
+
+    // Save only the file that was on community - don't auto-convert
+    // (WAV means user chose it over safetensors, so don't create safetensors)
+    if (fileType === 'safetensors') {
+      const outputPath = path.join(voicesDir, `${safeName}.safetensors`);
+      await fs.writeFile(outputPath, buffer);
+    } else if (fileType === 'wav') {
+      const outputPath = path.join(voicesDir, `${safeName}.wav`);
+      await fs.writeFile(outputPath, buffer);
+    } else {
+      return res.status(400).json({ error: true, message: 'fileType must be wav or safetensors' });
+    }
+
+    // Save metadata including file type so TTS knows which format to use
+    await saveVoice(safeName, {
+      displayName: displayName || name,
+      createdAt: new Date().toISOString(),
+      sourceFile: 'community-import',
+      fileType: fileType  // 'wav' or 'safetensors'
+    });
+
+    res.json({
+      name: safeName,
+      displayName: displayName || name,
+      fileType: fileType
+    });
+  } catch (err) {
+    console.error('Voice import error:', err);
+    next(err);
+  }
+});
+
+/**
+ * POST /api/voice/:name/finalize
+ * Finalize a voice by keeping only the winner format and deleting the loser
+ *
+ * Body: { winner: 'wav'|'safetensors' }
+ */
+router.post('/:name/finalize', async (req, res, next) => {
+  try {
+    const name = req.params.name;
+    const { winner } = req.body;
+
+    const validation = validateVoiceName(name);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
+
+    if (!winner || !['wav', 'safetensors'].includes(winner)) {
+      return res.status(400).json({ error: true, message: 'winner must be wav or safetensors' });
+    }
+
+    const voicesDir = getVoicesDir();
+    const wavPath = path.join(voicesDir, `${name}.wav`);
+    const safetensorsPath = path.join(voicesDir, `${name}.safetensors`);
+
+    // Delete the loser file
+    if (winner === 'wav') {
+      await fs.unlink(safetensorsPath).catch(() => {});
+    } else {
+      await fs.unlink(wavPath).catch(() => {});
+    }
+
+    // Update metadata with the winner type
+    const voice = await getVoice(name);
+    await saveVoice(name, {
+      ...voice,
+      fileType: winner
+    });
+
+    res.json({ ok: true, name, winner });
+  } catch (err) {
+    console.error('Voice finalize error:', err);
     next(err);
   }
 });
@@ -363,11 +644,11 @@ async function analyzeAudio(buffer, mimeType) {
     // Analyze quality and find best segment
     const qualityAnalysis = analyzeQuality(wavBuffer, sampleRate);
 
-    // Find best 15-second segment
+    // Find best 10-second segment
     const { suggestedStart, suggestedEnd, segmentScore } = findBestSegment(
       qualityAnalysis.chunks,
       duration,
-      15 // target 15 seconds
+      10 // target 10 seconds
     );
 
     return {

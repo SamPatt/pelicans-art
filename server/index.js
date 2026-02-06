@@ -30,7 +30,7 @@ app.set('trust proxy', true);
 
 // Middleware
 app.use(cors({ origin: CORS_ORIGIN }));
-app.use(express.json({ limit: '10mb' })); // Large SVGs can be big
+app.use(express.json({ limit: '100mb' })); // Large audio files for voice cloning
 
 // API routes
 app.use('/api/sprites', spritesRouter);

@@ -11,6 +11,7 @@ import {
 } from './storage.js';
 
 const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
+const PORT = process.env.PORT || 3000;
 
 /**
  * Generate TTS audio for a line of dialogue
@@ -32,8 +33,9 @@ async function generateTTS(text, voice) {
     if (!await voiceFileExists(customVoiceName)) {
       throw new Error(`Custom voice not found: ${customVoiceName}`);
     }
-    // Use file:// URL for local TTS server
-    voiceUrl = `file://${getVoicePath(customVoiceName)}`;
+    // Construct HTTP URL for the voice file that TTS server can fetch
+    // URL must end with .safetensors for pocket-tts to recognize the file type
+    voiceUrl = `http://127.0.0.1:${PORT}/api/voice/${customVoiceName}/voice.safetensors`;
   }
 
   const formData = new FormData();

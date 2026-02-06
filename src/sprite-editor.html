@@ -3336,7 +3336,7 @@
           </div>
 
           <div id="voice-input-upload" class="voice-input-section">
-            <label>Upload audio file (WAV or MP3, at least 15 seconds)</label>
+            <label>Upload audio file (WAV or MP3, at least 10 seconds)</label>
             <input type="file" id="voice-upload-file" accept=".wav,.mp3,audio/wav,audio/mpeg" onchange="handleVoiceCreatorFileSelect(event)">
           </div>
 
@@ -3375,7 +3375,7 @@
               <label style="color:#888;font-size:0.85em;">Segment:</label>
               <input type="number" id="voice-segment-start" value="0" min="0" step="0.5" onchange="updateVoiceSegment()"> s
               <span style="color:#666;">to</span>
-              <input type="number" id="voice-segment-end" value="15" min="1" step="0.5" onchange="updateVoiceSegment()"> s
+              <input type="number" id="voice-segment-end" value="10" min="1" step="0.5" onchange="updateVoiceSegment()"> s
               <button onclick="autoSelectBestSegment()">🎯 Auto-Select Best</button>
             </div>
 
@@ -3390,12 +3390,21 @@
           </div>
 
           <div id="voice-preview-section" class="voice-preview-section" style="display:none;">
-            <h4>🔊 Preview Processed Voice</h4>
+            <h4>🔊 Preview & Compare</h4>
             <textarea id="voice-preview-text" placeholder="Enter text to test the voice...">Hello, this is a test of my custom voice. How does it sound?</textarea>
-            <div class="voice-preview-controls">
-              <button id="voice-test-play-btn" class="voice-preview-play" onclick="playVoicePreview()" disabled>▶ Play Preview</button>
+            <div class="voice-preview-controls" style="display:flex;gap:8px;">
+              <button id="voice-test-play-btn" class="voice-preview-play" onclick="playVoicePreview('safetensors')" disabled>▶ Safetensors</button>
+              <button id="voice-test-play-wav-btn" class="voice-preview-play" onclick="playVoicePreview('wav')" disabled>▶ Direct WAV</button>
             </div>
             <audio id="voice-preview-audio" style="display:none;"></audio>
+
+            <div id="voice-winner-section" style="margin-top:12px;padding:12px;background:rgba(0,212,170,0.1);border-radius:6px;display:none;">
+              <p style="margin:0 0 8px 0;color:#888;font-size:0.9em;">Which sounds better? (required to save)</p>
+              <div style="display:flex;gap:8px;">
+                <button id="voice-pick-safetensors" onclick="pickVoiceWinner('safetensors')" style="flex:1;padding:8px;background:#1a1a2e;border:2px solid #333;color:#eee;border-radius:4px;cursor:pointer;">🏆 Safetensors</button>
+                <button id="voice-pick-wav" onclick="pickVoiceWinner('wav')" style="flex:1;padding:8px;background:#1a1a2e;border:2px solid #333;color:#eee;border-radius:4px;cursor:pointer;">🏆 Direct WAV</button>
+              </div>
+            </div>
           </div>
 
           <div id="voice-creator-status" class="voice-creator-status" style="display:none;"></div>
@@ -6386,9 +6395,9 @@
       const id = url.searchParams.get('id');
 
       // Validate type
-      const validTypes = ['characters', 'props', 'backgrounds', 'skits'];
+      const validTypes = ['characters', 'props', 'backgrounds', 'skits', 'voices'];
       if (!type || !validTypes.includes(type)) {
-        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Unsupported asset type. Supported: characters, props, backgrounds, skits</div>';
+        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Unsupported asset type. Supported: characters, props, backgrounds, skits, voices</div>';
         importBtn.disabled = true;
         return;
       }
@@ -6436,6 +6445,9 @@
             break;
           case 'skits':
             await importSkit(id, displayName);
+            break;
+          case 'voices':
+            await importVoice(id, displayName);
             break;
         }
       } catch (e) {
@@ -6633,6 +6645,65 @@
       showImportFeedback(`Imported skit: ${localName}`, 'success');
       await loadSkits();
       selectSkit(skitId);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importVoice(slug, displayName) {
+      // Generate a local name from slug
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '').replace(/-/g, '_').toLowerCase();
+
+      // Try to fetch WAV first, then safetensors
+      // URL structure: voices/${slug}/${slug}.ext
+      let voiceBlob = null;
+      let fileType = null;
+
+      // Try WAV
+      const wavResp = await fetch(`${COMMUNITY_API_URL}/voices/${slug}/${slug}.wav`);
+      if (wavResp.ok) {
+        voiceBlob = await wavResp.blob();
+        fileType = 'wav';
+      } else {
+        // Try safetensors
+        const stResp = await fetch(`${COMMUNITY_API_URL}/voices/${slug}/${slug}.safetensors`);
+        if (stResp.ok) {
+          voiceBlob = await stResp.blob();
+          fileType = 'safetensors';
+        }
+      }
+
+      if (!voiceBlob) {
+        throw new Error('Voice file not found (tried .wav and .safetensors)');
+      }
+
+      // Save to local server
+      const arrayBuf = await voiceBlob.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuf);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+
+      // Use server endpoint to save voice file directly
+      const saveResp = await fetch('/api/voice/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: localName,
+          displayName: displayName,
+          fileType: fileType,
+          data: base64
+        })
+      });
+
+      if (!saveResp.ok) {
+        const err = await saveResp.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to save voice locally');
+      }
+
+      showImportFeedback(`Imported voice: ${displayName}`, 'success');
+      await populateVoiceSelector();
 
       setTimeout(() => closeImportModal(), 1500);
     }
@@ -6882,10 +6953,11 @@
       waveformData: null,
       duration: 0,
       suggestedStart: 0,
-      suggestedEnd: 15,
+      suggestedEnd: 10,
       quality: null,
       processedVoiceName: null,
-      processedVoiceUrl: null
+      processedVoiceUrl: null,
+      selectedWinner: null  // 'safetensors' or 'wav'
     };
 
     function openVoiceCreatorModal() {
@@ -6896,10 +6968,11 @@
         waveformData: null,
         duration: 0,
         suggestedStart: 0,
-        suggestedEnd: 15,
+        suggestedEnd: 10,
         quality: null,
         processedVoiceName: null,
-        processedVoiceUrl: null
+        processedVoiceUrl: null,
+        selectedWinner: null
       };
 
       // Reset UI
@@ -6908,9 +6981,14 @@
       document.getElementById('voice-creator-name').value = '';
       document.getElementById('voice-waveform-section').style.display = 'none';
       document.getElementById('voice-preview-section').style.display = 'none';
+      document.getElementById('voice-winner-section').style.display = 'none';
       document.getElementById('voice-creator-status').style.display = 'none';
       document.getElementById('voice-save-btn').disabled = true;
       document.getElementById('voice-upload-btn').disabled = true;
+      document.getElementById('voice-save-btn').textContent = '💾 Save Locally';
+      // Reset winner button styles
+      document.getElementById('voice-pick-safetensors').style.borderColor = '#333';
+      document.getElementById('voice-pick-wav').style.borderColor = '#333';
 
       switchVoiceCreatorTab('upload');
       document.getElementById('voice-creator-modal').classList.add('visible');
@@ -6973,17 +7051,41 @@
     }
 
     async function loadVoiceFromUrl() {
-      const url = document.getElementById('voice-upload-url').value.trim();
+      let url = document.getElementById('voice-upload-url').value.trim();
       if (!url) {
         showVoiceCreatorStatus('Please enter a URL', 'error');
         return;
       }
 
-      showVoiceCreatorStatus('Fetching audio from URL...', 'info');
+      // Convert pelican.art viewer URLs to direct file URLs
+      // e.g., https://pelicans.art/?type=voices&id=trump-b22e3f -> API URL for the voice file
+      const pelicanMatch = url.match(/pelicans\.art\/?\?.*type=voices.*id=([^&]+)/);
+      let voiceSlug = null;
+      if (pelicanMatch) {
+        voiceSlug = pelicanMatch[1];
+        // Use the community API URL with correct path structure: voices/${slug}/${slug}.wav
+        url = `${COMMUNITY_API_URL}/voices/${voiceSlug}/${voiceSlug}.wav`;
+        showVoiceCreatorStatus('Detected pelican community voice, fetching...', 'info');
+      } else {
+        showVoiceCreatorStatus('Fetching audio from URL...', 'info');
+      }
 
       try {
         // Fetch the audio file
-        const response = await fetch(url);
+        let response = await fetch(url);
+
+        // If WAV not found and this was a pelican URL, try safetensors
+        if (!response.ok && voiceSlug) {
+          const safetensorsUrl = `${COMMUNITY_API_URL}/voices/${voiceSlug}/${voiceSlug}.safetensors`;
+          showVoiceCreatorStatus('WAV not found, trying safetensors...', 'info');
+          response = await fetch(safetensorsUrl);
+          if (response.ok) {
+            showVoiceCreatorStatus('Found safetensors file - this is already processed, no need to re-process', 'info');
+            // TODO: Could add direct import of safetensors here
+            throw new Error('This voice is a safetensors file. Use Import to add it directly, or find the original WAV.');
+          }
+        }
+
         if (!response.ok) {
           throw new Error('Failed to fetch audio');
         }
@@ -7061,7 +7163,7 @@
       const containerWidth = container.clientWidth - 20;
 
       const start = parseFloat(document.getElementById('voice-segment-start').value) || 0;
-      const end = parseFloat(document.getElementById('voice-segment-end').value) || 15;
+      const end = parseFloat(document.getElementById('voice-segment-end').value) || 10;
       const duration = voiceCreatorState.duration || 1;
 
       const startPct = (start / duration) * 100;
@@ -7123,7 +7225,7 @@
       }
 
       const start = parseFloat(document.getElementById('voice-segment-start').value) || 0;
-      const end = parseFloat(document.getElementById('voice-segment-end').value) || 15;
+      const end = parseFloat(document.getElementById('voice-segment-end').value) || 10;
 
       if (end - start < 5) {
         showVoiceCreatorStatus('Segment must be at least 5 seconds', 'error');
@@ -7158,14 +7260,18 @@
 
         voiceCreatorState.processedVoiceName = result.name;
         voiceCreatorState.processedVoiceUrl = result.url;
+        voiceCreatorState.selectedWinner = null;
 
-        // Show preview section
+        // Show preview section and winner selection
         document.getElementById('voice-preview-section').style.display = 'block';
+        document.getElementById('voice-winner-section').style.display = 'block';
         document.getElementById('voice-test-play-btn').disabled = false;
-        document.getElementById('voice-save-btn').disabled = false;
-        document.getElementById('voice-upload-btn').disabled = false;
+        document.getElementById('voice-test-play-wav-btn').disabled = false;
+        // Save/upload buttons stay disabled until winner is picked
+        document.getElementById('voice-save-btn').disabled = true;
+        document.getElementById('voice-upload-btn').disabled = true;
 
-        showVoiceCreatorStatus('Voice processed successfully! You can preview it below.', 'success');
+        showVoiceCreatorStatus('Voice processed! Listen to both options and pick which sounds better.', 'success');
 
         // Refresh voice selector
         await populateVoiceSelector();
@@ -7187,7 +7293,7 @@
       });
     }
 
-    async function playVoicePreview() {
+    async function playVoicePreview(mode = 'safetensors') {
       const text = document.getElementById('voice-preview-text').value.trim();
       if (!text) {
         showVoiceCreatorStatus('Enter some text to preview', 'error');
@@ -7200,12 +7306,18 @@
         return;
       }
 
-      const btn = document.getElementById('voice-test-play-btn');
+      const btn = mode === 'wav'
+        ? document.getElementById('voice-test-play-wav-btn')
+        : document.getElementById('voice-test-play-btn');
+      const originalText = btn.textContent;
       btn.disabled = true;
       btn.textContent = '...';
 
+      // Choose endpoint based on mode
+      const endpoint = mode === 'wav' ? '/api/voice/preview-wav' : '/api/voice/preview';
+
       try {
-        const response = await fetch('/api/voice/preview', {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -7234,25 +7346,82 @@
         showVoiceCreatorStatus('Preview failed: ' + err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.textContent = '▶ Play Preview';
+        btn.textContent = originalText;
       }
     }
 
+    function pickVoiceWinner(winner) {
+      voiceCreatorState.selectedWinner = winner;
+
+      // Update button styles to show selection
+      const safetensorsBtn = document.getElementById('voice-pick-safetensors');
+      const wavBtn = document.getElementById('voice-pick-wav');
+
+      if (winner === 'safetensors') {
+        safetensorsBtn.style.borderColor = '#00d4aa';
+        safetensorsBtn.style.background = 'rgba(0,212,170,0.2)';
+        wavBtn.style.borderColor = '#333';
+        wavBtn.style.background = '#1a1a2e';
+      } else {
+        wavBtn.style.borderColor = '#00d4aa';
+        wavBtn.style.background = 'rgba(0,212,170,0.2)';
+        safetensorsBtn.style.borderColor = '#333';
+        safetensorsBtn.style.background = '#1a1a2e';
+      }
+
+      // Enable save/upload buttons now that winner is picked
+      document.getElementById('voice-save-btn').disabled = false;
+      document.getElementById('voice-upload-btn').disabled = false;
+
+      showVoiceCreatorStatus(`Selected "${winner}" as the better quality. You can now save or upload.`, 'success');
+    }
+
     async function saveVoiceLocally() {
-      // Voice is already saved during processing
-      showVoiceCreatorStatus('Voice saved! It\'s now available in the voice dropdown.', 'success');
+      const voiceName = voiceCreatorState.processedVoiceName;
+      const winner = voiceCreatorState.selectedWinner;
 
-      // Refresh voice selector
-      await populateVoiceSelector();
+      if (!voiceName || !winner) {
+        showVoiceCreatorStatus('Process a voice and pick a winner first', 'error');
+        return;
+      }
 
-      // Close after a delay
-      setTimeout(() => closeVoiceCreatorModal(), 1500);
+      try {
+        // Finalize the voice - delete the loser file, keep only the winner
+        const response = await fetch(`/api/voice/${voiceName}/finalize`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ winner })
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to finalize voice');
+        }
+
+        showVoiceCreatorStatus(`Voice saved (${winner} format)! You can also upload to community or close this modal.`, 'success');
+
+        // Refresh voice selector
+        await populateVoiceSelector();
+
+        // Disable save button since already saved, but keep modal open for community upload
+        document.getElementById('voice-save-btn').disabled = true;
+        document.getElementById('voice-save-btn').textContent = '✓ Saved';
+      } catch (err) {
+        console.error('Save voice error:', err);
+        showVoiceCreatorStatus('Failed to save: ' + err.message, 'error');
+      }
     }
 
     async function uploadVoiceToCommunity() {
       const voiceName = voiceCreatorState.processedVoiceName;
+      const winner = voiceCreatorState.selectedWinner;
+
       if (!voiceName) {
         showVoiceCreatorStatus('Process a voice first', 'error');
+        return;
+      }
+
+      if (!winner) {
+        showVoiceCreatorStatus('Pick a winner first', 'error');
         return;
       }
 
@@ -7268,8 +7437,12 @@
       document.getElementById('voice-upload-btn').disabled = true;
 
       try {
-        // Fetch the safetensors file
-        const fileResponse = await fetch(`/api/voice/${voiceName}/file`);
+        // Fetch the appropriate file based on winner selection
+        const fileUrl = winner === 'wav'
+          ? `/api/voice/${voiceName}/wav`
+          : `/api/voice/${voiceName}/file`;
+
+        const fileResponse = await fetch(fileUrl);
         if (!fileResponse.ok) {
           throw new Error('Failed to fetch voice file');
         }
@@ -7285,15 +7458,23 @@
         }
         const base64 = btoa(binary);
 
+        // Build request body based on winner type
+        const body = {
+          username,
+          name: voiceName
+        };
+
+        if (winner === 'wav') {
+          body.audio_base64 = base64;
+        } else {
+          body.safetensors_base64 = base64;
+        }
+
         // Upload to community
         const response = await fetch(`${COMMUNITY_API_URL}/voices`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            username,
-            name: voiceName,
-            safetensors_base64: base64
-          })
+          body: JSON.stringify(body)
         });
 
         if (!response.ok) {
