@@ -16,18 +16,29 @@ let PROPS_DIR = './src/props';
  */
 export function extractMetaFromSvg(svg) {
   if (!svg || typeof svg !== 'string') return {};
-  // Match both single-quoted and double-quoted attributes
-  const match = svg.match(/data-meta=["']([^"']*)["']/);
+
+  // Try single-quoted first (our canonical format, JSON uses " so no conflict)
+  let match = svg.match(/data-meta='([^']*)'/);
   if (match) {
     try {
-      // Unescape both &#39; (single quote) and &quot; (double quote)
-      const unescaped = match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"');
-      return JSON.parse(unescaped);
+      // Unescape &#39; (single quotes we escaped)
+      return JSON.parse(match[1].replace(/&#39;/g, "'"));
     } catch (e) {
-      console.warn('Failed to parse data-meta:', e.message);
-      return {};
+      console.warn('Failed to parse data-meta (single-quoted):', e.message);
     }
   }
+
+  // Try double-quoted (DOM serialization converts quotes and escapes " as &quot;)
+  match = svg.match(/data-meta="([^"]*)"/);
+  if (match) {
+    try {
+      // Unescape &quot; (double quotes the browser escaped)
+      return JSON.parse(match[1].replace(/&quot;/g, '"'));
+    } catch (e) {
+      console.warn('Failed to parse data-meta (double-quoted):', e.message);
+    }
+  }
+
   return {};
 }
 
@@ -45,9 +56,13 @@ export function embedMetaInSvg(svg, meta) {
   // Escape single quotes in JSON for single-quoted attribute
   const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
 
-  // Match both single-quoted and double-quoted existing attributes
-  if (/data-meta=["']/.test(svg)) {
-    return svg.replace(/data-meta=["'][^"']*["']/, `data-meta='${jsonStr}'`);
+  // Try to replace single-quoted attribute first
+  if (/data-meta='[^']*'/.test(svg)) {
+    return svg.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
+  }
+  // Try to replace double-quoted attribute (from DOM serialization)
+  if (/data-meta="[^"]*"/.test(svg)) {
+    return svg.replace(/data-meta="[^"]*"/, `data-meta='${jsonStr}'`);
   }
   // Insert data-meta after <svg
   return svg.replace('<svg', `<svg data-meta='${jsonStr}'`);

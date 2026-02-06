@@ -42,17 +42,27 @@ function validateSvg(svg) {
 // Handles both single and double quoted attributes (DOM serialization uses double quotes)
 function extractMetaFromSvg(svg) {
   if (!svg || typeof svg !== 'string') return null;
-  // Match both single-quoted and double-quoted attributes
-  const match = svg.match(/data-meta=["']([^"']*)["']/);
+
+  // Try single-quoted first (our canonical format, JSON uses " so no conflict)
+  let match = svg.match(/data-meta='([^']*)'/);
   if (match) {
     try {
-      // Unescape both &#39; (single quote) and &quot; (double quote)
-      const unescaped = match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"');
-      return JSON.parse(unescaped);
+      return JSON.parse(match[1].replace(/&#39;/g, "'"));
+    } catch (e) {
+      // Fall through to try double-quoted
+    }
+  }
+
+  // Try double-quoted (DOM serialization converts quotes and escapes " as &quot;)
+  match = svg.match(/data-meta="([^"]*)"/);
+  if (match) {
+    try {
+      return JSON.parse(match[1].replace(/&quot;/g, '"'));
     } catch (e) {
       return null;
     }
   }
+
   return null;
 }
 

@@ -728,15 +728,27 @@
     // Handles both single and double quoted attributes (DOM serialization uses double quotes)
     function extractMetaFromSvg(svgText) {
       if (!svgText || typeof svgText !== 'string') return null;
-      const match = svgText.match(/data-meta=["']([^"']*)["']/);
+
+      // Try single-quoted first (our canonical format, JSON uses " so no conflict)
+      let match = svgText.match(/data-meta='([^']*)'/);
       if (match) {
         try {
-          const unescaped = match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"');
-          return JSON.parse(unescaped);
+          return JSON.parse(match[1].replace(/&#39;/g, "'"));
+        } catch (e) {
+          // Fall through to try double-quoted
+        }
+      }
+
+      // Try double-quoted (DOM serialization converts quotes and escapes " as &quot;)
+      match = svgText.match(/data-meta="([^"]*)"/);
+      if (match) {
+        try {
+          return JSON.parse(match[1].replace(/&quot;/g, '"'));
         } catch (e) {
           return null;
         }
       }
+
       return null;
     }
 

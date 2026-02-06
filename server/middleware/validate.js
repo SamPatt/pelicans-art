@@ -54,16 +54,22 @@ export function validateDataMeta(svg) {
     return { valid: true, errors: [], warnings: ['SVG content is empty'], meta: null };
   }
 
-  // Match both single-quoted and double-quoted attributes
-  const match = svg.match(/data-meta=["']([^"']*)["']/);
+  // Try single-quoted first (our canonical format, JSON uses " so no conflict)
+  let match = svg.match(/data-meta='([^']*)'/);
+  let unescapeFunc = (s) => s.replace(/&#39;/g, "'");
+
+  // Try double-quoted if single-quoted not found
+  if (!match) {
+    match = svg.match(/data-meta="([^"]*)"/);
+    unescapeFunc = (s) => s.replace(/&quot;/g, '"');
+  }
+
   if (!match) {
     return { valid: true, errors: [], warnings: ['No data-meta attribute found'], meta: null };
   }
 
   try {
-    // Unescape both &#39; (single quote) and &quot; (double quote)
-    const unescaped = match[1].replace(/&#39;/g, "'").replace(/&quot;/g, '"');
-    meta = JSON.parse(unescaped);
+    meta = JSON.parse(unescapeFunc(match[1]));
 
     // Check for recommended fields
     if (!meta.name) {
