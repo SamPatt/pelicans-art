@@ -24,7 +24,7 @@ export const TRANSFORM_EMOTIONS = {
     browRotateL: 0,
     browRotateR: 0,
     mouthY: 0,
-    mouthScaleY: 1.0,
+    mouthScaleY: 0.3,     // Flat mouth
     mouthScaleX: 1.0
   },
   happy: {
@@ -44,24 +44,24 @@ export const TRANSFORM_EMOTIONS = {
     eyeCyDelta: 2,        // Eyes droop
     pupilRyRatio: 0.9,
     pupilCyDelta: 2,
-    browY: 0,
-    browRotateL: 12,      // Inner edges up (worried brows)
-    browRotateR: -12,
+    browY: 3,             // Brows lowered
+    browRotateL: -12,     // Inner edges up (worried look)
+    browRotateR: 12,
     mouthY: 2,
-    mouthScaleY: 0.7,     // Compressed mouth
+    mouthScaleY: -0.9,    // Bigger frown
     mouthScaleX: 0.9
   },
   angry: {
-    eyeRyRatio: 0.7,      // Squint
-    eyeCyDelta: 0,
-    pupilRyRatio: 0.8,
-    pupilCyDelta: 0,
-    browY: 2,             // Brows down
-    browRotateL: -15,     // Furrowed (inner down, outer up)
-    browRotateR: 15,
-    mouthY: 0,
-    mouthScaleY: 0.5,     // Tight line
-    mouthScaleX: 1.0
+    eyeRyRatio: 0.85,     // Copied from sad
+    eyeCyDelta: 2,
+    pupilRyRatio: 0.9,
+    pupilCyDelta: 2,
+    browY: 3,
+    browRotateL: 8,       // Outer edges up, inner down (V shape)
+    browRotateR: -8,
+    mouthY: 2,
+    mouthScaleY: -0.6,    // Frown (from sad)
+    mouthScaleX: 0.9
   },
   surprised: {
     eyeRyRatio: 1.4,      // Wide eyes
@@ -72,7 +72,7 @@ export const TRANSFORM_EMOTIONS = {
     browRotateL: -5,
     browRotateR: 5,
     mouthY: 3,
-    mouthScaleY: 1.8,     // Big O mouth
+    mouthScaleY: 1.2,     // Open mouth (reduced from 1.8)
     mouthScaleX: 0.8,
     useMouthOpen: true    // Use mouth-open element if available
   },
@@ -85,7 +85,7 @@ export const TRANSFORM_EMOTIONS = {
     browRotateL: -6,
     browRotateR: 6,
     mouthY: 2,
-    mouthScaleY: 1.5,
+    mouthScaleY: 1.2,     // Reduced from 1.5
     mouthScaleX: 1.1,
     highlight: 1
   },
@@ -95,10 +95,10 @@ export const TRANSFORM_EMOTIONS = {
     pupilRyRatio: 0.9,
     pupilCyDelta: 1,
     browY: -1,
-    browRotateL: 10,      // Inner high
-    browRotateR: -10,
+    browRotateL: -8,      // Inner high
+    browRotateR: 8,
     mouthY: 1,
-    mouthScaleY: 0.8,
+    mouthScaleY: -0.4,    // Slight frown
     mouthScaleX: 0.85
   },
   smug: {
@@ -107,35 +107,37 @@ export const TRANSFORM_EMOTIONS = {
     pupilRyRatio: 0.8,
     pupilCyDelta: 0,
     browY: 0,
-    browRotateL: -10,     // Asymmetric
+    browRotateL: -10,     // Raised left brow
     browRotateR: 5,
+    mouthX: 4,            // Shift mouth to the right
     mouthY: 0,
-    mouthScaleY: 1.1,
-    mouthScaleX: 1.05
+    mouthScaleY: 0.8,
+    mouthScaleX: 1.1,
+    mouthRotate: -8       // Smirk - rotates one side up
   },
   tired: {
-    eyeRyRatio: 0.5,      // Very squinty
+    eyeRyRatio: 0.35,     // Very squinty (more than before)
     eyeCyDelta: 2,
-    pupilRyRatio: 0.6,
+    pupilRyRatio: 0.5,
     pupilCyDelta: 2,
-    browY: 2,
-    browRotateL: 5,
-    browRotateR: -5,
+    browY: 4,             // Brows more lowered
+    browRotateL: 3,
+    browRotateR: -3,
     mouthY: 1,
-    mouthScaleY: 0.6,
-    mouthScaleX: 0.9
+    mouthScaleY: 0.2,     // Flat line
+    mouthScaleX: 1.0
   },
   skeptical: {
     eyeRyRatio: 0.8,
     eyeCyDelta: 0,
     pupilRyRatio: 0.85,
     pupilCyDelta: 0,
-    browY: 0,
-    browRotateL: -12,     // Left brow raised
-    browRotateR: 8,       // Right brow lowered
+    browY: 1,             // Lowered overall
+    browRotateL: -25,     // Left brow very arched (appears raised due to rotation)
+    browRotateR: 8,       // Right brow angled down (lowered look)
     mouthY: 0,
-    mouthScaleY: 0.7,
-    mouthScaleX: 0.85
+    mouthScaleY: 0.2,     // Flat mouth
+    mouthScaleX: 1.0
   },
   dead: {
     eyeRyRatio: 0.7,
@@ -146,7 +148,7 @@ export const TRANSFORM_EMOTIONS = {
     browRotateL: 0,
     browRotateR: 0,
     mouthY: 2,
-    mouthScaleY: 1.5,
+    mouthScaleY: 1.2,     // Reduced from 1.5
     mouthScaleX: 0.7,
     xEyes: true,
     useMouthOpen: true
@@ -157,10 +159,10 @@ export const TRANSFORM_EMOTIONS = {
     pupilRyRatio: 1.2,
     pupilCyDelta: -1,
     browY: -3,
-    browRotateL: 8,       // Inner high (worried)
-    browRotateR: -8,
+    browRotateL: -8,      // Inner high (worried) - fixed sign
+    browRotateR: 8,
     mouthY: 2,
-    mouthScaleY: 1.4,
+    mouthScaleY: 1.2,     // Reduced from 1.4
     mouthScaleX: 0.75,
     useMouthOpen: true
   },
@@ -365,8 +367,10 @@ export function applyEmotion(container, emotion, origValues) {
     mouthClosed.setAttribute('opacity', '1');
     mouthClosed.setAttribute('d', origValues.mouthD);
     const { cx, cy } = origValues.mouthCenter;
+    const mouthRotate = cfg.mouthRotate || 0;
+    const mouthX = cfg.mouthX || 0;
     mouthClosed.setAttribute('transform',
-      `translate(0, ${cfg.mouthY}) translate(${cx}, ${cy}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
+      `translate(${mouthX}, ${cfg.mouthY}) translate(${cx}, ${cy}) rotate(${mouthRotate}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
     // Reset fill/stroke to captured originals
     mouthClosed.setAttribute('fill', 'none');
     mouthClosed.setAttribute('stroke', origValues.mouthStroke);

@@ -17,18 +17,18 @@ The emotion system uses **relative transforms** to animate facial expressions. T
 
 | Emotion | Eyes | Brows | Mouth |
 |---------|------|-------|-------|
-| neutral | Normal | Flat | Normal |
-| happy | Squint (0.7x) | Raised (-2), outer up | Tall (1.3x) |
-| sad | Slightly closed | Inner raised (+12°) | Compressed (0.7x) |
-| angry | Squint (0.7x) | Lowered, furrowed (-15°/+15°) | Tight (0.5x) |
-| surprised | Wide (1.4x) | Very high (-5) | Big O (1.8x height) |
-| excited | Wide (1.3x) | High (-4) | Tall (1.5x) |
-| worried | Slightly closed | Inner raised (+10°) | Compressed (0.8x) |
-| smug | Squint (0.75x) | Asymmetric | Slight (1.1x) |
-| tired | Very squint (0.5x) | Lowered (+2) | Flat (0.6x) |
-| skeptical | Slight squint (0.8x) | One raised | Compressed (0.7x) |
-| dead | Squint (0.7x) | Flat | Uses mouth-open |
-| scared | Wide (1.3x) | Inner raised | Uses mouth-open |
+| neutral | Normal | Flat | Flat |
+| happy | Squint (0.7x) | Raised (-2), outer up | Smile (1.3x) |
+| sad | Slightly closed | Lowered, outer edges up | Frown (flipped) |
+| angry | Squint (0.7x) | Lowered, angled down to nose | Flat tight line |
+| surprised | Wide (1.4x) | Very high (-5) | Open (1.2x height) |
+| excited | Wide (1.3x) | High (-4) | Tall (1.2x) |
+| worried | Slightly closed | Inner raised (-8°/+8°) | Slight frown |
+| smug | Squint (0.75x) | Asymmetric | Smirk (shifted right, rotated) |
+| tired | Very squint (0.35x) | Very lowered (+4) | Flat line |
+| skeptical | Slight squint (0.8x) | Left arched high, right lowered | Flat |
+| dead | Squint (0.7x) | Flat | Uses mouth-open (1.2x) |
+| scared | Wide (1.3x) | Inner raised (-8°/+8°) | Uses mouth-open (1.2x) |
 | thinking | Slight squint (0.9x) | Asymmetric | Compressed (0.8x) |
 | confused | Slightly wide (1.1x) | Very asymmetric | Compressed (0.9x) |
 

@@ -1086,7 +1086,7 @@
       neutral: {
         eyeRyRatio: 1.0, eyeCyDelta: 0, pupilRyRatio: 1.0, pupilCyDelta: 0,
         browY: 0, browRotateL: 0, browRotateR: 0,
-        mouthY: 0, mouthScaleY: 1.0, mouthScaleX: 1.0
+        mouthY: 0, mouthScaleY: 0.3, mouthScaleX: 1.0
       },
       happy: {
         eyeRyRatio: 0.7, eyeCyDelta: -1, pupilRyRatio: 0.8, pupilCyDelta: -1,
@@ -1095,56 +1095,56 @@
       },
       sad: {
         eyeRyRatio: 0.85, eyeCyDelta: 2, pupilRyRatio: 0.9, pupilCyDelta: 2,
-        browY: 0, browRotateL: 12, browRotateR: -12,
-        mouthY: 2, mouthScaleY: 0.7, mouthScaleX: 0.9
+        browY: 3, browRotateL: -12, browRotateR: 12,
+        mouthY: 2, mouthScaleY: -0.9, mouthScaleX: 0.9
       },
       angry: {
-        eyeRyRatio: 0.7, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
-        browY: 2, browRotateL: -15, browRotateR: 15,
-        mouthY: 0, mouthScaleY: 0.5, mouthScaleX: 1.0
+        eyeRyRatio: 0.85, eyeCyDelta: 2, pupilRyRatio: 0.9, pupilCyDelta: 2,
+        browY: 3, browRotateL: 8, browRotateR: -8,
+        mouthY: 2, mouthScaleY: -0.6, mouthScaleX: 0.9
       },
       surprised: {
         eyeRyRatio: 1.4, eyeCyDelta: 0, pupilRyRatio: 1.3, pupilCyDelta: 0,
         browY: -5, browRotateL: -5, browRotateR: 5,
-        mouthY: 3, mouthScaleY: 1.8, mouthScaleX: 0.8,
+        mouthY: 3, mouthScaleY: 1.2, mouthScaleX: 0.8,
         useMouthOpen: true, highlight: 1
       },
       excited: {
         eyeRyRatio: 1.3, eyeCyDelta: -1, pupilRyRatio: 1.2, pupilCyDelta: -1,
         browY: -4, browRotateL: -6, browRotateR: 6,
-        mouthY: 2, mouthScaleY: 1.5, mouthScaleX: 1.1,
+        mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 1.1,
         highlight: 1
       },
       worried: {
         eyeRyRatio: 0.9, eyeCyDelta: 1, pupilRyRatio: 0.9, pupilCyDelta: 1,
-        browY: -1, browRotateL: 10, browRotateR: -10,
-        mouthY: 1, mouthScaleY: 0.8, mouthScaleX: 0.85
+        browY: -1, browRotateL: -8, browRotateR: 8,
+        mouthY: 1, mouthScaleY: -0.4, mouthScaleX: 0.85
       },
       smug: {
         eyeRyRatio: 0.75, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
         browY: 0, browRotateL: -10, browRotateR: 5,
-        mouthY: 0, mouthScaleY: 1.1, mouthScaleX: 1.05
+        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -8
       },
       tired: {
-        eyeRyRatio: 0.5, eyeCyDelta: 2, pupilRyRatio: 0.6, pupilCyDelta: 2,
-        browY: 2, browRotateL: 5, browRotateR: -5,
-        mouthY: 1, mouthScaleY: 0.6, mouthScaleX: 0.9
+        eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
+        browY: 4, browRotateL: 3, browRotateR: -3,
+        mouthY: 1, mouthScaleY: 0.2, mouthScaleX: 1.0
       },
       skeptical: {
         eyeRyRatio: 0.8, eyeCyDelta: 0, pupilRyRatio: 0.85, pupilCyDelta: 0,
-        browY: 0, browRotateL: -12, browRotateR: 8,
-        mouthY: 0, mouthScaleY: 0.7, mouthScaleX: 0.85
+        browY: 1, browRotateL: -25, browRotateR: 8,
+        mouthY: 0, mouthScaleY: 0.2, mouthScaleX: 1.0
       },
       dead: {
         eyeRyRatio: 0.7, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
         browY: 0, browRotateL: 0, browRotateR: 0,
-        mouthY: 2, mouthScaleY: 1.5, mouthScaleX: 0.7,
+        mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 0.7,
         xEyes: true, useMouthOpen: true
       },
       scared: {
         eyeRyRatio: 1.3, eyeCyDelta: -1, pupilRyRatio: 1.2, pupilCyDelta: -1,
-        browY: -3, browRotateL: 8, browRotateR: -8,
-        mouthY: 2, mouthScaleY: 1.4, mouthScaleX: 0.75,
+        browY: -3, browRotateL: -8, browRotateR: 8,
+        mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 0.75,
         useMouthOpen: true
       },
       thinking: {
@@ -1413,8 +1413,10 @@
         mouthClosed.setAttribute('opacity', '1');
         mouthClosed.setAttribute('d', orig.mouthD);
         const { cx, cy } = orig.mouthCenter;
+        const mouthRotate = cfg.mouthRotate || 0;
+        const mouthX = cfg.mouthX || 0;
         mouthClosed.setAttribute('transform',
-          `translate(0, ${cfg.mouthY}) translate(${cx}, ${cy}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
+          `translate(${mouthX}, ${cfg.mouthY}) translate(${cx}, ${cy}) rotate(${mouthRotate}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
         // Reset fill/stroke to captured originals
         mouthClosed.setAttribute('fill', 'none');
         mouthClosed.setAttribute('stroke', orig.mouthStroke);
