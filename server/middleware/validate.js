@@ -10,17 +10,16 @@ const REQUIRED_SPRITE_ELEMENTS = [
   'eye-right-pupil',
   'brow-left',
   'brow-right',
-  'mouth-closed',
   'mouth-open'
 ];
 
 // Required groups
 const REQUIRED_SPRITE_GROUPS = ['body', 'head-top', 'head-bottom'];
 
-// Valid emotions
+// Valid emotions (canonical 11)
 const VALID_EMOTIONS = [
-  'neutral', 'happy', 'sad', 'angry', 'surprised',
-  'worried', 'excited', 'smug', 'tired'
+  'neutral', 'happy', 'sad', 'angry', 'worried',
+  'skeptical', 'tired', 'smug', 'dead', 'surprised', 'excited'
 ];
 
 // Valid shot types
@@ -93,16 +92,6 @@ export function validateSpriteSvg(svg) {
   // Check mouth-open has opacity="0"
   if (hasId(svg, 'mouth-open') && !svg.match(/id=["']mouth-open["'][^>]*opacity=["']0["']/)) {
     warnings.push('mouth-open should have opacity="0" initially');
-  }
-
-  // Try to check mouth alignment (basic heuristic) - warning only, don't block saves
-  const mouthClosedY = extractYPosition(svg, 'mouth-closed');
-  const mouthOpenY = extractYPosition(svg, 'mouth-open');
-  if (mouthClosedY !== null && mouthOpenY !== null) {
-    const diff = Math.abs(mouthClosedY - mouthOpenY);
-    if (diff > 5) {
-      warnings.push(`mouth-open and mouth-closed Y positions differ by ${diff.toFixed(1)} units (should be aligned)`);
-    }
   }
 
   return {

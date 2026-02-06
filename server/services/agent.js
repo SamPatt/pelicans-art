@@ -29,8 +29,7 @@ REQUIRED ELEMENT IDs (the animation system depends on these exact IDs):
 - eye-right-pupil: Right pupil (circle, class="pupil")
 - brow-left: Left eyebrow (path)
 - brow-right: Right eyebrow (path)
-- mouth-closed: Closed mouth shape (path)
-- mouth-open: Open mouth shape (ellipse, initially opacity="0")
+- mouth-open: Mouth position marker (ellipse with cx/cy for position, stroke for mouth line color, fill for inside color, opacity="0")
 
 REQUIRED GROUPS:
 - id="body": Torso, arms, legs
@@ -39,7 +38,6 @@ REQUIRED GROUPS:
 
 ANATOMY REQUIREMENTS:
 - HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
-- MOUTH ALIGNMENT: mouth-open and mouth-closed MUST be at the EXACT same X and Y position. The open mouth replaces the closed mouth during speech - if they're misaligned, the mouth will appear to jump around during lip-sync.
 
 STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy

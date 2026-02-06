@@ -1201,8 +1201,8 @@
         }
       }
 
-      // Get stroke color from existing mouth
-      const strokeColor = mouthClosed?.getAttribute('stroke') || '#8d6e63';
+      // Get stroke color from mouth-open (or fallback to mouth-closed for legacy sprites)
+      const strokeColor = mouthOpen?.getAttribute('stroke') || mouthClosed?.getAttribute('stroke') || '#8d6e63';
 
       // Create mouth group
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');

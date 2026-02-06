@@ -178,13 +178,12 @@ export function createMouthGroup(svg, origValues) {
   if (mouthOpen) {
     mouthCx = parseFloat(mouthOpen.getAttribute('cx') || 50);
     mouthCy = parseFloat(mouthOpen.getAttribute('cy') || 68);
+    mouthStroke = mouthOpen.getAttribute('stroke') || '#8d6e63';
   } else if (mouthClosed) {
+    // Fallback for legacy sprites with mouth-closed
     const center = origValues?.mouthCenter || getPathCenter(mouthClosed.getAttribute('d') || '');
     mouthCx = center.cx;
     mouthCy = center.cy;
-  }
-
-  if (mouthClosed) {
     mouthStroke = mouthClosed.getAttribute('stroke') || '#8d6e63';
   }
 
