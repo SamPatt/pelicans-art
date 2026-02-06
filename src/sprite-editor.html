@@ -7252,11 +7252,11 @@
       }
 
       // Get username from community modal storage
-      let username = localStorage.getItem('pelicans-community-username') || '';
+      let username = getCommunityUsername();
       if (!username) {
         username = prompt('Enter your username for the community:');
         if (!username) return;
-        localStorage.setItem('pelicans-community-username', username);
+        setCommunityUsername(username);
       }
 
       showVoiceCreatorStatus('Uploading to community...', 'info');
@@ -7281,7 +7281,7 @@
         const base64 = btoa(binary);
 
         // Upload to community
-        const response = await fetch('https://community.pelicans.art/api/community/voices', {
+        const response = await fetch(`${COMMUNITY_API_URL}/voices`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

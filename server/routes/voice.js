@@ -19,6 +19,24 @@ import {
 
 const router = Router();
 
+// Validate voice name to prevent path traversal
+const VOICE_NAME_REGEX = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+
+function validateVoiceName(name) {
+  if (!name || typeof name !== 'string') {
+    return { valid: false, error: 'Voice name is required' };
+  }
+  // Reject any path traversal attempts
+  if (name.includes('/') || name.includes('\\') || name.includes('..')) {
+    return { valid: false, error: 'Invalid voice name' };
+  }
+  // Ensure name matches allowed pattern
+  if (!VOICE_NAME_REGEX.test(name)) {
+    return { valid: false, error: 'Voice name must be lowercase alphanumeric with hyphens/underscores, 1-64 chars' };
+  }
+  return { valid: true };
+}
+
 // Configure multer for file uploads
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -56,6 +74,10 @@ router.get('/list', async (req, res, next) => {
  */
 router.get('/:name', async (req, res, next) => {
   try {
+    const validation = validateVoiceName(req.params.name);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
     const voice = await getVoice(req.params.name);
     res.json(voice);
   } catch (err) {
@@ -70,6 +92,10 @@ router.get('/:name', async (req, res, next) => {
 router.get('/:name/file', async (req, res, next) => {
   try {
     const name = req.params.name;
+    const validation = validateVoiceName(name);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
     const filePath = getVoicePath(name);
 
     if (!await voiceFileExists(name)) {
@@ -144,8 +170,9 @@ router.post('/process', async (req, res, next) => {
       // Voice doesn't exist, good to proceed
     }
 
-    // Decode base64 audio
-    const base64Data = audio.replace(/^data:audio\/\w+;base64,/, '');
+    // Decode base64 audio - handle various data URL formats
+    // Matches: data:audio/*, data:application/*, or raw base64
+    const base64Data = audio.replace(/^data:[^;]+;base64,/, '');
     const audioBuffer = Buffer.from(base64Data, 'base64');
 
     // Get voices directory
@@ -225,7 +252,11 @@ router.post('/preview', async (req, res, next) => {
     // Determine voice URL
     let voiceUrl = voice;
     if (!voice.startsWith('http') && !voice.startsWith('/')) {
-      // It's a voice name, construct URL
+      // It's a voice name - validate to prevent path traversal
+      const validation = validateVoiceName(voice);
+      if (!validation.valid) {
+        return res.status(400).json({ error: true, message: validation.error });
+      }
       const filePath = getVoicePath(voice);
       if (!await voiceFileExists(voice)) {
         return res.status(404).json({ error: true, message: 'Voice not found' });
@@ -276,6 +307,10 @@ router.post('/preview', async (req, res, next) => {
  */
 router.delete('/:name', async (req, res, next) => {
   try {
+    const validation = validateVoiceName(req.params.name);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
+    }
     await deleteVoice(req.params.name);
     res.json({ ok: true, deleted: req.params.name });
   } catch (err) {

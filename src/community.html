@@ -1063,14 +1063,27 @@
 
   async function renderVoiceDetail(container, slug, meta) {
     let html = '';
-    const audioUrl = `${API_URL}/voices/${slug}/${slug}.wav`;
 
-    html += `<div class="voice-player">
-      <audio controls src="${audioUrl}" preload="none" style="width:100%;"></audio>
-    </div>`;
+    // Determine file type from contentType or filename
+    const isSafetensors = meta.contentType === 'application/octet-stream' ||
+                          (meta.key && meta.key.endsWith('.safetensors'));
+    const fileExt = isSafetensors ? 'safetensors' : 'wav';
+    const fileUrl = `${API_URL}/voices/${slug}/${slug}.${fileExt}`;
+
+    if (isSafetensors) {
+      // Safetensors files can't be previewed as audio
+      html += `<div class="voice-player" style="padding:20px;text-align:center;color:#888;">
+        <p>This is a processed voice model (safetensors format).</p>
+        <p>Import it into the sprite editor to use it.</p>
+      </div>`;
+    } else {
+      html += `<div class="voice-player">
+        <audio controls src="${fileUrl}" preload="none" style="width:100%;"></audio>
+      </div>`;
+    }
     html += renderMetaTable(meta);
     html += `<div class="detail-actions">
-      <button class="detail-btn btn-download" onclick="downloadFile('voices', '${slug}', '${slug}.wav')">Download WAV</button>
+      <button class="detail-btn btn-download" onclick="downloadFile('voices', '${slug}', '${slug}.${fileExt}')">Download ${fileExt.toUpperCase()}</button>
       <button class="detail-btn btn-copy-link" onclick="copyAssetLink()">Copy Link</button>
     </div>`;
     container.innerHTML = html;

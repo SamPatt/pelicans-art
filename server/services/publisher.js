@@ -5,7 +5,9 @@ import {
   getSprite,
   getBackground,
   getProp,
-  savePublished
+  savePublished,
+  getVoicePath,
+  voiceFileExists
 } from './storage.js';
 
 const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
@@ -13,15 +15,26 @@ const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
 /**
  * Generate TTS audio for a line of dialogue
  * @param {string} text - The text to speak
- * @param {string} voice - Voice ID or URL
+ * @param {string} voice - Voice ID or URL (custom voices prefixed with 'custom:')
  * @returns {Promise<Buffer>} Audio buffer
  */
 async function generateTTS(text, voice) {
   const paddedText = ', ' + text;
 
+  // Handle custom voices (prefixed with 'custom:')
+  let voiceUrl = voice;
+  if (voice && voice.startsWith('custom:')) {
+    const customVoiceName = voice.replace('custom:', '');
+    if (!await voiceFileExists(customVoiceName)) {
+      throw new Error(`Custom voice not found: ${customVoiceName}`);
+    }
+    // Use file:// URL for local TTS server
+    voiceUrl = `file://${getVoicePath(customVoiceName)}`;
+  }
+
   const formData = new FormData();
   formData.append('text', paddedText);
-  formData.append('voice_url', voice);
+  formData.append('voice_url', voiceUrl);
 
   const response = await fetch(`${TTS_URL}/tts`, {
     method: 'POST',

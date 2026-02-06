@@ -1122,8 +1122,8 @@
       },
       smug: {
         eyeRyRatio: 0.75, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
-        browY: 0, browRotateL: -10, browRotateR: 5,
-        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -8
+        browY: 0, browRotateL: 6, browRotateR: -6,
+        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -15
       },
       tired: {
         eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
@@ -1131,7 +1131,7 @@
         mouthY: 1, mouthScaleY: 0.2, mouthScaleX: 1.0
       },
       skeptical: {
-        eyeRyRatio: 0.8, eyeCyDelta: 0, pupilRyRatio: 0.85, pupilCyDelta: 0,
+        eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
         browY: 1, browRotateL: -25, browRotateR: 8,
         mouthY: 0, mouthScaleY: 0.2, mouthScaleX: 1.0
       },
@@ -1515,10 +1515,21 @@
       const cached = await getCachedAudio(cacheKey);
       if (cached) return cached;
 
-      const formData = new FormData();
-      formData.append('text', text);
-      formData.append('voice_url', voice);
-      const res = await fetch('/tts/tts', { method: 'POST', body: formData });
+      let res;
+      // Handle custom voices (prefixed with 'custom:')
+      if (voice && voice.startsWith('custom:')) {
+        const customVoiceName = voice.replace('custom:', '');
+        res = await fetch('/api/voice/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, voice: customVoiceName })
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('text', text);
+        formData.append('voice_url', voice);
+        res = await fetch('/tts/tts', { method: 'POST', body: formData });
+      }
       if (!res.ok) throw new Error('TTS failed');
       const blob = await res.blob();
       await setCachedAudio(cacheKey, blob);
