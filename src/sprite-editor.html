@@ -2989,9 +2989,11 @@
           <span id="anim-panel-toggle" style="font-size:0.8em;">▼</span>
         </div>
         <div id="animation-preview-panel" class="property-group" style="display:none;">
+          <div class="property-row" style="margin-bottom:10px;">
+            <button id="btn-edit-mode" class="emotion-btn active" data-emotion="neutral" title="Return to Edit Mode" style="width:100%;padding:10px;font-size:14px;background:#16a34a;">✏️ Edit Mode</button>
+          </div>
           <div class="property-row" style="flex-wrap:wrap;gap:5px;">
-            <label style="width:100%;margin-bottom:5px;">Emotions:</label>
-            <button class="emotion-btn" data-emotion="neutral" title="Neutral">😐</button>
+            <label style="width:100%;margin-bottom:5px;">Preview Emotions:</label>
             <button class="emotion-btn" data-emotion="happy" title="Happy">😊</button>
             <button class="emotion-btn" data-emotion="sad" title="Sad">😢</button>
             <button class="emotion-btn" data-emotion="angry" title="Angry">😠</button>
@@ -7182,9 +7184,13 @@
       updateCommandContext();
       renderVariantTabs();
 
-      // Capture original face values for emotion positioning
+      // Reset emotion state for new sprite
       originalFaceValues = null;
+      editableState = null;
+      currentEmotion = 'neutral';
       captureOriginalFaceValues();
+      setEditingEnabled(true);
+      updateEmotionButtons();
 
       // Update sprite list selection (items use data-char attribute)
       document.querySelectorAll('.sprite-item').forEach(item => {
@@ -7381,9 +7387,13 @@
         clearSelection();
         resetHistory();
 
-        // Capture original face values for emotion positioning
+        // Reset emotion state for new variant
         originalFaceValues = null;
+        editableState = null;
+        currentEmotion = 'neutral';
         captureOriginalFaceValues();
+        setEditingEnabled(true);
+        updateEmotionButtons();
 
         updateStatus(`Loaded: ${charName}/${variant}`);
       } catch (e) {
@@ -7514,6 +7524,9 @@
     
     // === SELECTION ===
     function selectElement(el, addToSelection = false) {
+      // Don't allow selection when viewing emotions (not in edit mode)
+      if (!isEditingEnabled()) return;
+
       if (!addToSelection) {
         clearSelection();
       }
@@ -7818,23 +7831,11 @@
       // Add event listeners to inputs
       panel.querySelectorAll('input').forEach(input => {
         input.addEventListener('change', (e) => {
+          if (!isEditingEnabled()) return;
           saveState();
           const attr = e.target.dataset.attr;
           selectedElement.setAttribute(attr, e.target.value);
           updateSpriteSource();
-
-          // If editing a face element, recapture original face values
-          const faceElementIds = ['eye-left-white', 'eye-right-white', 'eye-left-pupil', 'eye-right-pupil',
-                                   'brow-left', 'brow-right', 'mouth-closed', 'mouth-open'];
-          if (selectedElement.id && faceElementIds.includes(selectedElement.id)) {
-            // Reset emotion to neutral (visually) but keep transforms intact
-            currentEmotion = 'neutral';
-            document.querySelectorAll('.emotion-btn').forEach(btn => {
-              btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
-            });
-            // Recapture face values including current transforms (from manual edits)
-            captureOriginalFaceValues();
-          }
         });
       });
     }
@@ -7889,6 +7890,7 @@
       }
 
       function startDrag(e) {
+        if (!isEditingEnabled()) return;
         if (e.button && e.button !== 0) return;
         e.preventDefault();
 
@@ -7935,17 +7937,6 @@
         document.removeEventListener('touchmove', drag);
         document.removeEventListener('touchend', endDrag);
         updateSpriteSource();
-
-        // If dragged a face element, recapture original face values
-        const faceElementIds = ['eye-left-white', 'eye-right-white', 'eye-left-pupil', 'eye-right-pupil',
-                                 'brow-left', 'brow-right', 'mouth-closed', 'mouth-open'];
-        if (el.id && faceElementIds.includes(el.id)) {
-          currentEmotion = 'neutral';
-          document.querySelectorAll('.emotion-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
-          });
-          captureOriginalFaceValues();
-        }
       }
     }
 
@@ -8209,7 +8200,7 @@
     function updateSpriteSource() {
       const svg = document.querySelector('#svg-canvas svg');
       if (!svg) return;
-      
+
       // Restore original size
       const clone = svg.cloneNode(true);
       clone.setAttribute('width', '100');
@@ -8217,7 +8208,7 @@
       clone.querySelectorAll('.selected-element').forEach(el => {
         el.classList.remove('selected-element');
       });
-      
+
       currentSprite = clone.outerHTML;
     }
     
@@ -8268,6 +8259,9 @@
           showSaveSuccess();
           // Recapture face values after save so manual edits become the new baseline
           captureOriginalFaceValues();
+          // Update editable state to match saved state
+          const svg = document.querySelector('#svg-canvas svg');
+          if (svg) editableState = svg.cloneNode(true);
           return;
         }
 
@@ -9749,8 +9743,8 @@
       },
       smug: {
         eyeRyRatio: 0.75, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
-        browY: 0, browRotateL: -10, browRotateR: 5,
-        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -8
+        browY: 0, browRotateL: 6, browRotateR: -6,
+        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -15
       },
       tired: {
         eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
@@ -9758,7 +9752,7 @@
         mouthY: 1, mouthScaleY: 0.2, mouthScaleX: 1.0
       },
       skeptical: {
-        eyeRyRatio: 0.8, eyeCyDelta: 0, pupilRyRatio: 0.85, pupilCyDelta: 0,
+        eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
         browY: 1, browRotateL: -25, browRotateR: 8,
         mouthY: 0, mouthScaleY: 0.2, mouthScaleX: 1.0
       },
@@ -9792,6 +9786,46 @@
     let blinkingInterval = null;
     let originalSvgState = null;
     let originalFaceValues = null;
+    let editableState = null;       // SVG clone of the editable (neutral) state
+
+    // Check if editing is allowed (only in neutral/edit mode)
+    function isEditingEnabled() {
+      return currentEmotion === 'neutral';
+    }
+
+    // Enable or disable editing UI
+    function setEditingEnabled(enabled) {
+      const propertiesPanel = document.getElementById('properties-panel');
+      const svgCanvas = document.getElementById('svg-canvas');
+
+      if (enabled) {
+        propertiesPanel.style.pointerEvents = '';
+        propertiesPanel.style.opacity = '';
+        svgCanvas.style.pointerEvents = '';
+      } else {
+        propertiesPanel.style.pointerEvents = 'none';
+        propertiesPanel.style.opacity = '0.5';
+        // Keep canvas visible but clear selection
+        clearSelection();
+      }
+    }
+
+    // Update emotion button active states
+    function updateEmotionButtons() {
+      const editBtn = document.getElementById('btn-edit-mode');
+      const isEditing = currentEmotion === 'neutral';
+
+      // Update Edit button
+      if (editBtn) {
+        editBtn.classList.toggle('active', isEditing);
+        editBtn.style.background = isEditing ? '#16a34a' : '#4b5563';
+      }
+
+      // Update emotion preview buttons
+      document.querySelectorAll('.emotion-btn:not(#btn-edit-mode)').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emotion === currentEmotion);
+      });
+    }
 
     // Get center point of a path for rotation pivot
     // Handles negative numbers and filters out arc flags
@@ -9899,6 +9933,63 @@
       const svg = document.querySelector('#svg-canvas svg');
       if (!svg) return;
 
+      const wasNeutral = currentEmotion === 'neutral';
+      const goingToNeutral = emotion === 'neutral';
+
+      // Already in edit mode - nothing to do
+      if (wasNeutral && goingToNeutral) {
+        setStatus('Edit mode');
+        return;
+      }
+
+      // Leaving edit mode → save current state
+      if (wasNeutral && !goingToNeutral) {
+        editableState = svg.cloneNode(true);
+        captureOriginalFaceValues();  // Recapture baseline from current edits
+      }
+
+      // Returning to edit mode → restore editable state
+      if (!wasNeutral && goingToNeutral) {
+        if (editableState) {
+          const canvas = document.getElementById('svg-canvas');
+          canvas.innerHTML = '';
+          canvas.appendChild(editableState.cloneNode(true));
+          // Re-setup the restored SVG
+          const restoredSvg = canvas.querySelector('svg');
+          restoredSvg.style.cursor = 'default';
+
+          // Add click handlers to all elements (same as renderSprite)
+          restoredSvg.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'g' && el.tagName !== 'svg') {
+              el.style.cursor = 'pointer';
+              el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (justFinishedDragging) {
+                  justFinishedDragging = false;
+                  return;
+                }
+                selectElement(el, e.shiftKey);
+              });
+            }
+          });
+
+          // Click on canvas background deselects
+          restoredSvg.addEventListener('click', (e) => {
+            if (e.target === restoredSvg && !didBoxSelect) {
+              clearSelection();
+            }
+          });
+
+          buildElementTree();
+          clearSelection();
+        }
+        currentEmotion = 'neutral';
+        updateEmotionButtons();
+        setEditingEnabled(true);
+        setStatus('Edit mode');
+        return;
+      }
+
       const cfg = TRANSFORM_EMOTIONS[emotion];
       if (!cfg) return;
 
@@ -9910,11 +10001,8 @@
       if (!originalSvgState) saveOriginalState();
 
       currentEmotion = emotion;
-
-      // Update active button
-      document.querySelectorAll('.emotion-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.emotion === emotion);
-      });
+      updateEmotionButtons();
+      setEditingEnabled(emotion === 'neutral');
 
       const orig = originalFaceValues;
 
@@ -10056,7 +10144,7 @@
         rightPupilUsesR: orig.pupilRUsesR
       };
 
-      setStatus(`Emotion: ${emotion}`);
+      setStatus(`Preview: ${emotion}`);
     }
 
     function toggleTalking() {
