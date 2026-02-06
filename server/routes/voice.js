@@ -156,10 +156,17 @@ router.post('/process', async (req, res, next) => {
       return res.status(400).json({ error: true, message: 'Voice name is required' });
     }
 
-    // Validate name (alphanumeric, hyphens, underscores only)
-    const safeName = name.toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-    if (!safeName) {
-      return res.status(400).json({ error: true, message: 'Invalid voice name' });
+    // Sanitize name: lowercase, replace invalid chars, strip leading/trailing non-alphanumeric
+    const safeName = name.toLowerCase()
+      .replace(/[^a-z0-9_-]/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^[^a-z0-9]+/, '')  // Strip leading non-alphanumeric (including _ and -)
+      .replace(/[^a-z0-9]+$/, ''); // Strip trailing non-alphanumeric
+
+    // Validate the sanitized name
+    const validation = validateVoiceName(safeName);
+    if (!validation.valid) {
+      return res.status(400).json({ error: true, message: validation.error });
     }
 
     // Check if voice already exists
@@ -171,8 +178,8 @@ router.post('/process', async (req, res, next) => {
     }
 
     // Decode base64 audio - handle various data URL formats
-    // Matches: data:audio/*, data:application/*, or raw base64
-    const base64Data = audio.replace(/^data:[^;]+;base64,/, '');
+    // Matches: data:<mime>[;<params>]*;base64, (e.g., data:audio/wav;charset=utf-8;base64,)
+    const base64Data = audio.replace(/^data:[^,]*base64,/, '');
     const audioBuffer = Buffer.from(base64Data, 'base64');
 
     // Get voices directory

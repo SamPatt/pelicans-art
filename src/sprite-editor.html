@@ -7101,7 +7101,12 @@
     }
 
     function validateVoiceName(input) {
-      const value = input.value.toLowerCase().replace(/[^a-z0-9_-]/g, '-').replace(/-+/g, '-');
+      // Sanitize: lowercase, replace invalid chars, strip leading/trailing non-alphanumeric
+      const value = input.value.toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^[^a-z0-9]+/, '')  // Must start with letter or number
+        .replace(/[^a-z0-9]+$/, ''); // Strip trailing non-alphanumeric
       input.value = value;
     }
 

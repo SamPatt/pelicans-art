@@ -25,6 +25,10 @@ async function generateTTS(text, voice) {
   let voiceUrl = voice;
   if (voice && voice.startsWith('custom:')) {
     const customVoiceName = voice.replace('custom:', '');
+    // Validate voice name to prevent path traversal
+    if (!customVoiceName || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(customVoiceName)) {
+      throw new Error(`Invalid custom voice name: ${customVoiceName}`);
+    }
     if (!await voiceFileExists(customVoiceName)) {
       throw new Error(`Custom voice not found: ${customVoiceName}`);
     }
