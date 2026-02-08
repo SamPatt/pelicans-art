@@ -130,6 +130,128 @@
       line-height: 1.55;
     }
 
+    /* === MODE CARD BUTTONS === */
+    .mode-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .mode-card ul {
+      text-align: left;
+    }
+
+    .mode-card-btn {
+      display: inline-block;
+      margin-top: var(--space-4);
+      font-size: var(--text-base);
+      padding: 10px 24px;
+      text-align: center;
+    }
+
+    .mode-card-btn-disabled {
+      opacity: 0.55;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* === CAROUSEL === */
+    .carousel-section {
+      margin-bottom: var(--space-8);
+    }
+
+    .carousel-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: var(--space-4);
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding: var(--space-2) 0;
+    }
+
+    .carousel-track::-webkit-scrollbar { display: none; }
+
+    .carousel-card {
+      flex: 0 0 200px;
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform var(--duration-fast) var(--ease-standard), box-shadow var(--duration-fast);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .carousel-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .carousel-card-img {
+      width: 100%;
+      height: 150px;
+      object-fit: contain;
+      background: var(--plumage-white);
+      padding: var(--space-2);
+    }
+
+    .carousel-card-info {
+      padding: var(--space-2) var(--space-3);
+    }
+
+    .carousel-card-name {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--wing-dark);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .carousel-card-meta {
+      font-size: var(--text-xs);
+      color: var(--wing-gray);
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+      margin-top: 2px;
+    }
+
+    .carousel-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      font-size: 22px;
+      line-height: 1;
+      color: var(--wing-dark);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-md);
+      transition: opacity var(--duration-fast);
+    }
+
+    .carousel-arrow:hover { background: var(--plumage-cream); }
+
+    .carousel-arrow-left { left: 4px; }
+    .carousel-arrow-right { right: 4px; }
+
     /* === STAGE === */
     .stage-section {
       margin-bottom: var(--space-8);
@@ -214,7 +336,7 @@
   <nav class="pelicans-nav">
     <a href="./" class="pelicans-nav-logo">pelicans<span>.art</span></a>
     <ul class="pelicans-nav-links">
-      <li><a href="sprite-editor.html">Create</a></li>
+      <li><a href="sprite-editor.html?mode=browser">Create</a></li>
       <li><a href="./" class="active">Watch</a></li>
       <li><a href="community.html">Community</a></li>
       <li><button class="theme-toggle" id="themeToggle"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>
@@ -224,11 +346,9 @@
   <!-- HERO -->
   <div class="hero">
     <div class="hero-text">
-      <h1>Make silly cartoons talk.</h1>
-      <p>AI-powered improv with cartoony characters you create. Pick your cast, write a scene, and watch them perform.</p>
+      <h1>What are the limits of AI SVG generation?</h1>
+      <p>AI-powered improv with cartoony characters, props, and backgrounds — all generated as SVGs. Create, share, and watch them perform.</p>
       <div class="hero-buttons">
-        <a href="sprite-editor.html" class="btn btn-pouch" style="font-size: var(--text-lg); padding: 12px 28px;">Start Creating</a>
-        <a href="sprite-editor.html?mode=browser" class="btn btn-ocean" style="font-size: var(--text-lg); padding: 12px 28px;">Try in Browser</a>
         <a href="community.html" class="btn btn-ocean" style="font-size: var(--text-lg); padding: 12px 28px;">Browse Community</a>
       </div>
     </div>
@@ -283,6 +403,7 @@
           <li>Import/export all local assets</li>
           <li>No server install required</li>
         </ul>
+        <a href="sprite-editor.html?mode=browser" class="btn btn-pouch mode-card-btn">Try in Browser</a>
       </div>
       <div class="mode-card">
         <h3>Install For Full Features</h3>
@@ -292,6 +413,16 @@
           <li>WebSocket live collaboration updates</li>
           <li>Full self-hosted stack</li>
         </ul>
+        <span class="btn btn-ocean mode-card-btn mode-card-btn-disabled">Install coming soon!</span>
+      </div>
+    </div>
+
+    <div class="carousel-section">
+      <h2 class="section-title">Community Creations</h2>
+      <div class="carousel-wrapper">
+        <button class="carousel-arrow carousel-arrow-left" id="carouselLeft" aria-label="Previous">&lsaquo;</button>
+        <div class="carousel-track" id="carouselTrack"></div>
+        <button class="carousel-arrow carousel-arrow-right" id="carouselRight" aria-label="Next">&rsaquo;</button>
       </div>
     </div>
 
