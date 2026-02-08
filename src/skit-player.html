@@ -344,6 +344,35 @@
       border-color: var(--ocean-blue);
       box-shadow: 0 0 0 3px rgba(45,142,196,0.15);
     }
+
+    /* Embed mode - hide chrome, fill container */
+    body.embed-mode .pelicans-nav { display: none; }
+    body.embed-mode #url-loader { display: none !important; }
+    body.embed-mode #publishBtn { display: none !important; }
+    body.embed-mode .player-body { padding: 0; }
+    body.embed-mode #viewport {
+      height: 100vh;
+      width: 100vw;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    body.embed-mode #viewport.landscape {
+      height: 100vh;
+      width: 100vw;
+    }
+    body.embed-mode #controls {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      margin-top: 0;
+    }
+    body.embed-mode #controls button:not(#playBtn):not(#captionBtn) {
+      display: none !important;
+    }
+    body.embed-mode #status { display: none; }
+    body.embed-mode h1 { display: none; }
   </style>
 </head>
 <body class="captions-off">
@@ -2327,6 +2356,9 @@
       div.appendChild(svg);
       document.getElementById('stage').appendChild(div);
 
+      // Create mouth group for unified mouth positioning
+      createMouthGroup(svg);
+
       // Get voice from sprite meta (preferred) or cast config
       const spriteMeta = assets?.spriteMeta?.[config.sprite];
       const voice = spriteMeta?.voice?.id || config.voice;
@@ -2341,7 +2373,7 @@
         x: config.x,
         baseY: baseY,
         scale: scale,
-        emotion: 'neutral',
+        currentEmotion: 'neutral',
         sprite: config.sprite,
         voice: voice,
         volume: config.volume,
@@ -3078,15 +3110,20 @@
       console.log('[Player] Init starting...');
       console.log('[Player] URL:', window.location.href);
 
+      // Check for URL parameter to auto-load skit
+      const params = new URLSearchParams(window.location.search);
+
+      // Embed mode - hide UI chrome for iframe embedding
+      if (params.get('embed') === '1') {
+        document.body.classList.add('embed-mode');
+      }
+
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
       analyser = audioContext.createAnalyser();
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.8;
       dataArray = new Uint8Array(analyser.frequencyBinCount);
       analyser.connect(audioContext.destination);
-
-      // Check for URL parameter to auto-load skit
-      const params = new URLSearchParams(window.location.search);
       const skitParam = params.get('skit');
       const urlParam = params.get('url');
       console.log('[Player] Skit param:', skitParam, 'URL param:', urlParam);

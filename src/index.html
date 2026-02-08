@@ -114,173 +114,12 @@
       box-shadow: 0 4px 24px rgba(0,0,0,0.12);
     }
 
-    #stage {
+    .stage-container iframe {
       display: block;
-    }
-
-    .loading-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(15, 25, 35, 0.92);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      border-radius: var(--radius-md);
-    }
-
-    .loading-overlay.hidden { display: none; }
-
-    .loading-pelican-anim {
-      margin-bottom: var(--space-4);
-    }
-
-    .loading-pelican-anim .mouth-open { animation: pelican-gulp 1.2s ease-in-out infinite; }
-    .loading-pelican-anim .mouth-closed { animation: pelican-gulp-inv 1.2s ease-in-out infinite; }
-
-    @keyframes pelican-gulp {
-      0%, 40% { opacity: 0; }
-      50%, 80% { opacity: 1; }
-      90%, 100% { opacity: 0; }
-    }
-    @keyframes pelican-gulp-inv {
-      0%, 40% { opacity: 1; }
-      50%, 80% { opacity: 0; }
-      90%, 100% { opacity: 1; }
-    }
-
-    .loading-text {
-      color: var(--pouch-orange);
-      font-family: var(--font-display);
-      font-size: var(--text-sm);
-      margin-bottom: var(--space-3);
-    }
-
-    .loading-progress {
-      width: 240px;
-      height: 4px;
-      background: var(--player-border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .loading-progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--pouch-orange), var(--pouch-deep));
-      width: 0%;
-      transition: width 0.3s;
-      border-radius: 2px;
-    }
-
-    /* === CONTROLS === */
-    .controls {
-      display: flex;
-      gap: var(--space-3);
-      margin-top: var(--space-4);
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .play-btn {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--pouch-orange), var(--pouch-deep));
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 8px rgba(245,166,35,0.3);
-      transition: all var(--duration-fast) var(--ease-standard);
-      flex-shrink: 0;
-      color: #fff;
-      font-size: 16px;
-    }
-
-    .play-btn:hover {
-      box-shadow: 0 4px 16px rgba(245,166,35,0.5);
-      filter: brightness(1.1);
-    }
-
-    .play-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      filter: grayscale(0.5);
-    }
-
-    .stop-btn {
-      width: 36px;
-      height: 36px;
-      border-radius: var(--radius-sm);
-      background: var(--plumage-cream);
-      border: 1px solid var(--sand-warm);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all var(--duration-fast);
-      color: var(--wing-gray);
-      font-size: 14px;
-    }
-
-    .stop-btn:hover {
-      background: var(--sand-pale);
-      border-color: var(--wing-gray);
-    }
-
-    /* Progress bar */
-    .progress-container {
-      margin-top: var(--space-3);
-    }
-
-    .progress-bar {
       width: 100%;
-      height: 6px;
-      background: var(--plumage-cream);
-      border-radius: 3px;
-      overflow: hidden;
-      cursor: pointer;
-      transition: height var(--duration-fast);
-    }
-
-    .progress-bar:hover { height: 8px; }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--pouch-orange), var(--pouch-deep));
-      width: 0%;
-      transition: width 0.1s linear;
-      border-radius: 3px;
-    }
-
-    .time-display {
-      font-family: var(--font-mono);
-      font-size: var(--text-sm);
-      color: var(--wing-gray);
-      background: var(--plumage-cream);
-      padding: 8px 14px;
-      border-radius: var(--radius-sm);
-      min-width: 110px;
-      text-align: center;
-    }
-
-    .audio-toggle {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-left: auto;
-      color: var(--wing-gray);
-      font-size: var(--text-sm);
-      cursor: pointer;
-    }
-
-    .audio-toggle input {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: var(--pouch-orange);
+      aspect-ratio: 16 / 9;
+      border: none;
+      border-radius: var(--radius-md);
     }
 
     /* === SCRIPT SELECTOR === */
@@ -315,35 +154,6 @@
       color: #fff;
     }
 
-    /* === SCRIPT INFO === */
-    .script-info {
-      margin-top: var(--space-5);
-      padding: var(--space-5);
-      background: var(--plumage-cream);
-      border: 1px solid var(--sand-warm);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-sm);
-    }
-
-    .script-info h3 {
-      font-family: var(--font-display);
-      font-size: var(--text-lg);
-      color: var(--wing-dark);
-      margin-bottom: var(--space-2);
-    }
-
-    .script-info p {
-      color: var(--wing-gray);
-      font-size: var(--text-sm);
-      line-height: 1.5;
-    }
-
-    .voice-info {
-      margin-top: var(--space-2);
-      font-size: var(--text-xs);
-      color: var(--sand-warm);
-    }
-
     /* === RESPONSIVE === */
     @media (max-width: 768px) {
       .hero {
@@ -360,9 +170,7 @@
 
       .main-content { padding: var(--space-5) var(--space-4); }
 
-      .controls { gap: var(--space-2); }
-
-      .time-display { min-width: 90px; font-size: var(--text-xs); }
+      .script-selector { justify-content: center; }
     }
   </style>
 </head>
@@ -434,50 +242,13 @@
       <h2 class="section-title">Now Playing</h2>
 
       <div class="stage-container">
-        <canvas id="stage" width="800" height="450"></canvas>
-        <div class="loading-overlay" id="loadingOverlay">
-          <div class="loading-pelican-anim">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="60" height="90">
-              <g><ellipse cx="50" cy="110" rx="28" ry="35" fill="#f5f5f5"/><ellipse cx="50" cy="115" rx="20" ry="28" fill="#fff"/><ellipse cx="25" cy="105" rx="10" ry="25" fill="#e0e0e0"/><ellipse cx="75" cy="105" rx="10" ry="25" fill="#e0e0e0"/><ellipse cx="22" cy="125" rx="6" ry="10" fill="#424242"/><ellipse cx="78" cy="125" rx="6" ry="10" fill="#424242"/><ellipse cx="40" cy="145" rx="8" ry="4" fill="#ffb300"/><ellipse cx="60" cy="145" rx="8" ry="4" fill="#ffb300"/></g>
-              <g><ellipse cx="50" cy="75" rx="12" ry="18" fill="#f5f5f5"/><ellipse cx="50" cy="45" rx="18" ry="16" fill="#f5f5f5"/><ellipse cx="42" cy="43" rx="5" ry="6" fill="#fff"/><ellipse cx="58" cy="43" rx="5" ry="6" fill="#fff"/><ellipse cx="42" cy="44" rx="2" ry="3" fill="#000"/><ellipse cx="58" cy="44" rx="2" ry="3" fill="#000"/></g>
-              <g><path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/><path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/><ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/><path class="mouth-closed" d="M44 68 Q50 66 56 68" stroke="#8d6e63" stroke-width="1.5" fill="none"/><ellipse class="mouth-open" cx="50" cy="68" rx="10" ry="8" fill="#f44336" opacity="0"/></g>
-            </svg>
-          </div>
-          <div class="loading-text" id="loadingText">Generating voices...</div>
-          <div class="loading-progress">
-            <div class="loading-progress-fill" id="loadingProgressFill"></div>
-          </div>
-        </div>
+        <iframe id="skitFrame" src="skit-player.html?embed=1&skit=luckyCharms" allow="autoplay"></iframe>
       </div>
 
-      <div class="progress-container">
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-      </div>
-
-      <div class="controls">
-        <button class="play-btn" id="playBtn" disabled>&#9654;</button>
-        <button class="stop-btn" id="stopBtn">&#9632;</button>
-        <div class="time-display">
-          <span id="currentTime">0.0</span>s / <span id="totalTime">0</span>s
-        </div>
-        <div class="audio-toggle">
-          <input type="checkbox" id="audioEnabled" checked>
-          <label for="audioEnabled">Audio</label>
-        </div>
-      </div>
-
-      <div class="script-selector">
-        <button id="script0Btn" class="script-tab active">The Box</button>
-        <button id="script1Btn" class="script-tab">The Performance Review</button>
-        <button id="script2Btn" class="script-tab">Existential Kitchen</button>
-      </div>
-
-      <div class="script-info">
-        <h3 id="scriptTitle">Loading...</h3>
-        <p id="scriptDesc"></p>
-        <p class="voice-info" id="voiceInfo"></p>
+      <div class="script-selector" id="skitSelector">
+        <button class="script-tab active" data-skit="luckyCharms">Lucky Charms</button>
+        <button class="script-tab" data-skit="theBox">The Box</button>
+        <button class="script-tab" data-skit="theNegotiation">The Negotiation</button>
       </div>
     </div>
   </div>
@@ -491,231 +262,25 @@
     <div class="pelicans-footer-tagline">Stuff it in the pouch.</div>
   </footer>
 
-  <script src="renderer.js"></script>
-  <script src="audio-manager.js"></script>
   <script>
-    // Test scripts from our AI generation
-    const scripts = {
-      theBox: {
-        meta: { title: "The Box", duration: 30 },
-        stage: { background: "apartment", width: 800, height: 450, orientation: "landscape" },
-        cast: {
-          girl: { sprite: "girl", x: 22, startPos: [176, 320], voice: "cosette", scale: 1.6 },
-          cat: { sprite: "cat", x: 65, startPos: [520, 320], voice: "javert" }
-        },
-        props: {
-          "cat-tree": { prop: "cat-tree", x: 90.25, y: 76.68, scale: 3, layer: "background", visible: true },
-          "cardboard-box": { prop: "cardboard-box", x: 65.14, y: 107.55, scale: 4, layer: "foreground", visible: true }
-        },
-        script: [
-          { t: 0, do: "shot", type: "wide" },
-          { t: 0, do: "emote", who: "cat", emotion: "excited" },
-          { t: 0.5, do: "say", who: "girl", line: "I spent two hundred dollars on that cat tree.", duration: 2.5 },
-          { t: 3.5, do: "shot", type: "medium" },
-          { t: 3.5, do: "say", who: "cat", line: "And I appreciate the gesture.", duration: 2 },
-          { t: 6, do: "emote", who: "girl", emotion: "angry" },
-          { t: 6.5, do: "say", who: "girl", line: "You're sitting in the box it came in!", duration: 2 },
-          { t: 9, do: "shot", type: "closeup", who: "cat" },
-          { t: 9, do: "emote", who: "cat", emotion: "smug" },
-          { t: 9.5, do: "say", who: "cat", line: "Yes. The box. My throne.", duration: 2 },
-          { t: 12, do: "shot", type: "two-shot" },
-          { t: 12, do: "emote", who: "cat", emotion: "happy" },
-          { t: 12.5, do: "say", who: "girl", line: "It's cardboard!", duration: 1.5 },
-          { t: 14.5, do: "say", who: "cat", line: "Cardboard that perfectly contains my essence.", duration: 2.5 },
-          { t: 17.5, do: "shot", type: "closeup", who: "cat" },
-          { t: 17.5, do: "emote", who: "cat", emotion: "happy" },
-          { t: 18, do: "say", who: "cat", line: "When I'm in the box, I know exactly where I end and the world begins.", duration: 3 },
-          { t: 21.5, do: "shot", type: "closeup", who: "girl" },
-          { t: 21.5, do: "emote", who: "girl", emotion: "worried" },
-          { t: 22, do: "say", who: "girl", line: "That's... weirdly philosophical.", duration: 2 },
-          { t: 24.5, do: "shot", type: "medium" },
-          { t: 24.5, do: "emote", who: "cat", emotion: "neutral" },
-          { t: 25, do: "say", who: "cat", line: "Also... it smells like cardboard.", duration: 2 },
-          { t: 27.5, do: "emote", who: "girl", emotion: "tired" },
-          { t: 27.5, do: "shot", type: "wide" },
-          { t: 28, do: "say", who: "girl", line: "Fine. Keep your box. I'm returning the cat tree.", duration: 2.5 }
-        ],
-        description: "A girl tries to understand why her cat is obsessed with an empty box."
-      },
+    // Skit selector - switch iframe src when user clicks a tab
+    const skitFrame = document.getElementById('skitFrame');
+    const selector = document.getElementById('skitSelector');
 
-      performanceReview: {
-        meta: { title: "The Performance Review", duration: 18 },
-        stage: { background: "office", width: 800, height: 450 },
-        cast: {
-          boss: { sprite: "woman_business", startPos: [600, 320] },
-          employee: { sprite: "man_suit", startPos: [-100, 320] }
-        },
-        props: {
-          sword: { sprite: "sword", visible: false }
-        },
-        script: [
-          { t: 0, do: "enter", who: "employee", from: "left" },
-          { t: 1.5, do: "say", who: "boss", line: "Have a seat. Let's discuss your performance.", duration: 2.5 },
-          { t: 4.5, do: "emote", who: "employee", emotion: "confused" },
-          { t: 5, do: "say", who: "employee", line: "I don't work here.", duration: 2 },
-          { t: 7.5, do: "say", who: "boss", line: "Exactly. That's the problem.", duration: 2 },
-          { t: 10, do: "emote", who: "employee", emotion: "shocked" },
-          { t: 10.5, do: "spawn", what: "sword", at: [620, 300] },
-          { t: 11, do: "say", who: "boss", line: "We're letting you go.", duration: 2 },
-          { t: 13.5, do: "emote", who: "boss", emotion: "happy" },
-          { t: 14, do: "move", who: "boss", to: [400, 320], duration: 1 },
-          { t: 14.5, do: "emote", who: "employee", emotion: "shocked" },
-          { t: 15, do: "exit", who: "employee", to: "right" },
-          { t: 16.5, do: "say", who: "boss", line: "Same time next week.", duration: 1.5 }
-        ],
-        description: "Being fired from a job you don't have. The sword is never addressed."
-      },
+    selector.addEventListener('click', (e) => {
+      const btn = e.target.closest('.script-tab');
+      if (!btn) return;
 
-      existentialKitchen: {
-        meta: { title: "Existential Kitchen", duration: 16 },
-        stage: { background: "kitchen", width: 800, height: 450 },
-        cast: {
-          human: { sprite: "man_casual", startPos: [200, 320] },
-          cat: { sprite: "cat", startPos: [500, 340] }
-        },
-        props: {
-          banana: { sprite: "banana", visible: false }
-        },
-        script: [
-          { t: 0, do: "say", who: "human", line: "I should eat something healthy.", duration: 2 },
-          { t: 2, do: "spawn", what: "banana", at: [350, 350] },
-          { t: 2.5, do: "move", who: "human", to: [320, 320], duration: 1 },
-          { t: 3.5, do: "say", who: "cat", line: "Don't.", duration: 1 },
-          { t: 4.5, do: "emote", who: "human", emotion: "shocked" },
-          { t: 5, do: "say", who: "human", line: "You can talk?!", duration: 1.5 },
-          { t: 6.5, do: "say", who: "cat", line: "You can hear?", duration: 1.5 },
-          { t: 8, do: "emote", who: "cat", emotion: "confused" },
-          { t: 8.5, do: "say", who: "cat", line: "This has never happened before.", duration: 2 },
-          { t: 10.5, do: "despawn", what: "banana" },
-          { t: 10.5, do: "say", who: "human", line: "Where did the banana go?", duration: 1.5 },
-          { t: 12, do: "say", who: "cat", line: "We don't talk about the banana.", duration: 2 },
-          { t: 12.5, do: "emote", who: "cat", emotion: "angry" }
-        ],
-        description: "The cat has been talking this whole time. The banana knows too much."
-      }
-    };
+      const skitName = btn.dataset.skit;
+      if (!skitName) return;
 
-    // Initialize renderer
-    const canvas = document.getElementById('stage');
-    const renderer = new SkitRenderer(canvas, {
-      onTimeUpdate: (time) => {
-        document.getElementById('currentTime').textContent = time.toFixed(1);
-        const duration = renderer.script?.meta?.duration || 1;
-        document.getElementById('progressFill').style.width = (time / duration * 100) + '%';
+      // Update active state
+      selector.querySelectorAll('.script-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
 
-        // Trigger audio playback
-        if (audioEnabled && audioManager) {
-          audioManager.playAudioAt(time);
-        }
-      },
-      onEnd: () => {
-        document.getElementById('playBtn').innerHTML = '&#9654;';
-        // Delay stopping audio so final line can finish
-        if (audioManager) {
-          setTimeout(() => {
-            audioManager.stopAll();
-            audioManager.resetTriggers();
-          }, 3000);
-        }
-      }
+      // Reload iframe with new skit
+      skitFrame.src = `skit-player.html?embed=1&skit=${skitName}`;
     });
-
-    // Initialize audio manager
-    const audioManager = new AudioManager({
-      onProgress: (completed, total, message) => {
-        document.getElementById('loadingText').textContent = message;
-        document.getElementById('loadingProgressFill').style.width = (completed / total * 100) + '%';
-      },
-      onReady: () => {
-        document.getElementById('loadingOverlay').classList.add('hidden');
-        document.getElementById('playBtn').disabled = false;
-      }
-    });
-
-    let currentScript = 'theBox';
-    let audioEnabled = true;
-
-    async function loadScript(name) {
-      currentScript = name;
-      const script = scripts[name];
-
-      // Update UI
-      document.getElementById('scriptTitle').textContent = script.meta.title;
-      document.getElementById('scriptDesc').textContent = script.description;
-      document.getElementById('totalTime').textContent = script.meta.duration;
-      document.getElementById('currentTime').textContent = '0.0';
-      document.getElementById('progressFill').style.width = '0%';
-      document.getElementById('playBtn').innerHTML = '&#9654;';
-      document.getElementById('playBtn').disabled = true;
-
-      // Update button states
-      document.getElementById('script0Btn').classList.toggle('active', name === 'theBox');
-      document.getElementById('script1Btn').classList.toggle('active', name === 'performanceReview');
-      document.getElementById('script2Btn').classList.toggle('active', name === 'existentialKitchen');
-
-      // Load into renderer
-      renderer.load(script);
-
-      // Show voice info
-      const voices = [...new Set(script.script.filter(b => b.do === 'say').map(b =>
-        `${b.who}: ${audioManager.getVoiceForCharacter(b.who)}`
-      ))];
-      document.getElementById('voiceInfo').textContent = `Voices: ${voices.join(', ')}`;
-
-      // Generate audio
-      if (audioEnabled) {
-        document.getElementById('loadingOverlay').classList.remove('hidden');
-        await audioManager.generateAudioForScript(script);
-      } else {
-        document.getElementById('loadingOverlay').classList.add('hidden');
-        document.getElementById('playBtn').disabled = false;
-      }
-    }
-
-    // Controls
-    document.getElementById('playBtn').addEventListener('click', () => {
-      if (renderer.isPlaying) {
-        renderer.pause();
-        document.getElementById('playBtn').innerHTML = '&#9654;';
-        if (audioManager) audioManager.stopAll();
-      } else {
-        renderer.play();
-        document.getElementById('playBtn').innerHTML = '&#9646;&#9646;';
-      }
-    });
-
-    document.getElementById('stopBtn').addEventListener('click', () => {
-      renderer.stop();
-      document.getElementById('playBtn').innerHTML = '&#9654;';
-      if (audioManager) {
-        audioManager.stopAll();
-        audioManager.resetTriggers();
-      }
-    });
-
-    document.getElementById('progressBar').addEventListener('click', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const percent = x / rect.width;
-      const duration = renderer.script?.meta?.duration || 1;
-      renderer.seek(percent * duration);
-      if (audioManager) audioManager.seekTo(percent * duration);
-    });
-
-    document.getElementById('audioEnabled').addEventListener('change', (e) => {
-      audioEnabled = e.target.checked;
-      if (audioEnabled && currentScript) {
-        loadScript(currentScript);
-      }
-    });
-
-    // Script selection
-    document.getElementById('script0Btn').addEventListener('click', () => loadScript('theBox'));
-    document.getElementById('script1Btn').addEventListener('click', () => loadScript('performanceReview'));
-    document.getElementById('script2Btn').addEventListener('click', () => loadScript('existentialKitchen'));
-
-    // Load initial script
-    loadScript('theBox');
 
     // --- Theme toggle ---
     function applyTheme(theme) {
