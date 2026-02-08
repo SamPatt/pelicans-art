@@ -1,0 +1,10 @@
+{
+  "description": "make batman",
+  "type": "human",
+  "voice": {
+    "id": "javert",
+    "pitch": -0.7,
+    "speed": 1,
+    "volume": 1
+  }
+}

@@ -1,0 +1,151 @@
+<svg viewBox="0 0 225 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background wall -->
+  <rect x="0" y="0" width="225" height="400" fill="#2C1810"/>
+  
+  <!-- Wallpaper pattern - elegant damask style -->
+  <pattern id="damask" x="0" y="0" width="45" height="45" patternUnits="userSpaceOnUse">
+    <rect width="45" height="45" fill="#2C1810"/>
+    <circle cx="22.5" cy="22.5" r="8" fill="#3A2218" opacity="0.5"/>
+    <path d="M22.5 10 L27 22.5 L22.5 35 L18 22.5Z" fill="#3A2218" opacity="0.3"/>
+  </pattern>
+  <rect x="0" y="0" width="225" height="280" fill="url(#damask)"/>
+  
+  <!-- Wainscoting / lower wall panel -->
+  <rect x="0" y="200" width="225" height="80" fill="#1E0F08"/>
+  <rect x="10" y="210" width="90" height="60" rx="3" fill="none" stroke="#3A2218" stroke-width="1.5"/>
+  <rect x="125" y="210" width="90" height="60" rx="3" fill="none" stroke="#3A2218" stroke-width="1.5"/>
+  
+  <!-- Floor -->
+  <rect x="0" y="280" width="225" height="120" fill="#1A0D06"/>
+  <!-- Checkered floor tiles -->
+  <g opacity="0.3">
+    <rect x="0" y="280" width="30" height="30" fill="#2C1810"/>
+    <rect x="60" y="280" width="30" height="30" fill="#2C1810"/>
+    <rect x="120" y="280" width="30" height="30" fill="#2C1810"/>
+    <rect x="180" y="280" width="30" height="30" fill="#2C1810"/>
+    <rect x="30" y="310" width="30" height="30" fill="#2C1810"/>
+    <rect x="90" y="310" width="30" height="30" fill="#2C1810"/>
+    <rect x="150" y="310" width="30" height="30" fill="#2C1810"/>
+    <rect x="0" y="340" width="30" height="30" fill="#2C1810"/>
+    <rect x="60" y="340" width="30" height="30" fill="#2C1810"/>
+    <rect x="120" y="340" width="30" height="30" fill="#2C1810"/>
+    <rect x="180" y="340" width="30" height="30" fill="#2C1810"/>
+    <rect x="30" y="370" width="30" height="30" fill="#2C1810"/>
+    <rect x="90" y="370" width="30" height="30" fill="#2C1810"/>
+    <rect x="150" y="370" width="30" height="30" fill="#2C1810"/>
+  </g>
+  
+  <!-- Chandelier -->
+  <line x1="112" y1="0" x2="112" y2="30" stroke="#C8A84E" stroke-width="1.5"/>
+  <ellipse cx="112" cy="35" rx="25" ry="8" fill="#C8A84E"/>
+  <ellipse cx="112" cy="35" rx="22" ry="6" fill="#DAB85E"/>
+  <!-- Candles on chandelier -->
+  <rect x="92" y="25" width="3" height="10" fill="#FFF5D6" rx="1"/>
+  <rect x="102" y="22" width="3" height="13" fill="#FFF5D6" rx="1"/>
+  <rect x="119" y="22" width="3" height="13" fill="#FFF5D6" rx="1"/>
+  <rect x="129" y="25" width="3" height="10" fill="#FFF5D6" rx="1"/>
+  <!-- Flames -->
+  <ellipse cx="93.5" cy="22" rx="2.5" ry="4" fill="#FFD700" opacity="0.9"/>
+  <ellipse cx="93.5" cy="21" rx="1.5" ry="2.5" fill="#FFF4B0"/>
+  <ellipse cx="103.5" cy="19" rx="2.5" ry="4" fill="#FFD700" opacity="0.9"/>
+  <ellipse cx="103.5" cy="18" rx="1.5" ry="2.5" fill="#FFF4B0"/>
+  <ellipse cx="120.5" cy="19" rx="2.5" ry="4" fill="#FFD700" opacity="0.9"/>
+  <ellipse cx="120.5" cy="18" rx="1.5" ry="2.5" fill="#FFF4B0"/>
+  <ellipse cx="130.5" cy="22" rx="2.5" ry="4" fill="#FFD700" opacity="0.9"/>
+  <ellipse cx="130.5" cy="21" rx="1.5" ry="2.5" fill="#FFF4B0"/>
+  
+  <!-- Warm glow from chandelier -->
+  <radialGradient id="glow" cx="50%" cy="10%" r="50%">
+    <stop offset="0%" stop-color="#FFD700" stop-opacity="0.12"/>
+    <stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+  </radialGradient>
+  <rect x="0" y="0" width="225" height="280" fill="url(#glow)"/>
+  
+  <!-- Painting on wall (left) -->
+  <rect x="20" y="80" width="50" height="65" fill="#C8A84E" rx="2"/>
+  <rect x="23" y="83" width="44" height="59" fill="#2E4A2E"/>
+  <ellipse cx="45" cy="100" rx="12" ry="8" fill="#3D6B3D"/>
+  <rect x="30" y="108" width="25" height="28" fill="#4A2810"/>
+  <circle cx="45" cy="95" rx="5" fill="#FFD700" opacity="0.3"/>
+  
+  <!-- Painting on wall (right) -->
+  <rect x="155" y="75" width="50" height="70" fill="#C8A84E" rx="2"/>
+  <rect x="158" y="78" width="44" height="64" fill="#1A2744"/>
+  <circle cx="180" cy="100" rx="14" fill="#253A5E"/>
+  <path d="M170 130 Q180 115 190 130" fill="#3D2E1A"/>
+  
+  <!-- Wall sconce left -->
+  <rect x="8" y="150" width="6" height="12" fill="#C8A84E" rx="1"/>
+  <path d="M5 150 Q11 140 17 150" fill="#C8A84E"/>
+  <ellipse cx="11" cy="145" rx="3" ry="5" fill="#FFD700" opacity="0.7"/>
+  <ellipse cx="11" cy="144" rx="1.5" ry="3" fill="#FFF4B0"/>
+  
+  <!-- Wall sconce right -->
+  <rect x="211" y="150" width="6" height="12" fill="#C8A84E" rx="1"/>
+  <path d="M208 150 Q214 140 220 150" fill="#C8A84E"/>
+  <ellipse cx="214" cy="145" rx="3" ry="5" fill="#FFD700" opacity="0.7"/>
+  <ellipse cx="214" cy="144" rx="1.5" ry="3" fill="#FFF4B0"/>
+  
+  <!-- Background table (far) -->
+  <ellipse cx="55" cy="260" rx="28" ry="8" fill="#5C2E0E"/>
+  <rect x="50" y="260" width="10" height="25" fill="#4A2508"/>
+  <!-- Tablecloth -->
+  <ellipse cx="55" cy="258" rx="28" ry="8" fill="#8B0000"/>
+  <ellipse cx="55" cy="256" rx="26" ry="6" fill="#A01010"/>
+  <!-- Wine glass -->
+  <line x1="50" y1="248" x2="50" y2="256" stroke="#DDDDDD" stroke-width="1"/>
+  <path d="M46 240 Q50 248 54 240" fill="none" stroke="#DDDDDD" stroke-width="1"/>
+  <ellipse cx="50" cy="239" rx="4" ry="2" fill="#6B0020" opacity="0.6"/>
+  <!-- Candle on table -->
+  <rect x="60" y="242" width="4" height="14" fill="#FFF5D6" rx="1"/>
+  <ellipse cx="62" cy="240" rx="2" ry="3.5" fill="#FFD700" opacity="0.8"/>
+  
+  <!-- Background table (far right) -->
+  <ellipse cx="175" cy="265" rx="25" ry="7" fill="#5C2E0E"/>
+  <rect x="170" y="265" width="10" height="22" fill="#4A2508"/>
+  <ellipse cx="175" cy="263" rx="25" ry="7" fill="#8B0000"/>
+  <ellipse cx="175" cy="261" rx="23" ry="5.5" fill="#A01010"/>
+  <!-- Plate -->
+  <ellipse cx="175" cy="258" rx="8" ry="3" fill="#F0E6D3"/>
+  <ellipse cx="175" cy="258" rx="6" ry="2" fill="#E8DCC8"/>
+  
+  <!-- Foreground table (center, partially visible) -->
+  <ellipse cx="112" cy="340" rx="55" ry="14" fill="#5C2E0E"/>
+  <ellipse cx="112" cy="337" rx="55" ry="14" fill="#8B0000"/>
+  <ellipse cx="112" cy="334" rx="52" ry="12" fill="#A01010"/>
+  <!-- Table legs -->
+  <rect x="75" y="340" width="8" height="50" fill="#4A2508"/>
+  <rect x="142" y="340" width="8" height="50" fill="#4A2508"/>
+  
+  <!-- Place setting left -->
+  <ellipse cx="90" cy="330" rx="12" ry="5" fill="#F0E6D3"/>
+  <ellipse cx="90" cy="330" rx="9" ry="3.5" fill="#E8DCC8"/>
+  <line x1="75" y1="326" x2="75" y2="336" stroke="#C0C0C0" stroke-width="1"/>
+  <line x1="78" y1="326" x2="78" y2="336" stroke="#C0C0C0" stroke-width="1"/>
+  
+  <!-- Place setting right -->
+  <ellipse cx="134" cy="330" rx="12" ry="5" fill="#F0E6D3"/>
+  <ellipse cx="134" cy="330" rx="9" ry="3.5" fill="#E8DCC8"/>
+  <line x1="147" y1="326" x2="147" y2="336" stroke="#C0C0C0" stroke-width="1"/>
+  <line x1="150" y1="326" x2="150" y2="336" stroke="#C0C0C0" stroke-width="1"/>
+  
+  <!-- Center candle -->
+  <rect x="108" y="310" width="8" height="20" fill="#FFF5D6" rx="2"/>
+  <ellipse cx="112" cy="307" rx="4" ry="6" fill="#FFD700" opacity="0.85"/>
+  <ellipse cx="112" cy="305" rx="2.5" ry="3.5" fill="#FFF4B0"/>
+  
+  <!-- Wine bottle -->
+  <rect x="122" y="308" width="6" height="22" fill="#2A0A0A" rx="2"/>
+  <rect x="123.5" y="302" width="3" height="8" fill="#2A0A0A" rx="1"/>
+  <rect x="122" y="316" width="6" height="8" fill="#D4AF37" opacity="0.4" rx="1"/>
+  
+  <!-- Ambient warm overlay -->
+  <rect x="0" y="0" width="225" height="400" fill="#FF8C00" opacity="0.04"/>
+  
+  <!-- Subtle vignette -->
+  <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+    <stop offset="0%" stop-color="transparent"/>
+    <stop offset="100%" stop-color="#000000" stop-opacity="0.35"/>
+  </radialGradient>
+  <rect x="0" y="0" width="225" height="400" fill="url(#vignette)"/>
+</svg>

@@ -1,0 +1,35 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Base -->
+  <rect x="25" y="90" width="50" height="8" rx="2" fill="#8B7355"/>
+  
+  <!-- Main post -->
+  <rect x="44" y="25" width="12" height="65" fill="#D2B48C"/>
+  <line x1="46" y1="25" x2="46" y2="90" stroke="#C4A574" stroke-width="1"/>
+  <line x1="50" y1="25" x2="50" y2="90" stroke="#C4A574" stroke-width="1"/>
+  <line x1="54" y1="25" x2="54" y2="90" stroke="#C4A574" stroke-width="1"/>
+  
+  <!-- Bottom platform -->
+  <rect x="20" y="65" width="35" height="6" rx="2" fill="#6B8E6B"/>
+  <rect x="20" y="65" width="35" height="2" rx="1" fill="#7DA07D"/>
+  
+  <!-- Middle platform -->
+  <rect x="45" y="45" width="40" height="6" rx="2" fill="#6B8E6B"/>
+  <rect x="45" y="45" width="40" height="2" rx="1" fill="#7DA07D"/>
+  
+  <!-- Top platform/bed -->
+  <ellipse cx="50" cy="22" rx="22" ry="8" fill="#E8B4B8"/>
+  <ellipse cx="50" cy="20" rx="18" ry="5" fill="#F5D0D3"/>
+  
+  <!-- Side scratching post -->
+  <rect x="72" y="51" width="8" height="25" fill="#D2B48C"/>
+  <line x1="74" y1="51" x2="74" y2="76" stroke="#C4A574" stroke-width="1"/>
+  <line x1="78" y1="51" x2="78" y2="76" stroke="#C4A574" stroke-width="1"/>
+  
+  <!-- Small ball toy hanging -->
+  <line x1="25" y1="71" x2="25" y2="80" stroke="#888" stroke-width="1"/>
+  <circle cx="25" cy="82" r="3" fill="#FF6B6B"/>
+  
+  <!-- Paw prints on top bed -->
+  <circle cx="45" cy="19" r="1.5" fill="#D4A0A4"/>
+  <circle cx="55" cy="21" r="1.5" fill="#D4A0A4"/>
+</svg>

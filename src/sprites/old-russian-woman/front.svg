@@ -1,0 +1,78 @@
+<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body -->
+  <g id="body">
+    <!-- Dress/coat -->
+    <path d="M30 75 Q25 90 28 130 L35 145 L65 145 L72 130 Q75 90 70 75 Z" fill="#8B4513"/>
+    <!-- Apron -->
+    <path d="M38 85 L62 85 L60 140 L40 140 Z" fill="#F5DEB3"/>
+    <!-- Apron pattern -->
+    <path d="M42 95 L58 95 M42 105 L58 105 M42 115 L58 115 M42 125 L58 125" stroke="#CD853F" stroke-width="1" fill="none"/>
+    <!-- Left arm -->
+    <path d="M30 80 Q20 95 22 115 Q24 118 28 116 Q32 100 35 85" fill="#8B4513"/>
+    <!-- Left hand -->
+    <ellipse cx="25" cy="118" rx="5" ry="4" fill="#DEB887"/>
+    <!-- Right arm -->
+    <path d="M70 80 Q80 95 78 115 Q76 118 72 116 Q68 100 65 85" fill="#8B4513"/>
+    <!-- Right hand -->
+    <ellipse cx="75" cy="118" rx="5" ry="4" fill="#DEB887"/>
+    <!-- Feet -->
+    <ellipse cx="42" cy="147" rx="8" ry="4" fill="#2F1810"/>
+    <ellipse cx="58" cy="147" rx="8" ry="4" fill="#2F1810"/>
+  </g>
+
+  <!-- Head top (hair, forehead, eyes, brows) -->
+  <g id="head-top">
+    <!-- Headscarf back -->
+    <ellipse cx="50" cy="42" rx="28" ry="25" fill="#B22222"/>
+    <!-- Face base -->
+    <ellipse cx="50" cy="50" rx="22" ry="24" fill="#DEB887"/>
+    <!-- Headscarf wrap -->
+    <path d="M28 35 Q30 25 50 22 Q70 25 72 35 Q72 45 70 50 L68 42 Q65 32 50 30 Q35 32 32 42 L30 50 Q28 45 28 35" fill="#B22222"/>
+    <!-- Headscarf knot -->
+    <ellipse cx="50" cy="72" rx="6" ry="4" fill="#B22222"/>
+    <path d="M44 72 Q40 78 38 85" stroke="#B22222" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M56 72 Q60 78 62 85" stroke="#B22222" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- Forehead wrinkles -->
+    <path d="M38 38 Q50 36 62 38" stroke="#C4A06A" stroke-width="0.5" fill="none"/>
+    <path d="M40 42 Q50 40 60 42" stroke="#C4A06A" stroke-width="0.5" fill="none"/>
+    <!-- Left eye white -->
+    <ellipse id="eye-left-white" cx="40" cy="50" rx="6" ry="4" fill="white"/>
+    <!-- Right eye white -->
+    <ellipse id="eye-right-white" cx="60" cy="50" rx="6" ry="4" fill="white"/>
+    <!-- Left pupil -->
+    <circle id="eye-left-pupil" class="pupil" cx="40" cy="50" r="2.5" fill="#4A3728"/>
+    <!-- Right pupil -->
+    <circle id="eye-right-pupil" class="pupil" cx="60" cy="50" r="2.5" fill="#4A3728"/>
+    <!-- Glasses -->
+    <circle cx="40" cy="50" r="8" stroke="#706050" stroke-width="1.5" fill="none"/>
+    <circle cx="60" cy="50" r="8" stroke="#706050" stroke-width="1.5" fill="none"/>
+    <path d="M48 50 L52 50" stroke="#706050" stroke-width="1.5"/>
+    <path d="M32 48 L28 45" stroke="#706050" stroke-width="1.5"/>
+    <path d="M68 48 L72 45" stroke="#706050" stroke-width="1.5"/>
+    <!-- Left eyebrow -->
+    <path id="brow-left" d="M34 44 Q40 42 46 44" stroke="#808080" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Right eyebrow -->
+    <path id="brow-right" d="M54 44 Q60 42 66 44" stroke="#808080" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Crow's feet wrinkles -->
+    <path d="M30 48 L28 46 M30 50 L27 50 M30 52 L28 54" stroke="#C4A06A" stroke-width="0.5"/>
+    <path d="M70 48 L72 46 M70 50 L73 50 M70 52 L72 54" stroke="#C4A06A" stroke-width="0.5"/>
+  </g>
+
+  <!-- Head bottom (nose, jaw, mouth) -->
+  <g id="head-bottom">
+    <!-- Nose -->
+    <path d="M50 52 Q52 58 50 62 Q48 62 47 60" fill="#CBA075" stroke="#B8956A" stroke-width="0.5"/>
+    <!-- Cheeks (rosy) -->
+    <ellipse cx="35" cy="58" rx="5" ry="3" fill="#E8A0A0" opacity="0.5"/>
+    <ellipse cx="65" cy="58" rx="5" ry="3" fill="#E8A0A0" opacity="0.5"/>
+    <!-- Mouth closed -->
+    <path id="mouth-closed" d="M44 66 Q50 70 56 66" stroke="#8B5A4A" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <!-- Mouth open -->
+    <ellipse id="mouth-open" cx="50" cy="67" rx="6" ry="4" fill="#4A2020" opacity="0"/>
+    <!-- Chin -->
+    <path d="M45 70 Q50 74 55 70" stroke="#C4A06A" stroke-width="0.5" fill="none"/>
+    <!-- Smile lines -->
+    <path d="M36 62 Q38 66 40 68" stroke="#C4A06A" stroke-width="0.5" fill="none"/>
+    <path d="M64 62 Q62 66 60 68" stroke="#C4A06A" stroke-width="0.5" fill="none"/>
+  </g>
+</svg>

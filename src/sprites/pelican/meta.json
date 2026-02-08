@@ -2,9 +2,14 @@
   "name": "Pelican",
   "type": "creature",
   "description": "A coastal pelican bird",
-  "tags": ["animal", "bird", "pelican", "coastal"],
+  "tags": [
+    "animal",
+    "bird",
+    "pelican",
+    "coastal"
+  ],
   "voice": {
-    "id": "javert",
+    "id": "marius",
     "pitch": 0.1,
     "speed": 0.9,
     "volume": 1.1

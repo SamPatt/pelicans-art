@@ -1,0 +1,114 @@
+<svg viewBox="0 0 400 225" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wall background -->
+  <rect x="0" y="0" width="400" height="225" fill="#2C1810"/>
+  <!-- Wainscoting upper wall -->
+  <rect x="0" y="0" width="400" height="120" fill="#3D2317"/>
+  <!-- Decorative wallpaper pattern -->
+  <pattern id="wp" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M20 5 Q25 20 20 35 Q15 20 20 5Z" fill="#4A2D1F" opacity="0.4"/>
+  </pattern>
+  <rect x="0" y="0" width="400" height="120" fill="url(#wp)"/>
+  <!-- Wainscoting trim line -->
+  <rect x="0" y="118" width="400" height="4" fill="#5C3A28"/>
+  <!-- Lower wainscoting panels -->
+  <rect x="0" y="122" width="400" height="60" fill="#3A2010"/>
+  <rect x="20" y="128" width="80" height="48" rx="2" fill="none" stroke="#4E2E1A" stroke-width="2"/>
+  <rect x="120" y="128" width="80" height="48" rx="2" fill="none" stroke="#4E2E1A" stroke-width="2"/>
+  <rect x="220" y="128" width="80" height="48" rx="2" fill="none" stroke="#4E2E1A" stroke-width="2"/>
+  <rect x="320" y="128" width="60" height="48" rx="2" fill="none" stroke="#4E2E1A" stroke-width="2"/>
+  <!-- Floor -->
+  <rect x="0" y="182" width="400" height="43" fill="#1A0E08"/>
+  <!-- Checkered floor pattern -->
+  <g opacity="0.3">
+    <rect x="0" y="182" width="40" height="43" fill="#2A1A10"/>
+    <rect x="80" y="182" width="40" height="43" fill="#2A1A10"/>
+    <rect x="160" y="182" width="40" height="43" fill="#2A1A10"/>
+    <rect x="240" y="182" width="40" height="43" fill="#2A1A10"/>
+    <rect x="320" y="182" width="40" height="43" fill="#2A1A10"/>
+  </g>
+  <!-- Chandelier left -->
+  <g transform="translate(100, 0)">
+    <line x1="0" y1="0" x2="0" y2="25" stroke="#C9A84C" stroke-width="1.5"/>
+    <ellipse cx="0" cy="30" rx="18" ry="8" fill="#C9A84C"/>
+    <ellipse cx="0" cy="30" rx="14" ry="5" fill="#E8C84C"/>
+    <circle cx="-12" cy="28" r="3" fill="#FFF4B0" opacity="0.9"/>
+    <circle cx="0" cy="26" r="3" fill="#FFF4B0" opacity="0.9"/>
+    <circle cx="12" cy="28" r="3" fill="#FFF4B0" opacity="0.9"/>
+    <!-- Glow -->
+    <ellipse cx="0" cy="30" rx="30" ry="15" fill="#FFF4B0" opacity="0.08"/>
+  </g>
+  <!-- Chandelier right -->
+  <g transform="translate(300, 0)">
+    <line x1="0" y1="0" x2="0" y2="25" stroke="#C9A84C" stroke-width="1.5"/>
+    <ellipse cx="0" cy="30" rx="18" ry="8" fill="#C9A84C"/>
+    <ellipse cx="0" cy="30" rx="14" ry="5" fill="#E8C84C"/>
+    <circle cx="-12" cy="28" r="3" fill="#FFF4B0" opacity="0.9"/>
+    <circle cx="0" cy="26" r="3" fill="#FFF4B0" opacity="0.9"/>
+    <circle cx="12" cy="28" r="3" fill="#FFF4B0" opacity="0.9"/>
+    <ellipse cx="0" cy="30" rx="30" ry="15" fill="#FFF4B0" opacity="0.08"/>
+  </g>
+  <!-- Painting left -->
+  <rect x="40" y="40" width="50" height="40" rx="2" fill="#C9A84C"/>
+  <rect x="43" y="43" width="44" height="34" fill="#1B4332"/>
+  <circle cx="65" cy="55" r="8" fill="#2D6A4F"/>
+  <ellipse cx="65" cy="68" rx="16" ry="5" fill="#1B6A3F"/>
+  <!-- Painting right -->
+  <rect x="270" y="35" width="60" height="50" rx="2" fill="#C9A84C"/>
+  <rect x="273" y="38" width="54" height="44" fill="#4A1942"/>
+  <ellipse cx="300" cy="55" rx="12" ry="10" fill="#6B2D5B"/>
+  <rect x="290" y="65" width="20" height="12" fill="#3D1535"/>
+  <!-- Table left (background) -->
+  <g transform="translate(60, 140)">
+    <ellipse cx="0" cy="0" rx="35" ry="10" fill="#F5F0E8"/>
+    <rect x="-2" y="0" width="4" height="40" fill="#3D2317"/>
+    <!-- Wine glass -->
+    <ellipse cx="-12" cy="-3" rx="5" ry="3" fill="none" stroke="#DDD" stroke-width="0.8"/>
+    <line x1="-12" y1="0" x2="-12" y2="6" stroke="#DDD" stroke-width="0.8"/>
+    <line x1="-16" y1="6" x2="-8" y2="6" stroke="#DDD" stroke-width="0.8"/>
+    <!-- Candle -->
+    <rect x="10" y="-12" width="4" height="10" fill="#F5E6CA" rx="1"/>
+    <ellipse cx="12" cy="-13" rx="2" ry="3" fill="#FFD700" opacity="0.8"/>
+    <circle cx="12" cy="-13" r="5" fill="#FFD700" opacity="0.1"/>
+  </g>
+  <!-- Table center (midground) -->
+  <g transform="translate(200, 155)">
+    <ellipse cx="0" cy="0" rx="40" ry="12" fill="#F5F0E8"/>
+    <rect x="-2" y="0" width="4" height="35" fill="#3D2317"/>
+    <!-- Plate -->
+    <ellipse cx="-15" cy="-2" rx="10" ry="4" fill="#FFF" stroke="#DDD" stroke-width="0.5"/>
+    <ellipse cx="15" cy="-2" rx="10" ry="4" fill="#FFF" stroke="#DDD" stroke-width="0.5"/>
+    <!-- Candle -->
+    <rect x="-2" y="-16" width="4" height="12" fill="#F5E6CA" rx="1"/>
+    <ellipse cx="0" cy="-17" rx="2.5" ry="4" fill="#FFD700" opacity="0.8"/>
+    <circle cx="0" cy="-17" r="8" fill="#FFD700" opacity="0.08"/>
+    <!-- Wine bottle -->
+    <rect x="22" y="-14" width="5" height="12" rx="2" fill="#2D1B0E"/>
+    <rect x="23" y="-18" width="3" height="5" rx="1" fill="#2D1B0E"/>
+  </g>
+  <!-- Table right (background) -->
+  <g transform="translate(340, 145)">
+    <ellipse cx="0" cy="0" rx="32" ry="10" fill="#F5F0E8"/>
+    <rect x="-2" y="0" width="4" height="38" fill="#3D2317"/>
+    <!-- Candle -->
+    <rect x="-2" y="-12" width="4" height="10" fill="#F5E6CA" rx="1"/>
+    <ellipse cx="0" cy="-13" rx="2" ry="3" fill="#FFD700" opacity="0.8"/>
+    <circle cx="0" cy="-13" r="5" fill="#FFD700" opacity="0.1"/>
+  </g>
+  <!-- Ambient warm lighting overlay -->
+  <radialGradient id="glow1" cx="100" cy="30" r="120" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#FFD700" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+  </radialGradient>
+  <rect x="0" y="0" width="400" height="225" fill="url(#glow1)"/>
+  <radialGradient id="glow2" cx="300" cy="30" r="120" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#FFD700" stop-opacity="0.06"/>
+    <stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+  </radialGradient>
+  <rect x="0" y="0" width="400" height="225" fill="url(#glow2)"/>
+  <!-- Curtain left -->
+  <path d="M0 0 Q15 60 8 120 L0 120Z" fill="#6B1A1A" opacity="0.7"/>
+  <path d="M0 0 Q10 50 5 120 L0 120Z" fill="#8B2020" opacity="0.5"/>
+  <!-- Curtain right -->
+  <path d="M400 0 Q385 60 392 120 L400 120Z" fill="#6B1A1A" opacity="0.7"/>
+  <path d="M400 0 Q390 50 395 120 L400 120Z" fill="#8B2020" opacity="0.5"/>
+</svg>

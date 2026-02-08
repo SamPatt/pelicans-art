@@ -1,0 +1,13 @@
+{
+  "name": "cat-tree",
+  "description": "cat tree",
+  "defaultScale": 2,
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ]
+}

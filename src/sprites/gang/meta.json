@@ -13,5 +13,11 @@
     "blinkDuration": 150,
     "idleMovement": true,
     "eyeTracking": true
+  },
+  "voice": {
+    "id": "jean",
+    "pitch": -0.2,
+    "speed": 1.1,
+    "volume": 1.2
   }
 }

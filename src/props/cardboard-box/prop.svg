@@ -1,0 +1,18 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" height="150">
+  <!-- Box front face -->
+  <polygon points="15,40 50,55 85,40 85,85 50,95 15,85" fill="#C4956A" style="cursor: pointer;"></polygon>
+  <!-- Box left flap -->
+  <polygon points="15,40 50,55 50,30 15,20" fill="#A67B5B" style="cursor: pointer;"></polygon>
+  <!-- Box right flap -->
+  <polygon points="50,55 85,40 85,15 50,30" fill="#D4A574" style="cursor: pointer;"></polygon>
+  <!-- Box top opening dark -->
+  
+  <!-- Front crease line -->
+  <line x1="50" y1="55" x2="50" y2="95" stroke="#8B5A2B" stroke-width="1.5" style="cursor: pointer;"></line>
+  <!-- Left side shadow -->
+  <polygon points="15,40 15,85 50,95 50,55" fill="#A67B5B" style="cursor: pointer;"></polygon>
+  <!-- Tape on top -->
+  
+  <!-- Front tape -->
+  
+</svg>

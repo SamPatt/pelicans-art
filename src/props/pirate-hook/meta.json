@@ -1,0 +1,13 @@
+{
+  "name": "pirate-hook",
+  "description": "pirate hook",
+  "defaultScale": 1,
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ]
+}

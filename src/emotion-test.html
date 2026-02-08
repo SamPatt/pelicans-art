@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emotion System Test</title>
+  <style>
+    body {
+      background: #1a1a2e;
+      color: #eee;
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 { color: #4ecca3; margin-bottom: 5px; }
+    p.note { color: #888; margin-top: 5px; font-size: 0.9em; }
+
+    .controls {
+      background: #0f3460;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select {
+      background: #1a1a2e;
+      color: #eee;
+      border: 1px solid #4ecca3;
+      padding: 8px 15px;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      max-width: 900px;
+    }
+
+    .card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .card h4 {
+      margin: 0 0 15px 0;
+      color: #4ecca3;
+      font-size: 1.2em;
+    }
+
+    .card.broken h4 {
+      color: #e94560;
+    }
+
+    .card .sprite-box {
+      background: #0a0a1a;
+      border-radius: 8px;
+      padding: 20px;
+      height: 350px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card svg {
+      max-width: 100%;
+      max-height: 320px;
+      width: auto;
+      height: 320px;
+    }
+
+    .card .info {
+      font-size: 0.75em;
+      color: #888;
+      margin-top: 12px;
+      text-align: left;
+      line-height: 1.4;
+    }
+
+    .card .desc {
+      font-size: 0.85em;
+      color: #aaa;
+      margin-top: 8px;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 0.75em;
+      margin-left: 5px;
+    }
+    .tag.bad { background: #e94560; color: white; }
+    .tag.good { background: #4ecca3; color: #111; }
+  </style>
+</head>
+<body>
+  <h1>Emotion System Test</h1>
+  <p class="note">Testing the Mouth Group approach: all mouth shapes at a single position, toggled by emotion.</p>
+
+  <div class="controls">
+    <label>Sprite:
+      <select id="sprite-select">
+        <option value="batman">Batman (masked face)</option>
+        <option value="person">Person (face at y~42)</option>
+        <option value="cat">Cat (face at y~52)</option>
+        <option value="sun">Sun (face at y~80)</option>
+        <option value="trump">Trump</option>
+        <option value="waiter">Waiter</option>
+      </select>
+    </label>
+    <label>Emotion:
+      <select id="emotion-select">
+        <option value="neutral">Neutral (default)</option>
+        <option value="happy">Happy</option>
+        <option value="sad">Sad</option>
+        <option value="angry">Angry</option>
+        <option value="worried">Worried</option>
+        <option value="skeptical">Skeptical</option>
+        <option value="tired">Tired</option>
+        <option value="smug">Smug</option>
+        <option value="dead">Dead</option>
+        <option value="surprised">Surprised</option>
+        <option value="excited">Excited</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="cards-grid">
+    <div class="card">
+      <h4>Original</h4>
+      <div class="sprite-box" id="box-original"></div>
+      <div class="desc">Unmodified sprite</div>
+    </div>
+
+    <div class="card">
+      <h4>Mouth Group</h4>
+      <div class="sprite-box" id="box-h"></div>
+      <div class="desc">All mouth shapes at same position</div>
+      <div class="info" id="info-h"></div>
+    </div>
+  </div>
+
+  <div style="margin-top: 20px; padding: 15px; background: #0f3460; border-radius: 8px; max-width: 900px;">
+    <h3 style="color: #4ecca3; margin-top: 0;">Speaking Test</h3>
+    <p style="color: #aaa; font-size: 0.85em;">Switches to mouth-open ellipse and animates ry to simulate talking</p>
+    <button id="speak-btn" style="background: #4ecca3; color: #111; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 1em;">
+      Simulate Speaking
+    </button>
+    <span id="speak-status" style="margin-left: 15px; color: #888;"></span>
+  </div>
+
+  <script>
+    // Full emotion configs (matching sprite-editor)
+    const EMOTIONS = {
+      neutral: {
+        eyeWhite: { ry: 7, cy: 52 },
+        pupil: { ry: 5, cy: 52 },
+        browLeft: "M30 44 Q40 42 48 44",
+        browRight: "M52 44 Q60 42 70 44",
+        mouth: "M50 65 L46 70 M50 65 L54 70"
+      },
+      happy: {
+        eyeWhite: { ry: 5, cy: 50 },
+        pupil: { ry: 4, cy: 50 },
+        browLeft: "M30 42 Q40 38 48 42",
+        browRight: "M52 42 Q60 38 70 42",
+        mouth: "M44 66 Q50 72 56 66"
+      },
+      sad: {
+        eyeWhite: { ry: 6, cy: 54 },
+        pupil: { ry: 5, cy: 55 },
+        browLeft: "M30 48 L48 42",
+        browRight: "M52 42 L70 48",
+        mouth: "M44 70 Q50 65 56 70"
+      },
+      surprised: {
+        eyeWhite: { ry: 9, cy: 52 },
+        pupil: { ry: 6, cy: 52 },
+        browLeft: "M30 38 Q40 34 48 38",
+        browRight: "M52 38 Q60 34 70 38",
+        mouth: "M46 66 Q50 72 54 66 Q50 74 46 66"
+      },
+      angry: {
+        eyeWhite: { ry: 5, cy: 52 },
+        pupil: { ry: 4, cy: 52 },
+        browLeft: "M30 40 L48 46",
+        browRight: "M52 46 L70 40",
+        mouth: "M44 68 L56 68"
+      }
+    };
+
+    // Reference coords that the emotion configs assume
+    const REF = {
+      eyeCy: 52,
+      browY: 44,  // approximate Y center of brows
+      mouthY: 67  // approximate Y center of mouth
+    };
+
+    let orig = {};
+    let svgTemplate = '';
+
+    async function load() {
+      const sprite = document.getElementById('sprite-select').value;
+      try {
+        const resp = await fetch(`/sprites/${sprite}/front.svg`);
+        svgTemplate = await resp.text();
+
+        const doc = new DOMParser().parseFromString(svgTemplate, 'image/svg+xml');
+        const svg = doc.querySelector('svg');
+
+        const eyeL = svg.querySelector('#eye-left-white');
+        const pupilL = svg.querySelector('#eye-left-pupil');
+        const browL = svg.querySelector('#brow-left');
+        const mouth = svg.querySelector('#mouth-closed');
+
+        // Extract original values
+        orig = {
+          eyeRy: parseFloat(eyeL?.getAttribute('ry') || 7),
+          eyeCy: parseFloat(eyeL?.getAttribute('cy') || 52),
+          pupilRy: parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5),
+          pupilCy: parseFloat(pupilL?.getAttribute('cy') || 52),
+          browLeft: browL?.getAttribute('d') || '',
+          browRight: svg.querySelector('#brow-right')?.getAttribute('d') || '',
+          mouth: mouth?.getAttribute('d') || '',
+          // Estimate face offset from reference
+          faceOffsetY: (parseFloat(eyeL?.getAttribute('cy') || 52)) - REF.eyeCy
+        };
+
+        apply();
+      } catch (e) {
+        console.error('Load failed:', e);
+      }
+    }
+
+    function apply() {
+      const emo = document.getElementById('emotion-select').value;
+
+      // Original - unmodified
+      document.getElementById('box-original').innerHTML = svgTemplate;
+
+      // Mouth Group
+      const svg = setSvg('box-h');
+      applyMouthGroup(svg, emo);
+    }
+
+    function setSvg(boxId) {
+      const box = document.getElementById(boxId);
+      box.innerHTML = svgTemplate;
+      return box.querySelector('svg');
+    }
+
+    // Current broken approach - absolute values
+    function applyAbsolute(svg, cfg) {
+      if (!svg || !cfg) return;
+
+      // Eyes - hardcoded positions
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', cfg.eyeWhite.cy);
+          el.setAttribute('ry', cfg.eyeWhite.ry);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', cfg.pupil.cy);
+          el.setAttribute('ry', cfg.pupil.ry);
+        }
+      });
+
+      // Brows - hardcoded paths
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+      if (browL) browL.setAttribute('d', cfg.browLeft);
+      if (browR) browR.setAttribute('d', cfg.browRight);
+
+      // Mouth - hardcoded path
+      const mouth = svg.querySelector('#mouth-closed');
+      if (mouth) mouth.setAttribute('d', cfg.mouth);
+    }
+
+    // Option A: Delta offsets for everything
+    function applyDeltas(svg, cfg, neut) {
+      if (!svg || !cfg || !neut) return;
+
+      const eyeCyDelta = cfg.eyeWhite.cy - neut.eyeWhite.cy;
+      const eyeRyDelta = cfg.eyeWhite.ry - neut.eyeWhite.ry;
+      const pupilCyDelta = cfg.pupil.cy - neut.pupil.cy;
+      const pupilRyDelta = cfg.pupil.ry - neut.pupil.ry;
+
+      // Eyes with deltas
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.eyeCy + eyeCyDelta);
+          el.setAttribute('ry', orig.eyeRy + eyeRyDelta);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.pupilCy + pupilCyDelta);
+          el.setAttribute('ry', orig.pupilRy + pupilRyDelta);
+        }
+      });
+
+      // Brows/mouth - translate paths by face offset
+      // (This is a hack - we're using the emotion paths but translating them)
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+      const mouth = svg.querySelector('#mouth-closed');
+
+      if (browL) {
+        browL.setAttribute('d', cfg.browLeft);
+        browL.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+      }
+      if (browR) {
+        browR.setAttribute('d', cfg.browRight);
+        browR.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+      }
+      if (mouth) {
+        mouth.setAttribute('d', cfg.mouth);
+        mouth.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+      }
+    }
+
+    // Option B: Ratios for everything
+    function applyRatios(svg, cfg, neut) {
+      if (!svg || !cfg || !neut) return;
+
+      const eyeCyRatio = cfg.eyeWhite.cy / neut.eyeWhite.cy;
+      const eyeRyRatio = cfg.eyeWhite.ry / neut.eyeWhite.ry;
+      const pupilCyRatio = cfg.pupil.cy / neut.pupil.cy;
+      const pupilRyRatio = cfg.pupil.ry / neut.pupil.ry;
+
+      // Eyes with ratios
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.eyeCy * eyeCyRatio);
+          el.setAttribute('ry', orig.eyeRy * eyeRyRatio);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.pupilCy * pupilCyRatio);
+          el.setAttribute('ry', orig.pupilRy * pupilRyRatio);
+        }
+      });
+
+      // Brows/mouth - scale from center? This gets weird
+      // Using transform scale centered on face
+      const faceCenter = orig.eyeCy + 15; // rough center of face
+      const scaleY = eyeCyRatio; // not really meaningful but let's try
+
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+      const mouth = svg.querySelector('#mouth-closed');
+
+      // This doesn't really work well for paths...
+      if (browL) browL.setAttribute('d', cfg.browLeft);
+      if (browR) browR.setAttribute('d', cfg.browRight);
+      if (mouth) mouth.setAttribute('d', cfg.mouth);
+    }
+
+    // Option C: Size only, no position changes
+    function applySizeOnly(svg, cfg, neut) {
+      if (!svg || !cfg || !neut) return;
+
+      const eyeRyRatio = cfg.eyeWhite.ry / neut.eyeWhite.ry;
+      const pupilRyRatio = cfg.pupil.ry / neut.pupil.ry;
+
+      // Eyes - only change ry
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          // cy unchanged
+          el.setAttribute('ry', orig.eyeRy * eyeRyRatio);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          // cy unchanged
+          el.setAttribute('ry', orig.pupilRy * pupilRyRatio);
+        }
+      });
+
+      // Brows/mouth - keep original, don't change paths at all
+      // (least expressive but safest)
+    }
+
+    // Option D: Hybrid - deltas for position, ratios for size, transforms for paths
+    function applyHybridTransform(svg, cfg, neut) {
+      if (!svg || !cfg || !neut) return;
+
+      // Eyes: delta for cy, ratio for ry
+      const eyeCyDelta = cfg.eyeWhite.cy - neut.eyeWhite.cy;
+      const eyeRyRatio = cfg.eyeWhite.ry / neut.eyeWhite.ry;
+      const pupilCyDelta = cfg.pupil.cy - neut.pupil.cy;
+      const pupilRyRatio = cfg.pupil.ry / neut.pupil.ry;
+
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.eyeCy + eyeCyDelta);
+          el.setAttribute('ry', orig.eyeRy * eyeRyRatio);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.pupilCy + pupilCyDelta);
+          el.setAttribute('ry', orig.pupilRy * pupilRyRatio);
+        }
+      });
+
+      // Brows/mouth - use emotion paths but translate to face position
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+      const mouth = svg.querySelector('#mouth-closed');
+
+      if (browL) {
+        browL.setAttribute('d', cfg.browLeft);
+        browL.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+      }
+      if (browR) {
+        browR.setAttribute('d', cfg.browRight);
+        browR.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+      }
+      if (mouth) {
+        mouth.setAttribute('d', cfg.mouth);
+        mouth.setAttribute('transform', `translate(0, ${orig.faceOffsetY})`);
+      }
+    }
+
+    // CANONICAL EMOTION LIST:
+    // Neutral (default), Happy, Sad, Angry, Worried, Skeptical, Tired, Smug, Dead, Surprised, Excited
+    //
+    // All values are relative: deltas in pixels, ratios as multipliers, rotations in degrees
+    const TRANSFORM_EMOTIONS = {
+      neutral: {
+        eyeRyRatio: 1.0,
+        eyeCyDelta: 0,
+        pupilRyRatio: 1.0,
+        pupilCyDelta: 0,
+        browY: 0,
+        browRotateL: 0,
+        browRotateR: 0
+      },
+      happy: {
+        eyeRyRatio: 0.7,      // squint
+        eyeCyDelta: -1,
+        pupilRyRatio: 0.8,
+        pupilCyDelta: -1,
+        browY: -2,            // brows raised
+        browRotateL: -8,      // outer edges up
+        browRotateR: 8
+      },
+      sad: {
+        eyeRyRatio: 0.85,
+        eyeCyDelta: 2,        // eyes droop
+        pupilRyRatio: 0.9,
+        pupilCyDelta: 2,
+        browY: 3,
+        browRotateL: -12,     // inner edges up
+        browRotateR: 12
+      },
+      angry: {
+        eyeRyRatio: 0.7,
+        eyeCyDelta: 0,
+        pupilRyRatio: 0.8,
+        pupilCyDelta: 0,
+        browY: 2,             // brows down
+        browRotateL: 8,       // V shape (inner down)
+        browRotateR: -8
+      },
+      worried: {
+        eyeRyRatio: 0.9,
+        eyeCyDelta: 1,
+        pupilRyRatio: 0.9,
+        pupilCyDelta: 1,
+        browY: -1,
+        browRotateL: -10,     // inner high
+        browRotateR: 10
+      },
+      skeptical: {
+        eyeRyRatio: 0.6,      // very squinty
+        eyeCyDelta: 1,
+        pupilRyRatio: 0.7,
+        pupilCyDelta: 1,
+        browY: 1,
+        browRotateL: -20,     // one brow raised
+        browRotateR: 5
+      },
+      tired: {
+        eyeRyRatio: 0.4,      // very droopy
+        eyeCyDelta: 2,
+        pupilRyRatio: 0.5,
+        pupilCyDelta: 2,
+        browY: 4,             // brows lowered
+        browRotateL: 3,
+        browRotateR: -3
+      },
+      smug: {
+        eyeRyRatio: 0.75,
+        eyeCyDelta: 0,
+        pupilRyRatio: 0.8,
+        pupilCyDelta: 0,
+        browY: 0,
+        browRotateL: 6,
+        browRotateR: -6
+      },
+      dead: {
+        eyeRyRatio: 0.7,
+        eyeCyDelta: 0,
+        pupilRyRatio: 0.8,
+        pupilCyDelta: 0,
+        browY: 0,
+        browRotateL: 0,
+        browRotateR: 0,
+        xEyes: true
+      },
+      surprised: {
+        eyeRyRatio: 1.4,      // wide eyes
+        eyeCyDelta: 0,
+        pupilRyRatio: 1.3,
+        pupilCyDelta: 0,
+        browY: -5,            // brows way up
+        browRotateL: -5,
+        browRotateR: 5
+      },
+      excited: {
+        eyeRyRatio: 1.3,
+        eyeCyDelta: -1,
+        pupilRyRatio: 1.2,
+        pupilCyDelta: -1,
+        browY: -4,
+        browRotateL: -6,
+        browRotateR: 6
+      }
+    };
+
+    // Option E: Pure Transform - keep all original paths, only use transforms
+    function applyPureTransform(svg, emotion) {
+      if (!svg) return;
+
+      const cfg = TRANSFORM_EMOTIONS[emotion];
+      if (!cfg) return;
+
+      // Eyes: delta for cy, ratio for ry
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.eyeCy + cfg.eyeCyDelta);
+          el.setAttribute('ry', orig.eyeRy * cfg.eyeRyRatio);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.pupilCy + cfg.pupilCyDelta);
+          const currentRy = parseFloat(el.getAttribute('ry') || el.getAttribute('r') || orig.pupilRy);
+          if (el.hasAttribute('ry')) {
+            el.setAttribute('ry', orig.pupilRy * cfg.pupilRyRatio);
+          } else {
+            el.setAttribute('r', orig.pupilRy * cfg.pupilRyRatio);
+          }
+        }
+      });
+
+      // Brows: keep original path, apply transform
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+
+      if (browL) {
+        // Get brow center for rotation pivot
+        const bbox = getBrowCenter(orig.browLeft);
+        browL.setAttribute('d', orig.browLeft); // Keep original!
+        browL.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateL}, ${bbox.cx}, ${bbox.cy})`);
+      }
+      if (browR) {
+        const bbox = getBrowCenter(orig.browRight);
+        browR.setAttribute('d', orig.browRight); // Keep original!
+        browR.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateR}, ${bbox.cx}, ${bbox.cy})`);
+      }
+
+      // Mouth: keep original path, apply transform
+      const mouth = svg.querySelector('#mouth-closed');
+      if (mouth) {
+        const bbox = getMouthCenter(orig.mouth);
+        mouth.setAttribute('d', orig.mouth); // Keep original!
+        mouth.setAttribute('transform',
+          `translate(0, ${cfg.mouthY}) translate(${bbox.cx}, ${bbox.cy}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-bbox.cx}, ${-bbox.cy})`);
+      }
+    }
+
+    // Helper: estimate center of a path for rotation pivot
+    function getBrowCenter(d) {
+      // Quick parse - find first numbers as start point
+      const nums = d.match(/[\d.]+/g);
+      if (!nums || nums.length < 2) return { cx: 50, cy: 44 };
+      const x1 = parseFloat(nums[0]);
+      const y1 = parseFloat(nums[1]);
+      // If there's more points, average them
+      if (nums.length >= 4) {
+        const x2 = parseFloat(nums[nums.length - 2]);
+        const y2 = parseFloat(nums[nums.length - 1]);
+        return { cx: (x1 + x2) / 2, cy: (y1 + y2) / 2 };
+      }
+      return { cx: x1, cy: y1 };
+    }
+
+    function getMouthCenter(d) {
+      const nums = d.match(/[\d.]+/g);
+      if (!nums || nums.length < 2) return { cx: 50, cy: 65 };
+      // Get rough center from all coordinates
+      let sumX = 0, sumY = 0, count = 0;
+      for (let i = 0; i < nums.length - 1; i += 2) {
+        sumX += parseFloat(nums[i]);
+        sumY += parseFloat(nums[i + 1]);
+        count++;
+      }
+      return { cx: sumX / count, cy: sumY / count };
+    }
+
+    // Option F: Transform + alternate mouth elements
+    function applyTransformMorph(svg, emotion) {
+      if (!svg) return;
+
+      const cfg = TRANSFORM_EMOTIONS[emotion];
+      if (!cfg) return;
+
+      // Eyes: same as E
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.eyeCy + cfg.eyeCyDelta);
+          el.setAttribute('ry', orig.eyeRy * cfg.eyeRyRatio);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.pupilCy + cfg.pupilCyDelta);
+          if (el.hasAttribute('ry')) {
+            el.setAttribute('ry', orig.pupilRy * cfg.pupilRyRatio);
+          } else {
+            el.setAttribute('r', orig.pupilRy * cfg.pupilRyRatio);
+          }
+        }
+      });
+
+      // Brows: same as E
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+
+      if (browL) {
+        const bbox = getBrowCenter(orig.browLeft);
+        browL.setAttribute('d', orig.browLeft);
+        browL.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateL}, ${bbox.cx}, ${bbox.cy})`);
+      }
+      if (browR) {
+        const bbox = getBrowCenter(orig.browRight);
+        browR.setAttribute('d', orig.browRight);
+        browR.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateR}, ${bbox.cx}, ${bbox.cy})`);
+      }
+
+      // Mouth: check for alternate mouth elements first
+      const mouthClosed = svg.querySelector('#mouth-closed');
+      const mouthOpen = svg.querySelector('#mouth-open');
+      const mouthSmile = svg.querySelector('#mouth-smile');
+
+      // Hide all mouths first
+      [mouthClosed, mouthOpen, mouthSmile].forEach(m => {
+        if (m) m.setAttribute('opacity', '0');
+      });
+
+      // Show appropriate mouth based on emotion
+      if (emotion === 'surprised' && mouthOpen) {
+        mouthOpen.setAttribute('opacity', '1');
+        // Scale it up
+        const ry = parseFloat(mouthOpen.getAttribute('ry') || 3);
+        mouthOpen.setAttribute('ry', ry * 1.5);
+      } else if ((emotion === 'happy') && mouthSmile) {
+        mouthSmile.setAttribute('opacity', '1');
+      } else if (mouthClosed) {
+        mouthClosed.setAttribute('opacity', '1');
+        // Apply transform
+        const bbox = getMouthCenter(orig.mouth);
+        mouthClosed.setAttribute('d', orig.mouth);
+        mouthClosed.setAttribute('transform',
+          `translate(0, ${cfg.mouthY}) translate(${bbox.cx}, ${bbox.cy}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-bbox.cx}, ${-bbox.cy})`);
+      }
+    }
+
+    // NOTE: Single Mouth (G) is limited - ellipse can't do smile/frown curves
+    // Keeping for comparison but H: Mouth Group is the better approach
+    const SINGLE_MOUTH_EMOTIONS = {
+      neutral:   { ry: 1, rx: 5, fill: null },
+      happy:     { ry: 2, rx: 6, fill: null },
+      sad:       { ry: 1.5, rx: 4, fill: null },
+      angry:     { ry: 0.8, rx: 5, fill: null },
+      worried:   { ry: 1.2, rx: 4, fill: null },
+      skeptical: { ry: 0.8, rx: 4, fill: null },
+      tired:     { ry: 1.5, rx: 4, fill: null },
+      smug:      { ry: 1, rx: 5, fill: null },
+      dead:      { ry: 4, rx: 4, fill: '#4a1a1a' },
+      surprised: { ry: 6, rx: 4, fill: '#4a1a1a' },
+      excited:   { ry: 3, rx: 6, fill: null }
+    };
+
+    // Store original mouth-open values
+    let origMouthOpen = { cx: 50, cy: 68, rx: 5, ry: 3, fill: '#5d4037' };
+
+    // G: Single Mouth - one ellipse handles all states
+    function applySingleMouth(svg, emotion) {
+      if (!svg) return;
+
+      const cfg = TRANSFORM_EMOTIONS[emotion];
+      const mouthCfg = SINGLE_MOUTH_EMOTIONS[emotion];
+      if (!cfg || !mouthCfg) return;
+
+      // Eyes: same as other approaches
+      ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.eyeCy + cfg.eyeCyDelta);
+          el.setAttribute('ry', orig.eyeRy * cfg.eyeRyRatio);
+        }
+      });
+      ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+        const el = svg.querySelector(sel);
+        if (el) {
+          el.setAttribute('cy', orig.pupilCy + cfg.pupilCyDelta);
+          if (el.hasAttribute('ry')) {
+            el.setAttribute('ry', orig.pupilRy * cfg.pupilRyRatio);
+          } else {
+            el.setAttribute('r', orig.pupilRy * cfg.pupilRyRatio);
+          }
+        }
+      });
+
+      // Brows: same transform approach
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+
+      if (browL) {
+        const bbox = getBrowCenter(orig.browLeft);
+        browL.setAttribute('d', orig.browLeft);
+        browL.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateL}, ${bbox.cx}, ${bbox.cy})`);
+      }
+      if (browR) {
+        const bbox = getBrowCenter(orig.browRight);
+        browR.setAttribute('d', orig.browRight);
+        browR.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateR}, ${bbox.cx}, ${bbox.cy})`);
+      }
+
+      // SINGLE MOUTH: Hide mouth-closed, only use mouth-open
+      const mouthClosed = svg.querySelector('#mouth-closed');
+      const mouthOpen = svg.querySelector('#mouth-open');
+
+      if (mouthClosed) {
+        mouthClosed.setAttribute('opacity', '0');
+      }
+
+      if (mouthOpen) {
+        // Get original position (first time)
+        if (!mouthOpen.dataset.origCx) {
+          mouthOpen.dataset.origCx = mouthOpen.getAttribute('cx');
+          mouthOpen.dataset.origCy = mouthOpen.getAttribute('cy');
+          mouthOpen.dataset.origRx = mouthOpen.getAttribute('rx');
+          mouthOpen.dataset.origRy = mouthOpen.getAttribute('ry');
+          mouthOpen.dataset.origFill = mouthOpen.getAttribute('fill');
+        }
+
+        // Position stays FIXED - never changes
+        // Only shape (rx/ry) changes for emotion
+        mouthOpen.setAttribute('opacity', '1');
+        mouthOpen.setAttribute('rx', mouthCfg.rx);
+        mouthOpen.setAttribute('ry', mouthCfg.ry);
+        if (mouthCfg.fill) {
+          mouthOpen.setAttribute('fill', mouthCfg.fill);
+        } else {
+          mouthOpen.setAttribute('fill', mouthOpen.dataset.origFill || '#5d4037');
+        }
+
+        // Update info
+        const info = document.getElementById('info-g');
+        if (info) {
+          info.textContent = `mouth-open: cx=${mouthOpen.getAttribute('cx')}, cy=${mouthOpen.getAttribute('cy')}, rx=${mouthCfg.rx}, ry=${mouthCfg.ry}`;
+        }
+      }
+    }
+
+    // H: Mouth Group - all shapes at local origin, group positions them
+    // This guarantees all mouth shapes are perfectly aligned
+    // Maps each emotion to a mouth shape
+    const MOUTH_GROUP_EMOTIONS = {
+      neutral:   { shape: 'neutral' },
+      happy:     { shape: 'smile' },
+      sad:       { shape: 'frown' },
+      angry:     { shape: 'grimace' },
+      worried:   { shape: 'worried' },
+      skeptical: { shape: 'flat' },
+      tired:     { shape: 'tired' },
+      smug:      { shape: 'smirk' },
+      dead:      { shape: 'open', openRy: 4 },
+      surprised: { shape: 'open', openRy: 6 },
+      excited:   { shape: 'bigsmile' }
+    };
+
+    function applyMouthGroup(svg, emotion) {
+      if (!svg) return;
+
+      const cfg = TRANSFORM_EMOTIONS[emotion];
+      const mouthCfg = MOUTH_GROUP_EMOTIONS[emotion];
+      console.log('[H] emotion:', emotion, 'cfg:', !!cfg, 'mouthCfg:', mouthCfg);
+      if (!cfg || !mouthCfg) {
+        console.warn('[H] Missing config for emotion:', emotion);
+        return;
+      }
+
+      // Handle X-eyes for dead emotion
+      let xEyesGroup = svg.querySelector('#x-eyes-group');
+      if (cfg.xEyes) {
+        // Hide normal eyes
+        ['#eye-left-white', '#eye-right-white', '#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+          const el = svg.querySelector(sel);
+          if (el) el.setAttribute('opacity', '0');
+        });
+
+        // Create X eyes if they don't exist
+        if (!xEyesGroup) {
+          xEyesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          xEyesGroup.id = 'x-eyes-group';
+
+          // Get eye positions from the sprite
+          const eyeL = svg.querySelector('#eye-left-white');
+          const eyeR = svg.querySelector('#eye-right-white');
+          const leftCx = parseFloat(eyeL?.getAttribute('cx') || 40);
+          const rightCx = parseFloat(eyeR?.getAttribute('cx') || 60);
+          const cy = parseFloat(eyeL?.getAttribute('cy') || orig.eyeCy);
+          const size = 4;
+
+          xEyesGroup.innerHTML = `
+            <line x1="${leftCx - size}" y1="${cy - size}" x2="${leftCx + size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${leftCx + size}" y1="${cy - size}" x2="${leftCx - size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${rightCx - size}" y1="${cy - size}" x2="${rightCx + size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${rightCx + size}" y1="${cy - size}" x2="${rightCx - size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+          `;
+          svg.appendChild(xEyesGroup);
+        }
+        xEyesGroup.setAttribute('opacity', '1');
+      } else {
+        // Show normal eyes, hide X eyes
+        if (xEyesGroup) xEyesGroup.setAttribute('opacity', '0');
+
+        // Eyes
+        ['#eye-left-white', '#eye-right-white'].forEach(sel => {
+          const el = svg.querySelector(sel);
+          if (el) {
+            el.setAttribute('opacity', '1');
+            el.setAttribute('cy', orig.eyeCy + cfg.eyeCyDelta);
+            el.setAttribute('ry', orig.eyeRy * cfg.eyeRyRatio);
+          }
+        });
+        ['#eye-left-pupil', '#eye-right-pupil'].forEach(sel => {
+          const el = svg.querySelector(sel);
+          if (el) {
+            el.setAttribute('opacity', '1');
+            el.setAttribute('cy', orig.pupilCy + cfg.pupilCyDelta);
+            if (el.hasAttribute('ry')) {
+              el.setAttribute('ry', orig.pupilRy * cfg.pupilRyRatio);
+            } else {
+              el.setAttribute('r', orig.pupilRy * cfg.pupilRyRatio);
+            }
+          }
+        });
+      }
+
+      // Brows: same transform approach
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+
+      if (browL) {
+        const bbox = getBrowCenter(orig.browLeft);
+        browL.setAttribute('d', orig.browLeft);
+        browL.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateL}, ${bbox.cx}, ${bbox.cy})`);
+      }
+      if (browR) {
+        const bbox = getBrowCenter(orig.browRight);
+        browR.setAttribute('d', orig.browRight);
+        browR.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateR}, ${bbox.cx}, ${bbox.cy})`);
+      }
+
+      // MOUTH GROUP: Create or find the mouth group
+      let mouthGroup = svg.querySelector('#mouth-group');
+      const mouthClosed = svg.querySelector('#mouth-closed');
+      const mouthOpen = svg.querySelector('#mouth-open');
+
+      // Hide original mouth elements
+      if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
+      if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+
+      if (!mouthGroup) {
+        // Create mouth group with all shapes at local origin
+        // Position it where mouth-open is (or estimate from mouth-closed)
+        let mouthCx = 50, mouthCy = 68;
+
+        if (mouthOpen) {
+          mouthCx = parseFloat(mouthOpen.getAttribute('cx') || 50);
+          mouthCy = parseFloat(mouthOpen.getAttribute('cy') || 68);
+        } else if (mouthClosed) {
+          // Estimate from path
+          const bbox = getMouthCenter(mouthClosed.getAttribute('d') || '');
+          mouthCx = bbox.cx;
+          mouthCy = bbox.cy;
+        }
+
+        mouthGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        mouthGroup.id = 'mouth-group';
+        mouthGroup.setAttribute('transform', `translate(${mouthCx}, ${mouthCy})`);
+
+        // All shapes centered at (0,0)
+        // Mouth shapes for all canonical emotions
+        const shapes = {
+          'mouth-neutral':  { type: 'path', d: 'M-5 0 Q0 1 5 0', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-smile':    { type: 'path', d: 'M-6 -1 Q0 5 6 -1', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-bigsmile': { type: 'path', d: 'M-7 -2 Q0 6 7 -2', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-frown':    { type: 'path', d: 'M-5 2 Q0 -2 5 2', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-grimace':  { type: 'path', d: 'M-5 0 L5 0', stroke: '#8d6e63', strokeWidth: '2.5', fill: 'none' },
+          'mouth-worried':  { type: 'path', d: 'M-5 1 Q-2 -1 0 1 Q2 3 5 1', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-flat':     { type: 'path', d: 'M-4 0 L4 0', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-tired':    { type: 'path', d: 'M-4 1 Q0 -1 4 1', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-smirk':    { type: 'path', d: 'M-2 0 Q2 3 6 -1', stroke: '#8d6e63', strokeWidth: '1.5', fill: 'none' },
+          'mouth-open':     { type: 'ellipse', cx: 0, cy: 0, rx: 4, ry: 1, fill: '#5d4037' }
+        };
+
+        for (const [id, attrs] of Object.entries(shapes)) {
+          let el;
+          if (attrs.type === 'path') {
+            el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            el.setAttribute('d', attrs.d);
+            el.setAttribute('stroke', attrs.stroke);
+            el.setAttribute('stroke-width', attrs.strokeWidth);
+            el.setAttribute('fill', attrs.fill);
+            el.setAttribute('stroke-linecap', 'round');
+          } else {
+            el = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+            el.setAttribute('cx', attrs.cx);
+            el.setAttribute('cy', attrs.cy);
+            el.setAttribute('rx', attrs.rx);
+            el.setAttribute('ry', attrs.ry);
+            el.setAttribute('fill', attrs.fill);
+          }
+          el.id = id;
+          el.setAttribute('opacity', '0');
+          mouthGroup.appendChild(el);
+        }
+
+        // Add to head-bottom group or svg
+        const headBottom = svg.querySelector('#head-bottom');
+        if (headBottom) {
+          headBottom.appendChild(mouthGroup);
+        } else {
+          svg.appendChild(mouthGroup);
+        }
+      }
+
+      // Show the appropriate mouth shape
+      const shapeMap = {
+        'neutral':  'mouth-neutral',
+        'smile':    'mouth-smile',
+        'bigsmile': 'mouth-bigsmile',
+        'frown':    'mouth-frown',
+        'grimace':  'mouth-grimace',
+        'worried':  'mouth-worried',
+        'flat':     'mouth-flat',
+        'tired':    'mouth-tired',
+        'smirk':    'mouth-smirk',
+        'open':     'mouth-open'
+      };
+
+      // Hide all shapes first
+      mouthGroup.querySelectorAll('path, ellipse').forEach(el => {
+        el.setAttribute('opacity', '0');
+      });
+
+      // Show the selected shape
+      const shapeId = shapeMap[mouthCfg.shape];
+      console.log('[H] shape:', mouthCfg.shape, '-> id:', shapeId);
+      const activeShape = mouthGroup.querySelector(`#${shapeId}`);
+      console.log('[H] activeShape found:', !!activeShape);
+      if (activeShape) {
+        activeShape.setAttribute('opacity', '1');
+
+        // If it's the open mouth, set the ry
+        if (mouthCfg.shape === 'open' && mouthCfg.openRy) {
+          activeShape.setAttribute('ry', mouthCfg.openRy);
+        }
+      }
+
+      // Update info
+      const info = document.getElementById('info-h');
+      if (info) {
+        const transform = mouthGroup.getAttribute('transform');
+        info.textContent = `group: ${transform}, showing: ${mouthCfg.shape}`;
+      }
+    }
+
+    // Speaking simulation for Single Mouth
+    let speakingInterval = null;
+
+    function simulateSpeaking() {
+      const svg = document.querySelector('#box-h svg');
+      const status = document.getElementById('speak-status');
+      const btn = document.getElementById('speak-btn');
+
+      if (speakingInterval) {
+        // Stop speaking
+        clearInterval(speakingInterval);
+        speakingInterval = null;
+        btn.textContent = 'Simulate Speaking';
+        status.textContent = '';
+        // Reset to current emotion
+        apply();
+        return;
+      }
+
+      const mouthGroup = svg?.querySelector('#mouth-group');
+      if (!mouthGroup) {
+        status.textContent = 'No mouth group found';
+        return;
+      }
+
+      // Hide other shapes, show mouth-open ellipse
+      mouthGroup.querySelectorAll('path').forEach(el => el.setAttribute('opacity', '0'));
+      const mouthOpen = mouthGroup.querySelector('#mouth-open');
+      if (mouthOpen) mouthOpen.setAttribute('opacity', '1');
+
+      // Start speaking animation
+      btn.textContent = 'Stop Speaking';
+      status.textContent = 'Speaking...';
+
+      const baseRy = 1; // closed
+      const maxRy = 8;  // max open
+
+      speakingInterval = setInterval(() => {
+        // Random mouth opening (simulating audio amplitude)
+        const amplitude = Math.random();
+        const newRy = baseRy + (amplitude * (maxRy - baseRy));
+        if (mouthOpen) mouthOpen.setAttribute('ry', newRy.toFixed(1));
+      }, 50); // 20fps animation
+    }
+
+    document.getElementById('speak-btn').addEventListener('click', simulateSpeaking);
+
+    document.getElementById('sprite-select').addEventListener('change', () => {
+      if (speakingInterval) {
+        clearInterval(speakingInterval);
+        speakingInterval = null;
+        document.getElementById('speak-btn').textContent = 'Simulate Speaking';
+        document.getElementById('speak-status').textContent = '';
+      }
+      load();
+    });
+    document.getElementById('emotion-select').addEventListener('change', () => {
+      if (speakingInterval) {
+        clearInterval(speakingInterval);
+        speakingInterval = null;
+        document.getElementById('speak-btn').textContent = 'Simulate Speaking';
+        document.getElementById('speak-status').textContent = '';
+      }
+      apply();
+    });
+
+    load();
+  </script>
+</body>
+</html>

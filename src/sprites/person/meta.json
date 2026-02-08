@@ -2,7 +2,11 @@
   "name": "Person",
   "type": "human",
   "description": "A generic person character",
-  "tags": ["human", "person", "generic"],
+  "tags": [
+    "human",
+    "person",
+    "generic"
+  ],
   "voice": {
     "id": "jean",
     "pitch": 0,

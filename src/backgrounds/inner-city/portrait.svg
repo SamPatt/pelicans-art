@@ -1,0 +1,110 @@
+<svg viewBox="0 0 225 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sky - hazy urban -->
+  <rect x="0" y="0" width="225" height="400" fill="#8a9bab"/>
+  
+  <!-- Distant buildings -->
+  <rect x="-10" y="60" width="50" height="200" fill="#4a4a52"/>
+  <rect x="30" y="80" width="40" height="180" fill="#3d3d45"/>
+  <rect x="60" y="50" width="35" height="210" fill="#52525a"/>
+  <rect x="150" y="70" width="45" height="190" fill="#3d3d45"/>
+  <rect x="185" y="55" width="50" height="205" fill="#4a4a52"/>
+  
+  <!-- Main left building - brick -->
+  <rect x="-5" y="100" width="90" height="300" fill="#8b5a3c"/>
+  <!-- Brick pattern -->
+  <g fill="#7a4d33" opacity="0.6">
+    <rect x="0" y="110" width="20" height="8"/>
+    <rect x="25" y="110" width="20" height="8"/>
+    <rect x="50" y="110" width="20" height="8"/>
+    <rect x="10" y="125" width="20" height="8"/>
+    <rect x="35" y="125" width="20" height="8"/>
+    <rect x="60" y="125" width="20" height="8"/>
+    <rect x="0" y="140" width="20" height="8"/>
+    <rect x="25" y="140" width="20" height="8"/>
+    <rect x="50" y="140" width="20" height="8"/>
+  </g>
+  
+  <!-- Left building windows -->
+  <rect x="10" y="120" width="25" height="35" fill="#2a2a30"/>
+  <rect x="45" y="120" width="25" height="35" fill="#3a3a40"/>
+  <rect x="10" y="170" width="25" height="35" fill="#3a3a40"/>
+  <rect x="45" y="170" width="25" height="35" fill="#2a2a30"/>
+  
+  <!-- Fire escape -->
+  <g fill="#3d3d3d" stroke="#2a2a2a" stroke-width="1">
+    <rect x="65" y="115" width="20" height="3"/>
+    <rect x="65" y="165" width="20" height="3"/>
+    <rect x="65" y="215" width="20" height="3"/>
+    <rect x="83" y="115" width="2" height="105"/>
+    <path d="M73 118 L73 163 M78 118 L78 163" stroke="#2a2a2a" stroke-width="1" fill="none"/>
+    <path d="M73 168 L73 213 M78 168 L78 213" stroke="#2a2a2a" stroke-width="1" fill="none"/>
+  </g>
+  
+  <!-- Main right building - concrete -->
+  <rect x="140" y="90" width="95" height="310" fill="#6b6b73"/>
+  
+  <!-- Right building windows -->
+  <rect x="155" y="110" width="30" height="40" fill="#2a2a30"/>
+  <rect x="195" y="110" width="25" height="40" fill="#3a3a40"/>
+  <rect x="155" y="165" width="30" height="40" fill="#3a3a40"/>
+  <rect x="195" y="165" width="25" height="40" fill="#2a2a30"/>
+  
+  <!-- Boarded window -->
+  <rect x="195" y="220" width="25" height="35" fill="#2a2a30"/>
+  <g fill="#8b7355">
+    <rect x="193" y="222" width="29" height="5" transform="rotate(-10 207 224)"/>
+    <rect x="193" y="235" width="29" height="5" transform="rotate(5 207 237)"/>
+    <rect x="193" y="248" width="29" height="5" transform="rotate(-3 207 250)"/>
+  </g>
+  
+  <!-- Alley/street -->
+  <rect x="85" y="220" width="55" height="180" fill="#3a3a42"/>
+  
+  <!-- Graffiti on left wall -->
+  <text x="15" y="280" font-family="Arial" font-size="18" font-weight="bold" fill="#e63946" transform="rotate(-5 15 280)">YO</text>
+  <circle cx="60" cy="295" r="12" fill="none" stroke="#4cc9f0" stroke-width="3"/>
+  <path d="M35 310 Q50 300 65 315" stroke="#f72585" stroke-width="4" fill="none"/>
+  
+  <!-- Graffiti on right wall -->
+  <text x="148" y="270" font-family="Arial" font-size="12" font-weight="bold" fill="#7209b7">RATS</text>
+  <rect x="145" y="280" width="25" height="15" fill="none" stroke="#4361ee" stroke-width="2"/>
+  
+  <!-- Street/ground -->
+  <rect x="0" y="320" width="225" height="80" fill="#4a4a4a"/>
+  
+  <!-- Cracked pavement -->
+  <path d="M50 330 L55 350 L45 380 L50 400" stroke="#3a3a3a" stroke-width="2" fill="none"/>
+  <path d="M55 350 L70 355" stroke="#3a3a3a" stroke-width="1" fill="none"/>
+  <path d="M160 325 L170 360 L165 400" stroke="#3a3a3a" stroke-width="2" fill="none"/>
+  
+  <!-- Manhole cover -->
+  <ellipse cx="180" cy="365" rx="15" ry="8" fill="#3d3d3d"/>
+  <ellipse cx="180" cy="365" rx="12" ry="6" fill="#353535"/>
+  <line x1="172" y1="365" x2="188" y2="365" stroke="#3d3d3d" stroke-width="1"/>
+  
+  <!-- Dumpster -->
+  <rect x="5" y="310" width="40" height="35" fill="#2d5a3d"/>
+  <rect x="5" y="305" width="40" height="8" fill="#3d7a5d"/>
+  <rect x="8" y="318" width="34" height="3" fill="#1d4a2d"/>
+  
+  <!-- Trash bags -->
+  <ellipse cx="50" cy="340" rx="12" ry="10" fill="#1a1a1a"/>
+  <ellipse cx="58" cy="335" rx="8" ry="7" fill="#2a2a2a"/>
+  
+  <!-- Scattered trash -->
+  <rect x="70" y="355" width="8" height="5" fill="#c9a227" transform="rotate(15 74 357)"/>
+  <rect x="130" y="360" width="6" height="4" fill="#888888" transform="rotate(-20 133 362)"/>
+  <ellipse cx="100" cy="370" rx="4" ry="2" fill="#d35400"/>
+  
+  <!-- Puddle -->
+  <ellipse cx="115" cy="380" rx="20" ry="6" fill="#3a5a6a" opacity="0.6"/>
+  
+  <!-- Street light pole -->
+  <rect x="200" y="240" width="4" height="100" fill="#4a4a4a"/>
+  <rect x="195" y="235" width="14" height="10" fill="#5a5a5a"/>
+  <ellipse cx="202" cy="248" rx="5" ry="3" fill="#ffeb99" opacity="0.4"/>
+  
+  <!-- Curb -->
+  <rect x="0" y="318" width="85" height="5" fill="#5a5a5a"/>
+  <rect x="140" y="318" width="85" height="5" fill="#5a5a5a"/>
+</svg>

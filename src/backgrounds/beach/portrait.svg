@@ -1,0 +1,67 @@
+<svg viewBox="0 0 225 400" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sky gradient background -->
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#87CEEB"/>
+      <stop offset="100%" style="stop-color:#E0F4FF"/>
+    </linearGradient>
+    <linearGradient id="ocean" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E90FF"/>
+      <stop offset="100%" style="stop-color:#4169E1"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Sky -->
+  <rect x="0" y="0" width="225" height="400" fill="url(#sky)"/>
+  
+  <!-- Sun -->
+  <circle cx="180" cy="60" r="35" fill="#FFE066"/>
+  
+  <!-- Fluffy clouds -->
+  <g fill="#FFFFFF">
+    <ellipse cx="50" cy="45" rx="25" ry="15"/>
+    <ellipse cx="75" cy="50" rx="20" ry="12"/>
+    <ellipse cx="30" cy="50" rx="18" ry="10"/>
+    <ellipse cx="140" cy="80" rx="22" ry="13"/>
+    <ellipse cx="165" cy="85" rx="18" ry="10"/>
+  </g>
+  
+  <!-- Ocean background -->
+  <rect x="0" y="180" width="225" height="100" fill="url(#ocean)"/>
+  
+  <!-- Ocean waves -->
+  <path d="M0 200 Q20 190 40 200 Q60 210 80 200 Q100 190 120 200 Q140 210 160 200 Q180 190 200 200 Q220 210 225 205 V280 H0 Z" fill="#4682B4" opacity="0.6"/>
+  <path d="M0 220 Q25 210 50 220 Q75 230 100 220 Q125 210 150 220 Q175 230 200 220 Q225 210 225 215 V280 H0 Z" fill="#5F9EA0" opacity="0.5"/>
+  
+  <!-- Beach sand -->
+  <path d="M0 270 Q60 260 112 265 Q170 270 225 260 V400 H0 Z" fill="#F4D03F"/>
+  <path d="M0 280 Q50 275 100 280 Q150 285 225 275 V400 H0 Z" fill="#E9C46A"/>
+  
+  <!-- Beach umbrella midground -->
+  <line x1="45" y1="220" x2="45" y2="310" stroke="#8B4513" stroke-width="4"/>
+  <path d="M10 220 Q45 190 80 220 Z" fill="#FF6B6B"/>
+  <path d="M10 220 Q28 200 45 220 Z" fill="#FFFFFF"/>
+  <path d="M45 220 Q62 200 80 220 Z" fill="#FFFFFF"/>
+  
+  <!-- Beach ball -->
+  <circle cx="170" cy="300" r="18" fill="#FF6B6B"/>
+  <path d="M152 300 A18 18 0 0 1 170 282" fill="#FFFFFF"/>
+  <path d="M170 318 A18 18 0 0 1 188 300" fill="#4169E1"/>
+  
+  <!-- Starfish -->
+  <polygon points="195,340 198,348 207,348 200,354 203,363 195,357 187,363 190,354 183,348 192,348" fill="#FF7F50"/>
+  
+  <!-- Seashells -->
+  <ellipse cx="85" cy="355" rx="8" ry="5" fill="#FFF8DC"/>
+  <path d="M77 355 Q85 345 93 355" fill="none" stroke="#D2B48C" stroke-width="1"/>
+  
+  <!-- Palm tree foreground left -->
+  <rect x="5" y="280" width="12" height="120" fill="#8B4513"/>
+  <path d="M11 280 Q-20 260 -10 240" stroke="#228B22" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M11 280 Q40 250 60 260" stroke="#228B22" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M11 280 Q20 240 10 220" stroke="#2E8B57" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M11 280 Q50 270 55 290" stroke="#2E8B57" stroke-width="6" fill="none" stroke-linecap="round"/>
+  
+  <!-- Small waves on shore -->
+  <path d="M0 320 Q15 315 30 320 Q45 325 60 320 Q75 315 90 320 Q105 325 120 320 Q135 315 150 320 Q165 325 180 320 Q195 315 210 320 Q225 325 225 320" fill="none" stroke="#87CEEB" stroke-width="3" opacity="0.7"/>
+</svg>

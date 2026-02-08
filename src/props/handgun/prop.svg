@@ -1,0 +1,33 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100" height="150">
+  <!-- Main body/slide -->
+  <rect x="25.0" y="30.0" width="70.4" height="18.0" rx="2" fill="#3d3d3d" style="cursor: pointer;" class=""></rect>
+  <!-- Barrel -->
+  <rect x="80.5" y="32.6" width="15" height="12" rx="1" fill="#2a2a2a" style="cursor: pointer;" class=""></rect>
+  <!-- Barrel hole -->
+  <circle cx="93.1" cy="38.8" r="3" fill="#1a1a1a" style="cursor: pointer;" class=""></circle>
+  <!-- Slide serrations -->
+  <rect x="30" y="32" width="2" height="14" fill="#2a2a2a" style="cursor: pointer;"></rect>
+  <rect x="35" y="32" width="2" height="14" fill="#2a2a2a" style="cursor: pointer;"></rect>
+  <rect x="40" y="32" width="2" height="14" fill="#2a2a2a" style="cursor: pointer;"></rect>
+  <!-- Frame -->
+  <rect x="28" y="48" width="40" height="10" rx="1" fill="#4a4a4a" style="cursor: pointer;"></rect>
+  <!-- Grip -->
+  <path d="M32 58 L32 82 Q32 85 35 85 L50 85 Q53 85 53 82 L53 58 Z" fill="#5c4033" style="cursor: pointer;"></path>
+  <!-- Grip texture lines -->
+  <line x1="36" y1="62" x2="36" y2="80" stroke="#4a3528" stroke-width="1.5" style="cursor: pointer;"></line>
+  <line x1="40" y1="62" x2="40" y2="80" stroke="#4a3528" stroke-width="1.5" style="cursor: pointer;"></line>
+  <line x1="44" y1="62" x2="44" y2="80" stroke="#4a3528" stroke-width="1.5" style="cursor: pointer;"></line>
+  <line x1="48" y1="62" x2="48" y2="80" stroke="#4a3528" stroke-width="1.5" style="cursor: pointer;"></line>
+  <!-- Trigger guard -->
+  <path d="M53 48 Q65 48 65 60 Q65 72 53 72 L53 58" fill="none" stroke="#4a4a4a" stroke-width="4" style="cursor: pointer;"></path>
+  <!-- Trigger -->
+  <path d="M55 52 L58 52 L60 62 L55 62 Z" fill="#2a2a2a" style="cursor: pointer;"></path>
+  <!-- Hammer -->
+  <rect x="25" y="25" width="8" height="8" rx="1" fill="#3d3d3d" style="cursor: pointer;"></rect>
+  <!-- Front sight -->
+  <rect x="72" y="26" width="4" height="4" fill="#2a2a2a" style="cursor: pointer;"></rect>
+  <!-- Rear sight -->
+  <rect x="28" y="26" width="6" height="4" fill="#2a2a2a" style="cursor: pointer;"></rect>
+  <!-- Highlight on slide -->
+  <rect x="45" y="32" width="25" height="2" fill="#5a5a5a" opacity="0.5" style="cursor: pointer;"></rect>
+</svg>

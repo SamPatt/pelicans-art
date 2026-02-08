@@ -1,0 +1,30 @@
+{
+  "name": "Sunny",
+  "description": "A cheerful, radiant sun with rosy cheeks and a warm smile, always ready to brighten someone's day",
+  "type": "creature",
+  "tags": [
+    "sun",
+    "celestial",
+    "happy",
+    "warm",
+    "sky"
+  ],
+  "voice": {
+    "id": "jean",
+    "pitch": -0.1,
+    "speed": 1,
+    "volume": 1.2
+  },
+  "colors": {
+    "skin": "#FFEB3B",
+    "hair": "#FFD54F",
+    "primary": "#FFC107"
+  },
+  "defaultVariant": "front",
+  "animation": {
+    "blinkInterval": 4,
+    "blinkDuration": 150,
+    "idleMovement": true,
+    "eyeTracking": true
+  }
+}

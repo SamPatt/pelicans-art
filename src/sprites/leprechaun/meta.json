@@ -2,12 +2,17 @@
   "name": "Leprechaun",
   "type": "human",
   "description": "A mischievous Irish leprechaun",
-  "tags": ["fantasy", "irish", "mythology", "magical"],
+  "tags": [
+    "fantasy",
+    "irish",
+    "mythology",
+    "magical"
+  ],
   "voice": {
-    "id": "eponine",
-    "pitch": 0.3,
-    "speed": 1.1,
-    "volume": 1
+    "id": "marius",
+    "pitch": 0.2,
+    "speed": 1,
+    "volume": 1.3
   },
   "defaultVariant": "front",
   "colors": {

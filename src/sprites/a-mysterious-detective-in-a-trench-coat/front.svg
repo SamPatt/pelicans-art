@@ -1,0 +1,67 @@
+<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg" width="100" height="150">
+  <g id="body">
+    <!-- Trench coat body -->
+    <path d="M30 72 L32 68 L68 68 L70 72 L74 140 L58 140 L55 100 L50 142 L45 100 L42 140 L26 140 Z" fill="#8B7355" style="cursor: pointer;"></path>
+    <!-- Coat collar raised -->
+    <path d="M32 68 L38 60 L42 70 L50 66 L58 70 L62 60 L68 68 L58 72 L50 68 L42 72 Z" fill="#7A6548" style="cursor: pointer;"></path>
+    <!-- Coat lapels -->
+    <path d="M42 72 L50 90 L44 95 L38 72 Z" fill="#7A6548" style="cursor: pointer;"></path>
+    <path d="M58 72 L50 90 L56 95 L62 72 Z" fill="#7A6548" style="cursor: pointer;"></path>
+    <!-- Belt -->
+    <rect x="34" y="100" width="32" height="4" rx="1" fill="#5C4A2E" style="cursor: pointer;"></rect>
+    <rect x="47" y="99" width="6" height="6" rx="1" fill="#C4A44A" style="cursor: pointer;"></rect>
+    <!-- Coat buttons -->
+    <circle cx="48" cy="82" r="1.5" fill="#5C4A2E" style="cursor: pointer;"></circle>
+    <circle cx="48" cy="92" r="1.5" fill="#5C4A2E" style="cursor: pointer;"></circle>
+    <!-- Arms in coat sleeves -->
+    <rect x="20" y="72" width="12" height="40" rx="4" fill="#8B7355" style="cursor: pointer;"></rect>
+    <rect x="68" y="72" width="12" height="40" rx="4" fill="#8B7355" style="cursor: pointer;"></rect>
+    <!-- Hands -->
+    <ellipse cx="26" cy="114" rx="5" ry="4" fill="#E8C99B" style="cursor: pointer;"></ellipse>
+    <ellipse cx="74" cy="114" rx="5" ry="4" fill="#E8C99B" style="cursor: pointer;"></ellipse>
+    <!-- Legs / coat bottom -->
+    <rect x="36" y="130" width="12" height="18" rx="2" fill="#2D2D2D" style="cursor: pointer;"></rect>
+    <rect x="52" y="130" width="12" height="18" rx="2" fill="#2D2D2D" style="cursor: pointer;"></rect>
+    <!-- Shoes -->
+    <rect x="34" y="144" width="16" height="5" rx="3" fill="#1a1a1a" style="cursor: pointer;"></rect>
+    <rect x="50" y="144" width="16" height="5" rx="3" fill="#1a1a1a" style="cursor: pointer;"></rect>
+    <!-- Neck connection -->
+    <rect x="44" y="58" width="12" height="12" fill="#E8C99B" style="cursor: pointer;"></rect>
+  </g>
+  <g id="head-top">
+    <!-- Fedora hat -->
+    
+    
+    <!-- Hat band -->
+    <rect x="32" y="21" width="36" height="3" rx="1" fill="#3A2E1E" style="cursor: pointer;"></rect>
+    <!-- Hat shadow on face -->
+    
+    <!-- Face -->
+    <ellipse cx="50" cy="42" rx="17" ry="20" fill="#E8C99B" style="cursor: pointer;"></ellipse><path d="M34 26 Q50 30 66 26 L64 32 Q50 34 36 32 Z" fill="rgba(0,0,0,0.15)" style="cursor: pointer;" class=""></path><ellipse cx="50.6" cy="27.6" rx="26" ry="6" fill="#4A3C2A" style="cursor: pointer;" class=""></ellipse>
+    <!-- Shadow across upper face from hat -->
+    <path d="M33 30 Q50 34 67 30 L65 40 Q50 42 35 40 Z" fill="rgba(0,0,0,0.08)" style="cursor: pointer;"></path><path d="M30 24 Q32 8 50 6 Q68 8 70 24 Z" fill="#5C4A35" style="cursor: pointer;" class=""></path>
+    <!-- Eyes - narrow and suspicious -->
+    <ellipse id="eye-left-white" cx="42" cy="40" rx="4.5" ry="3.5" fill="#ffffff" style="cursor: pointer;"></ellipse>
+    <ellipse id="eye-right-white" cx="58" cy="40" rx="4.5" ry="3.5" fill="#ffffff" style="cursor: pointer;"></ellipse>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="40" r="2" fill="#2B4A3F" style="cursor: pointer;"></circle>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="40" r="2" fill="#2B4A3F" style="cursor: pointer;"></circle>
+    <!-- Eyebrows - furrowed, suspicious -->
+    <path id="brow-left" d="M36 34 Q42 31 48 35" stroke="#3D2E1A" stroke-width="2" fill="none" style="cursor: pointer;"></path>
+    <path id="brow-right" d="M52 35 Q58 31 64 34" stroke="#3D2E1A" stroke-width="2" fill="none" style="cursor: pointer;"></path>
+    <!-- Bags under eyes -->
+    <path d="M38 44 Q42 46 46 44" stroke="#D4B088" stroke-width="0.8" fill="none" style="cursor: pointer;"></path>
+    <path d="M54 44 Q58 46 62 44" stroke="#D4B088" stroke-width="0.8" fill="none" style="cursor: pointer;"></path>
+  </g>
+  <g id="head-bottom">
+    <!-- Nose - sharp -->
+    <path d="M50 44 L47 51 L50 52 L53 51 Z" fill="#D4A574" style="cursor: pointer;"></path>
+    <!-- Stubble shadow on jaw -->
+    <ellipse cx="50" cy="58" rx="13" ry="6" fill="#D9BC96" style="cursor: pointer;"></ellipse>
+    <!-- Mouth closed - slight smirk -->
+    <path id="mouth-closed" d="M44 55 Q48 58 50 57 Q54 56 56 55" stroke="#6D4C3A" stroke-width="1.8" fill="none" style="cursor: pointer;"></path>
+    <!-- Mouth open -->
+    <ellipse id="mouth-open" cx="50" cy="56" rx="5" ry="3.5" fill="#5D3A2A" opacity="0" style="cursor: pointer;"></ellipse>
+    <!-- Chin -->
+    <path d="M44 60 Q50 66 56 60" stroke="#D4A574" stroke-width="0.5" fill="none" style="cursor: pointer;"></path>
+  </g>
+</svg>

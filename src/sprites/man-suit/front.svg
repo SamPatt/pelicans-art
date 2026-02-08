@@ -1,45 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150" style="cursor: default;">
   <g id="body">
     <!-- Neck -->
-    <rect x="44" y="62" width="12" height="18" fill="#ffcc80"/>
+    <rect x="44" y="62" width="12" height="18" fill="#ffcc80" style="cursor: pointer;"></rect>
     <!-- Suit jacket -->
-    <rect x="30" y="78" width="40" height="72" rx="3" fill="#1a237e"/>
+    <rect x="30" y="78" width="40" height="72" rx="3" fill="#1a237e" style="cursor: pointer;"></rect>
     <!-- Shirt/tie -->
-    <polygon points="50,78 42,150 58,150" fill="#ffffff"/>
-    <polygon points="50,78 46,150 54,150" fill="#c62828"/>
+    <polygon points="50,78 42,150 58,150" fill="#ffffff" style="cursor: pointer;"></polygon>
+    <polygon points="50,78 46,150 54,150" fill="#c62828" style="cursor: pointer;"></polygon>
     <!-- Lapels -->
-    <polygon points="43,78 30,95 43,100" fill="#0d1442"/>
-    <polygon points="57,78 70,95 57,100" fill="#0d1442"/>
+    <polygon points="43,78 30,95 43,100" fill="#0d1442" style="cursor: pointer;"></polygon>
+    <polygon points="57,78 70,95 57,100" fill="#0d1442" style="cursor: pointer;"></polygon>
   </g>
   <g id="head-top">
     <!-- Hair -->
-    <ellipse cx="50" cy="28" rx="22" ry="14" fill="#3e2723"/>
+    <ellipse cx="50" cy="28" rx="22" ry="14" fill="#3e2723" style="cursor: pointer;"></ellipse>
     <!-- Head/face -->
-    <ellipse cx="50" cy="44" rx="20" ry="22" fill="#ffcc80"/>
+    <ellipse cx="50" cy="44" rx="20" ry="22" fill="#ffcc80" style="cursor: pointer;"></ellipse>
     <!-- Ears -->
-    <ellipse cx="30" cy="44" rx="4" ry="7" fill="#ffcc80"/>
-    <ellipse cx="70" cy="44" rx="4" ry="7" fill="#ffcc80"/>
+    <ellipse cx="30" cy="44" rx="4" ry="7" fill="#ffcc80" style="cursor: pointer;"></ellipse>
+    <ellipse cx="70" cy="44" rx="4" ry="7" fill="#ffcc80" style="cursor: pointer;"></ellipse>
     <!-- Eye whites - cy=42 like girl/waiter -->
-    <ellipse id="eye-left-white" cx="42" cy="42" rx="5" ry="4" fill="#ffffff"/>
-    <ellipse id="eye-right-white" cx="58" cy="42" rx="5" ry="4" fill="#ffffff"/>
+    <ellipse id="eye-left-white" cx="42" cy="42" rx="5" ry="6" fill="#ffffff" style="cursor: pointer;" opacity="1"></ellipse>
+    <ellipse id="eye-right-white" cx="58" cy="42" rx="5" ry="6" fill="#ffffff" style="cursor: pointer;" opacity="1"></ellipse>
     <!-- Pupils -->
-    <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#000000"/>
-    <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#000000"/>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#000000" style="cursor: pointer;" ry="2.5" opacity="1"></circle>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#000000" style="cursor: pointer;" ry="2.5" opacity="1"></circle>
     <!-- Eye highlights -->
-    <circle id="eye-left-highlight" cx="41" cy="41" r="1" fill="#fff" opacity="0"/>
-    <circle id="eye-right-highlight" cx="57" cy="41" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-left-highlight" cx="41" cy="41" r="1" fill="#fff" opacity="0" style="cursor: pointer;"></circle>
+    <circle id="eye-right-highlight" cx="57" cy="41" r="1" fill="#fff" opacity="0" style="cursor: pointer;"></circle>
     <!-- Eyebrows - y≈36-38 like girl/waiter -->
-    <path id="brow-left" d="M36 36 Q42 34 48 37" stroke="#3e2723" stroke-width="2" fill="none"/>
-    <path id="brow-right" d="M52 37 Q58 34 64 36" stroke="#3e2723" stroke-width="2" fill="none"/>
+    <path id="brow-left" d="M37 34 Q43 30 49 34" stroke="#3e2723" stroke-width="2" fill="none" style="cursor: pointer;" transform="translate(0, 0)"></path>
+    <path id="brow-right" d="M51 34 Q57 30 63 34" stroke="#3e2723" stroke-width="2" fill="none" style="cursor: pointer;" transform="translate(0, 0)"></path>
     <!-- Nose -->
-    <ellipse cx="50" cy="50" rx="2.5" ry="3" fill="#ffb74d"/>
+    <ellipse cx="50" cy="50" rx="2.5" ry="3" fill="#ffb74d" style="cursor: pointer;"></ellipse>
   </g>
   <g id="head-bottom">
     <!-- Lower face/jaw -->
-    <ellipse cx="50" cy="60" rx="16" ry="10" fill="#ffcc80"/>
+    <ellipse cx="50" cy="60" rx="16" ry="10" fill="#ffcc80" style="cursor: pointer;" class=""></ellipse>
     <!-- Mouth closed - y≈55 like waiter -->
-    <path id="mouth-closed" d="M45 55 Q50 58 55 55" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+    <path id="mouth-closed" d="M50 53 m-3,0 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0" stroke="none" stroke-width="1.5" fill="#5d4037" style="cursor: pointer;" transform="translate(0.3, 6.3)" class="" opacity="1"></path>
     <!-- Mouth open -->
-    <ellipse id="mouth-open" cx="50" cy="56" rx="4" ry="3" fill="#5d4037" opacity="0"/>
+    <ellipse id="mouth-open" cx="50.2" cy="59.9" rx="4.0" ry="5.7" fill="#5d4037" opacity="0" style="cursor: pointer;" class=""></ellipse>
   </g>
 </svg>

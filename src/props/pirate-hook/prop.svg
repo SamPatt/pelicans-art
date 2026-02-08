@@ -1,0 +1,18 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cup/base -->
+  <ellipse cx="50" cy="35" rx="18" ry="8" fill="#8B4513"/>
+  <rect x="32" y="35" width="36" height="25" fill="#8B4513"/>
+  <ellipse cx="50" cy="60" rx="18" ry="8" fill="#6B3510"/>
+  <!-- Gold trim -->
+  <ellipse cx="50" cy="35" rx="18" ry="8" fill="none" stroke="#FFD700" stroke-width="3"/>
+  <ellipse cx="50" cy="60" rx="18" ry="8" fill="none" stroke="#FFD700" stroke-width="3"/>
+  <!-- Hook shaft -->
+  <rect x="46" y="60" width="8" height="12" fill="#C0C0C0"/>
+  <!-- Hook curve -->
+  <path d="M50 72 Q50 95 30 95 Q15 95 15 80 Q15 70 25 70" fill="none" stroke="#C0C0C0" stroke-width="8" stroke-linecap="round"/>
+  <!-- Hook tip -->
+  <circle cx="25" cy="70" r="4" fill="#C0C0C0"/>
+  <path d="M25 70 L30 65" stroke="#C0C0C0" stroke-width="4" stroke-linecap="round"/>
+  <!-- Shine on hook -->
+  <path d="M45 75 Q42 85 35 90" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+</svg>

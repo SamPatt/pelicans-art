@@ -1,0 +1,80 @@
+<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+  <g id="body">
+    <!-- Neck -->
+    <rect x="44" y="60" width="12" height="10" fill="#ffcc80"/>
+    <!-- White pilot shirt -->
+    <rect x="30" y="68" width="40" height="50" rx="3" fill="#1a2744"/>
+    <!-- Shirt front -->
+    <rect x="45" y="68" width="10" height="50" fill="#1e3050"/>
+    <!-- Epaulettes -->
+    <rect x="28" y="68" width="12" height="5" rx="2" fill="#1a2744"/>
+    <rect x="60" y="68" width="12" height="5" rx="2" fill="#1a2744"/>
+    <!-- Gold epaulette stripes -->
+    <rect x="29" y="69" width="10" height="1.2" fill="#ffd700"/>
+    <rect x="29" y="71" width="10" height="1.2" fill="#ffd700"/>
+    <rect x="61" y="69" width="10" height="1.2" fill="#ffd700"/>
+    <rect x="61" y="71" width="10" height="1.2" fill="#ffd700"/>
+    <!-- Tie -->
+    <polygon points="50,68 47,72 50,100 53,72" fill="#111"/>
+    <!-- Wings badge -->
+    <path d="M38 80 Q50 76 62 80 Q50 78 38 80Z" fill="#ffd700" stroke="#daa520" stroke-width="0.5"/>
+    <circle cx="50" cy="79" r="2.5" fill="#ffd700" stroke="#daa520" stroke-width="0.5"/>
+    <!-- Arms -->
+    <rect x="20" y="70" width="10" height="35" rx="4" fill="#1a2744"/>
+    <rect x="70" y="70" width="10" height="35" rx="4" fill="#1a2744"/>
+    <!-- Gold arm stripes (captain 4 stripes) -->
+    <rect x="20" y="96" width="10" height="1.5" fill="#ffd700"/>
+    <rect x="20" y="99" width="10" height="1.5" fill="#ffd700"/>
+    <rect x="20" y="102" width="10" height="1.5" fill="#ffd700"/>
+    <rect x="70" y="96" width="10" height="1.5" fill="#ffd700"/>
+    <rect x="70" y="99" width="10" height="1.5" fill="#ffd700"/>
+    <rect x="70" y="102" width="10" height="1.5" fill="#ffd700"/>
+    <!-- Hands -->
+    <ellipse cx="25" cy="108" rx="5" ry="4" fill="#ffcc80"/>
+    <ellipse cx="75" cy="108" rx="5" ry="4" fill="#ffcc80"/>
+    <!-- Legs -->
+    <rect x="36" y="118" width="11" height="22" fill="#1a1a2e"/>
+    <rect x="53" y="118" width="11" height="22" fill="#1a1a2e"/>
+    <!-- Shoes -->
+    <ellipse cx="41" cy="142" rx="9" ry="4" fill="#111"/>
+    <ellipse cx="59" cy="142" rx="9" ry="4" fill="#111"/>
+  </g>
+  <g id="head-top">
+    <!-- Face -->
+    <ellipse cx="50" cy="42" rx="18" ry="20" fill="#ffcc80"/>
+    <!-- Pilot cap -->
+    <ellipse cx="50" cy="28" rx="22" ry="10" fill="#1a2744"/>
+    <rect x="30" y="18" width="40" height="12" rx="4" fill="#1a2744"/>
+    <!-- Cap brim -->
+    <ellipse cx="50" cy="30" rx="24" ry="5" fill="#111"/>
+    <!-- Cap badge -->
+    <circle cx="50" cy="22" r="4" fill="#ffd700"/>
+    <path d="M43 22 Q50 19 57 22 Q50 20 43 22Z" fill="#ffd700"/>
+    <!-- Gold cap band -->
+    <rect x="32" y="26" width="36" height="3" fill="#ffd700"/>
+    <!-- Aviator sunglasses -->
+    <ellipse id="eye-left-white" cx="42" cy="40" rx="7" ry="6" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="58" cy="40" rx="7" ry="6" fill="#ffffff"/>
+    <!-- Sunglass frames -->
+    <ellipse cx="42" cy="40" rx="7" ry="6" fill="none" stroke="#8B7333" stroke-width="1.5"/>
+    <ellipse cx="58" cy="40" rx="7" ry="6" fill="none" stroke="#8B7333" stroke-width="1.5"/>
+    <!-- Bridge -->
+    <path d="M49 40 Q50 38 51 40" stroke="#8B7333" stroke-width="1.5" fill="none"/>
+    <!-- Pupils -->
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="41" r="2" fill="#2d4a1a"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="41" r="2" fill="#2d4a1a"/>
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M36 32 Q42 29 48 32" stroke="#4a3728" stroke-width="2" fill="none"/>
+    <path id="brow-right" d="M52 32 Q58 29 64 32" stroke="#4a3728" stroke-width="2" fill="none"/>
+    <!-- Nose -->
+    <ellipse cx="50" cy="47" rx="2.5" ry="3" fill="#ffb74d"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Jaw/chin area -->
+    <path d="M34 50 Q50 66 66 50" fill="#ffcc80"/>
+    <!-- Confident smirk - closed mouth -->
+    <path id="mouth-closed" d="M44 54 Q50 58 56 54" stroke="#8d6e63" stroke-width="2" fill="none"/>
+    <!-- Open mouth -->
+    <ellipse id="mouth-open" cx="50" cy="55" rx="5" ry="3.5" fill="#5d4037" opacity="0"/>
+  </g>
+</svg>

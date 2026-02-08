@@ -1,0 +1,86 @@
+<svg viewBox="0 0 400 225" xmlns="http://www.w3.org/2000/svg" width="100" height="150">
+  <!-- Sky - hazy/smoggy -->
+  <rect width="400" height="225" fill="#8a9aa4" style="cursor: pointer;"></rect>
+  
+  <!-- Distant buildings silhouette -->
+  <rect x="0" y="40" width="45" height="120" fill="#4a5568" style="cursor: pointer;"></rect>
+  <rect x="40" y="55" width="35" height="105" fill="#3d4654" style="cursor: pointer;"></rect>
+  <rect x="70" y="35" width="50" height="125" fill="#525e6b" style="cursor: pointer;"></rect>
+  <rect x="320" y="45" width="40" height="115" fill="#4a5568" style="cursor: pointer;"></rect>
+  <rect x="355" y="60" width="45" height="100" fill="#3d4654" style="cursor: pointer;"></rect>
+  
+  <!-- Left building - run down -->
+  <rect x="-10" y="50" width="120" height="175" fill="#6b5b50" style="cursor: pointer;"></rect>
+  <rect x="0" y="55" width="100" height="5" fill="#5a4a40" style="cursor: pointer;"></rect>
+  <!-- Windows with some boarded up -->
+  <rect x="10" y="70" width="25" height="30" fill="#2d3748" style="cursor: pointer;"></rect>
+  <rect x="10" y="75" width="25" height="3" fill="#8b7355" style="cursor: pointer;"></rect>
+  <rect x="50" y="70" width="25" height="30" fill="#8b7355" style="cursor: pointer;"></rect>
+  <line x1="50" y1="70" x2="75" y2="100" stroke="#6b5b50" stroke-width="3" style="cursor: pointer;"></line>
+  <rect x="10" y="115" width="25" height="30" fill="#3a4a5a" style="cursor: pointer;"></rect>
+  <rect x="50" y="115" width="25" height="30" fill="#2d3748" style="cursor: pointer;"></rect>
+  <!-- Graffiti -->
+  <text x="15" y="175" font-size="12" fill="#e53e3e" font-family="sans-serif" font-weight="bold" style="cursor: pointer;">RIOT</text>
+  <circle cx="70" cy="168" r="8" fill="none" stroke="#48bb78" stroke-width="2" style="cursor: pointer;"></circle>
+  
+  <!-- Right building - brick -->
+  <rect x="280" y="40" width="130" height="185" fill="#8b6b5b" style="cursor: pointer;"></rect>
+  <!-- Brick pattern hints -->
+  <line x1="280" y1="60" x2="410" y2="60" stroke="#7a5a4a" stroke-width="1" style="cursor: pointer;"></line>
+  <line x1="280" y1="80" x2="410" y2="80" stroke="#7a5a4a" stroke-width="1" style="cursor: pointer;"></line>
+  <line x1="280" y1="100" x2="410" y2="100" stroke="#7a5a4a" stroke-width="1" style="cursor: pointer;"></line>
+  <!-- Fire escape -->
+  <rect x="290" y="55" width="40" height="5" fill="#4a5568" style="cursor: pointer;"></rect>
+  <rect x="290" y="55" width="3" height="80" fill="#4a5568" style="cursor: pointer;"></rect>
+  <rect x="327" y="55" width="3" height="80" fill="#4a5568" style="cursor: pointer;"></rect>
+  <rect x="290" y="95" width="40" height="5" fill="#4a5568" style="cursor: pointer;"></rect>
+  <rect x="330" y="100" width="3" height="40" fill="#4a5568" style="cursor: pointer;"></rect>
+  <rect x="330" y="137" width="20" height="3" fill="#4a5568" style="cursor: pointer;"></rect>
+  <!-- Windows -->
+  <rect x="350" y="60" width="30" height="35" fill="#2d3748" style="cursor: pointer;"></rect>
+  <rect x="350" y="110" width="30" height="35" fill="#3a4a5a" style="cursor: pointer;"></rect>
+  <rect x="295" y="110" width="25" height="25" fill="#2d3748" style="cursor: pointer;"></rect>
+  <!-- Graffiti tag -->
+  <text x="340" y="175" font-size="10" fill="#9f7aea" font-family="sans-serif" font-style="italic" style="cursor: pointer;">ZK</text>
+  
+  <!-- Street/ground -->
+  <rect x="0" y="175" width="400" height="50" fill="#4a4a4a" style="cursor: pointer;"></rect>
+  
+  <!-- Sidewalk -->
+  <rect x="0" y="175" width="110" height="15" fill="#6b6b6b" style="cursor: pointer;"></rect>
+  <rect x="280" y="175" width="120" height="15" fill="#6b6b6b" style="cursor: pointer;"></rect>
+  
+  <!-- Street cracks -->
+  <path d="M150 185 L160 195 L155 210 L165 225" stroke="#3a3a3a" stroke-width="2" fill="none" style="cursor: pointer;"></path>
+  <path d="M230 180 L240 200 L235 215" stroke="#3a3a3a" stroke-width="1.5" fill="none" style="cursor: pointer;"></path>
+  
+  <!-- Puddle -->
+  <ellipse cx="200" cy="200" rx="30" ry="8" fill="#5a6a7a" opacity="0.6" style="cursor: pointer;"></ellipse>
+  
+  <!-- Trash/debris -->
+  <rect x="130" y="195" width="8" height="12" fill="#a0aec0" style="cursor: pointer;"></rect>
+  <rect x="125" y="200" width="6" height="8" fill="#718096" transform="rotate(-15 128 204)" style="cursor: pointer;"></rect>
+  
+  <rect x="85" y="185" width="10" height="6" fill="#975a16" style="cursor: pointer;"></rect>
+  
+  <!-- Dumpster -->
+  <rect x="95" y="155" width="35" height="30" fill="#2f5d3a" style="cursor: pointer;"></rect>
+  <rect x="93" y="152" width="39" height="5" fill="#3a7a4a" style="cursor: pointer;"></rect>
+  <rect x="100" y="160" width="25" height="3" fill="#1a3a22" style="cursor: pointer;"></rect>
+  <!-- Trash overflow -->
+  <path d="M100 155 L105 145 L115 150 L120 142 L128 152" fill="#8b8b8b" style="cursor: pointer;"></path>
+  
+  <!-- Street lamp -->
+  <rect x="265" y="120" width="4" height="65" fill="#4a5568" style="cursor: pointer;"></rect>
+  <ellipse cx="267" cy="118" rx="8" ry="4" fill="#4a5568" style="cursor: pointer;"></ellipse>
+  <circle cx="267" cy="115" r="5" fill="#faf089" opacity="0.4" style="cursor: pointer;"></circle>
+  
+  <!-- Chain link fence hint on left -->
+  <line x1="108" y1="165" x2="108" y2="190" stroke="#718096" stroke-width="2" style="cursor: pointer;"></line>
+  <line x1="108" y1="170" x2="115" y2="175" stroke="#718096" stroke-width="1" style="cursor: pointer;"></line>
+  <line x1="108" y1="180" x2="115" y2="185" stroke="#718096" stroke-width="1" style="cursor: pointer;"></line>
+  
+  <!-- Manhole cover -->
+  <ellipse cx="180" cy="210" rx="12" ry="4" fill="#3a3a3a" style="cursor: pointer;"></ellipse>
+  <ellipse cx="180" cy="210" rx="8" ry="2.5" fill="#4a4a4a" style="cursor: pointer;"></ellipse>
+</svg>
