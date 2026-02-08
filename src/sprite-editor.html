@@ -1582,13 +1582,23 @@
     }
 
     .script-line.dragging {
-      opacity: 0.5;
+      opacity: 0.4;
       background: var(--plumage-cream);
     }
 
     .script-line.drag-over {
-      border-top: 2px solid var(--ocean-blue);
-      margin-top: -2px;
+      border-top: 3px solid var(--ocean-blue);
+      margin-top: -3px;
+    }
+
+    /* Floating clone during drag */
+    .script-line-clone {
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      opacity: 0.85;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      transform: rotate(1deg);
     }
 
     /* Insertion gap between cards */
@@ -4352,7 +4362,7 @@
         }
 
         scriptHtml += `
-          <div class="script-line ${cssClass}" data-index="${i}" draggable="true">
+          <div class="script-line ${cssClass}" data-index="${i}">
             <span class="reorder-grip" title="Drag to reorder">☰</span>
             <span class="content">${content}</span>
             <span class="actions">
@@ -4382,101 +4392,118 @@
     let insertAtIndex = null;  // null = append at end, number = insert at specific position
 
     // === DRAG AND DROP ===
-    let draggedIndex = null;
+    // === Mouse-based drag reorder (replaces native HTML5 DnD for reliability) ===
+    let dragState = null; // { index, card, clone, startY, offsetY }
 
     function initDragAndDrop() {
       const scriptList = document.getElementById('skit-script-list');
-      const cards = scriptList.querySelectorAll('.script-line[draggable="true"]');
-      const gaps = scriptList.querySelectorAll('.script-insert-gap');
+      const grips = scriptList.querySelectorAll('.reorder-grip');
 
-      cards.forEach(card => {
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragend', handleDragEnd);
-      });
-
-      // Allow dropping on gaps
-      gaps.forEach(gap => {
-        gap.addEventListener('dragover', handleDragOver);
-        gap.addEventListener('dragleave', handleDragLeave);
-        gap.addEventListener('drop', handleDrop);
-      });
-
-      // Also allow dropping on cards (insert before)
-      cards.forEach(card => {
-        card.addEventListener('dragover', handleCardDragOver);
-        card.addEventListener('dragleave', handleCardDragLeave);
-        card.addEventListener('drop', handleCardDrop);
+      grips.forEach(grip => {
+        grip.addEventListener('mousedown', handleGripMouseDown);
       });
     }
 
-    function handleDragStart(e) {
-      draggedIndex = parseInt(this.dataset.index);
-      this.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', draggedIndex);
+    function handleGripMouseDown(e) {
+      e.preventDefault();
+      const card = this.closest('.script-line');
+      if (!card) return;
+      const index = parseInt(card.dataset.index);
+
+      // Create floating clone
+      const rect = card.getBoundingClientRect();
+      const clone = card.cloneNode(true);
+      clone.className = card.className + ' script-line-clone';
+      clone.style.width = rect.width + 'px';
+      clone.style.left = rect.left + 'px';
+      clone.style.top = rect.top + 'px';
+      document.body.appendChild(clone);
+
+      card.classList.add('dragging');
+
+      dragState = {
+        index,
+        card,
+        clone,
+        offsetY: e.clientY - rect.top,
+        scrollContainer: document.getElementById('skit-editor-panel')
+      };
+
+      document.addEventListener('mousemove', handleDragMouseMove);
+      document.addEventListener('mouseup', handleDragMouseUp);
     }
 
-    function handleDragEnd(e) {
-      this.classList.remove('dragging');
+    function handleDragMouseMove(e) {
+      if (!dragState) return;
+      e.preventDefault();
+
+      // Move clone to follow cursor
+      dragState.clone.style.top = (e.clientY - dragState.offsetY) + 'px';
+
+      // Find which card we're over
+      const scriptList = document.getElementById('skit-script-list');
+      const cards = scriptList.querySelectorAll('.script-line');
+
+      // Clear previous highlights
+      cards.forEach(c => c.classList.remove('drag-over'));
+
+      let targetIndex = -1;
+      for (const c of cards) {
+        const idx = parseInt(c.dataset.index);
+        if (idx === dragState.index) continue;
+        const r = c.getBoundingClientRect();
+        const midY = r.top + r.height / 2;
+        if (e.clientY < midY) {
+          targetIndex = idx;
+          c.classList.add('drag-over');
+          break;
+        }
+      }
+
+      // If past all cards, target is after last
+      if (targetIndex === -1) {
+        // Will append to end
+      }
+
+      dragState.targetIndex = targetIndex;
+
+      // Auto-scroll the panel if near edges
+      const container = dragState.scrollContainer;
+      if (container) {
+        const cr = container.getBoundingClientRect();
+        const scrollMargin = 40;
+        if (e.clientY < cr.top + scrollMargin) {
+          container.scrollTop -= 8;
+        } else if (e.clientY > cr.bottom - scrollMargin) {
+          container.scrollTop += 8;
+        }
+      }
+    }
+
+    function handleDragMouseUp(e) {
+      if (!dragState) return;
+
+      document.removeEventListener('mousemove', handleDragMouseMove);
+      document.removeEventListener('mouseup', handleDragMouseUp);
+
+      // Clean up visuals
+      dragState.card.classList.remove('dragging');
+      dragState.clone.remove();
       document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
-      draggedIndex = null;
-    }
 
-    function handleDragOver(e) {
-      const targetIndex = parseInt(this.dataset.insertIndex);
-      // Don't allow drop in gap immediately before or after the dragged item
-      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) {
-        e.dataTransfer.dropEffect = 'none';
-        return;
+      // Determine final target
+      const fromIndex = dragState.index;
+      let toIndex = dragState.targetIndex;
+
+      if (toIndex === undefined || toIndex === -1) {
+        // Dropped past all cards — move to end
+        toIndex = (currentSkitData?.script?.length || 0);
       }
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      this.classList.add('drag-over');
-    }
 
-    function handleDragLeave(e) {
-      this.classList.remove('drag-over');
-    }
+      dragState = null;
 
-    function handleDrop(e) {
-      e.preventDefault();
-      this.classList.remove('drag-over');
-
-      const targetIndex = parseInt(this.dataset.insertIndex);
-      if (draggedIndex === null || draggedIndex === undefined) return;
-      // Don't allow drop in gap immediately before or after the dragged item
-      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) return;
-
-      moveAction(draggedIndex, targetIndex);
-    }
-
-    function handleCardDragOver(e) {
-      const targetIndex = parseInt(this.dataset.index);
-      // Don't allow drop on the same card or the one right after
-      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) {
-        e.dataTransfer.dropEffect = 'none';
-        return;
-      }
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      this.classList.add('drag-over');
-    }
-
-    function handleCardDragLeave(e) {
-      this.classList.remove('drag-over');
-    }
-
-    function handleCardDrop(e) {
-      e.preventDefault();
-      this.classList.remove('drag-over');
-
-      const targetIndex = parseInt(this.dataset.index);
-      if (draggedIndex === null || draggedIndex === undefined) return;
-      // Don't allow drop on the same card or the one right after
-      if (draggedIndex === targetIndex || draggedIndex === targetIndex - 1) return;
-
-      // Drop on card = insert before that card
-      moveAction(draggedIndex, targetIndex);
+      // Perform the move
+      moveAction(fromIndex, toIndex);
     }
 
     function moveAction(fromIndex, toIndex) {

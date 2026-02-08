@@ -2408,11 +2408,15 @@
       div.style.left = initialX + '%';
       div.style.bottom = `${100 - baseY}%`;
       div.style.setProperty('--char-scale', scale);
+      if (config.scale) {
+        div.style.height = `${40 * config.scale}%`;
+      }
 
       // Add position class for head rotation direction (based on target x)
       div.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
 
-      if (config.startOffscreen || config.startX !== undefined) {
+      // Only mark offscreen if explicitly flagged or startX is outside visible area
+      if (config.startOffscreen || (config.startX !== undefined && (config.startX < 0 || config.startX > 100))) {
         div.classList.add('offscreen');
       }
 
