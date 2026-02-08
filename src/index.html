@@ -319,8 +319,8 @@
     .script-info {
       margin-top: var(--space-5);
       padding: var(--space-5);
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-sm);
     }
@@ -374,6 +374,7 @@
       <li><a href="/sprite-editor.html">Create</a></li>
       <li><a href="/" class="active">Watch</a></li>
       <li><a href="/community.html">Community</a></li>
+      <li><button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>
     </ul>
   </nav>
 
@@ -715,6 +716,30 @@
 
     // Load initial script
     loadScript('theBox');
+
+    // --- Theme toggle ---
+    function applyTheme(theme) {
+      if (theme === 'ocean') {
+        document.documentElement.dataset.theme = 'ocean';
+        document.getElementById('themeIcon').innerHTML = '&#9728;';
+        document.getElementById('themeLabel').textContent = 'Beach';
+      } else {
+        delete document.documentElement.dataset.theme;
+        document.getElementById('themeIcon').innerHTML = '&#127754;';
+        document.getElementById('themeLabel').textContent = 'Ocean';
+      }
+    }
+    function toggleTheme() {
+      const current = document.documentElement.dataset.theme === 'ocean' ? 'ocean' : 'beach';
+      const next = current === 'ocean' ? 'beach' : 'ocean';
+      localStorage.setItem('pelicans-theme', next);
+      applyTheme(next);
+    }
+    (function initTheme() {
+      const saved = localStorage.getItem('pelicans-theme');
+      if (saved) { applyTheme(saved); return; }
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) { applyTheme('ocean'); }
+    })();
   </script>
 </body>
 </html>

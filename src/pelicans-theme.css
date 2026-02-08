@@ -161,7 +161,7 @@
 
 /* Shared nav bar */
 .pelicans-nav {
-  background: #fff;
+  background: var(--plumage-white);
   border-bottom: 2px solid var(--plumage-cream);
   padding: 0 24px;
   height: 60px;
@@ -254,6 +254,72 @@
   color: rgba(255,255,255,0.5);
   margin-top: var(--space-2);
 }
+
+/* ============================================
+   Ocean Mode (Dark Theme)
+   ============================================ */
+:root[data-theme="ocean"] {
+  --plumage-white: #0F1923;
+  --plumage-cream: #1A2A38;
+
+  --wing-dark: #E8E4DF;
+  --wing-gray: #A0A0A0;
+  --wing-tip: #C0C0C0;
+
+  --ocean-foam: #1B3244;
+  --ocean-shallow: #1B4A62;
+
+  --sand-warm: #3A4A5A;
+  --sand-pale: #2A3A4A;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.25);
+  --shadow-lg: 0 4px 20px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 20px rgba(245,166,35,0.2);
+  --shadow-ocean: 0 0 20px rgba(45,142,196,0.2);
+}
+
+/* Nav auto-adapts to ocean mode */
+:root[data-theme="ocean"] .pelicans-nav {
+  background: var(--plumage-cream);
+  border-bottom-color: var(--sand-warm);
+}
+
+:root[data-theme="ocean"] .pelicans-nav-logo { color: var(--wing-dark); }
+:root[data-theme="ocean"] .pelicans-nav-links a { color: var(--wing-gray); }
+:root[data-theme="ocean"] .pelicans-nav-links a:hover { color: var(--wing-dark); }
+:root[data-theme="ocean"] .pelicans-nav-links a.active { color: var(--ocean-blue); }
+
+/* Tag adjustments for ocean mode */
+:root[data-theme="ocean"] .tag-character { background: #1B3244; color: #5BB8E0; border-color: #1B4A62; }
+:root[data-theme="ocean"] .tag-background { background: #2A3A4A; color: #C4B08A; border-color: #3A4A5A; }
+:root[data-theme="ocean"] .tag-prop { background: #3A2A1A; color: #FFCC80; border-color: #5A3A1A; }
+:root[data-theme="ocean"] .tag-skit { background: #3A1A2A; color: #F48FB1; border-color: #5A2A3A; }
+
+/* Theme toggle button */
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--sand-warm);
+  border-radius: var(--radius-full);
+  color: var(--wing-gray);
+  cursor: pointer;
+  padding: 6px 12px;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--duration-fast) var(--ease-standard);
+  white-space: nowrap;
+}
+
+.theme-toggle:hover {
+  border-color: var(--ocean-blue);
+  color: var(--wing-dark);
+}
+
+.theme-toggle-icon { font-size: 16px; line-height: 1; }
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

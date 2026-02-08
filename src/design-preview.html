@@ -92,6 +92,37 @@
     }
 
     /* ============================================
+       OCEAN MODE OVERRIDES
+       ============================================ */
+    :root[data-theme="ocean"] {
+      --plumage-white: #0F1923;
+      --plumage-cream: #1A2A38;
+      --wing-dark: #E8E4DF;
+      --wing-gray: #A0A0A0;
+      --wing-tip: #C0C0C0;
+      --ocean-foam: #1B3244;
+      --ocean-shallow: #1B4A62;
+      --sand-warm: #3A4A5A;
+      --sand-pale: #2A3A4A;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.25);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.3);
+      --shadow-glow: 0 0 20px rgba(245,166,35,0.2);
+      --shadow-ocean: 0 0 20px rgba(45,142,196,0.2);
+    }
+
+    /* Theme toggle in side nav */
+    .theme-toggle-container { margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--plumage-cream); }
+    .theme-toggle-btn {
+      display: flex; align-items: center; gap: 8px; width: 100%;
+      padding: 8px 12px; border: 1px solid var(--sand-warm); border-radius: var(--radius-full);
+      background: transparent; color: var(--wing-gray); cursor: pointer;
+      font-family: var(--font-body); font-size: var(--text-sm); font-weight: 500;
+      transition: all 150ms var(--ease-standard);
+    }
+    .theme-toggle-btn:hover { border-color: var(--ocean-blue); color: var(--wing-dark); }
+
+    /* ============================================
        RESET & BASE
        ============================================ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -119,8 +150,8 @@
       left: 0;
       width: 220px;
       height: 100vh;
-      background: #fff;
-      border-right: 1px solid var(--plumage-cream);
+      background: var(--plumage-cream);
+      border-right: 1px solid var(--sand-warm);
       padding: var(--space-6) var(--space-4);
       overflow-y: auto;
       flex-shrink: 0;
@@ -238,8 +269,8 @@
       width: 120px;
       border-radius: var(--radius-md);
       overflow: hidden;
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
       transition: transform 200ms var(--ease-bounce), box-shadow 200ms ease;
     }
 
@@ -299,9 +330,9 @@
     .type-sample {
       margin-bottom: var(--space-5);
       padding: var(--space-4);
-      background: #fff;
+      background: var(--plumage-cream);
       border-radius: var(--radius-md);
-      border: 1px solid var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
     }
 
     .type-sample-label {
@@ -389,8 +420,8 @@
     }
 
     .card {
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
       border-radius: var(--radius-md);
       box-shadow: var(--shadow-sm);
       overflow: hidden;
@@ -481,8 +512,8 @@
        6. NAVIGATION DEMO
        ============================================ */
     .demo-nav {
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
       border-radius: var(--radius-md);
       display: flex;
       align-items: center;
@@ -1545,7 +1576,13 @@
       <a href="#mockup-editor">Editor</a>
       <a href="#mockup-community">Community</a>
       <a href="#personality">Personality</a>
+      <a href="#ocean-mode">Ocean Mode</a>
       <a href="#comparison">Before / After</a>
+      <div class="theme-toggle-container">
+        <button class="theme-toggle-btn" id="themeToggle" onclick="toggleTheme()">
+          <span id="themeIcon">&#127754;</span> <span id="themeLabel">Switch to Ocean</span>
+        </button>
+      </div>
     </nav>
 
     <!-- ======================== MAIN ======================== -->
@@ -2364,6 +2401,82 @@
         </div>
       </section>
 
+      <!-- ====== OCEAN MODE ====== -->
+      <section id="ocean-mode">
+        <h2 class="section-title">Ocean Mode (Dark Theme)</h2>
+        <p class="section-desc">A toggleable dark theme that remaps the design tokens for a deep-ocean / night-water feel. Accent colors stay the same; backgrounds, text, and surfaces swap to dark equivalents.</p>
+
+        <h3 class="subsection-title">Ocean Mode Palette</h3>
+        <div class="color-group">
+          <div class="color-group-label">Remapped Tokens</div>
+          <div class="color-row">
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #0F1923;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Plumage White</span><span class="color-swatch-hex">#0F1923</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #1A2A38;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Plumage Cream</span><span class="color-swatch-hex">#1A2A38</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #E8E4DF;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Wing Dark</span><span class="color-swatch-hex">#E8E4DF</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #A0A0A0;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Wing Gray</span><span class="color-swatch-hex">#A0A0A0</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #1B3244;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Ocean Foam</span><span class="color-swatch-hex">#1B3244</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #3A4A5A;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Sand Warm</span><span class="color-swatch-hex">#3A4A5A</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #2A3A4A;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Sand Pale</span><span class="color-swatch-hex">#2A3A4A</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Live Preview</h3>
+        <p style="color: var(--wing-gray); margin-bottom: var(--space-4);">Use the toggle in the side nav (or click below) to switch this page between Beach and Ocean modes and see all components adapt in real-time.</p>
+        <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: center; margin-bottom: var(--space-6);">
+          <button class="btn btn-pouch" onclick="toggleTheme()">Toggle Theme</button>
+          <span style="color: var(--wing-gray); font-size: var(--text-sm);">Current: <strong id="currentThemeLabel" style="color: var(--ocean-blue);">Beach</strong></span>
+        </div>
+
+        <h3 class="subsection-title">Components in Ocean Mode</h3>
+        <div style="background: #0F1923; border-radius: var(--radius-md); padding: var(--space-6); margin-bottom: var(--space-5);">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 16px; height: 50px; background: #1A2A38; border-radius: var(--radius-md); border: 1px solid #3A4A5A; margin-bottom: var(--space-4);">
+            <span style="font-family: var(--font-display); font-weight: 600; color: #E8E4DF;">pelicans<span style="color: var(--pouch-orange);">.art</span></span>
+            <span style="display: flex; gap: 16px;">
+              <span style="color: #A0A0A0; font-size: var(--text-sm);">Create</span>
+              <span style="color: var(--ocean-blue); font-size: var(--text-sm); font-weight: 600;">Watch</span>
+              <span style="color: #A0A0A0; font-size: var(--text-sm);">Community</span>
+            </span>
+          </div>
+          <div style="display: flex; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap;">
+            <button class="btn btn-pouch btn-sm" style="pointer-events:none;">Start Creating</button>
+            <button class="btn btn-ocean btn-sm" style="pointer-events:none;">Watch Skits</button>
+            <span style="background: transparent; color: #A0A0A0; padding: 6px 12px; border-radius: var(--radius-sm); font-size: var(--text-sm);">Ghost Button</span>
+          </div>
+          <div style="display: flex; gap: var(--space-3); margin-bottom: var(--space-4); flex-wrap: wrap;">
+            <span style="background: #1B3244; color: #5BB8E0; border: 1px solid #1B4A62; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 600;">Character</span>
+            <span style="background: #2A3A4A; color: #C4B08A; border: 1px solid #3A4A5A; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 600;">Background</span>
+            <span style="background: #3A2A1A; color: #FFCC80; border: 1px solid #5A3A1A; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 600;">Prop</span>
+            <span style="background: var(--pouch-orange); color: #fff; padding: 4px 12px; border-radius: var(--radius-full); font-size: var(--text-sm); font-weight: 600;">New</span>
+          </div>
+          <div style="background: #1A2A38; border: 1px solid #3A4A5A; border-radius: var(--radius-md); padding: var(--space-4);">
+            <div style="font-family: var(--font-display); color: #E8E4DF; font-weight: 500; margin-bottom: 4px;">Pelican Pete</div>
+            <div style="color: var(--ocean-blue); font-size: var(--text-sm); margin-bottom: 4px;">@artist</div>
+            <div style="color: #A0A0A0; font-size: var(--text-xs);">A sample card in ocean mode</div>
+          </div>
+        </div>
+      </section>
+
       <!-- ====== 9. BEFORE / AFTER ====== -->
       <section id="comparison">
         <h2 class="section-title">Before / After</h2>
@@ -2464,6 +2577,34 @@
         btn.classList.add('active');
       });
     });
+
+    // --- Theme toggle ---
+    function applyTheme(theme) {
+      if (theme === 'ocean') {
+        document.documentElement.dataset.theme = 'ocean';
+        document.getElementById('themeIcon').innerHTML = '&#9728;';
+        document.getElementById('themeLabel').textContent = 'Switch to Beach';
+        const cl = document.getElementById('currentThemeLabel');
+        if (cl) cl.textContent = 'Ocean';
+      } else {
+        delete document.documentElement.dataset.theme;
+        document.getElementById('themeIcon').innerHTML = '&#127754;';
+        document.getElementById('themeLabel').textContent = 'Switch to Ocean';
+        const cl = document.getElementById('currentThemeLabel');
+        if (cl) cl.textContent = 'Beach';
+      }
+    }
+    function toggleTheme() {
+      const current = document.documentElement.dataset.theme === 'ocean' ? 'ocean' : 'beach';
+      const next = current === 'ocean' ? 'beach' : 'ocean';
+      localStorage.setItem('pelicans-theme', next);
+      applyTheme(next);
+    }
+    (function initTheme() {
+      const saved = localStorage.getItem('pelicans-theme');
+      if (saved) { applyTheme(saved); return; }
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) { applyTheme('ocean'); }
+    })();
   </script>
 </body>
 </html>
