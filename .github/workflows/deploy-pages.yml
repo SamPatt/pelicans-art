@@ -5,8 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'src/community.html'
-      - 'src/skit-player.html'
+      - 'src/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -28,14 +27,8 @@ jobs:
 
       - name: Build static site
         run: |
-          mkdir -p _site/player
-
-          # Copy community.html as index.html, removing header links that won't work
-          # Delete lines from "header-links" div through its closing tag
-          sed '/<div class="header-links">/,/<\/div>/d' src/community.html > _site/index.html
-
-          # Copy skit-player.html as player/index.html for clean /player URLs
-          cp src/skit-player.html _site/player/index.html
+          mkdir -p _site
+          cp -R src/. _site/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

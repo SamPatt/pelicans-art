@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data: blob:; font-src 'self'; connect-src *; media-src * blob: data:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>pelicans.art — AI Improv Theater</title>
   <link rel="stylesheet" href="pelicans-theme.css">
   <style>
@@ -101,6 +102,34 @@
       margin-bottom: var(--space-5);
     }
 
+    .modes-section {
+      display: grid;
+      gap: var(--space-4);
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      margin-bottom: var(--space-8);
+    }
+
+    .mode-card {
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+
+    .mode-card h3 {
+      font-family: var(--font-display);
+      color: var(--wing-dark);
+      margin-bottom: var(--space-2);
+      font-size: var(--text-lg);
+    }
+
+    .mode-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--wing-gray);
+      line-height: 1.55;
+    }
+
     /* === STAGE === */
     .stage-section {
       margin-bottom: var(--space-8);
@@ -183,12 +212,12 @@
 <body>
   <!-- NAV -->
   <nav class="pelicans-nav">
-    <a href="/" class="pelicans-nav-logo">pelicans<span>.art</span></a>
+    <a href="./" class="pelicans-nav-logo">pelicans<span>.art</span></a>
     <ul class="pelicans-nav-links">
-      <li><a href="/sprite-editor.html">Create</a></li>
-      <li><a href="/" class="active">Watch</a></li>
-      <li><a href="/community.html">Community</a></li>
-      <li><button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>
+      <li><a href="sprite-editor.html">Create</a></li>
+      <li><a href="./" class="active">Watch</a></li>
+      <li><a href="community.html">Community</a></li>
+      <li><button class="theme-toggle" id="themeToggle"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>
     </ul>
   </nav>
 
@@ -198,8 +227,9 @@
       <h1>Make silly cartoons talk.</h1>
       <p>AI-powered improv with cartoony characters you create. Pick your cast, write a scene, and watch them perform.</p>
       <div class="hero-buttons">
-        <a href="/sprite-editor.html" class="btn btn-pouch" style="font-size: var(--text-lg); padding: 12px 28px;">Start Creating</a>
-        <a href="/community.html" class="btn btn-ocean" style="font-size: var(--text-lg); padding: 12px 28px;">Browse Community</a>
+        <a href="sprite-editor.html" class="btn btn-pouch" style="font-size: var(--text-lg); padding: 12px 28px;">Start Creating</a>
+        <a href="sprite-editor.html?mode=browser" class="btn btn-ocean" style="font-size: var(--text-lg); padding: 12px 28px;">Try in Browser</a>
+        <a href="community.html" class="btn btn-ocean" style="font-size: var(--text-lg); padding: 12px 28px;">Browse Community</a>
       </div>
     </div>
     <div class="hero-pelican">
@@ -244,6 +274,27 @@
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
+    <div class="modes-section">
+      <div class="mode-card">
+        <h3>Try It In Your Browser</h3>
+        <ul>
+          <li>Bring your own AI API key</li>
+          <li>Create sprites, props, backgrounds, and skits</li>
+          <li>Import/export all local assets</li>
+          <li>No server install required</li>
+        </ul>
+      </div>
+      <div class="mode-card">
+        <h3>Install For Full Features</h3>
+        <ul>
+          <li>Custom voice creation workflow</li>
+          <li>Server-side voice processing</li>
+          <li>WebSocket live collaboration updates</li>
+          <li>Full self-hosted stack</li>
+        </ul>
+      </div>
+    </div>
+
     <div class="stage-section">
       <h2 class="section-title">Now Playing</h2>
 
@@ -269,60 +320,6 @@
     <div class="pelicans-footer-tagline">Stuff it in the pouch.</div>
   </footer>
 
-  <script>
-    // Skit selector - switch iframe src when user clicks a tab
-    const skitFrame = document.getElementById('skitFrame');
-    const selector = document.getElementById('skitSelector');
-
-    selector.addEventListener('click', (e) => {
-      const btn = e.target.closest('.script-tab');
-      if (!btn) return;
-
-      const skitName = btn.dataset.skit;
-      if (!skitName) return;
-
-      // Update active state
-      selector.querySelectorAll('.script-tab').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Reload iframe with new skit
-      skitFrame.src = `skit-player.html?embed=1&skit=${skitName}`;
-    });
-
-    // Listen for orientation changes from embedded skit player
-    window.addEventListener('message', (e) => {
-      if (e.data?.type === 'skit-orientation') {
-        if (e.data.orientation === 'portrait') {
-          skitFrame.classList.add('portrait');
-        } else {
-          skitFrame.classList.remove('portrait');
-        }
-      }
-    });
-
-    // --- Theme toggle ---
-    function applyTheme(theme) {
-      if (theme === 'ocean') {
-        document.documentElement.dataset.theme = 'ocean';
-        document.getElementById('themeIcon').innerHTML = '&#9728;';
-        document.getElementById('themeLabel').textContent = 'Beach';
-      } else {
-        delete document.documentElement.dataset.theme;
-        document.getElementById('themeIcon').innerHTML = '&#127754;';
-        document.getElementById('themeLabel').textContent = 'Ocean';
-      }
-    }
-    function toggleTheme() {
-      const current = document.documentElement.dataset.theme === 'ocean' ? 'ocean' : 'beach';
-      const next = current === 'ocean' ? 'beach' : 'ocean';
-      localStorage.setItem('pelicans-theme', next);
-      applyTheme(next);
-    }
-    (function initTheme() {
-      const saved = localStorage.getItem('pelicans-theme');
-      if (saved) { applyTheme(saved); return; }
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) { applyTheme('ocean'); }
-    })();
-  </script>
+  <script src="js/index.js"></script>
 </body>
 </html>

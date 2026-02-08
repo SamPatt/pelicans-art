@@ -1,0 +1,8325 @@
+    // === STATE ===
+    let currentSprite = null;
+    let currentSpriteName = null;
+    let selectedElement = null;
+    let selectedElements = []; // Multi-selection support
+    let undoStack = [];
+    let redoStack = [];
+    let isDragging = false;
+    let justFinishedDragging = false; // Prevents click from firing after drag
+    let dragStart = { x: 0, y: 0 };
+    let elementStart = { x: 0, y: 0 };
+    let elementStarts = []; // Starting positions for multi-drag
+    let zoomLevel = 100;
+    let currentMeta = null;
+    let isGenerating = false;
+
+    // Edit mode state: 'sprite' | 'background' | 'skit'
+    let currentEditMode = 'sprite';
+    let currentBackgroundName = null;
+    let currentSkitId = null;
+    let currentSkitData = null;
+
+    // Available voices for TTS
+    const AVAILABLE_VOICES = [
+      { id: 'alba', name: 'Alba', description: 'Soft, measured female' },
+      { id: 'marius', name: 'Marius', description: 'Young male' },
+      { id: 'javert', name: 'Javert', description: 'Stern authoritative male' },
+      { id: 'jean', name: 'Jean', description: 'Warm older male' },
+      { id: 'fantine', name: 'Fantine', description: 'Gentle female' },
+      { id: 'cosette', name: 'Cosette', description: 'Sweet young female' },
+      { id: 'eponine', name: 'Eponine', description: 'Edgy young female' },
+      { id: 'azelma', name: 'Azelma', description: 'Playful female' }
+    ];
+
+    // Audio preview for voice testing
+    let currentAudioPreview = null;
+
+    // === HELPER FUNCTIONS FOR SVG METADATA ===
+    // Handles both single and double quoted attributes (DOM serialization uses double quotes)
+    function extractMetaFromSvg(svgText) {
+      if (!svgText || typeof svgText !== 'string') return {};
+
+      // Try single-quoted first (our canonical format, JSON uses " so no conflict)
+      let match = svgText.match(/data-meta='([^']*)'/);
+      if (match) {
+        try {
+          return JSON.parse(match[1].replace(/&#39;/g, "'"));
+        } catch (e) {
+          console.warn('Failed to parse data-meta (single-quoted):', e.message);
+        }
+      }
+
+      // Try double-quoted (DOM serialization converts quotes and escapes " as &quot;)
+      match = svgText.match(/data-meta="([^"]*)"/);
+      if (match) {
+        try {
+          return JSON.parse(match[1].replace(/&quot;/g, '"'));
+        } catch (e) {
+          console.warn('Failed to parse data-meta (double-quoted):', e.message);
+        }
+      }
+
+      return {};
+    }
+
+    // Uses single quotes for the attribute to avoid conflicts with JSON double quotes
+    function embedMetaInSvg(svgText, meta) {
+      if (!svgText || typeof svgText !== 'string') return svgText;
+      if (!meta || Object.keys(meta).length === 0) return svgText;
+
+      // Escape single quotes in JSON for single-quoted attribute
+      const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
+
+      // Try to replace single-quoted attribute first
+      if (/data-meta='[^']*'/.test(svgText)) {
+        return svgText.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
+      }
+      // Try to replace double-quoted attribute (from DOM serialization)
+      if (/data-meta="[^"]*"/.test(svgText)) {
+        return svgText.replace(/data-meta="[^"]*"/, `data-meta='${jsonStr}'`);
+      }
+      return svgText.replace('<svg', `<svg data-meta='${jsonStr}'`);
+    }
+    let previewAudioContext = null;
+    let previewSourceNode = null;
+
+    async function getBackendAssetUrl(type, name, variant) {
+      if (window.backend && typeof window.backend.getAssetUrl === 'function') {
+        try {
+          return await window.backend.getAssetUrl(type, name, variant);
+        } catch (err) {
+          console.warn('Asset URL fallback:', err.message);
+        }
+      }
+      if (type === 'sprite') return `sprites/${name}/${variant || 'front'}.svg`;
+      if (type === 'background') return `backgrounds/${name}/${variant || 'landscape'}.svg`;
+      if (type === 'prop') return `props/${name}/prop.svg`;
+      return '';
+    }
+
+    function setImageFromBackend(img, type, name, variant, fallbackUrl) {
+      if (fallbackUrl) {
+        img.src = fallbackUrl;
+      }
+      getBackendAssetUrl(type, name, variant).then((url) => {
+        if (url) img.src = url;
+      }).catch(() => {});
+    }
+
+    function getCurrentBackend() {
+      return window.backend || null;
+    }
+
+    async function requireBackend() {
+      if (window.backend) return window.backend;
+      const runtimeBackend = await (window.AITRuntime?.backendPromise || Promise.resolve(null));
+      if (runtimeBackend) {
+        window.backend = runtimeBackend;
+        return runtimeBackend;
+      }
+      throw new Error('Backend is not initialized');
+    }
+
+    function updateAiBanner() {
+      const banner = document.getElementById('ai-key-banner');
+      if (!banner) return;
+      const backend = getCurrentBackend();
+      const isBrowserMode = backend?.mode === 'browser';
+      const settings = window.AITSettings?.get?.() || {};
+      banner.style.display = (isBrowserMode && !settings.apiKey) ? 'block' : 'none';
+    }
+
+    function applyVoiceCreationSupport() {
+      const backend = getCurrentBackend();
+      const supported = backend?.supportsVoiceCreation !== false;
+      const createVoiceBtn = document.querySelector('.create-voice-btn');
+      if (!createVoiceBtn) return;
+      createVoiceBtn.style.display = supported ? '' : 'none';
+      createVoiceBtn.disabled = !supported;
+    }
+
+    function applyModeUi() {
+      applyVoiceCreationSupport();
+      updateAiBanner();
+    }
+
+    async function maybeShowBrowserWelcome() {
+      const backend = getCurrentBackend();
+      if (!backend || backend.mode !== 'browser') return;
+      const settings = window.AITSettings?.get?.() || {};
+      if (settings.welcomeDismissed) return;
+
+      const hasExistingData =
+        (characterList && characterList.length > 0) ||
+        (backgroundList && backgroundList.length > 0) ||
+        (propList && propList.length > 0);
+      if (hasExistingData) {
+        window.AITSettings?.set?.({ welcomeDismissed: true });
+        return;
+      }
+
+      const welcome = document.createElement('div');
+      welcome.id = 'browser-welcome-modal';
+      welcome.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3500;display:flex;align-items:center;justify-content:center;padding:18px;';
+      welcome.innerHTML = `
+        <div style="width:min(760px,95vw);background:var(--plumage-white);border:1px solid var(--sand-warm);border-radius:10px;padding:18px;">
+          <h3 style="margin:0 0 8px 0;">Welcome to AI Improv Theater</h3>
+          <p style="margin:0 0 14px 0;color:var(--wing-gray);font-size:14px;">
+            You can create characters and skits right here in your browser.
+          </p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+            <button type="button" data-welcome="ai" style="padding:12px;border:1px solid var(--sand-warm);background:var(--plumage-cream);border-radius:8px;cursor:pointer;">Start with AI</button>
+            <button type="button" data-welcome="import" style="padding:12px;border:1px solid var(--sand-warm);background:var(--plumage-cream);border-radius:8px;cursor:pointer;">Import from Community</button>
+            <button type="button" data-welcome="scratch" style="padding:12px;border:1px solid var(--sand-warm);background:var(--plumage-cream);border-radius:8px;cursor:pointer;">Start from scratch</button>
+          </div>
+        </div>
+      `;
+
+      const close = () => {
+        welcome.remove();
+        window.AITSettings?.set?.({ welcomeDismissed: true });
+      };
+
+      welcome.addEventListener('click', (event) => {
+        if (event.target === welcome) close();
+      });
+      welcome.querySelector('[data-welcome="ai"]').addEventListener('click', () => {
+        close();
+        window.AITSettingsUI?.open?.();
+      });
+      welcome.querySelector('[data-welcome="import"]').addEventListener('click', () => {
+        close();
+        openImportModal();
+      });
+      welcome.querySelector('[data-welcome="scratch"]').addEventListener('click', close);
+
+      document.body.appendChild(welcome);
+    }
+
+    // === INLINE HANDLER MIGRATION ===
+    // Converts inline onclick/onchange/oninput attributes into addEventListener bindings.
+    // This lets us progressively de-inline the UI while keeping existing markup working.
+    const INLINE_HANDLER_ATTRS = [
+      { attr: 'onclick', eventName: 'click' },
+      { attr: 'onchange', eventName: 'change' },
+      { attr: 'oninput', eventName: 'input' },
+      { attr: 'data-ait-onclick', eventName: 'click' },
+      { attr: 'data-ait-onchange', eventName: 'change' },
+      { attr: 'data-ait-oninput', eventName: 'input' }
+    ];
+
+    function splitOutside(source, separatorChar) {
+      const parts = [];
+      let quote = null;
+      let depth = 0;
+      let current = '';
+
+      for (let i = 0; i < source.length; i += 1) {
+        const ch = source[i];
+        const prev = source[i - 1];
+
+        if (quote) {
+          current += ch;
+          if (ch === quote && prev !== '\\') quote = null;
+          continue;
+        }
+
+        if (ch === '\'' || ch === '"') {
+          quote = ch;
+          current += ch;
+          continue;
+        }
+
+        if (ch === '(') {
+          depth += 1;
+          current += ch;
+          continue;
+        }
+        if (ch === ')') {
+          depth = Math.max(0, depth - 1);
+          current += ch;
+          continue;
+        }
+
+        if (ch === separatorChar && depth === 0) {
+          if (current.trim()) parts.push(current.trim());
+          current = '';
+          continue;
+        }
+
+        current += ch;
+      }
+
+      if (current.trim()) parts.push(current.trim());
+      return parts;
+    }
+
+    function unquote(token) {
+      if (!token || token.length < 2) return token;
+      const first = token[0];
+      const last = token[token.length - 1];
+      if ((first === '\'' && last === '\'') || (first === '"' && last === '"')) {
+        const inner = token.slice(1, -1);
+        return inner
+          .replace(/\\'/g, "'")
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, '\\');
+      }
+      return token;
+    }
+
+    function evaluateInlineToken(rawToken, event, element) {
+      const token = rawToken.trim();
+      if (!token) return undefined;
+
+      if ((token.startsWith('\'') && token.endsWith('\'')) || (token.startsWith('"') && token.endsWith('"'))) {
+        return unquote(token);
+      }
+      if (token === 'this') return element;
+      if (token === 'event') return event;
+      if (token === 'this.value') return element?.value;
+      if (token === 'this.checked') return !!element?.checked;
+      if (token === 'true') return true;
+      if (token === 'false') return false;
+      if (token === 'null') return null;
+      if (token === 'undefined') return undefined;
+      if (/^-?\d+(\.\d+)?$/.test(token)) return Number(token);
+
+      const docValue = token.match(/^document\.getElementById\((['"])(.+?)\1\)\.(value|checked)$/);
+      if (docValue) {
+        const target = document.getElementById(docValue[2]);
+        return docValue[3] === 'checked' ? !!target?.checked : target?.value;
+      }
+
+      return token;
+    }
+
+    function resolveCallable(path) {
+      const segments = path.split('.');
+      let context = window;
+      for (let i = 0; i < segments.length - 1; i += 1) {
+        context = context?.[segments[i]];
+        if (!context) return null;
+      }
+      const fn = context?.[segments[segments.length - 1]];
+      if (typeof fn !== 'function') return null;
+      return { context, fn };
+    }
+
+    function executeInlineStatement(statement, event, element) {
+      const stmt = statement.trim();
+      if (!stmt) return;
+
+      if (stmt === 'event.stopPropagation()') {
+        event.stopPropagation();
+        return;
+      }
+      if (stmt === 'event.preventDefault()') {
+        event.preventDefault();
+        return;
+      }
+      if (stmt === 'this.blur()') {
+        element?.blur?.();
+        return;
+      }
+
+      const assignDisplayMatch = stmt.match(/^document\.getElementById\((['"])(.+?)\1\)\.style\.display\s*=\s*(['"])(.*?)\3$/);
+      if (assignDisplayMatch) {
+        const target = document.getElementById(assignDisplayMatch[2]);
+        if (target) target.style.display = assignDisplayMatch[4];
+        return;
+      }
+
+      const callMatch = stmt.match(/^([A-Za-z_$][\w$.]*)\(([\s\S]*)\)$/);
+      if (!callMatch) return;
+      const fnPath = callMatch[1];
+      const argsSource = callMatch[2].trim();
+      const args = argsSource ? splitOutside(argsSource, ',').map((part) => evaluateInlineToken(part, event, element)) : [];
+      const callable = resolveCallable(fnPath);
+      if (!callable) {
+        console.warn('Unable to resolve inline handler function:', fnPath);
+        return;
+      }
+      callable.fn.apply(callable.context, args);
+    }
+
+    function executeInlineCode(code, event, element) {
+      const statements = splitOutside(code, ';');
+      statements.forEach((stmt) => executeInlineStatement(stmt, event, element));
+    }
+
+    function bindInlineHandlers(root) {
+      const targets = [];
+      const selector = INLINE_HANDLER_ATTRS.map(({ attr }) => `[${attr}]`).join(',');
+      if (root instanceof Element) {
+        targets.push(root);
+        targets.push(...root.querySelectorAll(selector));
+      } else {
+        targets.push(...document.querySelectorAll(selector));
+      }
+
+      targets.forEach((element) => {
+        INLINE_HANDLER_ATTRS.forEach(({ attr, eventName }) => {
+          const code = element.getAttribute(attr);
+          if (!code) return;
+
+          const safeAttrName = attr.replace(/[^a-z0-9]+/gi, '_');
+          const boundKey = `inlineBound_${safeAttrName}`;
+          if (element.dataset[boundKey] === '1') return;
+
+          element.addEventListener(eventName, (event) => executeInlineCode(code, event, element));
+          element.removeAttribute(attr);
+          element.dataset[boundKey] = '1';
+        });
+      });
+    }
+
+    function enableInlineHandlerMigration() {
+      bindInlineHandlers(document);
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (!(node instanceof Element)) return;
+            bindInlineHandlers(node);
+          });
+        });
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    enableInlineHandlerMigration();
+
+    // === COLLAPSIBLE SIDEBAR SECTIONS ===
+    function toggleSection(sectionName) {
+      const section = document.querySelector(`[data-section="${sectionName}"]`);
+      if (section) {
+        section.classList.toggle('collapsed');
+
+        // Save state to localStorage
+        const collapsed = JSON.parse(localStorage.getItem('pelicans-collapsed-sections') || '{}');
+        collapsed[sectionName] = section.classList.contains('collapsed');
+        localStorage.setItem('pelicans-collapsed-sections', JSON.stringify(collapsed));
+      }
+    }
+
+    function restoreCollapsedState() {
+      const collapsed = JSON.parse(localStorage.getItem('pelicans-collapsed-sections') || '{}');
+      Object.entries(collapsed).forEach(([section, isCollapsed]) => {
+        if (isCollapsed) {
+          const el = document.querySelector(`[data-section="${section}"]`);
+          if (el) el.classList.add('collapsed');
+        }
+      });
+    }
+
+    // === BACKGROUND MANAGEMENT ===
+    let backgroundList = [];
+    let currentBackgroundOrientation = 'landscape';
+    let currentBackgroundOrientations = ['landscape'];
+
+    async function loadBackgrounds() {
+      try {
+        const backend = await requireBackend();
+        backgroundList = await backend.listBackgrounds();
+
+        const list = document.getElementById('background-list');
+        const items = await Promise.all(backgroundList.map(async (bg) => {
+          const name = bg.name || bg;
+          const orientations = bg.orientations || ['landscape'];
+          const defaultOrientation = orientations.includes('landscape') ? 'landscape' : orientations[0];
+          const thumbPath = await getBackendAssetUrl('background', name, defaultOrientation);
+          return `
+          <div class="background-item" data-name="${name}" data-ait-onclick="selectBackground('${name}')">
+            <div class="bg-thumbnail">
+              <img src="${thumbPath}" alt="${name}" onerror="handleBgThumbError(this, '${name}')">
+            </div>
+            <span style="flex:1">${name}</span>
+            <button class="item-delete-btn" data-ait-onclick="event.stopPropagation(); showDeleteConfirm(this, 'background', '${name}')" title="Delete">🗑️</button>
+          </div>
+        `;
+        }));
+        list.innerHTML = items.join('');
+
+        document.getElementById('bg-count').textContent = `(${backgroundList.length})`;
+      } catch (e) {
+        console.error('Failed to load backgrounds:', e);
+        document.getElementById('bg-count').textContent = '(0)';
+      }
+    }
+
+    // Handle background thumbnail load error - try legacy path
+    function handleBgThumbError(img, name) {
+      const legacyPath = `backgrounds/${name}.svg`;
+      if (!img.src.endsWith(legacyPath)) {
+        img.src = legacyPath;
+      } else {
+        img.parentElement.innerHTML = '🖼️';
+      }
+    }
+
+    // === PROP MANAGEMENT ===
+    let propList = [];
+
+    async function loadProps() {
+      try {
+        const backend = await requireBackend();
+        propList = await backend.listProps();
+
+        const list = document.getElementById('prop-list');
+        const items = await Promise.all(propList.map(async (prop) => {
+          const name = prop.name;
+          const thumbPath = await getBackendAssetUrl('prop', name, 'prop');
+          return `
+          <div class="prop-item" data-name="${name}" data-ait-onclick="selectProp('${name}')">
+            <div class="prop-thumbnail">
+              <img src="${thumbPath}" alt="${name}" onerror="this.parentElement.innerHTML='🎁'">
+            </div>
+            <span style="flex:1">${name}</span>
+            <button class="item-delete-btn" data-ait-onclick="event.stopPropagation(); showDeleteConfirm(this, 'prop', '${name}')" title="Delete">🗑️</button>
+          </div>
+        `;
+        }));
+        list.innerHTML = items.join('');
+
+        document.getElementById('prop-count').textContent = `(${propList.length})`;
+      } catch (e) {
+        console.error('Failed to load props:', e);
+        document.getElementById('prop-count').textContent = '(0)';
+      }
+    }
+
+    async function selectProp(name) {
+      try {
+        const backend = await requireBackend();
+        const prop = await backend.getProp(name);
+
+        currentEditMode = 'prop';
+        currentSpriteName = name;
+        currentSprite = prop.svg;
+        currentMeta = prop.meta || {};
+        currentVariant = 'prop';
+        currentVariants = ['prop'];
+
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = prop.svg;
+
+        // Set up for editing
+        renderSpriteFromCurrent();
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+        applyZoom();
+        updateCommandContext();
+
+        // Update prop list selection
+        document.querySelectorAll('.prop-item').forEach(item => {
+          item.classList.toggle('active', item.dataset.name === name);
+        });
+
+        // Clear other selections
+        document.querySelectorAll('.sprite-item').forEach(item => item.classList.remove('active'));
+        document.querySelectorAll('.background-item').forEach(item => item.classList.remove('active'));
+
+        // Load prop settings and update panel visibility
+        loadPropSettings(currentMeta);
+        updatePanelVisibility();
+
+        updateStatus(`Editing prop: ${name}`);
+      } catch (e) {
+        console.error('Failed to load prop:', e);
+        updateStatus(`Error loading prop: ${e.message}`);
+      }
+    }
+
+    function createNewProp() {
+      openNamingModal('Create New Prop', 'Prop name', (name) => {
+        const templateSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="50" height="50">
+  <rect x="5" y="5" width="40" height="40" fill="#888" rx="4"/>
+</svg>`;
+
+        currentEditMode = 'prop';
+        currentSpriteName = name;
+        currentSprite = templateSvg;
+        currentMeta = { name, description: '' };
+        currentVariant = 'prop';
+        currentVariants = ['prop'];
+
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = templateSvg;
+
+        renderSpriteFromCurrent();
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+        applyZoom();
+        updateCommandContext();
+
+        // Load prop settings and update panel visibility
+        loadPropSettings(currentMeta);
+        updatePanelVisibility();
+
+        updateStatus(`New prop: ${name} - edit and save`);
+      });
+    }
+
+    async function deletePropAsset(name) {
+      try {
+        const backend = await requireBackend();
+        await backend.deleteProp(name);
+        await loadProps();
+        updateStatus(`Deleted prop: ${name}`);
+      } catch (e) {
+        console.error('Failed to delete prop:', e);
+        updateStatus(`Error deleting prop: ${e.message}`);
+      }
+    }
+
+    async function savePropAsset() {
+      if (!currentSpriteName || !currentSprite) {
+        updateStatus('No prop to save');
+        return;
+      }
+
+      try {
+        const backend = await requireBackend();
+        await backend.saveProp(currentSpriteName, currentSprite, currentMeta || {});
+
+        await loadProps();
+        showSaveSuccess();
+        updateStatus(`Saved prop: ${currentSpriteName}`);
+      } catch (e) {
+        console.error('Failed to save prop:', e);
+        showSaveError();
+        updateStatus(`Error saving prop: ${e.message}`);
+      }
+    }
+
+    async function selectBackground(name) {
+      // Clear other selections
+      clearAllSelections();
+
+      currentEditMode = 'background';
+      currentBackgroundName = name;
+      currentSpriteName = null;
+      currentSkitId = null;
+
+      // Update UI highlights
+      document.querySelectorAll('.background-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.name === name);
+      });
+
+      // Show canvas, hide skit editor
+      document.getElementById('svg-canvas').style.display = 'block';
+      document.getElementById('skit-editor-panel').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'flex';
+      document.querySelector('.element-tree').style.display = 'block';
+      document.getElementById('variant-tabs').style.display = 'flex'; // Show orientation tabs for backgrounds
+      document.querySelector('.zoom-controls').style.display = 'flex';
+
+      // Detect available orientations for this background
+      currentBackgroundOrientations = await detectBackgroundOrientations(name);
+      currentBackgroundOrientation = currentBackgroundOrientations.includes('landscape')
+        ? 'landscape'
+        : currentBackgroundOrientations[0];
+
+      renderBackgroundOrientationTabs();
+
+      // Load the default orientation
+      await loadBackgroundOrientation(name, currentBackgroundOrientation);
+
+      // Hide sprite/prop settings panels for backgrounds
+      updatePanelVisibility();
+    }
+
+    async function detectBackgroundOrientations(bgName) {
+      // Check cached background list first
+      const bg = backgroundList.find(b => (b.name || b) === bgName);
+      if (bg && bg.orientations) {
+        return bg.orientations;
+      }
+
+      const backend = await requireBackend();
+      if (typeof backend.detectBgOrientations === 'function') {
+        return await backend.detectBgOrientations(bgName);
+      }
+      return ['landscape'];
+    }
+
+    function renderBackgroundOrientationTabs() {
+      const tabs = document.getElementById('variant-tabs');
+      tabs.innerHTML = '';
+
+      for (const o of currentBackgroundOrientations) {
+        const tab = document.createElement('button');
+        tab.style.cssText = 'padding:6px 12px;background:var(--plumage-cream);border:none;color:var(--wing-dark);border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
+        if (o === currentBackgroundOrientation) tab.style.background = 'var(--pouch-orange)';
+        tab.textContent = o.charAt(0).toUpperCase() + o.slice(1);
+        tab.onclick = () => {
+          currentBackgroundOrientation = o;
+          loadBackgroundOrientation(currentBackgroundName, o);
+          renderBackgroundOrientationTabs();
+        };
+        tabs.appendChild(tab);
+      }
+
+      // Add new orientation button only if both orientations don't exist
+      const hasLandscape = currentBackgroundOrientations.includes('landscape');
+      const hasPortrait = currentBackgroundOrientations.includes('portrait');
+
+      if (!hasLandscape || !hasPortrait) {
+        const addBtn = document.createElement('button');
+        addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed var(--wing-gray);color:var(--wing-gray);border-radius:4px;cursor:pointer;font-size:12px;';
+        addBtn.textContent = hasLandscape ? '+ Portrait' : '+ Landscape';
+        addBtn.onclick = addNewBackgroundOrientation;
+        tabs.appendChild(addBtn);
+      }
+    }
+
+    // Background dimensions by orientation (16:9 landscape, 9:16 portrait)
+    const BG_DIMENSIONS = {
+      landscape: { width: 400, height: 225 },
+      portrait: { width: 225, height: 400 }
+    };
+
+    async function loadBackgroundOrientation(bgName, orientation) {
+      try {
+        const backend = await requireBackend();
+        const svg = await backend.getBackground(bgName, orientation);
+
+        currentBackgroundOrientation = orientation;
+        currentSprite = svg;
+
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = svg;
+
+        // Setup interactions
+        const svgEl = canvas.querySelector('svg');
+        if (svgEl) {
+          // Scale for editing based on orientation
+          const dims = BG_DIMENSIONS[orientation] || BG_DIMENSIONS.landscape;
+          svgEl.setAttribute('width', dims.width);
+          svgEl.setAttribute('height', dims.height);
+
+          svgEl.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'g' && el.tagName !== 'svg') {
+              el.style.cursor = 'pointer';
+              el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectElement(el);
+              });
+            }
+          });
+
+          // Click on background deselects
+          svgEl.addEventListener('click', (e) => {
+            if (e.target === svgEl) {
+              clearSelection();
+            }
+          });
+        }
+
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+        updateCommandContext();
+        updateStatus(`Loaded: ${bgName}/${orientation}`);
+      } catch (e) {
+        console.error('Failed to load background orientation:', e);
+        updateStatus(`Error loading ${bgName}/${orientation}: ${e.message}`);
+      }
+    }
+
+    function addNewBackgroundOrientation() {
+      // Only allow landscape or portrait
+      const available = ['landscape', 'portrait'].filter(o => !currentBackgroundOrientations.includes(o));
+
+      if (available.length === 0) {
+        alert('Both orientations (landscape and portrait) already exist for this background.');
+        return;
+      }
+
+      // If only one option left, use it automatically
+      const newOrientation = available.length === 1
+        ? available[0]
+        : (confirm('Add portrait orientation? (Cancel for landscape)') ? 'portrait' : 'landscape');
+
+      if (currentBackgroundOrientations.includes(newOrientation)) {
+        alert(`${newOrientation} orientation already exists.`);
+        return;
+      }
+
+      currentBackgroundOrientation = newOrientation;
+      currentBackgroundOrientations.push(newOrientation);
+
+      // Start with blank or copy current
+      if (confirm('Start with a copy of current background? (Cancel for blank)')) {
+        // Keep currentSprite as is but resize the display
+        const canvas = document.getElementById('svg-canvas');
+        const svgEl = canvas.querySelector('svg');
+        if (svgEl) {
+          const dims = BG_DIMENSIONS[newOrientation] || BG_DIMENSIONS.landscape;
+          svgEl.setAttribute('width', dims.width);
+          svgEl.setAttribute('height', dims.height);
+        }
+      } else {
+        // Use appropriate viewBox for orientation (16:9 landscape, 9:16 portrait)
+        const dims = BG_DIMENSIONS[newOrientation] || BG_DIMENSIONS.landscape;
+        const viewBox = `0 0 ${dims.width} ${dims.height}`;
+        currentSprite = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="${dims.width}" height="${dims.height}"></svg>`;
+        const canvas = document.getElementById('svg-canvas');
+        canvas.innerHTML = currentSprite;
+      }
+
+      renderBackgroundOrientationTabs();
+      buildElementTree();
+      updateStatus(`New orientation: ${newOrientation} (save to create file)`);
+    }
+
+    // === SKIT MANAGEMENT ===
+    let skitList = [];
+
+    async function loadSkits() {
+      try {
+        const backend = await requireBackend();
+        skitList = await backend.listSkits();
+
+        const list = document.getElementById('skit-list');
+        list.innerHTML = skitList.map(skit => `
+          <div class="skit-item" data-id="${skit.id}" data-ait-onclick="selectSkit('${skit.id}')">
+            <span class="skit-icon">🎬</span>
+            <span class="skit-title">${skit.title || skit.id}</span>
+            <button class="skit-play-btn" data-ait-onclick="event.stopPropagation(); openSkitPlayer('${skit.id}')" title="Play">▶</button>
+            <button class="item-delete-btn" data-ait-onclick="event.stopPropagation(); showDeleteConfirm(this, 'skit', '${skit.id}')" title="Delete">🗑️</button>
+          </div>
+        `).join('');
+
+        document.getElementById('skit-count').textContent = `(${skitList.length})`;
+      } catch (e) {
+        console.error('Failed to load skits:', e);
+        document.getElementById('skit-count').textContent = '(0)';
+      }
+    }
+
+    async function selectSkit(id) {
+      // Clear other selections
+      clearAllSelections();
+
+      currentEditMode = 'skit';
+      currentSkitId = id;
+      currentSpriteName = null;
+      currentBackgroundName = null;
+
+      // Update UI highlights
+      document.querySelectorAll('.skit-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.id === id);
+      });
+
+      // Hide canvas, show skit editor
+      document.getElementById('svg-canvas').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'none';
+      document.querySelector('.element-tree').style.display = 'none';
+      document.getElementById('variant-tabs').style.display = 'none';
+      document.querySelector('.zoom-controls').style.display = 'none';
+      document.getElementById('skit-editor-panel').style.display = 'block';
+
+      // Hide sprite/prop settings panels for skits
+      updatePanelVisibility();
+
+      // Enable publish button
+      const publishBtn = document.getElementById('skit-publish-btn');
+      if (publishBtn) publishBtn.disabled = false;
+
+      // Load skit data
+      try {
+        const backend = await requireBackend();
+        currentSkitData = await backend.getSkit(id);
+        renderSkitStructure(currentSkitData);
+        updateCommandContext();
+        updateStatus(`Loaded skit: ${currentSkitData.meta?.title || id}`);
+      } catch (e) {
+        console.error('Failed to load skit:', e);
+        updateStatus(`Error loading skit: ${id}`);
+      }
+    }
+
+    function renderSkitStructure(skit) {
+      // Meta
+      document.getElementById('skit-title').textContent = skit.meta?.title || 'Untitled Script';
+      document.getElementById('skit-description').textContent = skit.meta?.description || '';
+
+      // Background selector (with orientation)
+      populateBackgroundSelector(skit.stage?.background, skit.stage?.orientation);
+
+      // Cast
+      const castHtml = Object.entries(skit.cast || {}).map(([id, char]) => {
+        const pos = getPositionPreset(char.startX ?? char.x);
+        const isManual = pos === 'manual';
+        return `
+        <div class="cast-member" data-char-id="${id}">
+          <div class="cast-header">
+            <span class="cast-id">${id}</span>
+            <span class="cast-sprite">→ ${char.sprite}</span>
+          </div>
+          <div class="cast-fields">
+            <label>Start:
+              <select class="cast-position" data-ait-onchange="updateCastPosition('${id}', this.value, this)">
+                <option value="center" ${pos === 'center' ? 'selected' : ''}>Center</option>
+                <option value="left" ${pos === 'left' ? 'selected' : ''}>Left</option>
+                <option value="right" ${pos === 'right' ? 'selected' : ''}>Right</option>
+                <option value="offscreen-left" ${pos === 'offscreen-left' ? 'selected' : ''}>Offscreen Left</option>
+                <option value="offscreen-right" ${pos === 'offscreen-right' ? 'selected' : ''}>Offscreen Right</option>
+                <option value="manual" ${isManual ? 'selected' : ''}>Manual</option>
+              </select>
+            </label>
+            <span class="cast-manual-input" style="display: ${isManual ? 'inline' : 'none'}">
+              <input type="number" class="cast-manual-x" value="${char.startX ?? char.x ?? 50}" min="-50" max="150" data-ait-onchange="updateCastManualPosition('${id}', this.value)">
+            </span>
+          </div>
+        </div>
+      `}).join('') || '<p style="color:var(--sand-warm);font-size:0.85em;">No cast defined</p>';
+      document.getElementById('skit-cast-list').innerHTML = castHtml;
+
+      // Props
+      const propsHtml = Object.entries(skit.props || {}).map(([id, prop]) => `
+        <div class="prop-member" data-prop-id="${id}">
+          <span class="prop-id">${id}</span>
+          <span class="prop-asset">→ ${prop.prop}</span>
+          <span class="prop-layer">[${prop.layer || 'background'}]</span>
+          <button class="item-delete-btn" data-ait-onclick="removeSkitProp('${id}')" title="Remove prop">✕</button>
+        </div>
+      `).join('') || '<p style="color:var(--sand-warm);font-size:0.85em;">No props defined</p>';
+      document.getElementById('skit-props-list').innerHTML = propsHtml;
+
+      // Script with drag handles and insertion gaps
+      let scriptHtml = '';
+
+      // Initial insertion gap (before first item)
+      scriptHtml += `<div class="script-insert-gap" data-insert-index="0">
+        <button class="insert-btn" data-ait-onclick="openAddActionModalAt(0)" title="Insert action here">+</button>
+      </div>`;
+
+      (skit.script || []).forEach((action, i) => {
+        let content = '';
+        let cssClass = '';
+
+        switch (action.do) {
+          case 'say':
+            content = `<strong>${action.who}:</strong> "${action.line}"`;
+            cssClass = 'say';
+            break;
+          case 'emote':
+            content = `${action.who} → ${action.emotion}`;
+            cssClass = 'emote';
+            break;
+          case 'shot':
+            content = `📷 ${action.type}${action.who ? ` (${action.who})` : ''}`;
+            cssClass = 'shot';
+            break;
+          case 'enter':
+            content = `↗ ${action.who} enters from ${action.from}`;
+            cssClass = 'stage';
+            break;
+          case 'exit':
+            content = `↘ ${action.who} exits to ${action.to}`;
+            cssClass = 'stage';
+            break;
+          case 'move':
+            content = `→ ${action.who} moves to ${action.to}`;
+            cssClass = 'stage';
+            break;
+          case 'pause':
+            content = `⏸ pause ${action.duration}s`;
+            cssClass = 'stage';
+            break;
+          case 'look':
+            content = `👁 ${action.who} looks ${action.at}`;
+            cssClass = 'stage';
+            break;
+          case 'spawn':
+            content = `🎁 spawn ${action.what}${action.who ? ` held by ${action.who}` : (action.at ? ` at (${action.at[0]}, ${action.at[1]})` : '')}`;
+            cssClass = 'prop';
+            break;
+          case 'despawn':
+            content = `🎁 despawn ${action.what}`;
+            cssClass = 'prop';
+            break;
+          case 'prop-move':
+            content = `🎁 ${action.what} moves to (${action.to?.[0] || '?'}, ${action.to?.[1] || '?'})`;
+            cssClass = 'prop';
+            break;
+          case 'prop-hold':
+            content = `🎁 ${action.who} holds ${action.what}`;
+            cssClass = 'prop';
+            break;
+          case 'prop-drop':
+            content = `🎁 ${action.who || 'drop'} ${action.what}${action.at ? ` at (${action.at[0]}, ${action.at[1]})` : ''}`;
+            cssClass = 'prop';
+            break;
+          case 'prop-rotate':
+            content = `🎁 rotate ${action.what} to ${action.angle}°`;
+            cssClass = 'prop';
+            break;
+          case 'prop-scale':
+            content = `🎁 scale ${action.what} to ${action.scale}x`;
+            cssClass = 'prop';
+            break;
+          case 'prop-animate':
+            content = `🎁 animate ${action.what}: ${action.animation}`;
+            cssClass = 'prop';
+            break;
+          default:
+            content = JSON.stringify(action);
+        }
+
+        if (action.offset < 0) {
+          content += ` <span class="offset-badge">[${action.offset}s]</span>`;
+        }
+
+        scriptHtml += `
+          <div class="script-line ${cssClass}" data-index="${i}">
+            <span class="reorder-grip" title="Drag to reorder">☰</span>
+            <span class="content">${content}</span>
+            <span class="actions">
+              <button class="action-btn edit" data-ait-onclick="openEditActionModal(${i})" title="Edit">✏️</button>
+              <button class="action-btn offset" data-ait-onclick="openEditActionModal(${i})" title="Timing">⏱️</button>
+              <button class="action-btn delete" data-ait-onclick="deleteScriptAction(${i})" title="Delete">✕</button>
+            </span>
+          </div>
+          <div class="script-insert-gap" data-insert-index="${i + 1}">
+            <button class="insert-btn" data-ait-onclick="openAddActionModalAt(${i + 1})" title="Insert action here">+</button>
+          </div>`;
+      });
+
+      if (!skit.script?.length) {
+        scriptHtml = '<p style="color:var(--sand-warm);font-size:0.85em;">No script defined</p>';
+      }
+
+      document.getElementById('skit-script-list').innerHTML = scriptHtml;
+      initDragAndDrop();
+
+      // Render Stage Setup preview
+      renderStageSetup();
+    }
+
+    // === SKIT EDITING ===
+    let editingActionIndex = null;  // null = adding new, number = editing existing
+    let insertAtIndex = null;  // null = append at end, number = insert at specific position
+
+    // === DRAG AND DROP ===
+    // === Mouse-based drag reorder (replaces native HTML5 DnD for reliability) ===
+    let dragState = null; // { index, card, clone, startY, offsetY }
+
+    function initDragAndDrop() {
+      const scriptList = document.getElementById('skit-script-list');
+      const grips = scriptList.querySelectorAll('.reorder-grip');
+
+      grips.forEach(grip => {
+        grip.addEventListener('mousedown', handleGripMouseDown);
+      });
+    }
+
+    function handleGripMouseDown(e) {
+      e.preventDefault();
+      const card = this.closest('.script-line');
+      if (!card) return;
+      const index = parseInt(card.dataset.index);
+
+      // Create floating clone
+      const rect = card.getBoundingClientRect();
+      const clone = card.cloneNode(true);
+      clone.className = card.className + ' script-line-clone';
+      clone.style.width = rect.width + 'px';
+      clone.style.left = rect.left + 'px';
+      clone.style.top = rect.top + 'px';
+      document.body.appendChild(clone);
+
+      card.classList.add('dragging');
+
+      dragState = {
+        index,
+        card,
+        clone,
+        offsetY: e.clientY - rect.top,
+        scrollContainer: document.getElementById('skit-editor-panel')
+      };
+
+      document.addEventListener('mousemove', handleDragMouseMove);
+      document.addEventListener('mouseup', handleDragMouseUp);
+    }
+
+    function handleDragMouseMove(e) {
+      if (!dragState) return;
+      e.preventDefault();
+
+      // Move clone to follow cursor
+      dragState.clone.style.top = (e.clientY - dragState.offsetY) + 'px';
+
+      // Find which card we're over
+      const scriptList = document.getElementById('skit-script-list');
+      const cards = scriptList.querySelectorAll('.script-line');
+
+      // Clear previous highlights
+      cards.forEach(c => c.classList.remove('drag-over'));
+
+      let targetIndex = -1;
+      for (const c of cards) {
+        const idx = parseInt(c.dataset.index);
+        if (idx === dragState.index) continue;
+        const r = c.getBoundingClientRect();
+        const midY = r.top + r.height / 2;
+        if (e.clientY < midY) {
+          targetIndex = idx;
+          c.classList.add('drag-over');
+          break;
+        }
+      }
+
+      // If past all cards, target is after last
+      if (targetIndex === -1) {
+        // Will append to end
+      }
+
+      dragState.targetIndex = targetIndex;
+
+      // Auto-scroll the panel if near edges
+      const container = dragState.scrollContainer;
+      if (container) {
+        const cr = container.getBoundingClientRect();
+        const scrollMargin = 40;
+        if (e.clientY < cr.top + scrollMargin) {
+          container.scrollTop -= 8;
+        } else if (e.clientY > cr.bottom - scrollMargin) {
+          container.scrollTop += 8;
+        }
+      }
+    }
+
+    function handleDragMouseUp(e) {
+      if (!dragState) return;
+
+      document.removeEventListener('mousemove', handleDragMouseMove);
+      document.removeEventListener('mouseup', handleDragMouseUp);
+
+      // Clean up visuals
+      dragState.card.classList.remove('dragging');
+      dragState.clone.remove();
+      document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+      // Determine final target
+      const fromIndex = dragState.index;
+      let toIndex = dragState.targetIndex;
+
+      if (toIndex === undefined || toIndex === -1) {
+        // Dropped past all cards — move to end
+        toIndex = (currentSkitData?.script?.length || 0);
+      }
+
+      dragState = null;
+
+      // Perform the move
+      moveAction(fromIndex, toIndex);
+    }
+
+    function moveAction(fromIndex, toIndex) {
+      if (!currentSkitData?.script) return;
+      if (fromIndex === toIndex || fromIndex === toIndex - 1) return; // No change needed
+
+      const script = currentSkitData.script;
+      const [removed] = script.splice(fromIndex, 1);
+
+      // Adjust target index if we removed from before it
+      const adjustedIndex = fromIndex < toIndex ? toIndex - 1 : toIndex;
+      script.splice(adjustedIndex, 0, removed);
+
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
+
+    function getCharacterOptions() {
+      if (!currentSkitData?.cast) return '';
+      return Object.keys(currentSkitData.cast).map(id =>
+        `<option value="${id}">${id}</option>`
+      ).join('');
+    }
+
+    function updateModalFields() {
+      const actionType = document.getElementById('action-type').value;
+      const fieldsDiv = document.getElementById('modal-fields');
+      const charOptions = getCharacterOptions();
+
+      let html = '';
+      switch (actionType) {
+        case 'say':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Dialogue</label>
+              <textarea id="action-line" placeholder="What do they say?"></textarea>
+            </div>`;
+          break;
+        case 'emote':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Emotion</label>
+              <select id="action-emotion">
+                <option value="neutral">neutral</option>
+                <option value="happy">happy</option>
+                <option value="sad">sad</option>
+                <option value="angry">angry</option>
+                <option value="surprised">surprised</option>
+                <option value="worried">worried</option>
+                <option value="excited">excited</option>
+                <option value="smug">smug</option>
+                <option value="tired">tired</option>
+                <option value="skeptical">skeptical</option>
+                <option value="dead">dead</option>
+              </select>
+            </div>`;
+          break;
+        case 'shot':
+          html = `
+            <div class="form-group">
+              <label>Shot Type</label>
+              <select id="action-shot-type">
+                <option value="wide">wide</option>
+                <option value="medium">medium</option>
+                <option value="closeup">closeup</option>
+                <option value="extreme-closeup">extreme-closeup</option>
+                <option value="two-shot">two-shot</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Focus Character (optional)</label>
+              <select id="action-who">
+                <option value="">None</option>
+                ${charOptions}
+              </select>
+            </div>`;
+          break;
+        case 'pause':
+          html = `
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="1" min="0.5" max="10" step="0.5">
+            </div>`;
+          break;
+        case 'enter':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Enter From</label>
+              <select id="action-from">
+                <option value="left">left</option>
+                <option value="right">right</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Move To (x position 0-100)</label>
+              <input type="number" id="action-to" value="50" min="0" max="100">
+            </div>`;
+          break;
+        case 'exit':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Exit To</label>
+              <select id="action-to-dir">
+                <option value="left">left</option>
+                <option value="right">right</option>
+              </select>
+            </div>`;
+          break;
+        case 'move':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Move To (x position 0-100)</label>
+              <input type="number" id="action-to" value="50" min="0" max="100">
+            </div>`;
+          break;
+        case 'look':
+          html = `
+            <div class="form-group">
+              <label>Character</label>
+              <select id="action-who">${charOptions}</select>
+            </div>
+            <div class="form-group">
+              <label>Look At</label>
+              <select id="action-at">
+                <optgroup label="Directions">
+                  <option value="left">left</option>
+                  <option value="right">right</option>
+                  <option value="up">up</option>
+                  <option value="down">down</option>
+                </optgroup>
+                <optgroup label="Special">
+                  <option value="audience">audience (face outward)</option>
+                  <option value="other">other (the other character)</option>
+                </optgroup>
+                ${getLookTargetOptions()}
+              </select>
+            </div>`;
+          break;
+        // Prop actions
+        case 'spawn':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Held By (optional)</label>
+              <select id="action-who" data-ait-onchange="toggleSpawnPositionFields()">
+                <option value="">(not held - use position)</option>
+                ${charOptions}
+              </select>
+            </div>
+            <div class="form-group spawn-position-field" id="spawn-position-group">
+              <label>Position X (0-100)</label>
+              <input type="number" id="action-at-x" value="50" min="0" max="100">
+            </div>
+            <div class="form-group spawn-position-field" id="spawn-position-y-group">
+              <label>Position Y (0-100)</label>
+              <input type="number" id="action-at-y" value="80" min="0" max="100">
+            </div>`;
+          break;
+        case 'despawn':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>`;
+          break;
+        case 'prop-move':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Target X (0-100)</label>
+              <input type="number" id="action-to-x" value="50" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Target Y (0-100)</label>
+              <input type="number" id="action-to-y" value="80" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="1" min="0.1" max="10" step="0.1">
+            </div>`;
+          break;
+        case 'prop-hold':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Character Holding</label>
+              <select id="action-who">${charOptions}</select>
+            </div>`;
+          break;
+        case 'prop-drop':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Drop At X (0-100, optional)</label>
+              <input type="number" id="action-at-x" value="" min="0" max="100" placeholder="Current position">
+            </div>
+            <div class="form-group">
+              <label>Drop At Y (0-100, optional)</label>
+              <input type="number" id="action-at-y" value="" min="0" max="100" placeholder="Current position">
+            </div>`;
+          break;
+        case 'prop-rotate':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Angle (degrees)</label>
+              <input type="number" id="action-angle" value="0" min="-360" max="360">
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="0.5" min="0" max="10" step="0.1">
+            </div>`;
+          break;
+        case 'prop-scale':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Scale</label>
+              <input type="number" id="action-scale" value="1" min="0.1" max="5" step="0.1">
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="0.5" min="0" max="10" step="0.1">
+            </div>`;
+          break;
+        case 'prop-animate':
+          html = `
+            <div class="form-group">
+              <label>Prop</label>
+              <select id="action-what">${getPropOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Animation</label>
+              <select id="action-animation">
+                <option value="bounce">bounce</option>
+                <option value="spin">spin</option>
+                <option value="shake">shake</option>
+                <option value="pulse">pulse</option>
+                <option value="float">float</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Duration (seconds)</label>
+              <input type="number" id="action-duration" value="2" min="0.1" max="10" step="0.1">
+            </div>`;
+          break;
+      }
+      const timingHtml = `
+            <div class="form-group timing-section">
+              <label>Offset (seconds)</label>
+              <input type="number" id="action-offset" value="0" step="0.5" min="-30" max="0">
+              <small>Negative value = start before previous action ends</small>
+            </div>`;
+      fieldsDiv.innerHTML = html + timingHtml;
+    }
+
+    function getPropOptions() {
+      if (!currentSkitData?.props) return '<option value="">No props in skit</option>';
+      const props = Object.keys(currentSkitData.props);
+      if (props.length === 0) return '<option value="">No props in skit</option>';
+      return props.map(id => `<option value="${id}">${id}</option>`).join('');
+    }
+
+    function getLookTargetOptions() {
+      let html = '';
+
+      // Add character options
+      if (currentSkitData?.cast) {
+        const chars = Object.keys(currentSkitData.cast);
+        if (chars.length > 0) {
+          html += '<optgroup label="Characters">';
+          chars.forEach(id => {
+            html += `<option value="${id}">${id}</option>`;
+          });
+          html += '</optgroup>';
+        }
+      }
+
+      // Add prop options
+      if (currentSkitData?.props) {
+        const props = Object.keys(currentSkitData.props);
+        if (props.length > 0) {
+          html += '<optgroup label="Props">';
+          props.forEach(id => {
+            html += `<option value="${id}">${id}</option>`;
+          });
+          html += '</optgroup>';
+        }
+      }
+
+      return html;
+    }
+
+    function toggleSpawnPositionFields() {
+      const whoSelect = document.getElementById('action-who');
+      const positionFields = document.querySelectorAll('.spawn-position-field');
+      const hidePositions = whoSelect && whoSelect.value !== '';
+      positionFields.forEach(field => {
+        field.style.display = hidePositions ? 'none' : 'block';
+      });
+    }
+
+    function openAddActionModal() {
+      openAddActionModalAt(null);  // Append at end
+    }
+
+    function openAddActionModalAt(index) {
+      editingActionIndex = null;
+      insertAtIndex = index;
+      const title = index !== null ? `Insert Action at Position ${index + 1}` : 'Add Action';
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('action-type').value = 'say';
+      updateModalFields();
+      document.getElementById('action-modal').classList.add('visible');
+    }
+
+    function openEditActionModal(index) {
+      if (!currentSkitData?.script?.[index]) return;
+
+      editingActionIndex = index;
+      const action = currentSkitData.script[index];
+
+      document.getElementById('modal-title').textContent = 'Edit Action';
+      document.getElementById('action-type').value = action.do;
+      updateModalFields();
+
+      // Populate fields with existing values
+      setTimeout(() => {
+        switch (action.do) {
+          case 'say':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-line')) document.getElementById('action-line').value = action.line || '';
+            break;
+          case 'emote':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-emotion')) document.getElementById('action-emotion').value = action.emotion || 'neutral';
+            break;
+          case 'shot':
+            if (document.getElementById('action-shot-type')) document.getElementById('action-shot-type').value = action.type || 'wide';
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            break;
+          case 'pause':
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 1;
+            break;
+          case 'enter':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-from')) document.getElementById('action-from').value = action.from || 'left';
+            if (document.getElementById('action-to')) document.getElementById('action-to').value = action.to || 50;
+            break;
+          case 'exit':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-to-dir')) document.getElementById('action-to-dir').value = action.to || 'left';
+            break;
+          case 'move':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-to')) document.getElementById('action-to').value = action.to || 50;
+            break;
+          case 'look':
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (document.getElementById('action-at')) document.getElementById('action-at').value = action.at || 'audience';
+            break;
+          // Prop actions
+          case 'spawn':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            if (action.at) {
+              if (document.getElementById('action-at-x')) document.getElementById('action-at-x').value = action.at[0] || 50;
+              if (document.getElementById('action-at-y')) document.getElementById('action-at-y').value = action.at[1] || 80;
+            }
+            // Hide position fields if held by someone
+            toggleSpawnPositionFields();
+            break;
+          case 'despawn':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            break;
+          case 'prop-move':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (action.to) {
+              if (document.getElementById('action-to-x')) document.getElementById('action-to-x').value = action.to[0] || 50;
+              if (document.getElementById('action-to-y')) document.getElementById('action-to-y').value = action.to[1] || 80;
+            }
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 1;
+            break;
+          case 'prop-hold':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
+            break;
+          case 'prop-drop':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (action.at) {
+              if (document.getElementById('action-at-x')) document.getElementById('action-at-x').value = action.at[0];
+              if (document.getElementById('action-at-y')) document.getElementById('action-at-y').value = action.at[1];
+            }
+            break;
+          case 'prop-rotate':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-angle')) document.getElementById('action-angle').value = action.angle || 0;
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 0.5;
+            break;
+          case 'prop-scale':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-scale')) document.getElementById('action-scale').value = action.scale || 1;
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 0.5;
+            break;
+          case 'prop-animate':
+            if (document.getElementById('action-what')) document.getElementById('action-what').value = action.what || '';
+            if (document.getElementById('action-animation')) document.getElementById('action-animation').value = action.animation || 'bounce';
+            if (document.getElementById('action-duration')) document.getElementById('action-duration').value = action.duration || 2;
+            break;
+        }
+        const offsetInput = document.getElementById('action-offset');
+        if (offsetInput) offsetInput.value = action.offset || 0;
+      }, 0);
+
+      document.getElementById('action-modal').classList.add('visible');
+    }
+
+    function closeActionModal() {
+      document.getElementById('action-modal').classList.remove('visible');
+      editingActionIndex = null;
+      insertAtIndex = null;
+    }
+
+    // === Naming Modal Functions ===
+    let namingModalResolve = null;
+    let namingModalReject = null;
+
+    /**
+     * Show a naming modal and return a promise that resolves with the name
+     * @param {Object} options
+     * @param {string} options.title - Modal title
+     * @param {string} options.label - Input label
+     * @param {string} options.placeholder - Input placeholder
+     * @param {string} options.defaultValue - Default input value
+     * @param {string[]} options.quickButtons - Array of quick button labels
+     * @returns {Promise<string|null>} - Resolves with name or null if cancelled
+     */
+    function showNamingModal(options = {}) {
+      return new Promise((resolve, reject) => {
+        namingModalResolve = resolve;
+        namingModalReject = reject;
+
+        const modal = document.getElementById('naming-modal');
+        const title = document.getElementById('naming-modal-title');
+        const label = document.getElementById('naming-modal-label');
+        const input = document.getElementById('naming-modal-input');
+        const error = document.getElementById('naming-modal-error');
+        const quickBtnsContainer = document.getElementById('naming-quick-buttons');
+
+        title.textContent = options.title || 'Enter Name';
+        label.textContent = options.label || 'Name';
+        input.placeholder = options.placeholder || 'lowercase-with-hyphens';
+        input.value = options.defaultValue || '';
+        error.classList.remove('visible');
+
+        // Set up quick buttons
+        if (options.quickButtons && options.quickButtons.length > 0) {
+          quickBtnsContainer.innerHTML = '';
+          options.quickButtons.forEach(btnName => {
+            const btn = document.createElement('button');
+            btn.className = 'quick-btn';
+            btn.textContent = btnName;
+            btn.onclick = () => {
+              input.value = btnName;
+              input.focus();
+            };
+            quickBtnsContainer.appendChild(btn);
+          });
+          quickBtnsContainer.style.display = 'flex';
+        } else {
+          quickBtnsContainer.style.display = 'none';
+        }
+
+        modal.classList.add('visible');
+        input.focus();
+        input.select();
+
+        // Handle Enter key
+        input.onkeydown = (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            confirmNamingModal();
+          } else if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelNamingModal();
+          }
+        };
+      });
+    }
+
+    function confirmNamingModal() {
+      const input = document.getElementById('naming-modal-input');
+      const error = document.getElementById('naming-modal-error');
+      const value = input.value.trim();
+
+      if (!value) {
+        cancelNamingModal();
+        return;
+      }
+
+      const safeName = value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+      if (!/^[a-z0-9-]+$/.test(safeName) || safeName === '-') {
+        error.classList.add('visible');
+        input.focus();
+        return;
+      }
+
+      document.getElementById('naming-modal').classList.remove('visible');
+      if (namingModalResolve) {
+        namingModalResolve(safeName);
+        namingModalResolve = null;
+        namingModalReject = null;
+      }
+    }
+
+    function cancelNamingModal() {
+      document.getElementById('naming-modal').classList.remove('visible');
+      if (namingModalResolve) {
+        namingModalResolve(null);
+        namingModalResolve = null;
+        namingModalReject = null;
+      }
+    }
+
+    function saveActionFromModal() {
+      const actionType = document.getElementById('action-type').value;
+      let action = { do: actionType };
+
+      switch (actionType) {
+        case 'say':
+          action.who = document.getElementById('action-who')?.value;
+          action.line = document.getElementById('action-line')?.value;
+          if (!action.who || !action.line) {
+            alert('Character and dialogue are required');
+            return;
+          }
+          break;
+        case 'emote':
+          action.who = document.getElementById('action-who')?.value;
+          action.emotion = document.getElementById('action-emotion')?.value;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'shot':
+          action.type = document.getElementById('action-shot-type')?.value;
+          const shotWho = document.getElementById('action-who')?.value;
+          if (shotWho) action.who = shotWho;
+          break;
+        case 'pause':
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 1;
+          break;
+        case 'enter':
+          action.who = document.getElementById('action-who')?.value;
+          action.from = document.getElementById('action-from')?.value;
+          action.to = parseInt(document.getElementById('action-to')?.value) || 50;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'exit':
+          action.who = document.getElementById('action-who')?.value;
+          action.to = document.getElementById('action-to-dir')?.value;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'move':
+          action.who = document.getElementById('action-who')?.value;
+          action.to = parseInt(document.getElementById('action-to')?.value) || 50;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        case 'look':
+          action.who = document.getElementById('action-who')?.value;
+          action.at = document.getElementById('action-at')?.value;
+          if (!action.who) {
+            alert('Character is required');
+            return;
+          }
+          break;
+        // Prop actions
+        case 'spawn':
+          action.what = document.getElementById('action-what')?.value;
+          const spawnWho = document.getElementById('action-who')?.value;
+          if (spawnWho) {
+            action.who = spawnWho;
+            // Clear position if held by character
+            delete action.at;
+          } else {
+            // Clear who if using position
+            delete action.who;
+            const spawnX = parseInt(document.getElementById('action-at-x')?.value);
+            const spawnY = parseInt(document.getElementById('action-at-y')?.value);
+            if (!isNaN(spawnX) && !isNaN(spawnY)) {
+              action.at = [spawnX, spawnY];
+            }
+          }
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'despawn':
+          action.what = document.getElementById('action-what')?.value;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-move':
+          action.what = document.getElementById('action-what')?.value;
+          const toXVal = document.getElementById('action-to-x')?.value;
+          const toYVal = document.getElementById('action-to-y')?.value;
+          const toX = toXVal !== '' ? parseInt(toXVal) : 50;
+          const toY = toYVal !== '' ? parseInt(toYVal) : 80;
+          action.to = [isNaN(toX) ? 50 : toX, isNaN(toY) ? 80 : toY];
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 1;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-hold':
+          action.what = document.getElementById('action-what')?.value;
+          action.who = document.getElementById('action-who')?.value;
+          if (!action.what || !action.who) {
+            alert('Prop and character are required');
+            return;
+          }
+          break;
+        case 'prop-drop':
+          action.what = document.getElementById('action-what')?.value;
+          const dropXVal = document.getElementById('action-at-x')?.value;
+          const dropYVal = document.getElementById('action-at-y')?.value;
+          // Allow 0 as a valid coordinate - only set 'at' if both fields have values
+          if (dropXVal !== '' && dropYVal !== '') {
+            const dropX = parseInt(dropXVal);
+            const dropY = parseInt(dropYVal);
+            if (!isNaN(dropX) && !isNaN(dropY)) {
+              action.at = [dropX, dropY];
+            }
+          }
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-rotate':
+          action.what = document.getElementById('action-what')?.value;
+          action.angle = parseFloat(document.getElementById('action-angle')?.value) || 0;
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 0.5;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-scale':
+          action.what = document.getElementById('action-what')?.value;
+          action.scale = parseFloat(document.getElementById('action-scale')?.value) || 1;
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 0.5;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+        case 'prop-animate':
+          action.what = document.getElementById('action-what')?.value;
+          action.animation = document.getElementById('action-animation')?.value;
+          action.duration = parseFloat(document.getElementById('action-duration')?.value) || 2;
+          if (!action.what) {
+            alert('Prop is required');
+            return;
+          }
+          break;
+      }
+
+      const offsetValue = parseFloat(document.getElementById('action-offset')?.value);
+      if (Number.isFinite(offsetValue) && offsetValue < 0) {
+        action.offset = offsetValue;
+      } else {
+        delete action.offset;
+      }
+
+      if (!currentSkitData.script) currentSkitData.script = [];
+
+      if (editingActionIndex !== null) {
+        // Edit existing
+        currentSkitData.script[editingActionIndex] = action;
+      } else if (insertAtIndex !== null) {
+        // Insert at specific position
+        currentSkitData.script.splice(insertAtIndex, 0, action);
+      } else {
+        // Append at end
+        currentSkitData.script.push(action);
+      }
+
+      renderSkitStructure(currentSkitData);
+      closeActionModal();
+      markSkitDirty();
+    }
+
+    function deleteScriptAction(index) {
+      if (!currentSkitData?.script?.[index]) return;
+      if (!confirm('Delete this action?')) return;
+
+      currentSkitData.script.splice(index, 1);
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
+
+    // === SKIT PROPS ===
+
+    function addSkitProp(layer = 'background') {
+      if (!currentSkitData) return;
+
+      // Get list of available props
+      if (propList.length === 0) {
+        alert('No props available. Create a prop first using the command bar.');
+        return;
+      }
+
+      // Simple modal to select prop - for now use prompt
+      const propNames = propList.map(p => p.name);
+      const propName = prompt(`Select a prop:\n${propNames.join('\n')}\n\nEnter prop name:`);
+      if (!propName || !propNames.includes(propName)) {
+        if (propName) alert('Invalid prop name');
+        return;
+      }
+
+      // Generate a unique instance ID
+      let instanceId = propName;
+      let counter = 1;
+      while (currentSkitData.props && currentSkitData.props[instanceId]) {
+        instanceId = `${propName}-${counter}`;
+        counter++;
+      }
+
+      // Initialize props object if needed
+      if (!currentSkitData.props) {
+        currentSkitData.props = {};
+      }
+
+      // Add the prop instance
+      // Background props are visible by default for easier positioning
+      currentSkitData.props[instanceId] = {
+        prop: propName,
+        x: 50,
+        y: 80,
+        scale: 1.0,
+        layer: layer,
+        visible: layer === 'background'
+      };
+
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
+
+    function removeSkitProp(propId) {
+      if (!currentSkitData?.props?.[propId]) return;
+      if (!confirm(`Remove prop "${propId}" from skit?`)) return;
+
+      delete currentSkitData.props[propId];
+
+      // Also remove any script actions referencing this prop
+      if (currentSkitData.script) {
+        currentSkitData.script = currentSkitData.script.filter(action => action.what !== propId);
+      }
+
+      renderSkitStructure(currentSkitData);
+      markSkitDirty();
+    }
+
+    // === STAGE SETUP ===
+    let selectedStageProp = null;
+    let selectedStageChar = null;
+    let isDraggingStageItem = false;
+    let dragOffset = { x: 0, y: 0 };
+
+    function renderStageSetup() {
+      if (!currentSkitData) return;
+
+      const bgContainer = document.getElementById('stage-setup-bg');
+
+      // Load background
+      const bgName = currentSkitData.stage?.background;
+      const bgOrientation = currentSkitData.stage?.orientation || 'landscape';
+      if (bgName) {
+        const bgInfo = availableBackgrounds.find(b => b.name === bgName);
+        const img = document.createElement('img');
+        img.alt = bgName;
+        bgContainer.innerHTML = '';
+        bgContainer.appendChild(img);
+        if (bgInfo && bgInfo.orientations?.includes(bgOrientation)) {
+          setImageFromBackend(img, 'background', bgName, bgOrientation, `backgrounds/${bgName}/${bgOrientation}.svg`);
+        } else {
+          setImageFromBackend(img, 'background', bgName, 'landscape', `backgrounds/${bgName}.svg`);
+        }
+      } else {
+        bgContainer.innerHTML = '<div style="width:100%;height:100%;background:var(--plumage-cream);display:flex;align-items:center;justify-content:center;color:var(--sand-warm);">No background</div>';
+      }
+
+      // Populate combined selector with characters and props
+      const charsGroup = document.getElementById('stage-chars-group');
+      const propsGroup = document.getElementById('stage-props-group');
+      const cast = currentSkitData.cast || {};
+      const props = currentSkitData.props || {};
+
+      // Determine current selection value
+      let currentValue = '';
+      if (selectedStageChar) currentValue = `char:${selectedStageChar}`;
+      else if (selectedStageProp) currentValue = `prop:${selectedStageProp}`;
+
+      charsGroup.innerHTML = Object.keys(cast).map(id =>
+        `<option value="char:${id}" ${currentValue === `char:${id}` ? 'selected' : ''}>${id}</option>`
+      ).join('');
+
+      propsGroup.innerHTML = Object.keys(props).map(id =>
+        `<option value="prop:${id}" ${currentValue === `prop:${id}` ? 'selected' : ''}>${id} (${props[id].layer})</option>`
+      ).join('');
+
+      // Update main select value
+      document.getElementById('stage-setup-item-select').value = currentValue;
+
+      // Render characters and props on stage
+      renderStageChars();
+      renderStageProps();
+
+      // Update controls based on selection
+      updateStageControls();
+    }
+
+    function updateStageControls() {
+      const propControls = document.getElementById('stage-prop-controls');
+      const charControls = document.getElementById('stage-char-controls');
+
+      if (selectedStageChar && currentSkitData?.cast?.[selectedStageChar]) {
+        updateStageCharControls(currentSkitData.cast[selectedStageChar]);
+        charControls.style.display = 'flex';
+        propControls.style.display = 'none';
+      } else if (selectedStageProp && currentSkitData?.props?.[selectedStageProp]) {
+        updateStagePropControls(currentSkitData.props[selectedStageProp]);
+        propControls.style.display = 'flex';
+        charControls.style.display = 'none';
+      } else {
+        propControls.style.display = 'none';
+        charControls.style.display = 'none';
+      }
+    }
+
+    function selectStageItem(value) {
+      if (!value) {
+        selectedStageProp = null;
+        selectedStageChar = null;
+      } else if (value.startsWith('char:')) {
+        selectedStageChar = value.substring(5);
+        selectedStageProp = null;
+      } else if (value.startsWith('prop:')) {
+        selectedStageProp = value.substring(5);
+        selectedStageChar = null;
+      }
+
+      // Update visual selection
+      document.querySelectorAll('.stage-prop-item').forEach(el => {
+        el.classList.toggle('selected', el.dataset.propId === selectedStageProp);
+      });
+      document.querySelectorAll('.stage-char-item').forEach(el => {
+        el.classList.toggle('selected', el.dataset.charId === selectedStageChar);
+      });
+
+      updateStageControls();
+    }
+
+    function renderStageChars() {
+      const container = document.getElementById('stage-setup-chars');
+      container.innerHTML = '';
+
+      if (!currentSkitData?.cast) return;
+
+      Object.entries(currentSkitData.cast).forEach(([id, char]) => {
+        const el = document.createElement('div');
+        el.className = 'stage-char-item' + (id === selectedStageChar ? ' selected' : '');
+        el.dataset.charId = id;
+
+        const x = char.startX ?? char.x ?? 50;
+        el.style.left = `${x}%`;
+        const y = char.startY ?? char.y ?? 88;
+        el.style.bottom = `${100 - y}%`;
+
+        const scale = char.scale || 1;
+        el.style.transform = `translateX(-50%) scaleY(${scale}) scaleX(${scale})`;
+
+        const img = document.createElement('img');
+        setImageFromBackend(img, 'sprite', char.sprite, 'front', `sprites/${char.sprite}/front.svg`);
+        img.draggable = false;
+        el.appendChild(img);
+
+        // Mouse event handlers
+        el.addEventListener('mousedown', (e) => startDragStageChar(e, id));
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectStageItem(`char:${id}`);
+        });
+
+        container.appendChild(el);
+      });
+    }
+
+    function renderStageProps() {
+      const bgContainer = document.getElementById('stage-setup-props-bg');
+      const fgContainer = document.getElementById('stage-setup-props-fg');
+      bgContainer.innerHTML = '';
+      fgContainer.innerHTML = '';
+
+      if (!currentSkitData?.props) return;
+
+      Object.entries(currentSkitData.props).forEach(([id, prop]) => {
+        const propInfo = propList.find(p => p.name === prop.prop);
+        if (!propInfo) return;
+
+        const el = document.createElement('div');
+        el.className = 'stage-prop-item' + (id === selectedStageProp ? ' selected' : '');
+        el.dataset.propId = id;
+        el.style.left = `${prop.x}%`;
+        el.style.bottom = `${100 - prop.y}%`;
+
+        const scale = prop.scale || 1;
+        el.style.transform = `translateX(-50%) scale(${scale})`;
+
+        const img = document.createElement('img');
+        setImageFromBackend(img, 'prop', prop.prop, 'prop', `props/${prop.prop}/prop.svg`);
+        img.draggable = false;
+        el.appendChild(img);
+
+        // Mouse event handlers
+        el.addEventListener('mousedown', (e) => startDragStageProp(e, id));
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectStageProp(id);
+        });
+
+        const container = prop.layer === 'foreground' ? fgContainer : bgContainer;
+        container.appendChild(el);
+      });
+    }
+
+    function selectStageProp(id) {
+      selectedStageProp = id || null;
+      selectedStageChar = null;
+      selectStageItem(id ? `prop:${id}` : '');
+    }
+
+    function updateStagePropControls(prop) {
+      document.getElementById('stage-prop-x').value = prop.x;
+      document.getElementById('stage-prop-x-val').textContent = `${Math.round(prop.x)}%`;
+      document.getElementById('stage-prop-y').value = prop.y;
+      document.getElementById('stage-prop-y-val').textContent = `${Math.round(prop.y)}%`;
+      document.getElementById('stage-prop-scale').value = prop.scale || 1;
+      document.getElementById('stage-prop-scale-val').textContent = `${(prop.scale || 1).toFixed(1)}x`;
+      document.getElementById('stage-prop-layer').value = prop.layer || 'background';
+      document.getElementById('stage-prop-visible').checked = prop.visible || false;
+    }
+
+    function updateStagePropPosition(axis, value) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      const val = parseFloat(value);
+      currentSkitData.props[selectedStageProp][axis] = val;
+
+      // Update display
+      document.getElementById(`stage-prop-${axis}-val`).textContent = `${Math.round(val)}%`;
+
+      // Update prop position on stage
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+      if (el) {
+        if (axis === 'x') {
+          el.style.left = `${val}%`;
+        } else {
+          el.style.bottom = `${100 - val}%`;
+        }
+      }
+
+      markSkitDirty();
+    }
+
+    function updateStagePropScale(value) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      const scale = parseFloat(value);
+      currentSkitData.props[selectedStageProp].scale = scale;
+
+      // Update display
+      document.getElementById('stage-prop-scale-val').textContent = `${scale.toFixed(1)}x`;
+
+      // Update prop scale on stage
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+      if (el) {
+        el.style.transform = `translateX(-50%) scale(${scale})`;
+      }
+
+      markSkitDirty();
+    }
+
+    function updateStagePropLayer(value) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      currentSkitData.props[selectedStageProp].layer = value;
+
+      // Re-render to move to correct container
+      renderStageProps();
+      markSkitDirty();
+    }
+
+    function updateStagePropVisible(checked) {
+      if (!selectedStageProp || !currentSkitData?.props?.[selectedStageProp]) return;
+
+      currentSkitData.props[selectedStageProp].visible = checked;
+      markSkitDirty();
+    }
+
+    function startDragStageProp(e, id) {
+      e.preventDefault();
+      selectStageProp(id);
+
+      isDraggingStageItem = true;
+      const preview = document.getElementById('stage-setup-preview');
+      const rect = preview.getBoundingClientRect();
+
+      // Calculate offset from prop position (using bottom coordinate system)
+      const prop = currentSkitData.props[id];
+      const propX = (prop.x / 100) * rect.width;
+      const propY = ((100 - prop.y) / 100) * rect.height; // Y from bottom
+      dragOffset.x = e.clientX - rect.left - propX;
+      dragOffset.y = (rect.bottom - e.clientY) - propY; // Calculate from bottom
+
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${id}"]`);
+      if (el) el.classList.add('dragging');
+
+      document.addEventListener('mousemove', handleDragStageProp);
+      document.addEventListener('mouseup', endDragStageProp);
+    }
+
+    function handleDragStageProp(e) {
+      if (!isDraggingStageItem || !selectedStageProp) return;
+
+      const preview = document.getElementById('stage-setup-preview');
+      const rect = preview.getBoundingClientRect();
+
+      // Calculate percentage position (Y is measured from bottom in our coordinate system)
+      let x = ((e.clientX - rect.left - dragOffset.x) / rect.width) * 100;
+      let bottomPct = ((rect.bottom - e.clientY - dragOffset.y) / rect.height) * 100;
+      let y = 100 - bottomPct; // Convert bottom% to our y coordinate
+
+      // Clamp to -10 to 110 range
+      x = Math.max(-10, Math.min(110, x));
+      y = Math.max(-10, Math.min(110, y));
+
+      // Update data
+      currentSkitData.props[selectedStageProp].x = x;
+      currentSkitData.props[selectedStageProp].y = y;
+
+      // Update element position
+      const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+      if (el) {
+        el.style.left = `${x}%`;
+        el.style.bottom = `${100 - y}%`;
+      }
+
+      // Update sliders
+      document.getElementById('stage-prop-x').value = x;
+      document.getElementById('stage-prop-x-val').textContent = `${Math.round(x)}%`;
+      document.getElementById('stage-prop-y').value = y;
+      document.getElementById('stage-prop-y-val').textContent = `${Math.round(y)}%`;
+    }
+
+    function endDragStageProp(e) {
+      if (isDraggingStageItem && selectedStageProp) {
+        isDraggingStageItem = false;
+        const el = document.querySelector(`.stage-prop-item[data-prop-id="${selectedStageProp}"]`);
+        if (el) el.classList.remove('dragging');
+        markSkitDirty();
+      }
+
+      document.removeEventListener('mousemove', handleDragStageProp);
+      document.removeEventListener('mouseup', endDragStageProp);
+    }
+
+    // === STAGE CHARACTER FUNCTIONS ===
+
+    function updateStageCharControls(char) {
+      const x = char.startX ?? char.x ?? 50;
+      document.getElementById('stage-char-x').value = x;
+      document.getElementById('stage-char-x-val').textContent = `${Math.round(x)}%`;
+      const y = char.startY ?? char.y ?? 88;
+      document.getElementById('stage-char-y').value = y;
+      document.getElementById('stage-char-y-val').textContent = `${Math.round(y)}%`;
+      document.getElementById('stage-char-scale').value = char.scale || 1;
+      document.getElementById('stage-char-scale-val').textContent = `${(char.scale || 1).toFixed(1)}x`;
+    }
+
+    function updateStageCharPosition(value) {
+      if (!selectedStageChar || !currentSkitData?.cast?.[selectedStageChar]) return;
+
+      const x = parseFloat(value);
+      // Update both startX and x for consistency
+      currentSkitData.cast[selectedStageChar].startX = x;
+      currentSkitData.cast[selectedStageChar].x = x;
+
+      // Update display
+      document.getElementById('stage-char-x-val').textContent = `${Math.round(x)}%`;
+
+      // Update character position on stage
+      const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
+      if (el) {
+        el.style.left = `${x}%`;
+      }
+
+      markSkitDirty();
+    }
+
+    function updateStageCharYPosition(value) {
+      if (!selectedStageChar || !currentSkitData?.cast?.[selectedStageChar]) return;
+
+      const y = parseFloat(value);
+      currentSkitData.cast[selectedStageChar].startY = y;
+      currentSkitData.cast[selectedStageChar].y = y;
+
+      // Update display
+      document.getElementById('stage-char-y-val').textContent = `${Math.round(y)}%`;
+
+      // Update character position on stage
+      const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
+      if (el) {
+        el.style.bottom = `${100 - y}%`;
+      }
+
+      markSkitDirty();
+    }
+
+    function updateStageCharScale(value) {
+      if (!selectedStageChar || !currentSkitData?.cast?.[selectedStageChar]) return;
+
+      const scale = parseFloat(value);
+      currentSkitData.cast[selectedStageChar].scale = scale;
+
+      // Update display
+      document.getElementById('stage-char-scale-val').textContent = `${scale.toFixed(1)}x`;
+
+      // Update character scale on stage
+      const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
+      if (el) {
+        el.style.transform = `translateX(-50%) scaleY(${scale}) scaleX(${scale})`;
+      }
+
+      markSkitDirty();
+    }
+
+    function startDragStageChar(e, id) {
+      e.preventDefault();
+      selectStageItem(`char:${id}`);
+
+      isDraggingStageItem = true;
+      const preview = document.getElementById('stage-setup-preview');
+      const rect = preview.getBoundingClientRect();
+
+      const char = currentSkitData.cast[id];
+      const charX = ((char.startX ?? char.x ?? 50) / 100) * rect.width;
+      dragOffset.x = e.clientX - rect.left - charX;
+      const charY = ((char.startY ?? char.y ?? 88) / 100) * rect.height;
+      dragOffset.y = e.clientY - rect.top - charY;
+
+      const el = document.querySelector(`.stage-char-item[data-char-id="${id}"]`);
+      if (el) el.classList.add('dragging');
+
+      document.addEventListener('mousemove', handleDragStageChar);
+      document.addEventListener('mouseup', endDragStageChar);
+    }
+
+    function handleDragStageChar(e) {
+      if (!isDraggingStageItem || !selectedStageChar) return;
+
+      const preview = document.getElementById('stage-setup-preview');
+      const rect = preview.getBoundingClientRect();
+
+      // Calculate percentage position
+      let x = ((e.clientX - rect.left - dragOffset.x) / rect.width) * 100;
+      let y = ((e.clientY - rect.top - dragOffset.y) / rect.height) * 100;
+
+      // Clamp ranges
+      x = Math.max(-20, Math.min(120, x));
+      y = Math.max(-10, Math.min(110, y));
+
+      // Update data
+      currentSkitData.cast[selectedStageChar].startX = x;
+      currentSkitData.cast[selectedStageChar].x = x;
+      currentSkitData.cast[selectedStageChar].startY = y;
+      currentSkitData.cast[selectedStageChar].y = y;
+
+      // Update element position
+      const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
+      if (el) {
+        el.style.left = `${x}%`;
+        el.style.bottom = `${100 - y}%`;
+      }
+
+      // Update sliders
+      document.getElementById('stage-char-x').value = x;
+      document.getElementById('stage-char-x-val').textContent = `${Math.round(x)}%`;
+      document.getElementById('stage-char-y').value = y;
+      document.getElementById('stage-char-y-val').textContent = `${Math.round(y)}%`;
+    }
+
+    function endDragStageChar(e) {
+      if (isDraggingStageItem && selectedStageChar) {
+        isDraggingStageItem = false;
+        const el = document.querySelector(`.stage-char-item[data-char-id="${selectedStageChar}"]`);
+        if (el) el.classList.remove('dragging');
+        markSkitDirty();
+      }
+
+      document.removeEventListener('mousemove', handleDragStageChar);
+      document.removeEventListener('mouseup', endDragStageChar);
+    }
+
+    // === SKIT BACKGROUND ===
+    let availableBackgrounds = [];
+    let currentSkitBackgroundOrientations = [];
+
+    async function populateBackgroundSelector(currentBackground, currentOrientation) {
+      const select = document.getElementById('skit-background-select');
+      const selector = document.getElementById('skit-background-selector');
+
+      // Fetch available backgrounds if not cached
+      if (availableBackgrounds.length === 0) {
+        try {
+          const backend = await requireBackend();
+          availableBackgrounds = await backend.listBackgrounds();
+        } catch (e) {
+          console.error('Failed to load backgrounds:', e);
+          availableBackgrounds = [];
+        }
+      }
+
+      // Populate dropdown
+      select.innerHTML = '<option value="">-- Select Background --</option>' +
+        availableBackgrounds.map(bg =>
+          `<option value="${bg.name}" ${bg.name === currentBackground ? 'selected' : ''}>${bg.name}</option>`
+        ).join('');
+
+      // Show orientation buttons if background is selected
+      updateSkitOrientationButtons(currentBackground, currentOrientation);
+
+      // Show preview and update collapsed name
+      loadBackgroundPreview(currentBackground, currentOrientation);
+      updateCollapsedBackgroundName(currentBackground, currentOrientation);
+
+      // Start collapsed if background is already set
+      if (currentBackground) {
+        selector.classList.add('collapsed');
+      } else {
+        selector.classList.remove('collapsed');
+      }
+    }
+
+    function updateSkitOrientationButtons(backgroundName, currentOrientation) {
+      const orientationRow = document.getElementById('skit-orientation-row');
+      const buttonsContainer = document.getElementById('skit-orientation-buttons');
+
+      if (!backgroundName) {
+        orientationRow.style.display = 'none';
+        currentSkitBackgroundOrientations = [];
+        return;
+      }
+
+      // Find orientations for this background
+      const bg = availableBackgrounds.find(b => b.name === backgroundName);
+      const orientations = bg?.orientations || ['landscape'];
+      currentSkitBackgroundOrientations = orientations;
+
+      // If only one orientation, hide the selector
+      if (orientations.length <= 1) {
+        orientationRow.style.display = 'none';
+        return;
+      }
+
+      orientationRow.style.display = 'flex';
+
+      // Default to landscape if no current orientation
+      const selected = currentOrientation || (orientations.includes('landscape') ? 'landscape' : orientations[0]);
+
+      buttonsContainer.innerHTML = orientations.map(o => `
+        <button class="orientation-btn ${o === selected ? 'active' : ''}"
+                data-ait-onclick="changeSkitOrientation('${o}')">${o.charAt(0).toUpperCase() + o.slice(1)}</button>
+      `).join('');
+    }
+
+    function changeSkitOrientation(orientation) {
+      if (!currentSkitData) return;
+
+      if (!currentSkitData.stage) {
+        currentSkitData.stage = {};
+      }
+      currentSkitData.stage.orientation = orientation;
+
+      // Update button states
+      document.querySelectorAll('#skit-orientation-buttons .orientation-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.toLowerCase() === orientation);
+      });
+
+      // Update preview
+      loadBackgroundPreview(currentSkitData.stage.background, orientation);
+      updateCollapsedBackgroundName(currentSkitData.stage.background, orientation);
+      renderStageSetup();
+      markSkitDirty();
+    }
+
+    async function loadBackgroundPreview(backgroundName, orientation) {
+      const preview = document.getElementById('skit-background-preview');
+
+      if (!backgroundName) {
+        preview.innerHTML = '<span>No background selected</span>';
+        return;
+      }
+
+      // Use orientation if provided, otherwise default to landscape
+      const orient = orientation || 'landscape';
+
+      try {
+        const backend = await requireBackend();
+        const svg = await backend.getBackground(backgroundName, orient);
+        preview.innerHTML = svg;
+      } catch (e) {
+        if (orient !== 'landscape') {
+          try {
+            const backend = await requireBackend();
+            const fallbackSvg = await backend.getBackground(backgroundName, 'landscape');
+            preview.innerHTML = fallbackSvg;
+            return;
+          } catch (_) {}
+        }
+        preview.innerHTML = `<span>Error loading preview</span>`;
+      }
+    }
+
+    function changeSkitBackground(backgroundName) {
+      if (!currentSkitData) return;
+
+      if (!currentSkitData.stage) {
+        currentSkitData.stage = {};
+      }
+      currentSkitData.stage.background = backgroundName || undefined;
+
+      // Update orientation buttons for new background
+      updateSkitOrientationButtons(backgroundName, currentSkitData.stage.orientation);
+
+      // Get default orientation for this background
+      const bg = availableBackgrounds.find(b => b.name === backgroundName);
+      const orientations = bg?.orientations || ['landscape'];
+      const defaultOrientation = orientations.includes('landscape') ? 'landscape' : orientations[0];
+
+      // Set orientation if not already set or if current orientation isn't available
+      if (!currentSkitData.stage.orientation || !orientations.includes(currentSkitData.stage.orientation)) {
+        currentSkitData.stage.orientation = defaultOrientation;
+      }
+
+      loadBackgroundPreview(backgroundName, currentSkitData.stage.orientation);
+      updateCollapsedBackgroundName(backgroundName, currentSkitData.stage.orientation);
+      renderStageSetup();
+      markSkitDirty();
+    }
+
+    function confirmBackgroundSelection() {
+      const selector = document.getElementById('skit-background-selector');
+      selector.classList.add('collapsed');
+    }
+
+    function expandBackgroundSelector() {
+      const selector = document.getElementById('skit-background-selector');
+      selector.classList.remove('collapsed');
+    }
+
+    function updateCollapsedBackgroundName(backgroundName, orientation) {
+      const nameEl = document.getElementById('skit-background-name');
+      if (!backgroundName) {
+        nameEl.textContent = 'No background';
+      } else if (orientation && orientation !== 'landscape') {
+        nameEl.textContent = `${backgroundName} (${orientation})`;
+      } else {
+        nameEl.textContent = backgroundName;
+      }
+    }
+
+    // Get list of available backgrounds with orientations for AI prompting
+    function getAvailableBackgroundNames() {
+      return availableBackgrounds.map(bg => bg.name);
+    }
+
+    function getAvailableBackgroundsWithOrientations() {
+      return availableBackgrounds;
+    }
+
+    let skitDirty = false;
+
+    function markSkitDirty() {
+      skitDirty = true;
+      const btn = document.getElementById('skit-save-btn');
+      if (btn) {
+        btn.textContent = 'Save Script *';
+        btn.style.background = 'var(--pouch-orange)';
+      }
+    }
+
+    // Position presets for cast members
+    const POSITION_PRESETS = {
+      'center': 50,
+      'left': 25,
+      'right': 75,
+      'offscreen-left': -20,
+      'offscreen-right': 120
+    };
+
+    function getPositionPreset(x) {
+      if (x === undefined || x === null || x === 50) return 'center';
+      if (x === 25) return 'left';
+      if (x === 75) return 'right';
+      if (x <= -10) return 'offscreen-left';
+      if (x >= 110) return 'offscreen-right';
+      return 'manual';
+    }
+
+    function updateCastPosition(charId, preset, selectEl) {
+      if (!currentSkitData?.cast?.[charId]) return;
+
+      const manualInput = selectEl.closest('.cast-fields').querySelector('.cast-manual-input');
+
+      if (preset === 'manual') {
+        manualInput.style.display = 'inline';
+        // Keep current value or use center as default
+        const currentX = currentSkitData.cast[charId].startX ?? currentSkitData.cast[charId].x ?? 50;
+        manualInput.querySelector('input').value = currentX;
+      } else {
+        manualInput.style.display = 'none';
+        const x = POSITION_PRESETS[preset];
+        currentSkitData.cast[charId].startX = x;
+        // Also set x if it's not already set (for new characters)
+        if (currentSkitData.cast[charId].x === undefined) {
+          currentSkitData.cast[charId].x = x;
+        }
+      }
+      markSkitDirty();
+    }
+
+    function updateCastManualPosition(charId, value) {
+      if (!currentSkitData?.cast?.[charId]) return;
+      currentSkitData.cast[charId].startX = parseInt(value) || 50;
+      markSkitDirty();
+    }
+
+    async function saveSkitChanges() {
+      if (!currentSkitId || !currentSkitData) return;
+
+      const btn = document.getElementById('skit-save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving...';
+
+      try {
+        const backend = await requireBackend();
+        await backend.saveSkit(currentSkitId, currentSkitData);
+
+        skitDirty = false;
+        btn.textContent = 'Saved!';
+        btn.style.background = 'var(--ocean-blue)';
+        updateStatus('Script saved');
+
+        setTimeout(() => {
+          btn.textContent = 'Save Script';
+        }, 2000);
+      } catch (err) {
+        console.error('Save error:', err);
+        btn.textContent = 'Save Failed';
+        updateStatus('Error saving skit: ' + err.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function publishCurrentSkit() {
+      if (!currentSkitId) return;
+
+      const btn = document.getElementById('skit-publish-btn');
+      const progress = document.getElementById('publish-progress');
+      const progressFill = document.getElementById('publish-progress-fill');
+      const progressText = document.getElementById('publish-progress-text');
+
+      btn.disabled = true;
+      btn.textContent = 'Publishing...';
+      btn.className = 'skit-publish-btn publishing';
+      progress.classList.add('active');
+      progressFill.style.width = '0%';
+      progressText.textContent = 'Starting...';
+
+      try {
+        const backend = await requireBackend();
+        const result = await backend.publishSkit(currentSkitId);
+        const sizeKB = (result.size / 1024).toFixed(1);
+
+        btn.textContent = `Published! (${sizeKB} KB)`;
+        btn.className = 'skit-publish-btn publish-success';
+        progressFill.style.width = '100%';
+        progressText.textContent = result.complete ? 'All assets bundled' : 'Published with some warnings';
+        updateStatus(`Script published: ${sizeKB} KB`);
+
+        setTimeout(() => {
+          btn.textContent = 'Publish Script';
+          btn.className = 'skit-publish-btn';
+          btn.disabled = false;
+          progress.classList.remove('active');
+        }, 3000);
+      } catch (err) {
+        console.error('Publish error:', err);
+        btn.textContent = 'Publish Failed';
+        btn.className = 'skit-publish-btn publish-error';
+        progressText.textContent = err.message;
+        updateStatus('Error publishing script: ' + err.message);
+
+        setTimeout(() => {
+          btn.textContent = 'Publish Script';
+          btn.className = 'skit-publish-btn';
+          btn.disabled = false;
+          progress.classList.remove('active');
+        }, 3000);
+      }
+    }
+
+    function openSkitPlayer(id) {
+      window.open(`skit-player.html?skit=${id}`, '_blank');
+    }
+
+    // === COMMUNITY SHARING ===
+    const COMMUNITY_API_URL = 'https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community';
+    let communityVoiceFile = null;
+    let communityPayloadCache = null;
+    let communityPreviewGeneration = 0;
+    let communityLastUploadUrl = null;
+
+    function getCommunityUsername() {
+      return localStorage.getItem('pelicans-community-username') || '';
+    }
+
+    function setCommunityUsername(name) {
+      localStorage.setItem('pelicans-community-username', name);
+    }
+
+    function openCommunityModal() {
+      const modal = document.getElementById('community-modal');
+      modal.classList.add('visible');
+
+      // Restore saved username
+      document.getElementById('community-username').value = getCommunityUsername();
+
+      // Reset state
+      communityVoiceFile = null;
+      communityPayloadCache = null;
+      communityLastUploadUrl = null;
+      const feedback = document.getElementById('community-feedback');
+      feedback.classList.remove('visible', 'success', 'error');
+      document.getElementById('community-progress').classList.remove('active');
+      document.getElementById('community-upload-btn').disabled = false;
+      document.getElementById('community-upload-btn').style.display = '';
+      document.getElementById('community-copy-link-btn').style.display = 'none';
+      document.getElementById('community-copy-link-btn').textContent = 'Copy Link';
+
+      // Auto-detect asset type from current edit mode
+      let autoTab = 'characters';
+      if (currentEditMode === 'sprite' && currentSpriteName) {
+        autoTab = 'characters';
+      } else if (currentEditMode === 'prop' || (currentEditMode === 'sprite' && currentVariant === 'prop')) {
+        autoTab = 'props';
+      } else if (currentEditMode === 'background' && currentBackgroundName) {
+        autoTab = 'backgrounds';
+      } else if (currentEditMode === 'skit' && currentSkitId) {
+        autoTab = 'skits';
+      }
+
+      setActiveCommunityTab(autoTab);
+    }
+
+    function closeCommunityModal() {
+      document.getElementById('community-modal').classList.remove('visible');
+      communityVoiceFile = null;
+      communityPayloadCache = null;
+    }
+
+    function setActiveCommunityTab(type) {
+      document.querySelectorAll('.community-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.type === type);
+      });
+
+      // Show/hide voice file input
+      document.getElementById('community-voice-input').style.display = type === 'voices' ? 'block' : 'none';
+
+      updateCommunityPreview(type);
+    }
+
+    function getActiveCommunityTab() {
+      const active = document.querySelector('.community-tab.active');
+      return active ? active.dataset.type : 'characters';
+    }
+
+    async function updateCommunityPreview(type) {
+      const generation = ++communityPreviewGeneration;
+      const preview = document.getElementById('community-preview');
+      const nameInput = document.getElementById('community-asset-name');
+      const sizeEst = document.getElementById('community-size-estimate');
+
+      preview.innerHTML = '<span class="preview-text">No asset loaded</span>';
+      nameInput.value = '';
+      sizeEst.textContent = '';
+      sizeEst.classList.remove('over-limit');
+
+      if (type === 'characters' && currentEditMode === 'sprite' && currentSpriteName) {
+        nameInput.value = currentMeta?.name || currentSpriteName;
+        // Show all variants that will be uploaded
+        preview.innerHTML = '<span class="preview-text">Loading variants...</span>';
+        sizeEst.textContent = 'Calculating size...';
+        try {
+          const payload = await buildCharacterPayload();
+          if (generation !== communityPreviewGeneration) return;
+          let gridHtml = '<div class="community-variant-grid">';
+          gridHtml += `<div class="community-variant-item">${payload.front_svg}<div class="community-variant-label">front</div></div>`;
+          if (payload.back_svg) {
+            gridHtml += `<div class="community-variant-item">${payload.back_svg}<div class="community-variant-label">back</div></div>`;
+          }
+          gridHtml += '</div>';
+          preview.innerHTML = gridHtml;
+          estimateCommunitySize(payload);
+        } catch (e) {
+          if (generation === communityPreviewGeneration) {
+            preview.innerHTML = `<span class="preview-text">${e.message}</span>`;
+            sizeEst.textContent = 'Could not estimate size';
+          }
+        }
+      } else if (type === 'props' && currentEditMode === 'prop' && currentSpriteName) {
+        nameInput.value = currentMeta?.name || currentSpriteName;
+        if (currentSprite) {
+          preview.innerHTML = currentSprite;
+        }
+        estimateCommunitySize(buildPropPayload());
+      } else if (type === 'backgrounds' && currentEditMode === 'background' && currentBackgroundName) {
+        nameInput.value = currentBackgroundName;
+        preview.innerHTML = '<span class="preview-text">Loading orientations...</span>';
+        sizeEst.textContent = 'Calculating size...';
+        try {
+          const payload = await buildBackgroundPayload();
+          if (generation !== communityPreviewGeneration) return;
+          let gridHtml = '<div class="community-variant-grid">';
+          gridHtml += `<div class="community-variant-item">${payload.landscape_svg}<div class="community-variant-label">landscape</div></div>`;
+          if (payload.portrait_svg) {
+            gridHtml += `<div class="community-variant-item">${payload.portrait_svg}<div class="community-variant-label">portrait</div></div>`;
+          }
+          gridHtml += '</div>';
+          preview.innerHTML = gridHtml;
+          estimateCommunitySize(payload);
+        } catch (e) {
+          if (generation === communityPreviewGeneration) {
+            preview.innerHTML = `<span class="preview-text">${e.message}</span>`;
+            sizeEst.textContent = 'Could not estimate size';
+          }
+        }
+      } else if (type === 'skits' && currentSkitId && currentSkitData) {
+        nameInput.value = currentSkitData.meta?.title || currentSkitId;
+        const meta = currentSkitData.meta || {};
+        const castCount = currentSkitData.cast ? Object.keys(currentSkitData.cast).length : 0;
+        const scriptLen = currentSkitData.script ? currentSkitData.script.length : 0;
+        preview.innerHTML = `<div class="preview-text">
+          <strong>${meta.title || 'Untitled'}</strong><br>
+          Cast: ${castCount} character(s)<br>
+          Script: ${scriptLen} action(s)<br>
+          Background: ${currentSkitData.stage?.background || 'none'}
+        </div>`;
+        estimateCommunitySize(buildSkitPayload());
+      } else if (type === 'published' && currentSkitId) {
+        nameInput.value = currentSkitData?.meta?.title || currentSkitId;
+        preview.innerHTML = '<div class="preview-text">Will fetch the published bundle for this skit.<br>Must be published first.</div>';
+        sizeEst.textContent = 'Size will be calculated after fetching published data';
+      } else if (type === 'voices') {
+        nameInput.value = '';
+        preview.innerHTML = '<div class="preview-text">Select a .wav voice sample file to upload for voice cloning.</div>';
+      } else {
+        preview.innerHTML = `<span class="preview-text">No ${type.slice(0, -1)} currently loaded in the editor. Switch to the appropriate edit mode first.</span>`;
+      }
+    }
+
+    function estimateCommunitySize(payload) {
+      if (!payload) return;
+      const sizeEst = document.getElementById('community-size-estimate');
+      const jsonStr = JSON.stringify(payload);
+      const bytes = new Blob([jsonStr]).size;
+      const kb = (bytes / 1024).toFixed(1);
+      const mb = (bytes / (1024 * 1024)).toFixed(2);
+      const maxMB = 3;
+
+      if (bytes > maxMB * 1024 * 1024) {
+        sizeEst.textContent = `Size: ${mb} MB / ${maxMB} MB - TOO LARGE`;
+        sizeEst.classList.add('over-limit');
+      } else {
+        sizeEst.textContent = `Size: ${kb} KB / ${maxMB} MB`;
+        sizeEst.classList.remove('over-limit');
+      }
+    }
+
+    async function buildCharacterPayload() {
+      if (!currentSpriteName) return null;
+      const username = document.getElementById('community-username').value.trim();
+      // Always fetch front.svg from disk to avoid sending the wrong variant
+      let front_svg;
+      try {
+        const backend = await requireBackend();
+        front_svg = await backend.getSprite(currentSpriteName, 'front');
+      } catch (e) {
+        throw new Error('Could not load front.svg for this character.');
+      }
+      // Fetch back.svg if it exists
+      let back_svg = null;
+      if (currentVariants && currentVariants.includes('back')) {
+        try {
+          const backend = await requireBackend();
+          back_svg = await backend.getSprite(currentSpriteName, 'back');
+        } catch (e) { /* optional */ }
+      }
+      const payload = {
+        username,
+        name: currentMeta?.name || currentSpriteName,
+        front_svg,
+        meta: currentMeta || { name: currentSpriteName, type: 'creature' },
+      };
+      if (back_svg) payload.back_svg = back_svg;
+      return payload;
+    }
+
+    function buildPropPayload() {
+      if (!currentSpriteName || !currentSprite) return null;
+      const username = document.getElementById('community-username').value.trim();
+      return {
+        username,
+        name: currentMeta?.name || currentSpriteName,
+        svg: currentSprite,
+        meta: currentMeta || { name: currentSpriteName },
+      };
+    }
+
+    async function buildBackgroundPayload() {
+      if (!currentBackgroundName) return null;
+      const username = document.getElementById('community-username').value.trim();
+      // Always fetch landscape from disk to avoid sending the wrong orientation
+      let landscape_svg;
+      try {
+        const backend = await requireBackend();
+        landscape_svg = await backend.getBackground(currentBackgroundName, 'landscape');
+      } catch (e) {
+        throw new Error('Could not load landscape orientation for this background.');
+      }
+      // Fetch portrait if it exists
+      let portrait_svg = null;
+      if (currentBackgroundOrientations && currentBackgroundOrientations.includes('portrait')) {
+        try {
+          const backend = await requireBackend();
+          portrait_svg = await backend.getBackground(currentBackgroundName, 'portrait');
+        } catch (e) { /* optional */ }
+      }
+      const payload = {
+        username,
+        name: currentBackgroundName,
+        landscape_svg,
+      };
+      if (portrait_svg) payload.portrait_svg = portrait_svg;
+      return payload;
+    }
+
+    function buildSkitPayload() {
+      if (!currentSkitId || !currentSkitData) return null;
+      const username = document.getElementById('community-username').value.trim();
+      return {
+        username,
+        name: currentSkitData.meta?.title || currentSkitId,
+        skit: currentSkitData,
+      };
+    }
+
+    function handleVoiceFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) {
+        communityVoiceFile = null;
+        return;
+      }
+      communityVoiceFile = file;
+      const nameInput = document.getElementById('community-asset-name');
+      if (!nameInput.value) {
+        nameInput.value = file.name.replace(/\.wav$/i, '');
+      }
+      const sizeEst = document.getElementById('community-size-estimate');
+      const kb = (file.size / 1024).toFixed(1);
+      // Base64 expands ~33%
+      const estimatedBytes = Math.ceil(file.size * 1.37);
+      const mb = (estimatedBytes / (1024 * 1024)).toFixed(2);
+      if (estimatedBytes > 3 * 1024 * 1024) {
+        sizeEst.textContent = `Estimated upload: ${mb} MB / 3 MB - TOO LARGE`;
+        sizeEst.classList.add('over-limit');
+      } else {
+        sizeEst.textContent = `File: ${kb} KB (estimated upload: ${mb} MB / 3 MB)`;
+        sizeEst.classList.remove('over-limit');
+      }
+
+      const preview = document.getElementById('community-preview');
+      preview.innerHTML = `<div class="preview-text">Selected: ${file.name}<br>Size: ${kb} KB<br>Type: ${file.type || 'audio/wav'}</div>`;
+    }
+
+    async function uploadToCommunity() {
+      const username = document.getElementById('community-username').value.trim();
+      if (!username) {
+        showCommunityFeedback('Username is required', 'error');
+        return;
+      }
+      if (!/^[a-zA-Z0-9_-]{1,30}$/.test(username)) {
+        showCommunityFeedback('Username must be 1-30 characters (letters, numbers, hyphens, underscores)', 'error');
+        return;
+      }
+      setCommunityUsername(username);
+
+      const type = getActiveCommunityTab();
+      const uploadBtn = document.getElementById('community-upload-btn');
+      const progress = document.getElementById('community-progress');
+      const progressFill = document.getElementById('community-progress-fill');
+
+      uploadBtn.disabled = true;
+      progress.classList.add('active');
+      progressFill.style.width = '20%';
+      showCommunityFeedback('', '');
+
+      try {
+        let payload;
+
+        switch (type) {
+          case 'characters': {
+            payload = await buildCharacterPayload();
+            if (!payload) throw new Error('No character loaded. Select a sprite first.');
+            break;
+          }
+          case 'props': {
+            payload = buildPropPayload();
+            if (!payload) throw new Error('No prop loaded. Select a prop first.');
+            break;
+          }
+          case 'backgrounds': {
+            payload = await buildBackgroundPayload();
+            if (!payload) throw new Error('No background loaded. Select a background first.');
+            break;
+          }
+          case 'skits': {
+            payload = buildSkitPayload();
+            if (!payload) throw new Error('No skit loaded. Open a skit first.');
+            break;
+          }
+          case 'published': {
+            if (!currentSkitId) throw new Error('No skit loaded. Open a skit first.');
+            progressFill.style.width = '30%';
+            showCommunityFeedback('Fetching published data...', 'success');
+            const backend = await requireBackend();
+            const pubData = await backend.getPublished(currentSkitId);
+            payload = {
+              username,
+              name: pubData.meta?.title || currentSkitId,
+              published: pubData,
+            };
+            break;
+          }
+          case 'voices': {
+            if (!communityVoiceFile) throw new Error('Select a .wav voice file first.');
+            progressFill.style.width = '30%';
+            showCommunityFeedback('Reading voice file...', 'success');
+            const arrayBuf = await communityVoiceFile.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuf);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+            const name = document.getElementById('community-asset-name').value.trim() || communityVoiceFile.name.replace(/\.wav$/i, '');
+            payload = { username, name, audio_base64: base64 };
+            break;
+          }
+          default:
+            throw new Error('Unknown asset type');
+        }
+
+        // Check payload size
+        const jsonStr = JSON.stringify(payload);
+        const payloadSize = new Blob([jsonStr]).size;
+        if (payloadSize > 3 * 1024 * 1024) {
+          throw new Error(`Payload too large (${(payloadSize / 1024 / 1024).toFixed(1)} MB). Max 3 MB.`);
+        }
+
+        progressFill.style.width = '60%';
+        showCommunityFeedback('Uploading...', 'success');
+
+        const resp = await fetch(`${COMMUNITY_API_URL}/${type}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: jsonStr,
+        });
+
+        progressFill.style.width = '90%';
+
+        const result = await resp.json();
+
+        if (!resp.ok) {
+          throw new Error(result.error || `Upload failed (${resp.status})`);
+        }
+
+        progressFill.style.width = '100%';
+
+        // Build viewer link and switch to copy-link state
+        const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+        const viewerUrl = `${base}community.html?type=${type}&id=${result.slug}`;
+        communityLastUploadUrl = viewerUrl;
+        uploadBtn.style.display = 'none';
+        const copyBtn = document.getElementById('community-copy-link-btn');
+        copyBtn.style.display = '';
+        showCommunityFeedback(`Shared successfully!`, 'success');
+
+      } catch (e) {
+        showCommunityFeedback(e.message, 'error');
+        progressFill.style.width = '0%';
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    }
+
+    function copyCommunityLink() {
+      if (!communityLastUploadUrl) return;
+      navigator.clipboard.writeText(communityLastUploadUrl).then(() => {
+        const btn = document.getElementById('community-copy-link-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+      }).catch(() => {
+        // Fallback: select from a temp input
+        const tmp = document.createElement('input');
+        tmp.value = communityLastUploadUrl;
+        document.body.appendChild(tmp);
+        tmp.select();
+        document.execCommand('copy');
+        document.body.removeChild(tmp);
+        const btn = document.getElementById('community-copy-link-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Link'; }, 2000);
+      });
+    }
+
+    function showCommunityFeedback(msg, type) {
+      const el = document.getElementById('community-feedback');
+      el.textContent = msg;
+      el.classList.remove('visible', 'success', 'error');
+      if (msg) {
+        el.classList.add('visible');
+        if (type) el.classList.add(type);
+      }
+    }
+
+    // === IMPORT FROM COMMUNITY ===
+    let importParsedUrl = null;
+
+    function openImportModal() {
+      const modal = document.getElementById('import-modal');
+      modal.classList.add('visible');
+
+      // Reset state
+      importParsedUrl = null;
+      document.getElementById('import-url-input').value = '';
+      document.getElementById('import-preview').innerHTML = '<div class="import-preview-empty">Paste a community link to preview</div>';
+      document.getElementById('import-btn').disabled = true;
+      showImportFeedback('', '');
+    }
+
+    function closeImportModal() {
+      document.getElementById('import-modal').classList.remove('visible');
+      importParsedUrl = null;
+    }
+
+    function parseImportUrl() {
+      const input = document.getElementById('import-url-input').value.trim();
+      const preview = document.getElementById('import-preview');
+      const importBtn = document.getElementById('import-btn');
+
+      importParsedUrl = null;
+      showImportFeedback('', '');
+
+      if (!input) {
+        preview.innerHTML = '<div class="import-preview-empty">Paste a community link to preview</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      // Parse URL - support both full URLs and just query strings
+      let url;
+      try {
+        // Handle relative URLs like /community.html?...
+        if (input.startsWith('/') || input.startsWith('community.html')) {
+          url = new URL(input, 'https://pelicans.art');
+        } else {
+          url = new URL(input);
+        }
+      } catch (e) {
+        preview.innerHTML = '<div class="import-preview-empty" style="color:var(--pouch-orange);">Invalid URL format</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      const type = url.searchParams.get('type');
+      const id = url.searchParams.get('id');
+
+      // Validate type
+      const validTypes = ['characters', 'props', 'backgrounds', 'skits', 'voices'];
+      if (!type || !validTypes.includes(type)) {
+        preview.innerHTML = '<div class="import-preview-empty" style="color:var(--pouch-orange);">Unsupported asset type. Supported: characters, props, backgrounds, skits, voices</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      if (!id) {
+        preview.innerHTML = '<div class="import-preview-empty" style="color:var(--pouch-orange);">Missing asset ID in URL</div>';
+        importBtn.disabled = true;
+        return;
+      }
+
+      // Extract display name from slug
+      const displayName = id.replace(/-[a-f0-9]{6}$/, '').replace(/-/g, ' ');
+
+      importParsedUrl = { type, id, displayName };
+
+      preview.innerHTML = `
+        <div class="import-preview-info">
+          <div class="type-badge">${type.slice(0, -1)}</div>
+          <div class="name">${displayName}</div>
+          <div class="id">${id}</div>
+        </div>
+      `;
+      importBtn.disabled = false;
+    }
+
+    async function importFromCommunity() {
+      if (!importParsedUrl) return;
+
+      const { type, id, displayName } = importParsedUrl;
+      const importBtn = document.getElementById('import-btn');
+      importBtn.disabled = true;
+      importBtn.textContent = 'Importing...';
+      showImportFeedback('', '');
+
+      try {
+        switch (type) {
+          case 'characters':
+            await importCharacter(id, displayName);
+            break;
+          case 'props':
+            await importProp(id, displayName);
+            break;
+          case 'backgrounds':
+            await importBackground(id, displayName);
+            break;
+          case 'skits':
+            await importSkit(id, displayName);
+            break;
+          case 'voices':
+            await importVoice(id, displayName);
+            break;
+        }
+      } catch (e) {
+        showImportFeedback(e.message || 'Import failed', 'error');
+        importBtn.disabled = false;
+        importBtn.textContent = 'Import';
+      }
+    }
+
+    async function importCharacter(slug, displayName) {
+      // Fetch front SVG
+      const frontResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/front.svg`);
+      if (!frontResp.ok) throw new Error('Failed to fetch character SVG');
+      const frontSvg = await frontResp.text();
+
+      // Try to fetch back SVG (optional)
+      let backSvg = null;
+      try {
+        const backResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/back.svg`);
+        if (backResp.ok) backSvg = await backResp.text();
+      } catch (e) {}
+
+      // Fetch meta.json
+      let meta = { name: displayName };
+      try {
+        const metaResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/meta.json`);
+        if (metaResp.ok) meta = await metaResp.json();
+      } catch (e) {}
+
+      // Generate a local name (remove hash suffix from slug)
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      const backend = await requireBackend();
+      await backend.saveSprite(localName, frontSvg, meta);
+
+      // Save back variant if exists
+      if (backSvg) {
+        try {
+          await backend.saveSpriteVariant(localName, 'back', backSvg);
+        } catch (e) {
+          console.warn('Failed to save back variant:', e);
+        }
+      }
+
+      showImportFeedback(`Imported character: ${localName}`, 'success');
+      await loadSpriteList();
+      loadSpriteFromSvg(localName, frontSvg);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importProp(slug, displayName) {
+      // Fetch prop SVG
+      const svgResp = await fetch(`${COMMUNITY_API_URL}/props/${slug}/prop.svg`);
+      if (!svgResp.ok) throw new Error('Failed to fetch prop SVG');
+      const svg = await svgResp.text();
+
+      // Fetch meta.json
+      let meta = { name: displayName };
+      try {
+        const metaResp = await fetch(`${COMMUNITY_API_URL}/props/${slug}/meta.json`);
+        if (metaResp.ok) meta = await metaResp.json();
+      } catch (e) {}
+
+      // Generate a local name
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      const backend = await requireBackend();
+      await backend.saveProp(localName, svg, meta);
+
+      showImportFeedback(`Imported prop: ${localName}`, 'success');
+      await loadProps();
+      selectProp(localName);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importBackground(slug, displayName) {
+      // Fetch landscape SVG
+      const landscapeResp = await fetch(`${COMMUNITY_API_URL}/backgrounds/${slug}/landscape.svg`);
+      if (!landscapeResp.ok) throw new Error('Failed to fetch background SVG');
+      const landscapeSvg = await landscapeResp.text();
+
+      // Try to fetch portrait SVG (optional)
+      let portraitSvg = null;
+      try {
+        const portraitResp = await fetch(`${COMMUNITY_API_URL}/backgrounds/${slug}/portrait.svg`);
+        if (portraitResp.ok) portraitSvg = await portraitResp.text();
+      } catch (e) {}
+
+      // Fetch meta.json
+      let meta = { name: displayName };
+      try {
+        const metaResp = await fetch(`${COMMUNITY_API_URL}/backgrounds/${slug}/meta.json`);
+        if (metaResp.ok) meta = await metaResp.json();
+      } catch (e) {}
+
+      // Generate a local name
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      const backend = await requireBackend();
+      await backend.saveBackground(localName, 'landscape', landscapeSvg);
+
+      // Save portrait variant if exists
+      if (portraitSvg) {
+        try {
+          await backend.saveBackground(localName, 'portrait', portraitSvg);
+        } catch (e) {
+          console.warn('Failed to save portrait variant:', e);
+        }
+      }
+
+      showImportFeedback(`Imported background: ${localName}`, 'success');
+      await loadBackgrounds();
+      selectBackground(localName);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importSkit(slug, displayName) {
+      // Fetch skit data
+      const dataResp = await fetch(`${COMMUNITY_API_URL}/skits/${slug}/data.json`);
+      if (!dataResp.ok) throw new Error('Failed to fetch skit data');
+      const skitData = await dataResp.json();
+
+      // Generate a local name
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '');
+
+      const backend = await requireBackend();
+      const skitId = await backend.saveSkit(null, {
+        name: localName,
+        ...skitData
+      });
+
+      showImportFeedback(`Imported skit: ${localName}`, 'success');
+      await loadSkits();
+      selectSkit(skitId);
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    async function importVoice(slug, displayName) {
+      // Generate a local name from slug
+      const localName = slug.replace(/-[a-f0-9]{6}$/, '').replace(/-/g, '_').toLowerCase();
+
+      // Try to fetch WAV first, then safetensors
+      // URL structure: voices/${slug}/${slug}.ext
+      let voiceBlob = null;
+      let fileType = null;
+
+      // Try WAV
+      const wavResp = await fetch(`${COMMUNITY_API_URL}/voices/${slug}/${slug}.wav`);
+      if (wavResp.ok) {
+        voiceBlob = await wavResp.blob();
+        fileType = 'wav';
+      } else {
+        // Try safetensors
+        const stResp = await fetch(`${COMMUNITY_API_URL}/voices/${slug}/${slug}.safetensors`);
+        if (stResp.ok) {
+          voiceBlob = await stResp.blob();
+          fileType = 'safetensors';
+        }
+      }
+
+      if (!voiceBlob) {
+        throw new Error('Voice file not found (tried .wav and .safetensors)');
+      }
+
+      // Save to local server
+      const arrayBuf = await voiceBlob.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuf);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+
+      const backend = await requireBackend();
+      await backend.importVoice({
+        name: localName,
+        displayName: displayName,
+        fileType: fileType,
+        data: base64
+      });
+
+      showImportFeedback(`Imported voice: ${displayName}`, 'success');
+      await populateVoiceSelector();
+
+      setTimeout(() => closeImportModal(), 1500);
+    }
+
+    function showImportFeedback(msg, type) {
+      const el = document.getElementById('import-feedback');
+      const importBtn = document.getElementById('import-btn');
+
+      el.textContent = msg;
+      el.classList.remove('visible', 'success', 'error');
+
+      if (msg) {
+        el.classList.add('visible');
+        if (type) el.classList.add(type);
+      }
+
+      // Reset button state
+      importBtn.textContent = 'Import';
+      if (type !== 'error') {
+        importBtn.disabled = !importParsedUrl;
+      }
+    }
+
+    // === VOICE SETTINGS ===
+    function toggleVoicePanel() {
+      const panel = document.getElementById('voice-settings-panel');
+      const toggle = document.getElementById('voice-panel-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggle.textContent = '▲';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '▼';
+      }
+    }
+
+    async function populateVoiceSelector() {
+      const select = document.getElementById('voice-select');
+
+      // Start with default option
+      let html = '<option value="">-- Select Voice --</option>';
+
+      // Add built-in voices
+      html += '<optgroup label="Built-in Voices">';
+      html += AVAILABLE_VOICES.map(v =>
+        `<option value="${v.id}">${v.name} - ${v.description}</option>`
+      ).join('');
+      html += '</optgroup>';
+
+      // Fetch custom voices
+      try {
+        const backend = await requireBackend();
+        const customVoices = await backend.listVoices();
+        if (customVoices.length > 0) {
+          html += '<optgroup label="Custom Voices">';
+          html += customVoices.map(v =>
+            `<option value="custom:${v.name}">${v.displayName || v.name}</option>`
+          ).join('');
+          html += '</optgroup>';
+        }
+      } catch (err) {
+        console.warn('Failed to fetch custom voices:', err);
+      }
+
+      select.innerHTML = html;
+    }
+
+    function loadSpriteVoiceSettings(meta) {
+      const voice = meta?.voice || {};
+
+      document.getElementById('voice-select').value = voice.id || '';
+      document.getElementById('voice-pitch').value = voice.pitch ?? 0;
+      document.getElementById('voice-speed').value = voice.speed ?? 1;
+      document.getElementById('voice-volume').value = voice.volume ?? 1;
+
+      updateVoiceParamDisplays();
+      document.getElementById('voice-preview-btn').disabled = !voice.id;
+    }
+
+    function updateVoiceSelection() {
+      const voiceId = document.getElementById('voice-select').value;
+      document.getElementById('voice-preview-btn').disabled = !voiceId;
+    }
+
+    function updateVoiceParamDisplays() {
+      document.getElementById('voice-pitch-val').textContent =
+        parseFloat(document.getElementById('voice-pitch').value).toFixed(1);
+      document.getElementById('voice-speed-val').textContent =
+        parseFloat(document.getElementById('voice-speed').value).toFixed(1);
+      document.getElementById('voice-volume-val').textContent =
+        parseFloat(document.getElementById('voice-volume').value).toFixed(1);
+    }
+
+    async function previewVoice() {
+      const voiceId = document.getElementById('voice-select').value;
+      if (!voiceId) return;
+
+      const btn = document.getElementById('voice-preview-btn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        // Stop any existing preview
+        if (previewSourceNode) {
+          try { previewSourceNode.stop(); } catch(e) {}
+          previewSourceNode = null;
+        }
+        if (currentAudioPreview) {
+          currentAudioPreview.pause();
+          currentAudioPreview = null;
+        }
+
+        const testText = `Hello, I am ${currentSpriteName || 'a character'}. This is a preview of my voice so you can hear how I will sound in the skit.`;
+        const speed = parseFloat(document.getElementById('voice-speed').value);
+        const pitch = parseFloat(document.getElementById('voice-pitch').value);
+        const volume = parseFloat(document.getElementById('voice-volume').value);
+        const voiceConfig = { id: voiceId, pitch, speed, volume };
+
+        let audioBlob = null;
+        const backend = await requireBackend();
+        if (backend && typeof backend.previewTts === 'function') {
+          if (voiceId.startsWith('custom:')) {
+            const customVoiceName = voiceId.replace('custom:', '');
+            if (backend.supportsVoiceCreation) {
+              audioBlob = await backend.previewCustomVoice(customVoiceName, testText);
+            } else {
+              // In browser mode, route custom voice IDs to the configured TTS mode/endpoint.
+              audioBlob = await backend.previewTts(testText, { ...voiceConfig, id: customVoiceName });
+            }
+          } else {
+            audioBlob = await backend.previewTts(testText, voiceConfig);
+          }
+        }
+
+        // Web Speech mode plays directly and returns no blob.
+        if (!audioBlob) return;
+        if (!audioBlob || audioBlob.size === 0) return;
+
+        // Use Web Audio API for proper pitch control
+        if (!previewAudioContext) {
+          previewAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (previewAudioContext.state === 'suspended') {
+          await previewAudioContext.resume();
+        }
+
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const audioBuffer = await previewAudioContext.decodeAudioData(arrayBuffer);
+
+        // Create source node with speed and pitch control
+        previewSourceNode = previewAudioContext.createBufferSource();
+        previewSourceNode.buffer = audioBuffer;
+
+        // Apply speed (playbackRate) and pitch (detune in cents)
+        previewSourceNode.playbackRate.value = speed;
+        // Convert pitch (-1 to 1) to cents (-600 to +600, i.e. 6 semitones)
+        previewSourceNode.detune.value = pitch * 600;
+
+        // Create gain node for volume
+        const gainNode = previewAudioContext.createGain();
+        gainNode.gain.value = volume;
+
+        previewSourceNode.connect(gainNode);
+        gainNode.connect(previewAudioContext.destination);
+
+        previewSourceNode.onended = () => {
+          previewSourceNode = null;
+        };
+
+        previewSourceNode.start(0);
+
+      } catch (err) {
+        console.error('Voice preview failed:', err);
+        updateStatus('Voice preview failed - check TTS service');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    async function saveVoiceSettings() {
+      if (!currentSpriteName || currentEditMode !== 'sprite') {
+        updateStatus('Select a sprite first');
+        return;
+      }
+
+      if (!currentSprite) {
+        updateStatus('No sprite loaded');
+        return;
+      }
+
+      const voiceSettings = {
+        id: document.getElementById('voice-select').value || undefined,
+        pitch: parseFloat(document.getElementById('voice-pitch').value),
+        speed: parseFloat(document.getElementById('voice-speed').value),
+        volume: parseFloat(document.getElementById('voice-volume').value)
+      };
+
+      // Remove undefined id
+      if (!voiceSettings.id) delete voiceSettings.id;
+
+      try {
+        // Update meta with voice settings, preserving current in-memory state
+        const updatedMeta = {
+          ...(currentMeta || {}),
+          voice: voiceSettings
+        };
+
+        // Save sprite with current in-memory SVG and updated meta
+        const backend = await requireBackend();
+        await backend.saveSprite(currentSpriteName, currentSprite, updatedMeta);
+        currentMeta = updatedMeta;
+        updateStatus('Voice settings saved');
+      } catch (err) {
+        console.error('Failed to save voice settings:', err);
+        updateStatus('Failed to save voice settings');
+      }
+    }
+
+    // === VOICE CREATOR ===
+    let voiceCreatorState = {
+      audioBuffer: null,
+      audioBlob: null,
+      waveformData: null,
+      duration: 0,
+      suggestedStart: 0,
+      suggestedEnd: 10,
+      quality: null,
+      processedVoiceName: null,
+      processedVoiceUrl: null,
+      selectedWinner: null  // 'safetensors' or 'wav'
+    };
+
+    function openVoiceCreatorModal() {
+      if (window.backend?.supportsVoiceCreation === false) {
+        alert('Custom voice creation requires server mode.');
+        return;
+      }
+
+      // Reset state
+      voiceCreatorState = {
+        audioBuffer: null,
+        audioBlob: null,
+        waveformData: null,
+        duration: 0,
+        suggestedStart: 0,
+        suggestedEnd: 10,
+        quality: null,
+        processedVoiceName: null,
+        processedVoiceUrl: null,
+        selectedWinner: null
+      };
+
+      // Reset UI
+      document.getElementById('voice-upload-file').value = '';
+      document.getElementById('voice-upload-url').value = '';
+      document.getElementById('voice-creator-name').value = '';
+      document.getElementById('voice-waveform-section').style.display = 'none';
+      document.getElementById('voice-preview-section').style.display = 'none';
+      document.getElementById('voice-winner-section').style.display = 'none';
+      document.getElementById('voice-creator-status').style.display = 'none';
+      document.getElementById('voice-save-btn').disabled = true;
+      document.getElementById('voice-upload-btn').disabled = true;
+      document.getElementById('voice-save-btn').textContent = '💾 Save Locally';
+      // Reset winner button styles
+      document.getElementById('voice-pick-safetensors').style.borderColor = 'var(--sand-warm)';
+      document.getElementById('voice-pick-wav').style.borderColor = 'var(--sand-warm)';
+
+      switchVoiceCreatorTab('upload');
+      document.getElementById('voice-creator-modal').classList.add('visible');
+    }
+
+    function closeVoiceCreatorModal() {
+      document.getElementById('voice-creator-modal').classList.remove('visible');
+    }
+
+    function switchVoiceCreatorTab(tab) {
+      document.querySelectorAll('.voice-creator-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.tab === tab);
+      });
+      document.getElementById('voice-input-upload').classList.toggle('hidden', tab !== 'upload');
+      document.getElementById('voice-input-url').classList.toggle('hidden', tab !== 'url');
+    }
+
+    async function handleVoiceCreatorFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      showVoiceCreatorStatus('Analyzing audio...', 'info');
+
+      try {
+        const formData = new FormData();
+        formData.append('audio', file);
+        const backend = await requireBackend();
+        const analysis = await backend.analyzeAudio(formData);
+
+        // Store the file as blob for later processing
+        voiceCreatorState.audioBlob = file;
+        voiceCreatorState.waveformData = analysis.waveform;
+        voiceCreatorState.duration = analysis.duration;
+        voiceCreatorState.suggestedStart = analysis.suggestedStart;
+        voiceCreatorState.suggestedEnd = analysis.suggestedEnd;
+        voiceCreatorState.quality = analysis.quality;
+
+        displayVoiceWaveform();
+        updateQualityMeter();
+
+        document.getElementById('voice-segment-start').value = analysis.suggestedStart.toFixed(1);
+        document.getElementById('voice-segment-end').value = analysis.suggestedEnd.toFixed(1);
+
+        document.getElementById('voice-waveform-section').style.display = 'block';
+        hideVoiceCreatorStatus();
+      } catch (err) {
+        console.error('Voice analysis error:', err);
+        showVoiceCreatorStatus('Analysis failed: ' + err.message, 'error');
+      }
+    }
+
+    async function loadVoiceFromUrl() {
+      let url = document.getElementById('voice-upload-url').value.trim();
+      if (!url) {
+        showVoiceCreatorStatus('Please enter a URL', 'error');
+        return;
+      }
+
+      // Convert pelican.art viewer URLs to direct file URLs
+      // e.g., https://pelicans.art/?type=voices&id=trump-b22e3f -> API URL for the voice file
+      const pelicanMatch = url.match(/pelicans\.art\/?\?.*type=voices.*id=([^&]+)/);
+      let voiceSlug = null;
+      if (pelicanMatch) {
+        voiceSlug = pelicanMatch[1];
+        // Use the community API URL with correct path structure: voices/${slug}/${slug}.wav
+        url = `${COMMUNITY_API_URL}/voices/${voiceSlug}/${voiceSlug}.wav`;
+        showVoiceCreatorStatus('Detected pelican community voice, fetching...', 'info');
+      } else {
+        showVoiceCreatorStatus('Fetching audio from URL...', 'info');
+      }
+
+      try {
+        // Fetch the audio file
+        let response = await fetch(url);
+
+        // If WAV not found and this was a pelican URL, try safetensors
+        if (!response.ok && voiceSlug) {
+          const safetensorsUrl = `${COMMUNITY_API_URL}/voices/${voiceSlug}/${voiceSlug}.safetensors`;
+          showVoiceCreatorStatus('WAV not found, trying safetensors...', 'info');
+          response = await fetch(safetensorsUrl);
+          if (response.ok) {
+            showVoiceCreatorStatus('Found safetensors file - this is already processed, no need to re-process', 'info');
+            // TODO: Could add direct import of safetensors here
+            throw new Error('This voice is a safetensors file. Use Import to add it directly, or find the original WAV.');
+          }
+        }
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch audio');
+        }
+
+        const blob = await response.blob();
+
+        // Create a fake file input event
+        const file = new File([blob], 'audio-from-url.wav', { type: blob.type });
+
+        const formData = new FormData();
+        formData.append('audio', file);
+        const backend = await requireBackend();
+        const analysis = await backend.analyzeAudio(formData);
+
+        voiceCreatorState.audioBlob = file;
+        voiceCreatorState.waveformData = analysis.waveform;
+        voiceCreatorState.duration = analysis.duration;
+        voiceCreatorState.suggestedStart = analysis.suggestedStart;
+        voiceCreatorState.suggestedEnd = analysis.suggestedEnd;
+        voiceCreatorState.quality = analysis.quality;
+
+        displayVoiceWaveform();
+        updateQualityMeter();
+
+        document.getElementById('voice-segment-start').value = analysis.suggestedStart.toFixed(1);
+        document.getElementById('voice-segment-end').value = analysis.suggestedEnd.toFixed(1);
+
+        document.getElementById('voice-waveform-section').style.display = 'block';
+        hideVoiceCreatorStatus();
+      } catch (err) {
+        console.error('URL load error:', err);
+        showVoiceCreatorStatus('Failed to load audio: ' + err.message, 'error');
+      }
+    }
+
+    function displayVoiceWaveform() {
+      const canvas = document.getElementById('voice-waveform-canvas');
+      const ctx = canvas.getContext('2d');
+      const container = document.getElementById('voice-waveform-container');
+
+      canvas.width = container.clientWidth - 20;
+      canvas.height = 100;
+
+      const waveform = voiceCreatorState.waveformData;
+      if (!waveform || waveform.length === 0) return;
+
+      const barWidth = canvas.width / waveform.length;
+
+      ctx.fillStyle = '#EDE8DF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#2D8EC4';
+      for (let i = 0; i < waveform.length; i++) {
+        const height = waveform[i] * canvas.height * 0.9;
+        const y = (canvas.height - height) / 2;
+        ctx.fillRect(i * barWidth, y, barWidth - 1, height);
+      }
+
+      updateSelectionOverlay();
+    }
+
+    function updateSelectionOverlay() {
+      const container = document.getElementById('voice-waveform-container');
+      const overlay = document.getElementById('voice-selection-overlay');
+      const containerWidth = container.clientWidth - 20;
+
+      const start = parseFloat(document.getElementById('voice-segment-start').value) || 0;
+      const end = parseFloat(document.getElementById('voice-segment-end').value) || 10;
+      const duration = voiceCreatorState.duration || 1;
+
+      const startPct = (start / duration) * 100;
+      const endPct = (end / duration) * 100;
+
+      overlay.style.left = `${10 + (startPct / 100) * containerWidth}px`;
+      overlay.style.width = `${((endPct - startPct) / 100) * containerWidth}px`;
+    }
+
+    function updateQualityMeter() {
+      const q = voiceCreatorState.quality;
+      if (!q) return;
+
+      document.getElementById('voice-duration').textContent = voiceCreatorState.duration.toFixed(1) + 's';
+
+      const rmsEl = document.getElementById('voice-rms');
+      rmsEl.textContent = (q.avgRms * 100).toFixed(0) + '%';
+      rmsEl.className = q.avgRms > 0.1 ? 'quality-good' : q.avgRms > 0.05 ? 'quality-ok' : 'quality-bad';
+
+      const clipEl = document.getElementById('voice-clipping');
+      clipEl.textContent = q.clippingCount > 0 ? q.clippingCount : 'None';
+      clipEl.className = q.clippingCount === 0 ? 'quality-good' : q.clippingCount < 100 ? 'quality-ok' : 'quality-bad';
+
+      const silenceEl = document.getElementById('voice-silence');
+      silenceEl.textContent = (q.silenceRatio * 100).toFixed(0) + '%';
+      silenceEl.className = q.silenceRatio < 0.3 ? 'quality-good' : q.silenceRatio < 0.5 ? 'quality-ok' : 'quality-bad';
+    }
+
+    function updateVoiceSegment() {
+      updateSelectionOverlay();
+    }
+
+    function autoSelectBestSegment() {
+      document.getElementById('voice-segment-start').value = voiceCreatorState.suggestedStart.toFixed(1);
+      document.getElementById('voice-segment-end').value = voiceCreatorState.suggestedEnd.toFixed(1);
+      updateSelectionOverlay();
+    }
+
+    function validateVoiceName(input) {
+      // Sanitize: lowercase, replace invalid chars, strip leading/trailing non-alphanumeric
+      const value = input.value.toLowerCase()
+        .replace(/[^a-z0-9_-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^[^a-z0-9]+/, '')  // Must start with letter or number
+        .replace(/[^a-z0-9]+$/, ''); // Strip trailing non-alphanumeric
+      input.value = value;
+    }
+
+    async function processVoice() {
+      const name = document.getElementById('voice-creator-name').value.trim();
+      if (!name) {
+        showVoiceCreatorStatus('Please enter a voice name', 'error');
+        return;
+      }
+
+      if (!voiceCreatorState.audioBlob) {
+        showVoiceCreatorStatus('No audio loaded', 'error');
+        return;
+      }
+
+      const start = parseFloat(document.getElementById('voice-segment-start').value) || 0;
+      const end = parseFloat(document.getElementById('voice-segment-end').value) || 10;
+
+      if (end - start < 5) {
+        showVoiceCreatorStatus('Segment must be at least 5 seconds', 'error');
+        return;
+      }
+
+      showVoiceCreatorStatus('<span class="voice-processing-spinner"></span>Processing voice... This may take a moment', 'info');
+      document.getElementById('voice-process-btn').disabled = true;
+
+      try {
+        // Read the audio blob as base64
+        const base64 = await blobToBase64(voiceCreatorState.audioBlob);
+        const backend = await requireBackend();
+        const result = await backend.processVoice({
+          audio: base64,
+          start,
+          end,
+          name,
+          displayName: name
+        });
+
+        voiceCreatorState.processedVoiceName = result.name;
+        voiceCreatorState.processedVoiceUrl = result.url;
+        voiceCreatorState.selectedWinner = null;
+
+        // Show preview section and winner selection
+        document.getElementById('voice-preview-section').style.display = 'block';
+        document.getElementById('voice-winner-section').style.display = 'block';
+        document.getElementById('voice-test-play-btn').disabled = false;
+        document.getElementById('voice-test-play-wav-btn').disabled = false;
+        // Save/upload buttons stay disabled until winner is picked
+        document.getElementById('voice-save-btn').disabled = true;
+        document.getElementById('voice-upload-btn').disabled = true;
+
+        showVoiceCreatorStatus('Voice processed! Listen to both options and pick which sounds better.', 'success');
+
+        // Refresh voice selector
+        await populateVoiceSelector();
+
+      } catch (err) {
+        console.error('Voice processing error:', err);
+        showVoiceCreatorStatus('Processing failed: ' + err.message, 'error');
+      } finally {
+        document.getElementById('voice-process-btn').disabled = false;
+      }
+    }
+
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function playVoicePreview(mode = 'safetensors') {
+      const text = document.getElementById('voice-preview-text').value.trim();
+      if (!text) {
+        showVoiceCreatorStatus('Enter some text to preview', 'error');
+        return;
+      }
+
+      const voiceName = voiceCreatorState.processedVoiceName;
+      if (!voiceName) {
+        showVoiceCreatorStatus('Process a voice first', 'error');
+        return;
+      }
+
+      const btn = mode === 'wav'
+        ? document.getElementById('voice-test-play-wav-btn')
+        : document.getElementById('voice-test-play-btn');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        const backend = await requireBackend();
+        const audioBlob = mode === 'wav'
+          ? await backend.previewCustomVoiceWav(voiceName, text)
+          : await backend.previewCustomVoice(voiceName, text);
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        const audio = document.getElementById('voice-preview-audio');
+        audio.src = audioUrl;
+        audio.play();
+
+        audio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+        };
+
+      } catch (err) {
+        console.error('Voice preview error:', err);
+        showVoiceCreatorStatus('Preview failed: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    }
+
+    function pickVoiceWinner(winner) {
+      voiceCreatorState.selectedWinner = winner;
+
+      // Update button styles to show selection
+      const safetensorsBtn = document.getElementById('voice-pick-safetensors');
+      const wavBtn = document.getElementById('voice-pick-wav');
+
+      if (winner === 'safetensors') {
+        safetensorsBtn.style.borderColor = '#00d4aa';
+        safetensorsBtn.style.background = 'rgba(0,212,170,0.2)';
+        wavBtn.style.borderColor = 'var(--sand-warm)';
+        wavBtn.style.background = 'var(--plumage-cream)';
+      } else {
+        wavBtn.style.borderColor = '#00d4aa';
+        wavBtn.style.background = 'rgba(0,212,170,0.2)';
+        safetensorsBtn.style.borderColor = 'var(--sand-warm)';
+        safetensorsBtn.style.background = 'var(--plumage-cream)';
+      }
+
+      // Enable save/upload buttons now that winner is picked
+      document.getElementById('voice-save-btn').disabled = false;
+      document.getElementById('voice-upload-btn').disabled = false;
+
+      showVoiceCreatorStatus(`Selected "${winner}" as the better quality. You can now save or upload.`, 'success');
+    }
+
+    async function saveVoiceLocally() {
+      const voiceName = voiceCreatorState.processedVoiceName;
+      const winner = voiceCreatorState.selectedWinner;
+
+      if (!voiceName || !winner) {
+        showVoiceCreatorStatus('Process a voice and pick a winner first', 'error');
+        return;
+      }
+
+      try {
+        // Finalize the voice - delete the loser file, keep only the winner
+        const backend = await requireBackend();
+        await backend.finalizeVoice(voiceName, winner);
+
+        showVoiceCreatorStatus(`Voice saved (${winner} format)! You can also upload to community or close this modal.`, 'success');
+
+        // Refresh voice selector
+        await populateVoiceSelector();
+
+        // Disable save button since already saved, but keep modal open for community upload
+        document.getElementById('voice-save-btn').disabled = true;
+        document.getElementById('voice-save-btn').textContent = '✓ Saved';
+      } catch (err) {
+        console.error('Save voice error:', err);
+        showVoiceCreatorStatus('Failed to save: ' + err.message, 'error');
+      }
+    }
+
+    async function uploadVoiceToCommunity() {
+      const voiceName = voiceCreatorState.processedVoiceName;
+      const winner = voiceCreatorState.selectedWinner;
+
+      if (!voiceName) {
+        showVoiceCreatorStatus('Process a voice first', 'error');
+        return;
+      }
+
+      if (!winner) {
+        showVoiceCreatorStatus('Pick a winner first', 'error');
+        return;
+      }
+
+      // Get username from community modal storage
+      let username = getCommunityUsername();
+      if (!username) {
+        username = prompt('Enter your username for the community:');
+        if (!username) return;
+        setCommunityUsername(username);
+      }
+
+      showVoiceCreatorStatus('Uploading to community...', 'info');
+      document.getElementById('voice-upload-btn').disabled = true;
+
+      try {
+        const backend = await requireBackend();
+        const fileBlob = winner === 'wav'
+          ? await backend.getVoiceWav(voiceName)
+          : await backend.getVoiceFile(voiceName);
+        const arrayBuf = await fileBlob.arrayBuffer();
+
+        // Convert to base64
+        const bytes = new Uint8Array(arrayBuf);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const base64 = btoa(binary);
+
+        // Build request body based on winner type
+        const body = {
+          username,
+          name: voiceName
+        };
+
+        if (winner === 'wav') {
+          body.audio_base64 = base64;
+        } else {
+          body.safetensors_base64 = base64;
+        }
+
+        // Upload to community
+        const response = await fetch(`${COMMUNITY_API_URL}/voices`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || 'Upload failed');
+        }
+
+        const result = await response.json();
+        showVoiceCreatorStatus(`Uploaded! Voice slug: ${result.slug}`, 'success');
+
+        setTimeout(() => closeVoiceCreatorModal(), 2000);
+
+      } catch (err) {
+        console.error('Community upload error:', err);
+        showVoiceCreatorStatus('Upload failed: ' + err.message, 'error');
+      } finally {
+        document.getElementById('voice-upload-btn').disabled = false;
+      }
+    }
+
+    function showVoiceCreatorStatus(message, type) {
+      const status = document.getElementById('voice-creator-status');
+      status.innerHTML = message;
+      status.className = 'voice-creator-status ' + type;
+      status.style.display = 'block';
+    }
+
+    function hideVoiceCreatorStatus() {
+      document.getElementById('voice-creator-status').style.display = 'none';
+    }
+
+    // === PROP SETTINGS ===
+    function togglePropSettingsPanel() {
+      const panel = document.getElementById('prop-settings-panel');
+      const toggle = document.getElementById('prop-panel-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggle.textContent = '▲';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '▼';
+      }
+    }
+
+    function loadPropSettings(meta) {
+      const holdOffset = meta?.holdOffset || [0, -10];
+      const defaultScale = meta?.defaultScale ?? 1;
+
+      document.getElementById('prop-hold-x').value = holdOffset[0];
+      document.getElementById('prop-hold-y').value = holdOffset[1];
+      document.getElementById('prop-default-scale').value = defaultScale;
+    }
+
+    function updatePropSettingsPreview() {
+      // Could add live preview here if needed
+    }
+
+    async function savePropSettings() {
+      if (!currentSpriteName || currentEditMode !== 'prop') {
+        updateStatus('Select a prop first');
+        return;
+      }
+
+      const propSettings = {
+        holdOffset: [
+          parseInt(document.getElementById('prop-hold-x').value) || 0,
+          parseInt(document.getElementById('prop-hold-y').value) || -10
+        ],
+        defaultScale: parseFloat(document.getElementById('prop-default-scale').value) || 1
+      };
+
+      try {
+        const updatedMeta = {
+          ...(currentMeta || {}),
+          ...propSettings
+        };
+
+        const backend = await requireBackend();
+        await backend.saveProp(currentSpriteName, currentSprite, updatedMeta);
+        currentMeta = updatedMeta;
+        updateStatus('Prop settings saved');
+      } catch (err) {
+        console.error('Failed to save prop settings:', err);
+        updateStatus('Failed to save prop settings');
+      }
+    }
+
+    // === PANEL VISIBILITY ===
+    function updatePanelVisibility() {
+      const spriteWrapper = document.getElementById('sprite-settings-wrapper');
+      const propWrapper = document.getElementById('prop-settings-wrapper');
+      applyVoiceCreationSupport();
+
+      if (currentEditMode === 'sprite') {
+        spriteWrapper.style.display = 'block';
+        propWrapper.style.display = 'none';
+      } else if (currentEditMode === 'prop') {
+        spriteWrapper.style.display = 'none';
+        propWrapper.style.display = 'block';
+      } else {
+        // background or skit - hide both
+        spriteWrapper.style.display = 'none';
+        propWrapper.style.display = 'none';
+      }
+    }
+
+    // === HELPER FUNCTIONS ===
+    function clearAllSelections() {
+      // Clear sprite selection
+      document.querySelectorAll('.sprite-item').forEach(el => el.classList.remove('active'));
+      // Clear background selection
+      document.querySelectorAll('.background-item').forEach(el => el.classList.remove('active'));
+      // Clear skit selection
+      document.querySelectorAll('.skit-item').forEach(el => el.classList.remove('active'));
+      // Clear element selection
+      clearSelection();
+      // Disable publish button
+      const publishBtn = document.getElementById('skit-publish-btn');
+      if (publishBtn) {
+        publishBtn.disabled = true;
+        publishBtn.className = 'skit-publish-btn';
+        publishBtn.textContent = 'Publish Script';
+      }
+      const progress = document.getElementById('publish-progress');
+      if (progress) progress.classList.remove('active');
+    }
+
+    function setStatus(msg) {
+      updateStatus(msg);
+    }
+
+    // === DELETE CONFIRMATION ===
+    function showDeleteConfirm(btn, type, id) {
+      // Hide any other open confirmations
+      document.querySelectorAll('.delete-confirm').forEach(el => {
+        const parent = el.parentElement;
+        const originalBtn = parent.querySelector('.item-delete-btn-hidden');
+        if (originalBtn) {
+          originalBtn.classList.remove('item-delete-btn-hidden');
+          originalBtn.classList.add('item-delete-btn');
+        }
+        el.remove();
+      });
+
+      // Hide the delete button
+      btn.classList.remove('item-delete-btn');
+      btn.classList.add('item-delete-btn-hidden');
+      btn.style.display = 'none';
+
+      // Create confirmation buttons
+      const confirmDiv = document.createElement('div');
+      confirmDiv.className = 'delete-confirm';
+      confirmDiv.innerHTML = `
+        <button class="delete-confirm-btn delete-confirm-yes" data-ait-onclick="event.stopPropagation(); confirmDelete('${type}', '${id}')" title="Confirm delete">✓</button>
+        <button class="delete-confirm-btn delete-confirm-no" data-ait-onclick="event.stopPropagation(); cancelDelete(this)" title="Cancel">✕</button>
+      `;
+      btn.parentElement.appendChild(confirmDiv);
+    }
+
+    function cancelDelete(cancelBtn) {
+      const confirmDiv = cancelBtn.parentElement;
+      const parent = confirmDiv.parentElement;
+      const hiddenBtn = parent.querySelector('.item-delete-btn-hidden');
+      if (hiddenBtn) {
+        hiddenBtn.classList.remove('item-delete-btn-hidden');
+        hiddenBtn.classList.add('item-delete-btn');
+        hiddenBtn.style.display = '';
+      }
+      confirmDiv.remove();
+    }
+
+    async function confirmDelete(type, id) {
+      try {
+        let successMsg;
+        let reloadFn;
+        const backend = await requireBackend();
+
+        switch (type) {
+          case 'sprite':
+            await backend.deleteSprite(id);
+            successMsg = `Deleted sprite: ${id}`;
+            reloadFn = loadSpriteList;
+            // Clear selection if this was the current sprite
+            if (currentSpriteName === id) {
+              currentSpriteName = null;
+              currentEditMode = null;
+              document.getElementById('svg-canvas').innerHTML = '';
+            }
+            break;
+          case 'background':
+            await backend.deleteBackground(id);
+            successMsg = `Deleted background: ${id}`;
+            reloadFn = loadBackgrounds;
+            // Clear selection if this was the current background
+            if (currentBackgroundName === id) {
+              currentBackgroundName = null;
+              currentEditMode = null;
+              document.getElementById('svg-canvas').innerHTML = '';
+            }
+            break;
+          case 'skit':
+            await backend.deleteSkit(id);
+            successMsg = `Deleted skit: ${id}`;
+            reloadFn = loadSkits;
+            // Clear selection if this was the current skit
+            if (currentSkitId === id) {
+              currentSkitId = null;
+              currentEditMode = null;
+              document.getElementById('skit-editor-panel').style.display = 'none';
+            }
+            break;
+          case 'prop':
+            await backend.deleteProp(id);
+            successMsg = `Deleted prop: ${id}`;
+            reloadFn = loadProps;
+            // Clear selection if this was the current prop
+            if (currentSpriteName === id && currentEditMode === 'prop') {
+              currentSpriteName = null;
+              currentEditMode = null;
+              document.getElementById('svg-canvas').innerHTML = '';
+            }
+            break;
+          default:
+            throw new Error(`Unknown type: ${type}`);
+        }
+
+        updateStatus(successMsg);
+        await reloadFn();
+      } catch (err) {
+        console.error('Delete failed:', err);
+        updateStatus(`Delete failed: ${err.message}`);
+        // Re-show the delete button on error
+        document.querySelectorAll('.delete-confirm').forEach(el => {
+          cancelDelete(el.querySelector('.delete-confirm-no'));
+        });
+      }
+    }
+
+    // === WEBSOCKET FOR LIVE UPDATES ===
+    let ws = null;
+    let wsReconnectTimer = null;
+
+    function handleBackendUpdate(msg) {
+      if (!msg || typeof msg !== 'object') return;
+
+      if (msg.type === 'sprite:updated' && msg.name === currentSpriteName) {
+        // Use the SVG from the message directly
+        console.log('Sprite updated, applying new SVG...');
+        if (msg.sprite && msg.sprite.svg) {
+          // Save current state to undo stack before applying changes
+          saveState();
+
+          // Store current zoom level
+          const currentZoom = zoomLevel;
+
+          // Apply new SVG
+          currentSprite = msg.sprite.svg;
+          const canvas = document.getElementById('svg-canvas');
+          canvas.innerHTML = msg.sprite.svg;
+
+          // Set up click handlers on elements
+          renderSpriteFromCurrent();
+          buildElementTree();
+          clearSelection();
+          updateUndoButtons();
+
+          // Restore zoom level
+          zoomLevel = currentZoom;
+          const svg = canvas.querySelector('svg');
+          if (svg) {
+            const baseSize = 300;
+            svg.setAttribute('width', baseSize * (zoomLevel / 100));
+            svg.setAttribute('height', baseSize * 1.5 * (zoomLevel / 100));
+          }
+
+          setCommandStatus('success', 'Updated!');
+        }
+      }
+
+      if (msg.type === 'sprite:created') {
+        // Refresh sprite list
+        loadSpriteList();
+      }
+
+      // Background updates
+      if (msg.type === 'background:created' || msg.type === 'background:updated' || msg.type === 'background:deleted') {
+        loadBackgrounds();
+        if (msg.type === 'background:updated' && msg.name === currentBackgroundName) {
+          selectBackground(msg.name);
+          setCommandStatus('success', 'Updated!');
+        }
+      }
+
+      // Prop updates
+      if (msg.type === 'prop:created' || msg.type === 'prop:updated' || msg.type === 'prop:deleted') {
+        loadProps();
+        if (msg.type === 'prop:updated' && msg.name === currentSpriteName && currentEditMode === 'prop') {
+          selectProp(msg.name);
+          setCommandStatus('success', 'Updated!');
+        }
+      }
+
+      // Skit updates
+      if (msg.type === 'skit:created' || msg.type === 'skit:updated' || msg.type === 'skit:deleted') {
+        loadSkits();
+        if (msg.type === 'skit:updated' && msg.skitId === currentSkitId) {
+          selectSkit(msg.skitId);
+          setCommandStatus('success', 'Updated!');
+        }
+      }
+
+      // Publish progress updates
+      if (msg.type === 'publish:progress' && msg.skitId === currentSkitId) {
+        const progressFill = document.getElementById('publish-progress-fill');
+        const progressText = document.getElementById('publish-progress-text');
+        if (progressFill && msg.total > 0) {
+          const pct = Math.round((msg.current / msg.total) * 100);
+          progressFill.style.width = pct + '%';
+        }
+        if (progressText && msg.detail) {
+          progressText.textContent = msg.detail;
+        }
+      }
+
+      if (msg.type === 'publish:complete' && msg.skitId === currentSkitId) {
+        const progressFill = document.getElementById('publish-progress-fill');
+        if (progressFill) progressFill.style.width = '100%';
+      }
+
+      if (msg.type === 'publish:error' && msg.skitId === currentSkitId) {
+        const progressText = document.getElementById('publish-progress-text');
+        if (progressText) progressText.textContent = 'Error: ' + (msg.error || 'Unknown error');
+      }
+    }
+
+    function connectWebSocket() {
+      const backend = getCurrentBackend();
+      if (backend && typeof backend.onUpdate === 'function') {
+        backend.onUpdate(handleBackendUpdate);
+        if (typeof backend.connect === 'function') {
+          backend.connect();
+        }
+        return;
+      }
+
+      const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${wsProtocol}//${location.host}/ws`);
+
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          handleBackendUpdate(JSON.parse(event.data));
+        } catch (err) {
+          console.warn('Invalid update payload', err);
+        }
+      };
+
+      ws.onerror = (err) => {
+        console.error('WebSocket error:', err);
+      };
+
+      ws.onclose = () => {
+        if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+        wsReconnectTimer = setTimeout(connectWebSocket, 3000);
+      };
+    }
+
+    // === AI COMMAND BAR ===
+    function updateCommandPlaceholder() {
+      const typeSelect = document.getElementById('command-type');
+      const inputEl = document.getElementById('command-input');
+      const type = typeSelect.value;
+
+      const placeholders = {
+        'auto': 'Describe what to create...',
+        'sprite': 'Describe a character (e.g., "angry chef with mustache")',
+        'prop': 'Describe a prop (e.g., "steaming coffee mug")',
+        'background': 'Describe a scene (e.g., "cozy coffee shop interior")',
+        'skit': 'Describe a skit (e.g., "two robots argue about feelings")'
+      };
+
+      inputEl.placeholder = placeholders[type] || placeholders['auto'];
+    }
+
+    function updateCommandContext() {
+      const contextEl = document.getElementById('command-context-text');
+      const inputEl = document.getElementById('command-input');
+
+      if (currentEditMode === 'sprite' && currentSpriteName) {
+        contextEl.innerHTML = `Editing sprite: <span class="sprite-name">${currentSpriteName}</span>`;
+        inputEl.placeholder = 'Describe changes to make...';
+      } else if (currentEditMode === 'background' && currentBackgroundName) {
+        contextEl.innerHTML = `Editing background: <span class="sprite-name">${currentBackgroundName}/${currentBackgroundOrientation}</span>`;
+        inputEl.placeholder = 'Describe changes to make...';
+      } else if (currentEditMode === 'skit' && currentSkitId) {
+        const title = currentSkitData?.meta?.title || currentSkitId;
+        contextEl.innerHTML = `Editing skit: <span class="sprite-name">${title}</span>`;
+        inputEl.placeholder = 'Describe changes to make...';
+      } else {
+        contextEl.textContent = 'No selection';
+        inputEl.placeholder = 'Describe what to create (character, background, or skit)...';
+      }
+    }
+
+    function setCommandStatus(type, message) {
+      const statusEl = document.getElementById('command-status');
+      statusEl.className = 'command-status ' + type;
+      statusEl.innerHTML = message;
+
+      // Clear success/error after 3 seconds
+      if (type === 'success' || type === 'error') {
+        setTimeout(() => {
+          if (statusEl.innerHTML === message) {
+            statusEl.innerHTML = '';
+            statusEl.className = 'command-status';
+          }
+        }, 3000);
+      }
+    }
+
+    // === Asset Picker ===
+    function populateAssetPicker() {
+      // Characters
+      const charContainer = document.getElementById('asset-picker-characters').querySelector('.asset-picker-items');
+      if (characterList.length === 0) {
+        charContainer.innerHTML = '<div class="asset-picker-empty">None yet</div>';
+      } else {
+        charContainer.innerHTML = characterList.map(name => {
+          const val = `character: ${name}`;
+          return `<button type="button" class="asset-picker-item" data-ait-onclick="insertAssetName('${val.replace(/'/g, "\\'")}')">${name}</button>`;
+        }).join('');
+      }
+
+      // Backgrounds — list each orientation as a separate entry with hyphen suffix
+      const bgContainer = document.getElementById('asset-picker-backgrounds').querySelector('.asset-picker-items');
+      if (backgroundList.length === 0) {
+        bgContainer.innerHTML = '<div class="asset-picker-empty">None yet</div>';
+      } else {
+        const bgItems = [];
+        backgroundList.forEach(bg => {
+          const name = bg.name || bg;
+          const orientations = bg.orientations || ['landscape'];
+          orientations.forEach(orient => {
+            const label = `${name}-${orient}`;
+            const val = `background: ${label}`;
+            bgItems.push(`<button type="button" class="asset-picker-item" data-ait-onclick="insertAssetName('${val.replace(/'/g, "\\'")}')">${label}</button>`);
+          });
+        });
+        bgContainer.innerHTML = bgItems.join('');
+      }
+
+      // Props
+      const propContainer = document.getElementById('asset-picker-props').querySelector('.asset-picker-items');
+      if (propList.length === 0) {
+        propContainer.innerHTML = '<div class="asset-picker-empty">None yet</div>';
+      } else {
+        propContainer.innerHTML = propList.map(p => {
+          const name = p.name || p;
+          const val = `prop: ${name}`;
+          return `<button type="button" class="asset-picker-item" data-ait-onclick="insertAssetName('${val.replace(/'/g, "\\'")}')">${name}</button>`;
+        }).join('');
+      }
+    }
+
+    function toggleAssetPicker(event) {
+      event.stopPropagation();
+      const dropdown = document.getElementById('asset-picker-dropdown');
+      const isOpen = dropdown.classList.contains('open');
+      if (isOpen) {
+        dropdown.classList.remove('open');
+      } else {
+        populateAssetPicker();
+        dropdown.classList.add('open');
+      }
+    }
+
+    function insertAssetName(name) {
+      const input = document.getElementById('command-input');
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const text = input.value;
+
+      // Add space before if cursor is not at start and previous char isn't a space
+      let prefix = '';
+      if (start > 0 && text[start - 1] !== ' ') prefix = ' ';
+
+      // Add space after if cursor is not at end and next char isn't a space
+      let suffix = '';
+      if (end < text.length && text[end] !== ' ') suffix = ' ';
+
+      const insertion = prefix + name + suffix;
+      input.value = text.slice(0, start) + insertion + text.slice(end);
+
+      // Position cursor after the inserted name
+      const newPos = start + insertion.length;
+      input.setSelectionRange(newPos, newPos);
+
+      // Close dropdown and refocus input
+      document.getElementById('asset-picker-dropdown').classList.remove('open');
+      input.focus();
+    }
+
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('asset-picker-dropdown');
+      const btn = document.getElementById('asset-picker-btn');
+      if (dropdown && !dropdown.contains(e.target) && e.target !== btn) {
+        dropdown.classList.remove('open');
+      }
+    });
+
+    async function submitCommand() {
+      const input = document.getElementById('command-input');
+      const submitBtn = document.getElementById('command-submit');
+      const command = input.value.trim();
+
+      if (!command || isGenerating) return;
+
+      // Detect asset type for create mode
+      let assetType = currentEditMode;
+      let isCreateMode = false;
+
+      // Check if we're in create mode (nothing selected)
+      const hasSelection = currentSpriteName || currentBackgroundName || currentSkitId;
+
+      if (!hasSelection) {
+        isCreateMode = true;
+
+        // Check dropdown for explicit type selection
+        const typeSelect = document.getElementById('command-type');
+        const selectedType = typeSelect.value;
+
+        if (selectedType !== 'auto') {
+          assetType = selectedType;
+        } else {
+          // Auto-detect type from command text
+          const lowerCmd = command.toLowerCase();
+          if (lowerCmd.includes('background') || lowerCmd.includes('scene') || lowerCmd.includes('setting')) {
+            assetType = 'background';
+          } else if (lowerCmd.includes('skit') || lowerCmd.includes('script') || lowerCmd.includes('dialogue')) {
+            assetType = 'skit';
+          } else if (lowerCmd.includes('prop') || lowerCmd.includes('item') || lowerCmd.includes('object')) {
+            assetType = 'prop';
+          } else {
+            assetType = 'sprite';
+          }
+        }
+      }
+
+      let assetName = null;
+
+      // For create mode, get the name FIRST before generating
+      if (isCreateMode && assetType !== 'skit') {
+        const suggestedName = command.toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .split(/\s+/)
+          .slice(0, 3)
+          .join('-');
+
+        const typeLabels = {
+          'sprite': 'Character',
+          'prop': 'Prop',
+          'background': 'Background'
+        };
+        const typeLabel = typeLabels[assetType] || 'Asset';
+
+        assetName = await showNamingModal({
+          title: `New ${typeLabel}`,
+          label: `${typeLabel} name`,
+          placeholder: 'lowercase-with-hyphens',
+          defaultValue: suggestedName
+        });
+
+        if (!assetName) {
+          // User cancelled
+          return;
+        }
+      }
+
+      isGenerating = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Generating...';
+      submitBtn.classList.add('generating');
+      setCommandStatus('', '<span class="generating-text">🤖 AI is working...</span>');
+
+      try {
+        const backend = await requireBackend();
+        const payload = {
+          type: assetType,
+          mode: isCreateMode ? 'create' : 'edit',
+          command: command
+        };
+
+        // For new backgrounds, start with landscape orientation
+        if (isCreateMode && assetType === 'background') {
+          payload.orientation = 'landscape';
+        }
+
+        // Include current state for edit mode
+        if (!isCreateMode) {
+          if (assetType === 'sprite' && currentSprite) {
+            payload.current = {
+              name: currentSpriteName,
+              svg: currentSprite,
+              meta: currentMeta || {}
+            };
+          } else if (assetType === 'background' && currentSprite) {
+            payload.current = {
+              name: currentBackgroundName,
+              svg: currentSprite
+            };
+            // Include current orientation for editing
+            payload.orientation = currentBackgroundOrientation || 'landscape';
+          } else if (assetType === 'skit' && currentSkitData) {
+            payload.current = {
+              id: currentSkitId,
+              skit: currentSkitData
+            };
+          }
+        }
+
+        const result = await backend.generateAsset(payload);
+
+        if (result.success) {
+          if (result.saved) {
+            // Already saved (edit mode) - WebSocket will handle reload
+            setCommandStatus('success', 'Saved!');
+            input.value = '';
+          } else if (assetType === 'sprite') {
+            // New sprite - use AI-generated meta, with fallbacks
+            const aiMeta = result.asset.meta || {};
+            const meta = {
+              name: aiMeta.name || assetName,
+              description: aiMeta.description || command,
+              tags: aiMeta.tags || [],
+              voice: aiMeta.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 }
+            };
+            await backend.saveSprite(assetName, result.asset.svg, meta);
+            setCommandStatus('success', `Created sprite: ${assetName}`);
+            input.value = '';
+            await loadSpriteList();
+            loadSpriteFromSvg(assetName, result.asset.svg);
+          } else if (assetType === 'prop') {
+            // New prop - save with the name we got earlier
+            const meta = {
+              name: assetName,
+              description: command,
+              defaultScale: 1.0,
+              anchorPoint: [0.5, 1.0],
+              holdOffset: [0, -10]
+            };
+            await backend.saveProp(assetName, result.asset.svg, meta);
+            setCommandStatus('success', `Created prop: ${assetName}`);
+            input.value = '';
+            await loadProps();
+            selectProp(assetName);
+          } else if (assetType === 'background') {
+            // New background - generate and save both landscape and portrait
+            setCommandStatus('', '<span class="generating-text">🤖 Saving landscape version...</span>');
+
+            // Save landscape first
+            await backend.saveBackground(assetName, 'landscape', result.asset.svg);
+
+            // Now generate portrait version
+            setCommandStatus('', '<span class="generating-text">🤖 Generating portrait version...</span>');
+
+            const portraitResult = await backend.generateAsset({
+              type: 'background',
+              mode: 'create',
+              command: command,
+              orientation: 'portrait'
+            });
+
+            if (portraitResult.success) {
+              setCommandStatus('', '<span class="generating-text">🤖 Saving portrait version...</span>');
+              try {
+                await backend.saveBackground(assetName, 'portrait', portraitResult.asset.svg);
+                setCommandStatus('success', `Created background: ${assetName} (both orientations)`);
+              } catch (_) {
+                // Portrait failed but landscape was saved
+                setCommandStatus('success', `Created background: ${assetName} (landscape only - portrait failed)`);
+              }
+            } else {
+              // Portrait generation failed but landscape was saved
+              setCommandStatus('success', `Created background: ${assetName} (landscape only - portrait generation failed)`);
+            }
+
+            input.value = '';
+            await loadBackgrounds();
+            selectBackground(assetName);
+          } else if (assetType === 'skit') {
+            // New skit - agent returns { skit: {...} }, extract the skit object
+            let skitData;
+            try {
+              skitData = result.asset.skit || result.asset;
+              if (typeof skitData === 'string') {
+                skitData = JSON.parse(skitData);
+              }
+            } catch (e) {
+              throw new Error('AI returned invalid skit data');
+            }
+
+            const savedSkitId = await backend.saveSkit(null, skitData);
+            setCommandStatus('success', `Created skit: ${skitData.meta?.title || savedSkitId}`);
+            input.value = '';
+            await loadSkits();
+            selectSkit(savedSkitId);
+          }
+        }
+      } catch (err) {
+        console.error('Command error:', err);
+        setCommandStatus('error', err.message);
+      } finally {
+        isGenerating = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Generate';
+        submitBtn.classList.remove('generating');
+      }
+    }
+
+    // Load sprite directly from SVG string (for newly generated sprites)
+    function loadSpriteFromSvg(name, svg) {
+      currentSpriteName = name;
+      currentSprite = svg;
+      currentVariant = 'front';
+      currentVariants = ['front'];
+
+      const canvas = document.getElementById('svg-canvas');
+      canvas.innerHTML = svg;
+
+      // Set up click handlers and UI
+      renderSpriteFromCurrent();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      applyZoom();
+      updateCommandContext();
+      renderVariantTabs();
+
+      // Reset emotion state for new sprite
+      originalFaceValues = null;
+      editableState = null;
+      currentEmotion = 'neutral';
+      captureOriginalFaceValues();
+      setEditingEnabled(true);
+      updateEmotionButtons();
+
+      // Update sprite list selection (items use data-char attribute)
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.char === name);
+      });
+    }
+
+    // === ZOOM ===
+    function zoomIn() {
+      zoomLevel = Math.min(400, zoomLevel + 25);
+      applyZoom();
+    }
+    
+    function zoomOut() {
+      zoomLevel = Math.max(50, zoomLevel - 25);
+      applyZoom();
+    }
+    
+    function zoomReset() {
+      zoomLevel = 100;
+      applyZoom();
+    }
+    
+    function applyZoom() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (svg) {
+        const baseSize = 300; // Base canvas size
+        svg.setAttribute('width', baseSize * (zoomLevel / 100));
+        svg.setAttribute('height', baseSize * 1.5 * (zoomLevel / 100));
+      }
+      document.getElementById('zoom-level').textContent = zoomLevel + '%';
+      
+      // Update resize handles if element is selected
+      if (selectedElement) {
+        createResizeHandles(selectedElement);
+      }
+    }
+    
+    // Scroll wheel zoom - initialized after DOM ready
+    
+    // === SPRITE LIST ===
+    let characterList = [];
+    let currentVariant = 'front';
+    let currentVariants = ['front'];
+    
+    async function loadSpriteList() {
+      const list = document.getElementById('sprite-list');
+      list.innerHTML = '';
+
+      try {
+        const backend = await requireBackend();
+        const sprites = await backend.listSprites();
+        characterList = sprites.map(s => s.name);
+      } catch (e) {
+        console.error('Failed to load sprites from API:', e);
+        // Fallback to static index if API unavailable
+        try {
+          const resp = await fetch('sprites/index.json');
+          const data = await resp.json();
+          characterList = data.characters;
+        } catch (e2) {
+          characterList = [];
+        }
+      }
+
+      for (const name of characterList) {
+        const item = document.createElement('div');
+        item.className = 'sprite-item';
+        item.dataset.char = name;
+        item.innerHTML = `
+          <span class="icon">🎭</span>
+          <span style="flex:1">${name}</span>
+          <button class="item-delete-btn" data-ait-onclick="event.stopPropagation(); showDeleteConfirm(this, 'sprite', '${name}')" title="Delete">🗑️</button>
+        `;
+        item.onclick = () => selectCharacter(name);
+        list.appendChild(item);
+      }
+
+      // Update count
+      document.getElementById('char-count').textContent = `(${characterList.length})`;
+    }
+    
+    async function selectCharacter(name) {
+      // Clear other selections
+      clearAllSelections();
+
+      // Clear face values for new sprite
+      originalFaceValues = null;
+
+      currentEditMode = 'sprite';
+      currentSpriteName = name;
+      currentBackgroundName = null;
+      currentSkitId = null;
+
+      // Update UI
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.char === name);
+      });
+
+      // Show canvas, hide skit editor
+      document.getElementById('svg-canvas').style.display = 'block';
+      document.getElementById('skit-editor-panel').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'flex';
+      document.querySelector('.element-tree').style.display = 'block';
+      document.getElementById('variant-tabs').style.display = 'flex'; // Show variant tabs for sprites
+      document.querySelector('.zoom-controls').style.display = 'flex';
+
+      // Detect variants
+      currentVariants = await detectVariants(name);
+      renderVariantTabs();
+
+      // Load default variant
+      currentVariant = currentVariants.includes('front') ? 'front' : currentVariants[0];
+      await loadVariant(name, currentVariant);
+
+      // Try to extract meta from embedded data-meta attribute in loaded SVG
+      let embeddedMeta = extractMetaFromSvg(currentSprite);
+
+      // Fall back to meta.json if no embedded metadata
+      if (Object.keys(embeddedMeta).length === 0) {
+        try {
+          const backend = await requireBackend();
+          embeddedMeta = await backend.getSpriteMeta(name);
+        } catch (e) {
+          // No meta available - use empty object
+        }
+      }
+
+      currentSpriteMeta = Object.keys(embeddedMeta).length > 0 ? embeddedMeta : null;
+      currentMeta = currentSpriteMeta;
+
+      // Load voice settings into UI
+      loadSpriteVoiceSettings(currentMeta);
+      updatePanelVisibility();
+
+      // Update command bar context
+      updateCommandContext();
+    }
+    
+    async function detectVariants(charName) {
+      const backend = await requireBackend();
+      if (typeof backend.detectVariants === 'function') {
+        return backend.detectVariants(charName);
+      }
+      return ['front'];
+    }
+    
+    function renderVariantTabs() {
+      const tabs = document.getElementById('variant-tabs');
+      tabs.innerHTML = '';
+      
+      for (const v of currentVariants) {
+        const tab = document.createElement('button');
+        tab.style.cssText = 'padding:6px 12px;background:var(--plumage-cream);border:none;color:var(--wing-dark);border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
+        if (v === currentVariant) tab.style.background = 'var(--pouch-orange)';
+        tab.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+        tab.onclick = () => {
+          currentVariant = v;
+          loadVariant(currentSpriteName, v);
+          renderVariantTabs();
+        };
+        tabs.appendChild(tab);
+      }
+      
+      // Add new variant button
+      const addBtn = document.createElement('button');
+      addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed var(--wing-gray);color:var(--wing-gray);border-radius:4px;cursor:pointer;font-size:12px;';
+      addBtn.textContent = '+ New';
+      addBtn.onclick = addNewVariant;
+      tabs.appendChild(addBtn);
+    }
+    
+    async function loadVariant(charName, variant) {
+      try {
+        const backend = await requireBackend();
+        const svgText = await backend.getSprite(charName, variant);
+        
+        currentVariant = variant;
+        currentSprite = svgText;
+        
+        renderSprite();
+        buildElementTree();
+        clearSelection();
+        resetHistory();
+
+        // Reset emotion state for new variant
+        originalFaceValues = null;
+        editableState = null;
+        currentEmotion = 'neutral';
+        captureOriginalFaceValues();
+        setEditingEnabled(true);
+        updateEmotionButtons();
+
+        updateStatus(`Loaded: ${charName}/${variant}`);
+      } catch (e) {
+        updateStatus(`Error loading ${charName}/${variant}: ${e.message}`);
+      }
+    }
+    
+    async function addNewVariant() {
+      // Filter out variant names that already exist
+      const commonVariants = ['back', 'side', 'left', 'right'];
+      const availableQuickButtons = commonVariants.filter(v => !currentVariants.includes(v));
+
+      const safeName = await showNamingModal({
+        title: 'New Variant',
+        label: 'Variant name (e.g., side, left, angry)',
+        placeholder: 'back',
+        quickButtons: availableQuickButtons
+      });
+
+      if (!safeName) return;
+
+      currentVariant = safeName;
+      currentVariants.push(safeName);
+
+      // Start with blank or copy current
+      if (confirm('Start with a copy of current sprite? (Cancel for blank)')) {
+        // Keep currentSprite as is
+      } else {
+        currentSprite = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150"></svg>`;
+      }
+
+      renderVariantTabs();
+      renderSprite();
+      buildElementTree();
+      updateStatus(`New variant: ${safeName} (save to create file)`);
+    }
+    
+    // Legacy function for compatibility
+    async function loadSprite(name) {
+      await selectCharacter(name);
+    }
+    
+    function renderSprite() {
+      const canvas = document.getElementById('svg-canvas');
+      canvas.innerHTML = currentSprite;
+      
+      // Scale up for editing
+      const svg = canvas.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '300');
+        svg.setAttribute('height', '450');
+        svg.style.cursor = 'default';
+        
+        // Add click handlers to all elements
+        svg.querySelectorAll('*').forEach(el => {
+          if (el.tagName !== 'g' && el.tagName !== 'svg') {
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', (e) => {
+              e.stopPropagation();
+              // Don't change selection if we just finished dragging
+              if (justFinishedDragging) {
+                justFinishedDragging = false;
+                return;
+              }
+              // Shift-click to add to selection, regular click to replace
+              selectElement(el, e.shiftKey);
+            });
+          }
+        });
+        
+        // Click on canvas background deselects
+        svg.addEventListener('click', (e) => {
+          if (e.target === svg && !didBoxSelect) {
+            clearSelection();
+          }
+        });
+      }
+    }
+    
+    // === ELEMENT TREE ===
+    function buildElementTree() {
+      const tree = document.getElementById('element-tree');
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) {
+        tree.innerHTML = '<div class="no-selection">No sprite loaded</div>';
+        return;
+      }
+      
+      tree.innerHTML = '';
+      buildTreeRecursive(svg, tree, 0);
+    }
+    
+    function buildTreeRecursive(element, container, depth) {
+      const children = element.children;
+      const totalSiblings = children.length;
+
+      for (let i = 0; i < children.length; i++) {
+        const child = children[i];
+        const item = document.createElement('div');
+        item.className = 'tree-item';
+        item.dataset.depth = depth;
+        item.dataset.element = i; // Store reference for selection
+
+        // Highlight if this element is selected
+        if (selectedElements.includes(child)) {
+          item.classList.add('selected');
+        }
+
+        const indent = '<span class="tree-indent"></span>'.repeat(depth);
+        const tag = child.tagName.toLowerCase();
+        const id = child.id ? ` <span class="id">#${child.id}</span>` : '';
+        // Layer number: i+1 of totalSiblings (1-indexed, higher = on top)
+        const layerBadge = depth === 0 ? `<span class="layer-badge">${i + 1}/${totalSiblings}</span>` : '';
+
+        item.innerHTML = `${indent}<span class="tag">&lt;${tag}&gt;</span>${id}${layerBadge}`;
+        item.onclick = (e) => selectElement(child, e.shiftKey);
+
+        // Store reference to tree item on the element for quick updates
+        child._treeItem = item;
+
+        container.appendChild(item);
+
+        if (child.children.length > 0) {
+          buildTreeRecursive(child, container, depth + 1);
+        }
+      }
+    }
+    
+    // === SELECTION ===
+    function selectElement(el, addToSelection = false) {
+      // Don't allow selection when viewing emotions (not in edit mode)
+      if (!isEditingEnabled()) return;
+
+      if (!addToSelection) {
+        clearSelection();
+      }
+
+      // Check if already selected
+      if (selectedElements.includes(el)) {
+        return;
+      }
+
+      selectedElement = el;
+      selectedElements.push(el);
+      el.classList.add('selected-element');
+
+      // Highlight in tree
+      if (el._treeItem) {
+        el._treeItem.classList.add('selected');
+      }
+
+      // Setup dragging for multi-select
+      setupMultiDragging(el);
+
+      if (selectedElements.length === 1) {
+        showProperties(el);
+        createResizeHandles(el);
+      } else {
+        removeResizeHandles();
+        document.getElementById('properties-panel').innerHTML =
+          `<div class="no-selection">${selectedElements.length} elements selected</div>`;
+      }
+    }
+
+    function selectMultipleElements(elements) {
+      clearSelection();
+      elements.forEach((el) => {
+        selectedElements.push(el);
+        el.classList.add('selected-element');
+        if (el._treeItem) {
+          el._treeItem.classList.add('selected');
+        }
+        setupMultiDragging(el);
+      });
+
+      if (elements.length === 1) {
+        selectedElement = elements[0];
+        showProperties(elements[0]);
+        createResizeHandles(elements[0]);
+      } else if (elements.length > 1) {
+        selectedElement = elements[0];
+        document.getElementById('properties-panel').innerHTML =
+          `<div class="no-selection">${elements.length} elements selected</div>`;
+      }
+    }
+
+    function clearSelection() {
+      removeResizeHandles();
+      selectedElements.forEach(el => {
+        el.classList.remove('selected-element');
+        if (el._treeItem) {
+          el._treeItem.classList.remove('selected');
+        }
+        // Remove multi-drag listeners
+        if (el._multiDragStart) {
+          el.removeEventListener('mousedown', el._multiDragStart);
+          el.removeEventListener('touchstart', el._multiDragStart);
+          delete el._multiDragStart;
+        }
+      });
+      selectedElement = null;
+      selectedElements = [];
+      document.getElementById('properties-panel').innerHTML =
+        '<div class="no-selection">Select an element to edit</div>';
+    }
+    
+    // === RESIZE HANDLES ===
+    function getElementScreenBBox(el) {
+      try {
+        const svgCanvas = document.getElementById('svg-canvas');
+        const canvasRect = svgCanvas.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        
+        return {
+          x: elRect.left - canvasRect.left,
+          y: elRect.top - canvasRect.top,
+          width: elRect.width,
+          height: elRect.height
+        };
+      } catch (e) {
+        console.error('getBBox error:', e);
+        return null;
+      }
+    }
+    
+    function createResizeHandles(el) {
+      removeResizeHandles();
+      
+      const bbox = getElementScreenBBox(el);
+      if (!bbox || bbox.width < 1 || bbox.height < 1) {
+        console.log('No valid bbox for handles');
+        return;
+      }
+      
+      // Add handles to the svg-canvas div so they're positioned relative to the SVG
+      const svgCanvas = document.getElementById('svg-canvas');
+      svgCanvas.style.position = 'relative'; // Ensure positioning context
+      
+      const handles = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+      
+      handles.forEach(pos => {
+        const handle = document.createElement('div');
+        handle.className = `resize-handle ${pos}`;
+        handle.dataset.handle = pos;
+        
+        let hx, hy;
+        switch (pos) {
+          case 'nw': hx = bbox.x; hy = bbox.y; break;
+          case 'n':  hx = bbox.x + bbox.width/2; hy = bbox.y; break;
+          case 'ne': hx = bbox.x + bbox.width; hy = bbox.y; break;
+          case 'e':  hx = bbox.x + bbox.width; hy = bbox.y + bbox.height/2; break;
+          case 'se': hx = bbox.x + bbox.width; hy = bbox.y + bbox.height; break;
+          case 's':  hx = bbox.x + bbox.width/2; hy = bbox.y + bbox.height; break;
+          case 'sw': hx = bbox.x; hy = bbox.y + bbox.height; break;
+          case 'w':  hx = bbox.x; hy = bbox.y + bbox.height/2; break;
+        }
+        
+        handle.style.left = (hx - 5) + 'px';
+        handle.style.top = (hy - 5) + 'px';
+        
+        svgCanvas.appendChild(handle);
+        setupResizeHandle(handle, el, pos);
+      });
+    }
+    
+    function removeResizeHandles() {
+      document.querySelectorAll('.resize-handle').forEach(h => h.remove());
+    }
+    
+    function setupResizeHandle(handle, el, pos) {
+      const svg = document.querySelector('#svg-canvas svg');
+      let startX, startY, startBBox;
+      
+      function getCoords(e) {
+        if (e.touches) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        return { x: e.clientX, y: e.clientY };
+      }
+      
+      function startResize(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        saveState();
+        
+        const coords = getCoords(e);
+        startX = coords.x;
+        startY = coords.y;
+        startBBox = el.getBBox();
+        
+        document.addEventListener('mousemove', doResize);
+        document.addEventListener('mouseup', endResize);
+        document.addEventListener('touchmove', doResize, { passive: false });
+        document.addEventListener('touchend', endResize);
+      }
+      
+      function doResize(e) {
+        e.preventDefault();
+        const coords = getCoords(e);
+        const dx = (coords.x - startX) / 3; // Adjust for scale
+        const dy = (coords.y - startY) / 3;
+        
+        const tag = el.tagName.toLowerCase();
+        
+        // Calculate new dimensions based on handle position
+        let newX = startBBox.x;
+        let newY = startBBox.y;
+        let newW = startBBox.width;
+        let newH = startBBox.height;
+        
+        if (pos.includes('w')) { newX += dx; newW -= dx; }
+        if (pos.includes('e')) { newW += dx; }
+        if (pos.includes('n')) { newY += dy; newH -= dy; }
+        if (pos.includes('s')) { newH += dy; }
+        
+        // Minimum size
+        newW = Math.max(2, newW);
+        newH = Math.max(2, newH);
+        
+        // Apply based on element type
+        if (tag === 'rect') {
+          el.setAttribute('x', newX.toFixed(1));
+          el.setAttribute('y', newY.toFixed(1));
+          el.setAttribute('width', newW.toFixed(1));
+          el.setAttribute('height', newH.toFixed(1));
+        } else if (tag === 'ellipse') {
+          el.setAttribute('cx', (newX + newW/2).toFixed(1));
+          el.setAttribute('cy', (newY + newH/2).toFixed(1));
+          el.setAttribute('rx', (newW/2).toFixed(1));
+          el.setAttribute('ry', (newH/2).toFixed(1));
+        } else if (tag === 'circle') {
+          const r = Math.max(newW, newH) / 2;
+          el.setAttribute('cx', (newX + newW/2).toFixed(1));
+          el.setAttribute('cy', (newY + newH/2).toFixed(1));
+          el.setAttribute('r', r.toFixed(1));
+        } else if (tag === 'polygon' || tag === 'polyline') {
+          // Scale polygon points
+          const scaleX = newW / startBBox.width;
+          const scaleY = newH / startBBox.height;
+          const points = el.getAttribute('points').trim().split(/[\s,]+/).map(parseFloat);
+          const newPoints = [];
+          for (let i = 0; i < points.length; i += 2) {
+            const px = (points[i] - startBBox.x) * scaleX + newX;
+            const py = (points[i+1] - startBBox.y) * scaleY + newY;
+            newPoints.push(px.toFixed(1), py.toFixed(1));
+          }
+          el.setAttribute('points', newPoints.join(' '));
+        }
+        
+        createResizeHandles(el);
+        showProperties(el);
+      }
+      
+      function endResize() {
+        document.removeEventListener('mousemove', doResize);
+        document.removeEventListener('mouseup', endResize);
+        document.removeEventListener('touchmove', doResize);
+        document.removeEventListener('touchend', endResize);
+        updateSpriteSource();
+      }
+      
+      handle.addEventListener('mousedown', startResize);
+      handle.addEventListener('touchstart', startResize, { passive: false });
+    }
+    
+    // === PROPERTIES PANEL ===
+    function showProperties(el) {
+      const panel = document.getElementById('properties-panel');
+      const tag = el.tagName.toLowerCase();
+      
+      let html = `
+        <div class="property-group">
+          <h3>${tag}${el.id ? ' #' + el.id : ''}</h3>
+        </div>
+      `;
+      
+      // Position properties based on element type
+      if (['rect', 'ellipse', 'circle', 'line', 'path', 'text'].includes(tag)) {
+        html += '<div class="property-group"><h3>Position</h3>';
+        
+        if (tag === 'rect') {
+          html += propertyRow('x', el.getAttribute('x') || '0');
+          html += propertyRow('y', el.getAttribute('y') || '0');
+          html += propertyRow('width', el.getAttribute('width') || '0');
+          html += propertyRow('height', el.getAttribute('height') || '0');
+          html += propertyRow('rx', el.getAttribute('rx') || '0');
+        } else if (tag === 'ellipse') {
+          html += propertyRow('cx', el.getAttribute('cx') || '0');
+          html += propertyRow('cy', el.getAttribute('cy') || '0');
+          html += propertyRow('rx', el.getAttribute('rx') || '0');
+          html += propertyRow('ry', el.getAttribute('ry') || '0');
+        } else if (tag === 'circle') {
+          html += propertyRow('cx', el.getAttribute('cx') || '0');
+          html += propertyRow('cy', el.getAttribute('cy') || '0');
+          html += propertyRow('r', el.getAttribute('r') || '0');
+        }
+        
+        html += '</div>';
+      }
+      
+      // Style properties
+      const fill = el.getAttribute('fill');
+      const stroke = el.getAttribute('stroke');
+      const strokeWidth = el.getAttribute('stroke-width');
+      const opacity = el.getAttribute('opacity');
+      
+      html += '<div class="property-group"><h3>Style</h3>';
+      if (fill !== null) html += colorRow('fill', fill);
+      if (stroke !== null) html += colorRow('stroke', stroke);
+      if (strokeWidth !== null) html += propertyRow('stroke-width', strokeWidth);
+      if (opacity !== null) html += propertyRow('opacity', opacity);
+      
+      // Color presets
+      html += `<div class="color-presets">
+        <span style="color:var(--wing-gray);font-size:0.75em;">Quick:</span>
+        ${colorPreset('#fce4d4', 'Light skin')}
+        ${colorPreset('#d4a574', 'Medium skin')}
+        ${colorPreset('#8d5524', 'Dark skin')}
+        ${colorPreset('#1a1a1a', 'Black')}
+        ${colorPreset('#ffffff', 'White')}
+        ${colorPreset('#e94560', 'Red')}
+        ${colorPreset('#4ecdc4', 'Teal')}
+        ${colorPreset('#ffd93d', 'Yellow')}
+      </div>`;
+      html += '</div>';
+      
+      // Transform
+      const transform = el.getAttribute('transform');
+      if (transform) {
+        html += '<div class="property-group"><h3>Transform</h3>';
+        html += `<div class="property-row"><label>value</label><input type="text" data-attr="transform" value="${transform}"></div>`;
+        html += '</div>';
+      }
+      
+      panel.innerHTML = html;
+      
+      // Add event listeners to inputs
+      panel.querySelectorAll('input').forEach(input => {
+        input.addEventListener('change', (e) => {
+          if (!isEditingEnabled()) return;
+          saveState();
+          const attr = e.target.dataset.attr;
+          selectedElement.setAttribute(attr, e.target.value);
+          updateSpriteSource();
+        });
+      });
+    }
+    
+    function propertyRow(attr, value) {
+      return `
+        <div class="property-row">
+          <label>${attr}</label>
+          <input type="text" data-attr="${attr}" value="${value}">
+        </div>
+      `;
+    }
+    
+    function colorRow(attr, value) {
+      // Convert named colors or values to hex for color picker
+      let hexValue = value;
+      if (value === 'none') hexValue = '#000000';
+      
+      return `
+        <div class="property-row">
+          <label>${attr}</label>
+          <input type="color" data-attr="${attr}" value="${hexValue}">
+          <input type="text" data-attr="${attr}" value="${value}" style="width: 80px;">
+        </div>
+      `;
+    }
+    
+    function colorPreset(color, title) {
+      return `<span class="color-swatch" style="background:${color};" title="${title}" data-ait-onclick="applyPresetColor('${color}')"></span>`;
+    }
+    
+    function applyPresetColor(color) {
+      if (!selectedElement) return;
+      saveState();
+      selectedElement.setAttribute('fill', color);
+      showProperties(selectedElement);
+      updateSpriteSource();
+    }
+    
+    // === DRAGGING (mouse + touch) ===
+    function setupDragging(el) {
+      const svg = document.querySelector('#svg-canvas svg');
+
+      el.addEventListener('mousedown', startDrag);
+      el.addEventListener('touchstart', startDrag, { passive: false });
+
+      function getEventCoords(e) {
+        if (e.touches && e.touches.length > 0) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      }
+
+      function startDrag(e) {
+        if (!isEditingEnabled()) return;
+        if (e.button && e.button !== 0) return;
+        e.preventDefault();
+
+        saveState();
+        isDragging = true;
+
+        const coords = getEventCoords(e);
+        const pt = svg.createSVGPoint();
+        pt.x = coords.x;
+        pt.y = coords.y;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        dragStart = { x: svgPt.x, y: svgPt.y };
+        elementStart = getElementPosition(el);
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchmove', drag, { passive: false });
+        document.addEventListener('touchend', endDrag);
+      }
+
+      function drag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        const coords = getEventCoords(e);
+        const pt = svg.createSVGPoint();
+        pt.x = coords.x;
+        pt.y = coords.y;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        const dx = svgPt.x - dragStart.x;
+        const dy = svgPt.y - dragStart.y;
+
+        setElementPosition(el, elementStart.x + dx, elementStart.y + dy);
+        showProperties(el); // Update property panel
+      }
+
+      function endDrag() {
+        isDragging = false;
+        justFinishedDragging = true; // Prevent click from re-selecting
+        document.removeEventListener('mousemove', drag);
+        document.removeEventListener('mouseup', endDrag);
+        document.removeEventListener('touchmove', drag);
+        document.removeEventListener('touchend', endDrag);
+        updateSpriteSource();
+      }
+    }
+
+    // Multi-element dragging - moves all selected elements together
+    function setupMultiDragging(el) {
+      const svg = document.querySelector('#svg-canvas svg');
+
+      // Remove any existing listeners to avoid duplicates
+      el.removeEventListener('mousedown', el._multiDragStart);
+      el.removeEventListener('touchstart', el._multiDragStart);
+
+      function getEventCoords(e) {
+        if (e.touches && e.touches.length > 0) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      }
+
+      function startMultiDrag(e) {
+        if (e.button && e.button !== 0) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        saveState();
+        isDragging = true;
+
+        const coords = getEventCoords(e);
+        const pt = svg.createSVGPoint();
+        pt.x = coords.x;
+        pt.y = coords.y;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        dragStart = { x: svgPt.x, y: svgPt.y };
+
+        // Store starting positions for all selected elements
+        elementStarts = selectedElements.map(sel => ({
+          el: sel,
+          pos: getElementPosition(sel)
+        }));
+
+        document.addEventListener('mousemove', multiDrag);
+        document.addEventListener('mouseup', endMultiDrag);
+        document.addEventListener('touchmove', multiDrag, { passive: false });
+        document.addEventListener('touchend', endMultiDrag);
+      }
+
+      function multiDrag(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+
+        const coords = getEventCoords(e);
+        const pt = svg.createSVGPoint();
+        pt.x = coords.x;
+        pt.y = coords.y;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        const dx = svgPt.x - dragStart.x;
+        const dy = svgPt.y - dragStart.y;
+
+        // Move all selected elements
+        elementStarts.forEach(({ el, pos }) => {
+          setElementPosition(el, pos.x + dx, pos.y + dy);
+        });
+      }
+
+      function endMultiDrag() {
+        isDragging = false;
+        justFinishedDragging = true; // Prevent click from clearing selection
+        document.removeEventListener('mousemove', multiDrag);
+        document.removeEventListener('mouseup', endMultiDrag);
+        document.removeEventListener('touchmove', multiDrag);
+        document.removeEventListener('touchend', endMultiDrag);
+        updateSpriteSource();
+      }
+
+      // Store reference for removal
+      el._multiDragStart = startMultiDrag;
+
+      el.addEventListener('mousedown', startMultiDrag);
+      el.addEventListener('touchstart', startMultiDrag, { passive: false });
+    }
+    
+    function getElementPosition(el) {
+      const tag = el.tagName.toLowerCase();
+      
+      // Check for existing transform
+      const transform = el.getAttribute('transform') || '';
+      const translateMatch = transform.match(/translate\(\s*([\d.-]+)[,\s]+([\d.-]+)\s*\)/);
+      const existingTx = translateMatch ? parseFloat(translateMatch[1]) : 0;
+      const existingTy = translateMatch ? parseFloat(translateMatch[2]) : 0;
+      
+      if (tag === 'rect') {
+        return { 
+          x: (parseFloat(el.getAttribute('x')) || 0) + existingTx, 
+          y: (parseFloat(el.getAttribute('y')) || 0) + existingTy 
+        };
+      } else if (tag === 'ellipse' || tag === 'circle') {
+        return { 
+          x: (parseFloat(el.getAttribute('cx')) || 0) + existingTx, 
+          y: (parseFloat(el.getAttribute('cy')) || 0) + existingTy 
+        };
+      } else if (tag === 'line') {
+        return { 
+          x: (parseFloat(el.getAttribute('x1')) || 0) + existingTx, 
+          y: (parseFloat(el.getAttribute('y1')) || 0) + existingTy 
+        };
+      } else if (tag === 'polygon' || tag === 'polyline') {
+        const points = el.getAttribute('points') || '';
+        const firstPoint = points.trim().split(/[\s,]+/);
+        return { 
+          x: (parseFloat(firstPoint[0]) || 0) + existingTx, 
+          y: (parseFloat(firstPoint[1]) || 0) + existingTy 
+        };
+      } else if (tag === 'path') {
+        // Parse first M command from d attribute
+        const d = el.getAttribute('d') || '';
+        const mMatch = d.match(/[Mm]\s*([\d.-]+)[,\s]*([\d.-]+)/);
+        if (mMatch) {
+          return { 
+            x: parseFloat(mMatch[1]) + existingTx, 
+            y: parseFloat(mMatch[2]) + existingTy 
+          };
+        }
+        return { x: existingTx, y: existingTy };
+      } else if (tag === 'g' || tag === 'text') {
+        return { x: existingTx, y: existingTy };
+      }
+      return { x: existingTx, y: existingTy };
+    }
+    
+    function setElementPosition(el, x, y) {
+      const tag = el.tagName.toLowerCase();
+      const oldPos = getElementPosition(el);
+      const dx = x - oldPos.x;
+      const dy = y - oldPos.y;
+      
+      if (tag === 'rect') {
+        el.setAttribute('x', (parseFloat(el.getAttribute('x') || 0) + dx).toFixed(1));
+        el.setAttribute('y', (parseFloat(el.getAttribute('y') || 0) + dy).toFixed(1));
+      } else if (tag === 'ellipse' || tag === 'circle') {
+        el.setAttribute('cx', (parseFloat(el.getAttribute('cx') || 0) + dx).toFixed(1));
+        el.setAttribute('cy', (parseFloat(el.getAttribute('cy') || 0) + dy).toFixed(1));
+      } else if (tag === 'line') {
+        el.setAttribute('x1', (parseFloat(el.getAttribute('x1') || 0) + dx).toFixed(1));
+        el.setAttribute('y1', (parseFloat(el.getAttribute('y1') || 0) + dy).toFixed(1));
+        el.setAttribute('x2', (parseFloat(el.getAttribute('x2') || 0) + dx).toFixed(1));
+        el.setAttribute('y2', (parseFloat(el.getAttribute('y2') || 0) + dy).toFixed(1));
+      } else if (tag === 'polygon' || tag === 'polyline') {
+        // Move all points
+        const points = el.getAttribute('points') || '';
+        const coords = points.trim().split(/[\s,]+/).map(parseFloat);
+        const newCoords = [];
+        for (let i = 0; i < coords.length; i += 2) {
+          newCoords.push((coords[i] + dx).toFixed(1));
+          newCoords.push((coords[i + 1] + dy).toFixed(1));
+        }
+        el.setAttribute('points', newCoords.join(' '));
+      } else if (tag === 'path') {
+        // Move path by updating transform
+        const transform = el.getAttribute('transform') || '';
+        const translateMatch = transform.match(/translate\(\s*([\d.-]+)[,\s]+([\d.-]+)\s*\)/);
+        const existingTx = translateMatch ? parseFloat(translateMatch[1]) : 0;
+        const existingTy = translateMatch ? parseFloat(translateMatch[2]) : 0;
+        const newTransform = transform.replace(/translate\([^)]*\)/, '').trim();
+        el.setAttribute('transform', `translate(${(existingTx + dx).toFixed(1)}, ${(existingTy + dy).toFixed(1)}) ${newTransform}`.trim());
+      } else {
+        // For groups, text, and other elements - use transform
+        const transform = el.getAttribute('transform') || '';
+        const translateMatch = transform.match(/translate\(\s*([\d.-]+)[,\s]+([\d.-]+)\s*\)/);
+        const existingTx = translateMatch ? parseFloat(translateMatch[1]) : 0;
+        const existingTy = translateMatch ? parseFloat(translateMatch[2]) : 0;
+        const newTransform = transform.replace(/translate\([^)]*\)/, '').trim();
+        el.setAttribute('transform', `translate(${(existingTx + dx).toFixed(1)}, ${(existingTy + dy).toFixed(1)}) ${newTransform}`.trim());
+      }
+    }
+    
+    // === UNDO/REDO ===
+    function saveState() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+      
+      undoStack.push(svg.outerHTML);
+      redoStack = []; // Clear redo on new action
+      
+      if (undoStack.length > 50) undoStack.shift(); // Limit history
+      
+      updateUndoButtons();
+    }
+    
+    function undo() {
+      if (undoStack.length === 0) return;
+      
+      const svg = document.querySelector('#svg-canvas svg');
+      redoStack.push(svg.outerHTML);
+      
+      const previousState = undoStack.pop();
+      document.getElementById('svg-canvas').innerHTML = previousState;
+      
+      // Re-setup event listeners
+      renderSpriteFromCurrent();
+      buildElementTree();
+      clearSelection();
+      updateSpriteSource();
+      updateUndoButtons();
+      updateStatus('Undo');
+    }
+    
+    function redo() {
+      if (redoStack.length === 0) return;
+      
+      const svg = document.querySelector('#svg-canvas svg');
+      undoStack.push(svg.outerHTML);
+      
+      const nextState = redoStack.pop();
+      document.getElementById('svg-canvas').innerHTML = nextState;
+      
+      renderSpriteFromCurrent();
+      buildElementTree();
+      clearSelection();
+      updateSpriteSource();
+      updateUndoButtons();
+      updateStatus('Redo');
+    }
+    
+    function renderSpriteFromCurrent() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      svg.querySelectorAll('*').forEach(el => {
+        if (el.tagName !== 'g' && el.tagName !== 'svg') {
+          el.style.cursor = 'pointer';
+          el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectElement(el);
+          });
+        }
+      });
+
+      // Add click handler on SVG background for deselection
+      svg.addEventListener('click', (e) => {
+        if (e.target === svg) {
+          clearSelection();
+        }
+      });
+    }
+    
+    function updateUndoButtons() {
+      document.getElementById('btn-undo').disabled = undoStack.length === 0;
+      document.getElementById('btn-redo').disabled = redoStack.length === 0;
+      document.getElementById('status-right').textContent = 
+        `Undo: ${undoStack.length} | Redo: ${redoStack.length}`;
+    }
+    
+    function resetHistory() {
+      undoStack = [];
+      redoStack = [];
+      updateUndoButtons();
+    }
+    
+    // === SAVE ===
+    function updateSpriteSource() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      // Restore original size
+      const clone = svg.cloneNode(true);
+      clone.setAttribute('width', '100');
+      clone.setAttribute('height', '150');
+      clone.querySelectorAll('.selected-element').forEach(el => {
+        el.classList.remove('selected-element');
+      });
+
+      currentSprite = clone.outerHTML;
+    }
+    
+    async function saveSprite() {
+      // Handle background saves
+      if (currentEditMode === 'background') {
+        return saveBackgroundAsset();
+      }
+
+      // Handle prop saves
+      if (currentEditMode === 'prop') {
+        return savePropAsset();
+      }
+
+      if (!currentSpriteName || !currentSprite) {
+        updateStatus('No sprite to save');
+        return;
+      }
+
+      // Embed meta in SVG before saving (for front variant)
+      const variant = currentVariant || 'front';
+      let svgToSave = currentSprite;
+      if (variant === 'front' && currentMeta) {
+        svgToSave = embedMetaInSvg(currentSprite, currentMeta);
+        currentSprite = svgToSave; // Update local state too
+      }
+
+      // Try to save via API
+      try {
+        const backend = await requireBackend();
+
+        if (variant === 'front') {
+          // Use the main sprite endpoint for front variant.
+          await backend.saveSprite(currentSpriteName, svgToSave, currentMeta || {});
+        } else {
+          // Use the variant-specific endpoint for other variants.
+          await backend.saveSpriteVariant(currentSpriteName, variant, svgToSave);
+        }
+
+        updateStatus(`Saved: ${currentSpriteName}/${variant}`);
+        showSaveSuccess();
+        // Recapture face values after save so manual edits become the new baseline
+        captureOriginalFaceValues();
+        // Update editable state to match saved state
+        const svg = document.querySelector('#svg-canvas svg');
+        if (svg) editableState = svg.cloneNode(true);
+        return;
+      } catch (err) {
+        console.warn('API save error, falling back to download:', err);
+        showSaveError();
+      }
+
+      // Fallback: Download as file
+      const blob = new Blob([currentSprite], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentSpriteName}_${currentVariant}.svg`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      updateStatus(`Saved: ${currentSpriteName} (downloaded - API unavailable)`);
+    }
+
+    function showSaveSuccess() {
+      const btn = document.getElementById('btn-save');
+      btn.classList.add('save-success');
+      btn.textContent = '✓ Saved';
+      setTimeout(() => {
+        btn.classList.remove('save-success');
+        btn.textContent = '💾 Save';
+      }, 1500);
+    }
+
+    function showSaveError() {
+      const btn = document.getElementById('btn-save');
+      btn.classList.add('save-error');
+      btn.textContent = '✗ Error';
+      setTimeout(() => {
+        btn.classList.remove('save-error');
+        btn.textContent = '💾 Save';
+      }, 2000);
+    }
+
+    async function saveBackgroundAsset() {
+      if (!currentBackgroundName || !currentSprite) {
+        updateStatus('No background to save');
+        return;
+      }
+
+      try {
+        const backend = await requireBackend();
+        await backend.saveBackground(currentBackgroundName, currentBackgroundOrientation, currentSprite);
+        updateStatus(`Saved background: ${currentBackgroundName}/${currentBackgroundOrientation}`);
+        showSaveSuccess();
+        // Refresh background list to update orientations
+        await loadBackgrounds();
+      } catch (err) {
+        console.error('Background save error:', err);
+        updateStatus('Error saving background');
+        showSaveError();
+      }
+    }
+    
+    
+    // === UTILITY ===
+    function updateStatus(msg) {
+      document.getElementById('status-left').textContent = msg;
+    }
+    
+    // === KEYBOARD SHORTCUTS ===
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
+        } else if (e.key === 'y') {
+          e.preventDefault();
+          redo();
+        } else if (e.key === 's') {
+          e.preventDefault();
+          saveSprite();
+        } else if (e.key === 'd') {
+          e.preventDefault();
+          duplicateSelected();
+        }
+      }
+      
+      // Delete selected element
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedElement && document.activeElement.tagName !== 'INPUT') {
+          e.preventDefault();
+          deleteSelected();
+        }
+      }
+    });
+    
+    function deleteSelected() {
+      if (!selectedElement) {
+        updateStatus('Nothing selected to delete');
+        return;
+      }
+      saveState();
+      selectedElement.remove();
+      clearSelection();
+      buildElementTree();
+      updateSpriteSource();
+      updateStatus('Element deleted');
+    }
+    
+    // === RANDOM CHARACTER GENERATOR ===
+    const SKIN_TONES = ['#fce4d4', '#f5d0b5', '#d4a574', '#c68642', '#8d5524', '#5c3a21'];
+    const HAIR_COLORS = ['#1a1a1a', '#2d2d2d', '#4a3728', '#8b4513', '#d4a574', '#ffd700', '#ff6b35', '#e94560', '#4ecdc4', '#9b59b6'];
+    const CLOTHES_COLORS = ['#e94560', '#4ecdc4', '#ffd93d', '#6c5ce7', '#00b894', '#fd79a8', '#0984e3', '#e17055', '#636e72', '#2d3436'];
+    const BODY_TYPES = ['slim', 'average', 'wide'];
+    const HAIR_STYLES = ['short', 'medium', 'long', 'bald', 'spiky', 'ponytail'];
+    
+    function randomChoice(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+    
+    function randomRange(min, max) {
+      return min + Math.random() * (max - min);
+    }
+    
+    function generateRandomCharacter() {
+      const skin = randomChoice(SKIN_TONES);
+      const hair = randomChoice(HAIR_COLORS);
+      const clothes = randomChoice(CLOTHES_COLORS);
+      const bodyType = randomChoice(BODY_TYPES);
+      const hairStyle = randomChoice(HAIR_STYLES);
+      const isFemale = Math.random() > 0.5;
+      
+      // Body width based on type
+      const bodyWidth = bodyType === 'slim' ? 15 : bodyType === 'average' ? 20 : 25;
+      
+      // Generate SVG
+      let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Body -->`;
+      
+      if (isFemale) {
+        // Feminine body shape
+        svg += `
+    <path d="M${50-bodyWidth} 65 Q${50-bodyWidth-5} 80 ${50-bodyWidth+2} 95 Q${50-bodyWidth-2} 110 ${50-bodyWidth+5} 130 L${50-bodyWidth+8} 130 Q50 115 ${50+bodyWidth-8} 130 L${50+bodyWidth-5} 130 Q${50+bodyWidth+2} 110 ${50+bodyWidth-2} 95 Q${50+bodyWidth+5} 80 ${50+bodyWidth} 65 Q${50+10} 60 50 60 Q${50-10} 60 ${50-bodyWidth} 65" fill="${clothes}"/>`;
+      } else {
+        // Masculine body shape  
+        svg += `
+    <rect x="${50-bodyWidth}" y="62" width="${bodyWidth*2}" height="55" rx="3" fill="${clothes}"/>`;
+      }
+      
+      svg += `
+    <!-- Arms -->
+    <ellipse cx="${50-bodyWidth-7}" cy="82" rx="5" ry="14" fill="${skin}"/>
+    <ellipse cx="${50+bodyWidth+7}" cy="82" rx="5" ry="14" fill="${skin}"/>
+    <!-- Hands -->
+    <ellipse cx="${50-bodyWidth-7}" cy="98" rx="4" ry="3" fill="${skin}"/>
+    <ellipse cx="${50+bodyWidth+7}" cy="98" rx="4" ry="3" fill="${skin}"/>
+    <!-- Legs -->
+    <ellipse cx="43" cy="138" rx="5" ry="10" fill="${skin}"/>
+    <ellipse cx="57" cy="138" rx="5" ry="10" fill="${skin}"/>
+  </g>
+  <g id="head-top">`;
+      
+      // Hair back layer
+      if (hairStyle !== 'bald') {
+        svg += `
+    <!-- Hair back -->
+    <ellipse cx="50" cy="36" rx="22" ry="24" fill="${hair}"/>`;
+        
+        // Hair style variations
+        if (hairStyle === 'long' || hairStyle === 'ponytail') {
+          svg += `
+    <path d="M28 36 Q24 50 26 75 Q28 90 32 95" stroke="${hair}" stroke-width="10" fill="none" stroke-linecap="round"/>
+    <path d="M72 36 Q76 50 74 75 Q72 90 68 95" stroke="${hair}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+        } else if (hairStyle === 'medium') {
+          svg += `
+    <path d="M28 36 Q24 50 28 65" stroke="${hair}" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M72 36 Q76 50 72 65" stroke="${hair}" stroke-width="8" fill="none" stroke-linecap="round"/>`;
+        } else if (hairStyle === 'spiky') {
+          svg += `
+    <path d="M35 20 L38 12 L42 22" fill="${hair}"/>
+    <path d="M45 18 L50 8 L55 18" fill="${hair}"/>
+    <path d="M58 20 L62 12 L65 22" fill="${hair}"/>`;
+        }
+        
+        if (hairStyle === 'ponytail') {
+          svg += `
+    <ellipse cx="50" cy="18" rx="8" ry="6" fill="${hair}"/>
+    <path d="M50 24 Q55 40 50 60" stroke="${hair}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+        }
+      }
+      
+      svg += `
+    <!-- Face -->
+    <ellipse cx="50" cy="42" rx="16" ry="18" fill="${skin}"/>
+    <!-- Blush -->
+    <ellipse cx="38" cy="46" rx="3" ry="2" fill="#ffb6b6" opacity="0.5"/>
+    <ellipse cx="62" cy="46" rx="3" ry="2" fill="#ffb6b6" opacity="0.5"/>
+    <!-- Eyes -->
+    <ellipse id="eye-left-white" cx="42" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="58" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#2d2d2d"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#2d2d2d"/>
+    <!-- Eye highlights -->
+    <circle id="eye-left-highlight" cx="41" cy="41" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="57" cy="41" r="1" fill="#fff" opacity="0"/>
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M37 36 Q42 34 47 36" stroke="${hair}" stroke-width="1.5" fill="none"/>
+    <path id="brow-right" d="M53 36 Q58 34 63 36" stroke="${hair}" stroke-width="1.5" fill="none"/>
+    <!-- Nose -->
+    <ellipse cx="50" cy="48" rx="2" ry="2" fill="${adjustColor(skin, -20)}"/>
+  </g>
+  <g id="head-bottom">
+    <!-- Mouth -->
+    <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
+    <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
+  </g>
+</svg>`;
+      
+      return svg;
+    }
+    
+    function adjustColor(hex, amount) {
+      // Simple brightness adjustment
+      const num = parseInt(hex.slice(1), 16);
+      const r = Math.max(0, Math.min(255, (num >> 16) + amount));
+      const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + amount));
+      const b = Math.max(0, Math.min(255, (num & 0xff) + amount));
+      return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+    }
+    
+    function createRandomCharacter() {
+      const svg = generateRandomCharacter();
+      currentSprite = svg;
+      currentSpriteName = 'random-' + Date.now();
+      
+      document.querySelectorAll('.sprite-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      renderSprite();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      updateStatus('Generated random character');
+    }
+    
+    // === PHOTO SPRITE ===
+    let uploadedImage = null;
+    let faceData = null;
+    let faceLandmarks = null;
+    let faceApiLoaded = false;
+    
+    let bgRemovalReady = false;
+    let processedImageBlob = null;
+    
+    function bgLog(msg) {
+      const log = document.getElementById('bg-log');
+      const status = document.getElementById('bg-status');
+      log.style.display = 'block';
+      document.getElementById('copy-log-btn').style.display = 'inline-block';
+      log.value += `[${new Date().toLocaleTimeString()}] ${msg}\n`;
+      log.scrollTop = log.scrollHeight;
+      status.textContent = msg;
+    }
+    
+    let bgRemovalPipeline = null;
+    
+    // Keep only the largest connected component (flood fill)
+    function keepLargestComponent(mask, width, height) {
+      const visited = new Uint8Array(mask.length);
+      const components = [];
+      
+      // Find all connected components using flood fill
+      for (let i = 0; i < mask.length; i++) {
+        if (mask[i] > 128 && !visited[i]) {
+          const component = [];
+          const stack = [i];
+          
+          while (stack.length > 0) {
+            const idx = stack.pop();
+            if (visited[idx] || mask[idx] <= 128) continue;
+            
+            visited[idx] = 1;
+            component.push(idx);
+            
+            const x = idx % width;
+            const y = Math.floor(idx / width);
+            
+            // 4-connected neighbors
+            if (x > 0) stack.push(idx - 1);
+            if (x < width - 1) stack.push(idx + 1);
+            if (y > 0) stack.push(idx - width);
+            if (y < height - 1) stack.push(idx + width);
+          }
+          
+          if (component.length > 0) {
+            components.push(component);
+          }
+        }
+      }
+      
+      // Find largest component
+      let largest = [];
+      for (const comp of components) {
+        if (comp.length > largest.length) largest = comp;
+      }
+      
+      // Create new mask with only largest component
+      const result = new Uint8Array(mask.length);
+      for (const idx of largest) {
+        result[idx] = mask[idx];
+      }
+      
+      return result;
+    }
+    
+    // Create smooth head-shaped mask using face landmarks
+    function createSmoothHeadMask(width, height, landmarks, scaleX, scaleY, edgeBlur = 20) {
+      if (!landmarks || !landmarks.jawline) return null;
+      
+      const mask = new Uint8Array(width * height);
+      
+      // Get key points scaled to image coords
+      const jaw = landmarks.jawline.map(p => ({ x: p.x * scaleX, y: p.y * scaleY }));
+      
+      // Find chin (bottom of jaw)
+      const chinY = Math.max(...jaw.map(p => p.y));
+      
+      // Use eyes for better horizontal centering (jaws stick out too much)
+      let centerX, faceWidth;
+      if (landmarks.leftEye && landmarks.rightEye) {
+        const leftEyeX = landmarks.leftEye.reduce((s, p) => s + p.x * scaleX, 0) / landmarks.leftEye.length;
+        const rightEyeX = landmarks.rightEye.reduce((s, p) => s + p.x * scaleX, 0) / landmarks.rightEye.length;
+        centerX = (leftEyeX + rightEyeX) / 2;
+        faceWidth = Math.abs(rightEyeX - leftEyeX) * 2.8; // Eyes are ~35% of face width
+      } else {
+        const minX = Math.min(...jaw.map(p => p.x));
+        const maxX = Math.max(...jaw.map(p => p.x));
+        centerX = (minX + maxX) / 2;
+        faceWidth = maxX - minX;
+      }
+      
+      // Estimate forehead (above eyebrows) - extend MORE for hair
+      const browY = landmarks.leftEyebrow ? 
+        Math.min(...landmarks.leftEyebrow.map(p => p.y * scaleY)) : 
+        jaw[0].y;
+      const faceHeight = chinY - browY;
+      const foreheadY = browY - faceHeight * 0.75; // More room for hair (was 0.5)
+      
+      // Create ellipse parameters
+      const centerY = (foreheadY + chinY) / 2;
+      const radiusX = faceWidth / 2 * 1.1; // Based on eye-derived width
+      const radiusY = (chinY - foreheadY) / 2 * 1.02;
+      
+      // Fill ellipse with soft edges
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const idx = y * width + x;
+          
+          // Distance from ellipse edge (negative = inside, positive = outside)
+          const dx = (x - centerX) / radiusX;
+          const dy = (y - centerY) / radiusY;
+          const dist = Math.sqrt(dx * dx + dy * dy) - 1; // -1 to 0 inside, 0+ outside
+          
+          if (dist < 0) {
+            // Inside ellipse
+            mask[idx] = 255;
+          } else if (dist < edgeBlur / Math.min(radiusX, radiusY)) {
+            // Soft edge
+            const alpha = 1 - (dist * Math.min(radiusX, radiusY) / edgeBlur);
+            mask[idx] = Math.round(255 * Math.max(0, alpha));
+          }
+        }
+      }
+      
+      return mask;
+    }
+    
+    // Blend segmentation mask with smooth head shape
+    function blendWithHeadShape(segMask, headMask, width, height) {
+      if (!headMask) return segMask;
+      
+      const result = new Uint8Array(segMask.length);
+      
+      for (let i = 0; i < segMask.length; i++) {
+        // Use intersection: pixel must be in BOTH masks
+        // But weight toward the smooth head shape
+        const seg = segMask[i];
+        const head = headMask[i];
+        
+        // Blend: mostly follow head shape, but use seg to trim where needed
+        result[i] = Math.min(seg, head);
+      }
+      
+      return result;
+    }
+    
+    // Feather mask edges using gaussian-like blur on the alpha channel
+    function featherMaskEdges(mask, width, height, radius = 5) {
+      // First pass: horizontal blur
+      const temp = new Float32Array(mask.length);
+      const result = new Uint8Array(mask.length);
+      
+      // Create gaussian-ish weights
+      const weights = [];
+      let weightSum = 0;
+      for (let i = -radius; i <= radius; i++) {
+        const w = Math.exp(-(i * i) / (2 * (radius / 2) * (radius / 2)));
+        weights.push(w);
+        weightSum += w;
+      }
+      // Normalize
+      for (let i = 0; i < weights.length; i++) weights[i] /= weightSum;
+      
+      // Horizontal pass
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          let sum = 0;
+          for (let i = -radius; i <= radius; i++) {
+            const nx = Math.max(0, Math.min(width - 1, x + i));
+            sum += mask[y * width + nx] * weights[i + radius];
+          }
+          temp[y * width + x] = sum;
+        }
+      }
+      
+      // Vertical pass
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          let sum = 0;
+          for (let i = -radius; i <= radius; i++) {
+            const ny = Math.max(0, Math.min(height - 1, y + i));
+            sum += temp[ny * width + x] * weights[i + radius];
+          }
+          result[y * width + x] = Math.round(Math.max(0, Math.min(255, sum)));
+        }
+      }
+      
+      return result;
+    }
+    
+    async function removeBackground(imageSource) {
+      const log = document.getElementById('bg-log');
+      log.value = ''; // Clear log
+      
+      bgLog('Initializing background removal with Transformers.js...');
+      
+      try {
+        // Dynamic import Transformers.js
+        if (!bgRemovalPipeline) {
+          bgLog('Loading Transformers.js library...');
+          const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1');
+          
+          // Configure for browser
+          env.allowLocalModels = false;
+          env.useBrowserCache = true;
+          
+          bgLog('Loading segmentation model (first time ~10MB)...');
+          bgRemovalPipeline = await pipeline('image-segmentation', 'Xenova/segformer_b2_clothes', {
+            progress_callback: (progress) => {
+              if (progress.status === 'downloading') {
+                const pct = Math.round((progress.loaded / progress.total) * 100) || 0;
+                bgLog(`Downloading: ${progress.file} ${pct}%`);
+              }
+            }
+          });
+          bgLog('Model loaded!');
+        }
+        
+        bgLog('Processing image...');
+        
+        // Convert blob to data URL for the model
+        const dataUrl = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(imageSource);
+        });
+        
+        // Run segmentation
+        const result = await bgRemovalPipeline(dataUrl);
+        bgLog(`Segmentation complete, found ${result.length} segments`);
+        
+        // Log all segments found
+        result.forEach((r, i) => bgLog(`Segment ${i}: ${r.label} (score: ${r.score?.toFixed(2) || 'N/A'})`));
+        
+        // Find head segments only (face + hair, no clothes/body)
+        const headLabels = ['face', 'hair', 'head', 'skin', 'neck'];
+        const foregroundSegments = result.filter(r => {
+          const label = r.label.toLowerCase();
+          return headLabels.some(h => label.includes(h));
+        });
+        
+        bgLog(`Found ${foregroundSegments.length} foreground segments: ${foregroundSegments.map(s => s.label).join(', ')}`);
+        
+        if (foregroundSegments.length === 0) {
+          throw new Error('No foreground segments found');
+        }
+        
+        bgLog('Creating transparent image...');
+        
+        // Load original image
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = () => reject(new Error('Failed to load original image'));
+          img.src = dataUrl;
+        });
+        bgLog(`Original image: ${img.width}x${img.height}`);
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        
+        // Create combined mask from all foreground segments
+        const combinedMask = new Uint8Array(img.width * img.height);
+        
+        for (const segment of foregroundSegments) {
+          bgLog(`Processing mask for: ${segment.label}`);
+          
+          let segMaskData;
+          if (segment.mask && segment.mask.data) {
+            // RawImage format - has width, height, data
+            const rawMask = segment.mask;
+            bgLog(`  RawImage: ${rawMask.width}x${rawMask.height}, channels: ${rawMask.channels}`);
+            
+            // Resize mask to match image if needed
+            if (rawMask.width !== img.width || rawMask.height !== img.height) {
+              const tempCanvas = document.createElement('canvas');
+              tempCanvas.width = rawMask.width;
+              tempCanvas.height = rawMask.height;
+              const tempCtx = tempCanvas.getContext('2d');
+              const tempImageData = tempCtx.createImageData(rawMask.width, rawMask.height);
+              
+              // Copy mask data to image data (grayscale to RGBA)
+              for (let i = 0; i < rawMask.data.length; i++) {
+                tempImageData.data[i * 4] = rawMask.data[i];
+                tempImageData.data[i * 4 + 1] = rawMask.data[i];
+                tempImageData.data[i * 4 + 2] = rawMask.data[i];
+                tempImageData.data[i * 4 + 3] = 255;
+              }
+              tempCtx.putImageData(tempImageData, 0, 0);
+              
+              // Scale to image size
+              const scaleCanvas = document.createElement('canvas');
+              scaleCanvas.width = img.width;
+              scaleCanvas.height = img.height;
+              const scaleCtx = scaleCanvas.getContext('2d');
+              scaleCtx.drawImage(tempCanvas, 0, 0, img.width, img.height);
+              segMaskData = scaleCtx.getImageData(0, 0, img.width, img.height).data;
+            } else {
+              segMaskData = rawMask.data;
+            }
+          }
+          
+          // Combine masks (OR operation - if any mask says foreground, keep it)
+          if (segMaskData) {
+            const isRGBA = segMaskData.length === img.width * img.height * 4;
+            for (let i = 0; i < img.width * img.height; i++) {
+              const val = isRGBA ? segMaskData[i * 4] : segMaskData[i];
+              if (val > 128) { // Threshold
+                combinedMask[i] = 255;
+              }
+            }
+          }
+        }
+        
+        // Count non-zero pixels
+        let nonZero = combinedMask.filter(v => v > 0).length;
+        bgLog(`Combined mask: ${nonZero} foreground pixels (${(nonZero / combinedMask.length * 100).toFixed(1)}%)`);
+        
+        // Keep only largest connected component (removes floating islands)
+        bgLog('Removing disconnected regions...');
+        let processedMask = keepLargestComponent(combinedMask, img.width, img.height);
+        nonZero = processedMask.filter(v => v > 0).length;
+        bgLog(`After cleanup: ${nonZero} pixels (${(nonZero / processedMask.length * 100).toFixed(1)}%)`);
+        
+        // Create smooth head shape and blend with segmentation
+        if (faceLandmarks && faceLandmarks.jawline) {
+          bgLog('Creating smooth head shape...');
+          const scaleX = img.width / faceData.canvasWidth;
+          const scaleY = img.height / faceData.canvasHeight;
+          const headMask = createSmoothHeadMask(img.width, img.height, faceLandmarks, scaleX, scaleY, 30);
+          
+          if (headMask) {
+            bgLog('Blending with head shape...');
+            processedMask = blendWithHeadShape(processedMask, headMask, img.width, img.height);
+            nonZero = processedMask.filter(v => v > 0).length;
+            bgLog(`After shape blend: ${nonZero} pixels`);
+          }
+        }
+        
+        // Feather/smooth the mask edges to reduce jaggedness
+        // Use larger radius for high-res images (scale with image size)
+        const blurRadius = Math.max(5, Math.round(Math.min(img.width, img.height) / 150));
+        bgLog(`Smoothing mask edges (radius: ${blurRadius})...`);
+        const smoothedMask = featherMaskEdges(processedMask, img.width, img.height, blurRadius);
+        
+        // Apply smoothed mask as alpha
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        for (let i = 0; i < smoothedMask.length; i++) {
+          imageData.data[i * 4 + 3] = smoothedMask[i];
+        }
+        
+        ctx.putImageData(imageData, 0, 0);
+        
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        bgLog(`Success! Output: ${blob.size} bytes`);
+        
+        processedImageBlob = blob;
+        bgRemovalReady = true;
+        return blob;
+      } catch (e) {
+        bgLog(`ERROR: ${e.message}`);
+        bgLog(`Stack: ${e.stack}`);
+        console.error('Background removal failed:', e);
+        return null;
+      }
+    }
+    
+    async function loadFaceApiModels() {
+      if (faceApiLoaded) return true;
+      
+      document.getElementById('face-status').textContent = 'Loading face detection models...';
+      
+      try {
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL)
+        ]);
+        faceApiLoaded = true;
+        console.log('Face API models loaded');
+        return true;
+      } catch (e) {
+        console.error('Failed to load face-api models:', e);
+        document.getElementById('face-status').textContent = 'Model load failed, using manual mode';
+        return false;
+      }
+    }
+    
+    function openPhotoModal() {
+      document.getElementById('photo-modal').style.display = 'flex';
+      document.getElementById('photo-step-1').style.display = 'block';
+      document.getElementById('photo-step-2').style.display = 'none';
+      document.getElementById('photo-step-3').style.display = 'none';
+      document.getElementById('photo-preview-container').style.display = 'none';
+      stopTalkingAnim();
+    }
+    
+    function closePhotoModal() {
+      document.getElementById('photo-modal').style.display = 'none';
+      stopTalkingAnim();
+    }
+    
+    // Animation preview state
+    let animPreviewCtx = null;
+    let animInterval = null;
+    let processedFaceImage = null;
+    
+    function goToAnimationPreview() {
+      document.getElementById('photo-step-2').style.display = 'none';
+      document.getElementById('photo-step-3').style.display = 'block';
+      
+      // Store the current processed image for animation
+      processedFaceImage = uploadedImage;
+      
+      // Initialize animation canvas
+      const canvas = document.getElementById('anim-preview-canvas');
+      animPreviewCtx = canvas.getContext('2d');
+      
+      // Reset slider
+      document.getElementById('anim-mouth-slider').value = 0;
+      updateAnimPreview();
+    }
+    
+    function updateAnimPreview() {
+      const mouthOpen = parseInt(document.getElementById('anim-mouth-slider').value);
+      document.getElementById('anim-mouth-val').textContent = mouthOpen;
+      
+      if (!processedFaceImage || !faceLandmarks || !animPreviewCtx) return;
+      
+      renderJawPuppet(animPreviewCtx, processedFaceImage, faceLandmarks, faceData, mouthOpen);
+    }
+    
+    function renderJawPuppet(ctx, img, landmarks, faceBox, mouthOpen) {
+      const canvas = ctx.canvas;
+      
+      // Calculate image positioning (same as edit canvas)
+      const scaleX = img.width / faceBox.canvasWidth;
+      const scaleY = img.height / faceBox.canvasHeight;
+      const srcX = faceBox.x * scaleX;
+      const srcY = faceBox.y * scaleY;
+      const srcW = faceBox.width * scaleX;
+      const srcH = faceBox.height * scaleY;
+      
+      const maxW = 280, maxH = 350;
+      const aspectRatio = srcW / srcH;
+      let destW = maxW;
+      let destH = destW / aspectRatio;
+      if (destH > maxH) {
+        destH = maxH;
+        destW = destH * aspectRatio;
+      }
+      const destX = (canvas.width - destW) / 2;
+      const destY = (canvas.height - destH) / 2;
+      
+      // Scale landmarks to destination coordinates
+      const lmScale = destW / faceBox.width;
+      const scaledLandmarks = {
+        outerLips: landmarks.outerLips.map(p => ({
+          x: destX + (p.x - faceBox.x) * lmScale,
+          y: destY + (p.y - faceBox.y) * lmScale
+        }))
+      };
+      
+      // Pivot between lips
+      const topLip = scaledLandmarks.outerLips[3]; // Index 51 in full set = index 3 in outer lips
+      const bottomLip = scaledLandmarks.outerLips[9]; // Index 57 = index 9
+      const pivotY = (topLip.y + bottomLip.y) / 2;
+      
+      // Rotation angle
+      const angle = (mouthOpen / 100) * 12 * (Math.PI / 180);
+      
+      // Clear canvas
+      ctx.fillStyle = '#EDE8DF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw upper face (stays still)
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, canvas.width, pivotY);
+      ctx.clip();
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
+      ctx.restore();
+      
+      // Draw lower face (rotates)
+      ctx.save();
+      const pivotX = destX + destW / 2;
+      ctx.translate(pivotX, pivotY);
+      ctx.rotate(angle);
+      ctx.translate(-pivotX, -pivotY);
+      ctx.beginPath();
+      ctx.rect(0, pivotY - 5, canvas.width, canvas.height - pivotY + 10);
+      ctx.clip();
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
+      ctx.restore();
+      
+      // Draw mouth interior
+      if (mouthOpen > 10) {
+        const mouthCenterX = (scaledLandmarks.outerLips[0].x + scaledLandmarks.outerLips[6].x) / 2;
+        const mouthWidth = Math.abs(scaledLandmarks.outerLips[6].x - scaledLandmarks.outerLips[0].x) * 0.7;
+        const gapHeight = Math.sin(angle) * (destY + destH - pivotY) * 0.3;
+        
+        ctx.fillStyle = '#1a0505';
+        ctx.beginPath();
+        ctx.ellipse(mouthCenterX, pivotY + gapHeight / 2, mouthWidth / 2, Math.max(2, gapHeight / 2), 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    function testTalkingAnim() {
+      stopTalkingAnim();
+      let frame = 0;
+      const patterns = [0, 35, 15, 55, 20, 45, 10, 60, 25, 40, 5, 50];
+      animInterval = setInterval(() => {
+        const val = patterns[frame % patterns.length];
+        document.getElementById('anim-mouth-slider').value = val;
+        updateAnimPreview();
+        frame++;
+      }, 100);
+    }
+    
+    function stopTalkingAnim() {
+      if (animInterval) {
+        clearInterval(animInterval);
+        animInterval = null;
+      }
+    }
+    
+    let previewCanvasSize = { width: 300, height: 300 };
+    
+    async function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const img = new Image();
+      img.onload = async () => {
+        uploadedImage = img;
+        
+        // Show preview
+        const container = document.getElementById('photo-preview-container');
+        container.style.display = 'block';
+        
+        const canvas = document.getElementById('photo-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Scale to fit in 300x300 max, maintain aspect ratio
+        const maxSize = 300;
+        const scale = Math.min(maxSize / img.width, maxSize / img.height);
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        
+        previewCanvasSize = { width: canvas.width, height: canvas.height };
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        
+        // Try to load face-api and detect face
+        const modelsLoaded = await loadFaceApiModels();
+        
+        if (modelsLoaded) {
+          document.getElementById('face-status').textContent = 'Detecting face...';
+          
+          try {
+            // Detect face with landmarks
+            const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions())
+              .withFaceLandmarks(true);
+            
+            if (detection) {
+              const box = detection.detection.box;
+              const landmarks = detection.landmarks;
+              const positions = landmarks.positions;
+              
+              // Get key points for better head bounds
+              const jawline = positions.slice(0, 17);
+              const leftEyebrow = positions.slice(22, 27);
+              const rightEyebrow = positions.slice(17, 22);
+              
+              // Find bounds from landmarks
+              const allX = positions.map(p => p.x);
+              const allY = positions.map(p => p.y);
+              const minX = Math.min(...allX);
+              const maxX = Math.max(...allX);
+              const minY = Math.min(...allY); // Top of eyebrows
+              const maxY = Math.max(...allY); // Bottom of chin
+              
+              // Expand box: add 50% above eyebrows for forehead/hair, 15% below chin, 20% on sides
+              const faceHeight = maxY - minY;
+              const faceWidth = maxX - minX;
+              
+              const expandedX = Math.max(0, minX - faceWidth * 0.25);
+              const expandedY = Math.max(0, minY - faceHeight * 0.65); // More room for hair
+              const expandedW = Math.min(canvas.width - expandedX, faceWidth * 1.5);
+              const expandedH = Math.min(canvas.height - expandedY, faceHeight * 1.8);
+              
+              // Store expanded head bounding box
+              faceData = {
+                x: expandedX,
+                y: expandedY,
+                width: expandedW,
+                height: expandedH,
+                canvasWidth: canvas.width,
+                canvasHeight: canvas.height
+              };
+              
+              // Store landmark positions
+              faceLandmarks = {
+                // Jawline: 0-16
+                jawline: positions.slice(0, 17),
+                // Right eyebrow: 17-21
+                rightEyebrow: positions.slice(17, 22),
+                // Left eyebrow: 22-26
+                leftEyebrow: positions.slice(22, 27),
+                // Nose: 27-35
+                nose: positions.slice(27, 36),
+                // Right eye: 36-41
+                rightEye: positions.slice(36, 42),
+                // Left eye: 42-47
+                leftEye: positions.slice(42, 48),
+                // Outer lips: 48-59
+                outerLips: positions.slice(48, 60),
+                // Inner lips: 60-67
+                innerLips: positions.slice(60, 68)
+              };
+              
+              // Draw face box
+              ctx.strokeStyle = '#F5A623';
+              ctx.lineWidth = 2;
+              ctx.strokeRect(box.x, box.y, box.width, box.height);
+
+              // Draw eye points (cyan)
+              ctx.fillStyle = '#4ecdc4';
+              [...faceLandmarks.rightEye, ...faceLandmarks.leftEye].forEach(pt => {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+              });
+
+              // Draw mouth points (green)
+              ctx.fillStyle = '#2D8EC4';
+              faceLandmarks.outerLips.forEach(pt => {
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+              });
+              
+              // Draw jawline (yellow)
+              ctx.strokeStyle = '#ffd93d';
+              ctx.lineWidth = 2;
+              ctx.beginPath();
+              faceLandmarks.jawline.forEach((pt, i) => {
+                if (i === 0) ctx.moveTo(pt.x, pt.y);
+                else ctx.lineTo(pt.x, pt.y);
+              });
+              ctx.stroke();
+              
+              document.getElementById('face-status').textContent = '✓ Face detected! Eyes (cyan), mouth (green), jawline (yellow)';
+              
+            } else {
+              document.getElementById('face-status').textContent = 'No face detected. Using manual mode.';
+              setManualFaceData(canvas);
+            }
+          } catch (e) {
+            console.error('Face detection error:', e);
+            document.getElementById('face-status').textContent = 'Detection failed. Using manual mode.';
+            setManualFaceData(canvas);
+          }
+        } else {
+          setManualFaceData(canvas);
+        }
+        
+        // Show step 2
+        setTimeout(() => {
+          document.getElementById('photo-step-1').style.display = 'none';
+          document.getElementById('photo-step-2').style.display = 'block';
+          drawEditCanvas();
+        }, 1500);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    }
+    
+    function setManualFaceData(canvas) {
+      faceData = {
+        x: canvas.width * 0.2,
+        y: canvas.height * 0.05,
+        width: canvas.width * 0.6,
+        height: canvas.height * 0.7,
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height
+      };
+      faceLandmarks = null;
+    }
+    
+    function drawEditCanvas() {
+      if (!uploadedImage || !faceData) return;
+      
+      const canvas = document.getElementById('photo-edit-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Clear
+      ctx.fillStyle = '#EDE8DF';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Calculate source region from original image coordinates
+      const scaleX = uploadedImage.width / faceData.canvasWidth;
+      const scaleY = uploadedImage.height / faceData.canvasHeight;
+      
+      const srcX = faceData.x * scaleX;
+      const srcY = faceData.y * scaleY;
+      const srcW = faceData.width * scaleX;
+      const srcH = faceData.height * scaleY;
+      
+      // Draw face crop preview - larger and centered
+      const maxW = 250, maxH = 300;
+      const aspectRatio = srcW / srcH;
+      let destW = maxW;
+      let destH = destW / aspectRatio;
+      if (destH > maxH) {
+        destH = maxH;
+        destW = destH * aspectRatio;
+      }
+      const destX = (canvas.width - destW) / 2;
+      const destY = (canvas.height - destH) / 2 - 20;
+      
+      // Draw with rounded corners effect
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(destX, destY, destW, destH, 10);
+      ctx.clip();
+      ctx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, destX, destY, destW, destH);
+      ctx.restore();
+      
+      // Border around crop
+      ctx.strokeStyle = '#F5A623';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(destX, destY, destW, destH, 10);
+      ctx.stroke();
+      
+      // Label
+      ctx.fillStyle = '#888';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('This region will be used for your sprite', canvas.width/2, canvas.height - 20);
+    }
+    
+    function autoDetectFace() {
+      updateStatus('Re-detecting face...');
+      drawEditCanvas();
+    }
+    
+    async function startBackgroundRemoval() {
+      if (!uploadedImage) return;
+      
+      const btn = document.getElementById('btn-remove-bg');
+      btn.disabled = true;
+      btn.textContent = '⏳ Processing...';
+      
+      document.getElementById('bg-status').textContent = 'Loading background removal model (first time ~30MB)...';
+      
+      // Convert uploaded image to blob
+      const canvas = document.createElement('canvas');
+      canvas.width = uploadedImage.width;
+      canvas.height = uploadedImage.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(uploadedImage, 0, 0);
+      
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      
+      try {
+        const resultBlob = await removeBackground(blob);
+        
+        if (resultBlob) {
+          // Load the processed image
+          const processedImg = new Image();
+          processedImg.onload = () => {
+            uploadedImage = processedImg;
+            drawEditCanvas();
+            document.getElementById('bg-status').textContent = '✓ Background removed! Ready to generate.';
+            btn.textContent = '✓ BG Removed';
+            btn.style.background = 'var(--ocean-blue)';
+          };
+          processedImg.src = URL.createObjectURL(resultBlob);
+        } else {
+          btn.disabled = false;
+          btn.textContent = '🪄 Remove BG';
+          document.getElementById('bg-status').textContent = 'Failed - try again or skip';
+        }
+      } catch (e) {
+        console.error(e);
+        btn.disabled = false;
+        btn.textContent = '🪄 Remove BG';
+        document.getElementById('bg-status').textContent = 'Error: ' + e.message;
+      }
+    }
+    
+    function generatePhotoSprite() {
+      if (!uploadedImage) return;
+      
+      // Create face canvas
+      const faceCanvas = document.createElement('canvas');
+      faceCanvas.width = 200;
+      faceCanvas.height = 200;
+      const faceCtx = faceCanvas.getContext('2d');
+      
+      // Sample skin color from cheeks using landmarks if available
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = uploadedImage.width;
+      tempCanvas.height = uploadedImage.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(uploadedImage, 0, 0);
+      
+      let skinColor = 'rgb(220, 180, 160)'; // Default fallback
+      const scaleX = uploadedImage.width / faceData.canvasWidth;
+      const scaleY = uploadedImage.height / faceData.canvasHeight;
+      
+      if (faceLandmarks && faceLandmarks.nose && faceLandmarks.nose.length > 0) {
+        // Sample from cheek areas (left and right of nose)
+        const noseX = faceLandmarks.nose[0].x * scaleX;
+        const noseY = faceLandmarks.nose[0].y * scaleY;
+        const samples = [
+          [noseX - 30 * scaleX, noseY], // Left cheek
+          [noseX + 30 * scaleX, noseY], // Right cheek
+        ];
+        let r = 0, g = 0, b = 0, count = 0;
+        for (const [sx, sy] of samples) {
+          if (sx > 0 && sy > 0 && sx < uploadedImage.width && sy < uploadedImage.height) {
+            const pixel = tempCtx.getImageData(Math.floor(sx), Math.floor(sy), 1, 1).data;
+            // Only use if it looks like skin (not too dark, not too saturated)
+            if (pixel[0] > 100 && pixel[1] > 60 && pixel[2] > 50) {
+              r += pixel[0]; g += pixel[1]; b += pixel[2]; count++;
+            }
+          }
+        }
+        if (count > 0) {
+          skinColor = `rgb(${Math.round(r/count)}, ${Math.round(g/count)}, ${Math.round(b/count)})`;
+        }
+      } else {
+        // Fallback: sample from face center
+        const sampleX = uploadedImage.width * 0.5;
+        const sampleY = uploadedImage.height * 0.35;
+        const pixel = tempCtx.getImageData(Math.floor(sampleX), Math.floor(sampleY), 1, 1).data;
+        if (pixel[0] > 80) { // Basic sanity check
+          skinColor = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+        }
+      }
+      
+      // Calculate source region from faceData (reusing scaleX/scaleY from above)
+      const srcX = faceData.x * scaleX;
+      const srcY = faceData.y * scaleY;
+      const srcW = faceData.width * scaleX;
+      const srcH = faceData.height * scaleY;
+      
+      // Draw face filling canvas
+      faceCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH, 0, 0, 200, 200);
+      const faceDataUrl = faceCanvas.toDataURL('image/png');
+      
+      // Calculate jaw pivot Y in source coordinates (between lips)
+      let pivotRelY = 0.65; // Default relative position
+      if (faceLandmarks && faceLandmarks.outerLips && faceLandmarks.outerLips.length >= 12) {
+        const topLip = faceLandmarks.outerLips[3]; // Top center (index 51)
+        const bottomLip = faceLandmarks.outerLips[9]; // Bottom center (index 57)
+        const pivotY = (topLip.y + bottomLip.y) / 2;
+        pivotRelY = (pivotY - faceData.y) / faceData.height;
+      }
+      
+      // Convert landmarks to normalized coordinates (0-1 range within face bounds)
+      // These will be used for warp mesh emotions in the player
+      const normalizedLandmarks = {};
+      if (faceLandmarks) {
+        for (const [key, points] of Object.entries(faceLandmarks)) {
+          normalizedLandmarks[key] = points.map(p => ({
+            x: (p.x - faceData.x) / faceData.width,
+            y: (p.y - faceData.y) / faceData.height
+          }));
+        }
+      }
+      
+      // Create upper face canvas (above pivot)
+      const upperCanvas = document.createElement('canvas');
+      upperCanvas.width = 200;
+      const upperHeight = Math.round(200 * pivotRelY);
+      upperCanvas.height = upperHeight;
+      const upperCtx = upperCanvas.getContext('2d');
+      upperCtx.drawImage(uploadedImage, srcX, srcY, srcW, srcH * pivotRelY, 0, 0, 200, upperHeight);
+      const upperDataUrl = upperCanvas.toDataURL('image/png');
+      
+      // Create lower face canvas (below pivot)
+      const lowerCanvas = document.createElement('canvas');
+      lowerCanvas.width = 200;
+      const lowerHeight = 200 - upperHeight;
+      lowerCanvas.height = lowerHeight;
+      const lowerCtx = lowerCanvas.getContext('2d');
+      lowerCtx.drawImage(uploadedImage, srcX, srcY + srcH * pivotRelY, srcW, srcH * (1 - pivotRelY), 0, 0, 200, lowerHeight);
+      const lowerDataUrl = lowerCanvas.toDataURL('image/png');
+      
+      // Calculate dimensions in sprite coordinates
+      const spriteUpperHeight = Math.round(80 * pivotRelY);
+      const spriteLowerHeight = 80 - spriteUpperHeight;
+      
+      // Encode landmark data for warp mesh emotions (no image - use the embedded ones)
+      const animData = JSON.stringify({
+        landmarks: normalizedLandmarks,
+        pivotRelY: pivotRelY
+      }).replace(/'/g, '&#39;');
+      
+      // Sprite with split face for jaw puppet + landmarks for warp emotions
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150" data-photo-sprite="true" data-pivot-y="${spriteUpperHeight}" data-anim='${animData}'>
+  <g id="body">
+    <!-- Body -->
+    <ellipse cx="50" cy="108" rx="15" ry="30" fill="#4ecdc4"/>
+    <!-- Arms -->
+    <ellipse cx="33" cy="103" rx="4" ry="11" fill="${skinColor}"/>
+    <ellipse cx="67" cy="103" rx="4" ry="11" fill="${skinColor}"/>
+    <!-- Hands -->
+    <circle cx="33" cy="116" r="3" fill="${skinColor}"/>
+    <circle cx="67" cy="116" r="3" fill="${skinColor}"/>
+    <!-- Legs -->
+    <ellipse cx="43" cy="140" rx="4" ry="9" fill="${skinColor}"/>
+    <ellipse cx="57" cy="140" rx="4" ry="9" fill="${skinColor}"/>
+  </g>
+  <g id="head-top">
+    <!-- Upper face (fixed) -->
+    <image id="face-upper" href="${upperDataUrl}" x="5" y="0" width="90" height="${spriteUpperHeight}" preserveAspectRatio="xMidYMid meet"/>
+  </g>
+  <g id="head-bottom" style="transform-origin: 50px ${spriteUpperHeight}px;">
+    <!-- Lower face (rotates for talking) -->
+    <image id="face-lower" href="${lowerDataUrl}" x="5" y="${spriteUpperHeight}" width="90" height="${spriteLowerHeight}" preserveAspectRatio="xMidYMid meet"/>
+    <!-- Mouth hole (appears when open) -->
+    <ellipse id="mouth-open" cx="50" cy="${spriteUpperHeight + 2}" rx="8" ry="1" fill="#2a0a0a" opacity="0"/>
+  </g>
+</svg>`;
+      
+      currentSprite = svg;
+      currentSpriteName = 'photo-' + Date.now();
+      
+      closePhotoModal();
+      renderSprite();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      updateStatus('Photo sprite created! Adjust the mask and features as needed.');
+    }
+    
+    // === LAYER OPERATIONS ===
+    function duplicateSelected() {
+      if (!selectedElement) {
+        updateStatus('Select an element to duplicate');
+        return;
+      }
+      
+      saveState();
+      const clone = selectedElement.cloneNode(true);
+      
+      // Offset the clone
+      const tag = clone.tagName.toLowerCase();
+      if (tag === 'rect') {
+        clone.setAttribute('x', parseFloat(clone.getAttribute('x') || 0) + 5);
+        clone.setAttribute('y', parseFloat(clone.getAttribute('y') || 0) + 5);
+      } else if (tag === 'ellipse' || tag === 'circle') {
+        clone.setAttribute('cx', parseFloat(clone.getAttribute('cx') || 0) + 5);
+        clone.setAttribute('cy', parseFloat(clone.getAttribute('cy') || 0) + 5);
+      }
+      
+      // Remove ID to avoid duplicates
+      if (clone.id) clone.removeAttribute('id');
+      
+      // Insert after selected
+      selectedElement.parentNode.insertBefore(clone, selectedElement.nextSibling);
+      
+      // Setup interaction
+      clone.style.cursor = 'pointer';
+      clone.addEventListener('click', (e) => {
+        e.stopPropagation();
+        selectElement(clone);
+      });
+      
+      buildElementTree();
+      selectElement(clone);
+      updateSpriteSource();
+      updateStatus('Element duplicated');
+    }
+    
+    function moveLayerUp() {
+      if (!selectedElement) {
+        updateStatus('Select an element first');
+        return;
+      }
+
+      const parent = selectedElement.parentNode;
+      const siblings = Array.from(parent.children);
+      const currentIndex = siblings.indexOf(selectedElement);
+
+      // Already at top
+      if (currentIndex === siblings.length - 1) {
+        updateStatus('Already at top layer');
+        return;
+      }
+
+      saveState();
+      const nextSibling = siblings[currentIndex + 1];
+      // Insert after the next sibling (move up one layer)
+      parent.insertBefore(selectedElement, nextSibling.nextSibling);
+      buildElementTree();
+      updateSpriteSource();
+
+      const newIndex = Array.from(parent.children).indexOf(selectedElement);
+      updateStatus(`Layer ${newIndex + 1} of ${parent.children.length}`);
+    }
+
+    function moveLayerDown() {
+      if (!selectedElement) {
+        updateStatus('Select an element first');
+        return;
+      }
+
+      const parent = selectedElement.parentNode;
+      const siblings = Array.from(parent.children);
+      const currentIndex = siblings.indexOf(selectedElement);
+
+      // Already at bottom
+      if (currentIndex === 0) {
+        updateStatus('Already at bottom layer');
+        return;
+      }
+
+      saveState();
+      const prevSibling = siblings[currentIndex - 1];
+      // Insert before the previous sibling (move down one layer)
+      parent.insertBefore(selectedElement, prevSibling);
+      buildElementTree();
+      updateSpriteSource();
+
+      const newIndex = Array.from(parent.children).indexOf(selectedElement);
+      updateStatus(`Layer ${newIndex + 1} of ${parent.children.length}`);
+    }
+    
+    // === ADD SHAPES ===
+    function addShape(type) {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) {
+        updateStatus('Load a sprite first');
+        return;
+      }
+      
+      saveState();
+      
+      const svgNS = 'http://www.w3.org/2000/svg';
+      let newEl;
+      
+      if (type === 'rect') {
+        newEl = document.createElementNS(svgNS, 'rect');
+        newEl.setAttribute('x', '40');
+        newEl.setAttribute('y', '60');
+        newEl.setAttribute('width', '20');
+        newEl.setAttribute('height', '20');
+        newEl.setAttribute('fill', '#F5A623');
+      } else if (type === 'ellipse') {
+        newEl = document.createElementNS(svgNS, 'ellipse');
+        newEl.setAttribute('cx', '50');
+        newEl.setAttribute('cy', '70');
+        newEl.setAttribute('rx', '15');
+        newEl.setAttribute('ry', '10');
+        newEl.setAttribute('fill', '#4ecdc4');
+      } else if (type === 'circle') {
+        newEl = document.createElementNS(svgNS, 'circle');
+        newEl.setAttribute('cx', '50');
+        newEl.setAttribute('cy', '70');
+        newEl.setAttribute('r', '10');
+        newEl.setAttribute('fill', '#ffd93d');
+      }
+      
+      if (newEl) {
+        // Add to a body group if exists, otherwise to svg root
+        const bodyGroup = svg.querySelector('#body');
+        if (bodyGroup) {
+          bodyGroup.appendChild(newEl);
+        } else {
+          svg.appendChild(newEl);
+        }
+        
+        // Setup interaction
+        newEl.style.cursor = 'pointer';
+        newEl.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectElement(newEl);
+        });
+        
+        buildElementTree();
+        selectElement(newEl);
+        updateSpriteSource();
+        updateStatus(`Added ${type}`);
+      }
+    }
+    
+    function toggleToolbarDropdown(id) {
+      // Close all other toolbar dropdowns first
+      document.querySelectorAll('.toolbar-dropdown').forEach(d => {
+        if (d.id !== id) d.classList.remove('open');
+      });
+      document.getElementById(id).classList.toggle('open');
+    }
+
+    // Close toolbar dropdowns when clicking elsewhere
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.toolbar-dropdown-wrapper')) {
+        document.querySelectorAll('.toolbar-dropdown').forEach(d => d.classList.remove('open'));
+      }
+    });
+
+    function newAsset(type) {
+      document.querySelectorAll('.toolbar-dropdown').forEach(d => d.classList.remove('open'));
+      const typeSelect = document.getElementById('command-type');
+
+      if (type === 'sprite') {
+        createNewSprite();
+        typeSelect.value = 'sprite';
+      } else if (type === 'prop') {
+        clearAllSelections();
+        currentEditMode = 'prop';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        typeSelect.value = 'prop';
+        updateCommandContext();
+        updatePanelVisibility();
+        updateStatus('New prop - describe what you want to create');
+      } else if (type === 'background') {
+        clearAllSelections();
+        currentEditMode = 'background';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        typeSelect.value = 'background';
+        updateCommandContext();
+        updatePanelVisibility();
+        updateStatus('New background - describe what you want to create');
+      } else if (type === 'skit') {
+        clearAllSelections();
+        currentEditMode = 'skit';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        typeSelect.value = 'skit';
+        updateCommandContext();
+        updatePanelVisibility();
+        updateStatus('New script - describe what you want to create');
+      }
+
+      updateCommandPlaceholder();
+      document.getElementById('command-input').focus();
+    }
+
+    function randomAsset(type) {
+      document.querySelectorAll('.toolbar-dropdown').forEach(d => d.classList.remove('open'));
+      const typeSelect = document.getElementById('command-type');
+      const input = document.getElementById('command-input');
+
+      const prompts = {
+        'sprite': 'Create a random unique character with interesting features and personality',
+        'prop': 'Create a random interesting prop or item',
+        'background': 'Create a random interesting scene or setting',
+        'skit': 'Create a random short comedic skit with interesting characters'
+      };
+
+      // Set up command palette for this type
+      if (type === 'sprite') {
+        createNewSprite();
+      } else {
+        clearAllSelections();
+        currentEditMode = type === 'background' ? 'background' : type === 'skit' ? 'skit' : 'prop';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        updatePanelVisibility();
+      }
+
+      typeSelect.value = type;
+      updateCommandPlaceholder();
+      updateCommandContext();
+      input.value = prompts[type];
+      input.focus();
+      submitCommand();
+    }
+
+    function createNewSprite() {
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
+  <g id="body">
+    <!-- Add body elements here -->
+  </g>
+  <g id="head-top">
+    <!-- Face -->
+    <ellipse cx="50" cy="42" rx="16" ry="18" fill="#fce4d4"/>
+    <!-- Eyes -->
+    <ellipse id="eye-left-white" cx="42" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <ellipse id="eye-right-white" cx="58" cy="42" rx="4" ry="3" fill="#ffffff"/>
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#2d2d2d"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#2d2d2d"/>
+    <circle id="eye-left-highlight" cx="41" cy="41" r="1" fill="#fff" opacity="0"/>
+    <circle id="eye-right-highlight" cx="57" cy="41" r="1" fill="#fff" opacity="0"/>
+    <!-- Eyebrows -->
+    <path id="brow-left" d="M37 36 Q42 34 47 36" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
+    <path id="brow-right" d="M53 36 Q58 34 63 36" stroke="#2d2d2d" stroke-width="1.5" fill="none"/>
+  </g>
+  <g id="head-bottom">
+    <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
+    <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
+  </g>
+</svg>`;
+
+      // Clear all selections
+      clearAllSelections();
+
+      currentEditMode = 'sprite';
+      currentSprite = svg;
+      currentSpriteName = null;  // Clear so command bar shows "create" mode
+      currentBackgroundName = null;
+      currentSkitId = null;
+      currentMeta = null;
+
+      // Show canvas, hide skit editor
+      document.getElementById('svg-canvas').style.display = 'block';
+      document.getElementById('skit-editor-panel').style.display = 'none';
+      document.querySelector('.canvas-container').style.display = 'flex';
+      document.querySelector('.element-tree').style.display = 'block';
+      document.getElementById('variant-tabs').style.display = 'flex'; // Show variant tabs
+      document.querySelector('.zoom-controls').style.display = 'flex';
+
+      // Reset voice settings UI
+      loadSpriteVoiceSettings(null);
+      updatePanelVisibility();
+
+      renderSprite();
+      buildElementTree();
+      clearSelection();
+      resetHistory();
+      updateCommandContext();  // Update command bar to show "create" mode
+      updateStatus('New sprite - describe what you want to create');
+    }
+
+    // === INIT ===
+    document.getElementById('btn-undo').onclick = undo;
+    document.getElementById('btn-redo').onclick = redo;
+    document.getElementById('btn-save').onclick = saveSprite;
+    document.getElementById('btn-random').onclick = (e) => { e.stopPropagation(); toggleToolbarDropdown('random-dropdown'); };
+    document.getElementById('btn-new').onclick = (e) => { e.stopPropagation(); toggleToolbarDropdown('new-dropdown'); };
+    document.getElementById('btn-add-rect').onclick = () => addShape('rect');
+    document.getElementById('btn-add-ellipse').onclick = () => addShape('ellipse');
+    document.getElementById('btn-add-circle').onclick = () => addShape('circle');
+    document.getElementById('btn-duplicate').onclick = duplicateSelected;
+    document.getElementById('btn-delete').onclick = deleteSelected;
+    document.getElementById('btn-layer-up').onclick = moveLayerUp;
+    document.getElementById('btn-layer-down').onclick = moveLayerDown;
+    document.getElementById('btn-help').onclick = () => {
+      document.getElementById('help-modal').style.display = 'flex';
+    };
+    // === ANIMATION PREVIEW ===
+    // Transform-based emotion config - works for any sprite regardless of face position
+    const TRANSFORM_EMOTIONS = {
+      neutral: {
+        eyeRyRatio: 1.0, eyeCyDelta: 0, pupilRyRatio: 1.0, pupilCyDelta: 0,
+        browY: 0, browRotateL: 0, browRotateR: 0,
+        mouthY: 0, mouthScaleY: 0.3, mouthScaleX: 1.0
+      },
+      happy: {
+        eyeRyRatio: 0.7, eyeCyDelta: -1, pupilRyRatio: 0.8, pupilCyDelta: -1,
+        browY: -2, browRotateL: -8, browRotateR: 8,
+        mouthY: 1, mouthScaleY: 1.3, mouthScaleX: 1.1
+      },
+      sad: {
+        eyeRyRatio: 0.85, eyeCyDelta: 2, pupilRyRatio: 0.9, pupilCyDelta: 2,
+        browY: 3, browRotateL: -12, browRotateR: 12,
+        mouthY: 2, mouthScaleY: -0.9, mouthScaleX: 0.9
+      },
+      angry: {
+        eyeRyRatio: 0.85, eyeCyDelta: 2, pupilRyRatio: 0.9, pupilCyDelta: 2,
+        browY: 3, browRotateL: 8, browRotateR: -8,
+        mouthY: 2, mouthScaleY: -0.6, mouthScaleX: 0.9
+      },
+      surprised: {
+        eyeRyRatio: 1.4, eyeCyDelta: 0, pupilRyRatio: 1.3, pupilCyDelta: 0,
+        browY: -5, browRotateL: -5, browRotateR: 5,
+        mouthY: 3, mouthScaleY: 1.2, mouthScaleX: 0.8,
+        useMouthOpen: true, highlight: 1
+      },
+      excited: {
+        eyeRyRatio: 1.3, eyeCyDelta: -1, pupilRyRatio: 1.2, pupilCyDelta: -1,
+        browY: -4, browRotateL: -6, browRotateR: 6,
+        mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 1.1,
+        highlight: 1
+      },
+      worried: {
+        eyeRyRatio: 0.9, eyeCyDelta: 1, pupilRyRatio: 0.9, pupilCyDelta: 1,
+        browY: -1, browRotateL: -8, browRotateR: 8,
+        mouthY: 1, mouthScaleY: -0.4, mouthScaleX: 0.85
+      },
+      smug: {
+        eyeRyRatio: 0.75, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
+        browY: 0, browRotateL: 6, browRotateR: -6,
+        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -15
+      },
+      tired: {
+        eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
+        browY: 4, browRotateL: 3, browRotateR: -3,
+        mouthY: 1, mouthScaleY: 0.2, mouthScaleX: 1.0
+      },
+      skeptical: {
+        eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
+        browY: 1, browRotateL: -25, browRotateR: 8,
+        mouthY: 0, mouthScaleY: 0.2, mouthScaleX: 1.0
+      },
+      dead: {
+        eyeRyRatio: 0.7, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
+        browY: 0, browRotateL: 0, browRotateR: 0,
+        mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 0.7,
+        xEyes: true, useMouthOpen: true
+      }
+    };
+
+    let currentSpriteMeta = null;
+    let currentEmotion = 'neutral';
+    let talkingInterval = null;
+    let blinkingInterval = null;
+    let originalSvgState = null;
+    let originalFaceValues = null;
+    let editableState = null;       // SVG clone of the editable (neutral) state
+
+    // Check if editing is allowed (only in neutral/edit mode)
+    function isEditingEnabled() {
+      return currentEmotion === 'neutral';
+    }
+
+    // Enable or disable editing UI
+    function setEditingEnabled(enabled) {
+      const propertiesPanel = document.getElementById('properties-panel');
+      const svgCanvas = document.getElementById('svg-canvas');
+
+      if (enabled) {
+        propertiesPanel.style.pointerEvents = '';
+        propertiesPanel.style.opacity = '';
+        svgCanvas.style.pointerEvents = '';
+      } else {
+        propertiesPanel.style.pointerEvents = 'none';
+        propertiesPanel.style.opacity = '0.5';
+        // Keep canvas visible but clear selection
+        clearSelection();
+      }
+    }
+
+    // Update emotion button active states
+    function updateEmotionButtons() {
+      const editBtn = document.getElementById('btn-edit-mode');
+      const isEditing = currentEmotion === 'neutral';
+
+      // Update Edit button
+      if (editBtn) {
+        editBtn.classList.toggle('active', isEditing);
+        editBtn.style.background = isEditing ? '#16a34a' : 'var(--plumage-cream)';
+      }
+
+      // Update emotion preview buttons
+      document.querySelectorAll('.emotion-btn:not(#btn-edit-mode)').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emotion === currentEmotion);
+      });
+    }
+
+    // Get center point of a path for rotation pivot
+    // Handles negative numbers and filters out arc flags
+    function getPathCenter(d) {
+      if (!d) return { cx: 50, cy: 50 };
+
+      const coords = [];
+      const commandRegex = /([MLHVCSQTAZ])\s*([-\d.,\s]+)/gi;
+      let match;
+
+      while ((match = commandRegex.exec(d)) !== null) {
+        const cmd = match[1].toUpperCase();
+        const numStr = match[2];
+        const nums = numStr.match(/-?[\d.]+/g);
+        if (!nums) continue;
+
+        // Skip arc commands (A) as their parameters include flags
+        if (cmd === 'A') continue;
+
+        if (cmd === 'H') {
+          nums.forEach(n => coords.push({ x: parseFloat(n), y: null }));
+        } else if (cmd === 'V') {
+          nums.forEach(n => coords.push({ x: null, y: parseFloat(n) }));
+        } else {
+          for (let i = 0; i < nums.length - 1; i += 2) {
+            coords.push({ x: parseFloat(nums[i]), y: parseFloat(nums[i + 1]) });
+          }
+        }
+      }
+
+      if (coords.length === 0) return { cx: 50, cy: 50 };
+
+      let sumX = 0, sumY = 0, countX = 0, countY = 0;
+      for (const c of coords) {
+        if (c.x !== null) { sumX += c.x; countX++; }
+        if (c.y !== null) { sumY += c.y; countY++; }
+      }
+
+      return {
+        cx: countX > 0 ? sumX / countX : 50,
+        cy: countY > 0 ? sumY / countY : 50
+      };
+    }
+
+    function captureOriginalFaceValues() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      const eyeL = svg.querySelector('#eye-left-white');
+      const eyeR = svg.querySelector('#eye-right-white');
+      const pupilL = svg.querySelector('#eye-left-pupil');
+      const browL = svg.querySelector('#brow-left');
+      const browR = svg.querySelector('#brow-right');
+      const mouth = svg.querySelector('#mouth-closed');
+      const mouthOpen = svg.querySelector('#mouth-open');
+
+      if (!eyeL) return;
+
+      // Get eye values
+      const eyeRy = parseFloat(eyeL.getAttribute('ry') || 7);
+      const eyeCy = parseFloat(eyeL.getAttribute('cy') || 50);
+      const eyeRx = parseFloat(eyeL.getAttribute('rx') || eyeRy);
+      const eyeCx = parseFloat(eyeL.getAttribute('cx') || 40);
+      const eyeRCx = parseFloat(eyeR?.getAttribute('cx') || 60);
+
+      // Get pupil values - check each eye independently for circle vs ellipse
+      const pupilR = svg.querySelector('#eye-right-pupil');
+      const pupilLRy = parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5);
+      const pupilRRy = parseFloat(pupilR?.getAttribute('ry') || pupilR?.getAttribute('r') || 5);
+      const pupilCy = parseFloat(pupilL?.getAttribute('cy') || eyeCy);
+      const pupilLUsesR = pupilL && !pupilL.hasAttribute('ry');
+      const pupilRUsesR = pupilR && !pupilR.hasAttribute('ry');
+
+      // Get brow path data and centers
+      const browLeftD = browL?.getAttribute('d') || '';
+      const browRightD = browR?.getAttribute('d') || '';
+      const browLeftCenter = getPathCenter(browLeftD);
+      const browRightCenter = getPathCenter(browRightD);
+
+      // Get mouth path data, center, and original stroke
+      const mouthD = mouth?.getAttribute('d') || '';
+      const mouthCenter = getPathCenter(mouthD);
+      const mouthStroke = mouth?.getAttribute('stroke') || '#8d6e63';
+
+      // Get mouth-open values
+      const mouthOpenRy = parseFloat(mouthOpen?.getAttribute('ry') || 3);
+      const mouthOpenRx = parseFloat(mouthOpen?.getAttribute('rx') || 5);
+
+      originalFaceValues = {
+        eyeRy, eyeCy, eyeRx, eyeCx, eyeRCx,
+        pupilLRy, pupilRRy, pupilCy, pupilLUsesR, pupilRUsesR,
+        browLeftD, browRightD, browLeftCenter, browRightCenter,
+        mouthD, mouthCenter, mouthStroke, mouthOpenRy, mouthOpenRx
+      };
+    }
+
+    function saveOriginalState() {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (svg) {
+        originalSvgState = svg.cloneNode(true);
+      }
+    }
+
+    function setEditorEmotion(emotion) {
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      const wasNeutral = currentEmotion === 'neutral';
+      const goingToNeutral = emotion === 'neutral';
+
+      // Already in edit mode - nothing to do
+      if (wasNeutral && goingToNeutral) {
+        setStatus('Edit mode');
+        return;
+      }
+
+      // Leaving edit mode → save current state
+      if (wasNeutral && !goingToNeutral) {
+        editableState = svg.cloneNode(true);
+        captureOriginalFaceValues();  // Recapture baseline from current edits
+      }
+
+      // Returning to edit mode → restore editable state
+      if (!wasNeutral && goingToNeutral) {
+        if (editableState) {
+          const canvas = document.getElementById('svg-canvas');
+          canvas.innerHTML = '';
+          canvas.appendChild(editableState.cloneNode(true));
+          // Re-setup the restored SVG
+          const restoredSvg = canvas.querySelector('svg');
+          restoredSvg.style.cursor = 'default';
+
+          // Add click handlers to all elements (same as renderSprite)
+          restoredSvg.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'g' && el.tagName !== 'svg') {
+              el.style.cursor = 'pointer';
+              el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (justFinishedDragging) {
+                  justFinishedDragging = false;
+                  return;
+                }
+                selectElement(el, e.shiftKey);
+              });
+            }
+          });
+
+          // Click on canvas background deselects
+          restoredSvg.addEventListener('click', (e) => {
+            if (e.target === restoredSvg && !didBoxSelect) {
+              clearSelection();
+            }
+          });
+
+          buildElementTree();
+          clearSelection();
+        }
+        currentEmotion = 'neutral';
+        updateEmotionButtons();
+        setEditingEnabled(true);
+        setStatus('Edit mode');
+        return;
+      }
+
+      const cfg = TRANSFORM_EMOTIONS[emotion];
+      if (!cfg) return;
+
+      // Capture original face values if not done yet
+      if (!originalFaceValues) captureOriginalFaceValues();
+      if (!originalFaceValues) return;
+
+      // Save original SVG state if not saved yet
+      if (!originalSvgState) saveOriginalState();
+
+      currentEmotion = emotion;
+      updateEmotionButtons();
+      setEditingEnabled(emotion === 'neutral');
+
+      const orig = originalFaceValues;
+
+      // Get SVG elements
+      const eyeLeftWhite = svg.querySelector('#eye-left-white');
+      const eyeRightWhite = svg.querySelector('#eye-right-white');
+      const eyeLeftPupil = svg.querySelector('#eye-left-pupil');
+      const eyeRightPupil = svg.querySelector('#eye-right-pupil');
+      const browLeft = svg.querySelector('#brow-left');
+      const browRight = svg.querySelector('#brow-right');
+      const mouthClosed = svg.querySelector('#mouth-closed');
+      const mouthOpen = svg.querySelector('#mouth-open');
+      const mouthSmile = svg.querySelector('#mouth-smile');
+      const highlightLeft = svg.querySelector('#eye-left-highlight');
+      const highlightRight = svg.querySelector('#eye-right-highlight');
+
+      // Apply eye whites - use ratio for ry, delta for cy
+      const newEyeRy = orig.eyeRy * cfg.eyeRyRatio;
+      const newEyeCy = orig.eyeCy + cfg.eyeCyDelta;
+
+      if (eyeLeftWhite) {
+        eyeLeftWhite.setAttribute('ry', newEyeRy);
+        eyeLeftWhite.setAttribute('cy', newEyeCy);
+      }
+      if (eyeRightWhite) {
+        eyeRightWhite.setAttribute('ry', newEyeRy);
+        eyeRightWhite.setAttribute('cy', newEyeCy);
+      }
+
+      // Apply pupils - use ratio for ry/r, delta for cy (check each eye independently)
+      const newPupilLRy = orig.pupilLRy * cfg.pupilRyRatio;
+      const newPupilRRy = orig.pupilRRy * cfg.pupilRyRatio;
+      const newPupilCy = orig.pupilCy + cfg.pupilCyDelta;
+
+      if (eyeLeftPupil) {
+        if (orig.pupilLUsesR) {
+          eyeLeftPupil.setAttribute('r', newPupilLRy);
+        } else {
+          eyeLeftPupil.setAttribute('ry', newPupilLRy);
+        }
+        eyeLeftPupil.setAttribute('cy', newPupilCy);
+      }
+      if (eyeRightPupil) {
+        if (orig.pupilRUsesR) {
+          eyeRightPupil.setAttribute('r', newPupilRRy);
+        } else {
+          eyeRightPupil.setAttribute('ry', newPupilRRy);
+        }
+        eyeRightPupil.setAttribute('cy', newPupilCy);
+      }
+
+      // Apply brows - keep original path, use transforms
+      if (browLeft && orig.browLeftD) {
+        browLeft.setAttribute('d', orig.browLeftD);
+        const { cx, cy } = orig.browLeftCenter;
+        browLeft.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateL}, ${cx}, ${cy})`);
+      }
+      if (browRight && orig.browRightD) {
+        browRight.setAttribute('d', orig.browRightD);
+        const { cx, cy } = orig.browRightCenter;
+        browRight.setAttribute('transform',
+          `translate(0, ${cfg.browY}) rotate(${cfg.browRotateR}, ${cx}, ${cy})`);
+      }
+
+      // Apply mouth - check for alternate mouth elements first
+      if (cfg.useMouthOpen && mouthOpen) {
+        if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
+        if (mouthSmile) mouthSmile.setAttribute('opacity', '0');
+        mouthOpen.setAttribute('opacity', '1');
+        mouthOpen.setAttribute('ry', orig.mouthOpenRy * cfg.mouthScaleY);
+        mouthOpen.setAttribute('rx', orig.mouthOpenRx * cfg.mouthScaleX);
+      } else if (emotion === 'happy' && mouthSmile) {
+        if (mouthClosed) mouthClosed.setAttribute('opacity', '0');
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+        mouthSmile.setAttribute('opacity', '1');
+      } else if (mouthClosed && orig.mouthD) {
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+        if (mouthSmile) mouthSmile.setAttribute('opacity', '0');
+        mouthClosed.setAttribute('opacity', '1');
+        mouthClosed.setAttribute('d', orig.mouthD);
+        const { cx, cy } = orig.mouthCenter;
+        const mouthRotate = cfg.mouthRotate || 0;
+        const mouthX = cfg.mouthX || 0;
+        mouthClosed.setAttribute('transform',
+          `translate(${mouthX}, ${cfg.mouthY}) translate(${cx}, ${cy}) rotate(${mouthRotate}) scale(${cfg.mouthScaleX}, ${cfg.mouthScaleY}) translate(${-cx}, ${-cy})`);
+        mouthClosed.setAttribute('fill', 'none');
+        mouthClosed.setAttribute('stroke', orig.mouthStroke);
+      }
+
+      // Handle X eyes for dead emotion
+      if (cfg.xEyes) {
+        // Hide normal eyes
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('opacity', '0');
+        if (eyeRightWhite) eyeRightWhite.setAttribute('opacity', '0');
+        if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '0');
+        if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '0');
+
+        // Create or show X eyes positioned based on actual eye locations
+        let xEyesGroup = svg.querySelector('#x-eyes-group');
+        if (!xEyesGroup) {
+          xEyesGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          xEyesGroup.id = 'x-eyes-group';
+          const leftCx = orig.eyeCx;
+          const rightCx = orig.eyeRCx;
+          const cy = orig.eyeCy;
+          const size = Math.max(3, orig.eyeRy * 0.8);
+          xEyesGroup.innerHTML = `
+            <line x1="${leftCx - size}" y1="${cy - size}" x2="${leftCx + size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${leftCx + size}" y1="${cy - size}" x2="${leftCx - size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${rightCx - size}" y1="${cy - size}" x2="${rightCx + size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+            <line x1="${rightCx + size}" y1="${cy - size}" x2="${rightCx - size}" y2="${cy + size}" stroke="#000" stroke-width="2"/>
+          `;
+          svg.appendChild(xEyesGroup);
+        }
+        xEyesGroup.setAttribute('opacity', '1');
+      } else {
+        // Show normal eyes, hide X eyes
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('opacity', '1');
+        if (eyeRightWhite) eyeRightWhite.setAttribute('opacity', '1');
+        if (eyeLeftPupil) eyeLeftPupil.setAttribute('opacity', '1');
+        if (eyeRightPupil) eyeRightPupil.setAttribute('opacity', '1');
+        const xEyesGroup = svg.querySelector('#x-eyes-group');
+        if (xEyesGroup) xEyesGroup.setAttribute('opacity', '0');
+      }
+
+      // Apply highlights (default to 0 if not specified to reset after emotions like excited)
+      const highlightOpacity = cfg.highlight ?? 0;
+      if (highlightLeft) highlightLeft.setAttribute('opacity', highlightOpacity);
+      if (highlightRight) highlightRight.setAttribute('opacity', highlightOpacity);
+
+      // Update blink original values to match new emotion state
+      originalEyeValues = {
+        leftWhiteRy: newEyeRy,
+        rightWhiteRy: newEyeRy,
+        leftPupilRy: newPupilLRy,
+        rightPupilRy: newPupilRRy,
+        leftPupilUsesR: orig.pupilLUsesR,
+        rightPupilUsesR: orig.pupilRUsesR
+      };
+
+      setStatus(`Preview: ${emotion}`);
+    }
+
+    function toggleTalking() {
+      const btn = document.getElementById('btn-talk-toggle');
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      if (talkingInterval) {
+        // Stop talking
+        clearInterval(talkingInterval);
+        talkingInterval = null;
+        btn.textContent = '🗣️ Start Talking';
+        btn.classList.remove('active');
+
+        // Reset mouth
+        const mouthOpen = svg.querySelector('#mouth-open');
+        const mouthClosed = svg.querySelector('#mouth-closed');
+        if (mouthOpen) mouthOpen.setAttribute('opacity', '0');
+        if (mouthClosed) mouthClosed.setAttribute('opacity', '1');
+      } else {
+        // Start talking
+        if (!originalSvgState) saveOriginalState();
+        btn.textContent = '🗣️ Stop Talking';
+        btn.classList.add('active');
+
+        const mouthOpen = svg.querySelector('#mouth-open');
+        const mouthClosed = svg.querySelector('#mouth-closed');
+
+        let mouthState = false;
+        talkingInterval = setInterval(() => {
+          mouthState = !mouthState;
+          if (mouthOpen) mouthOpen.setAttribute('opacity', mouthState ? '1' : '0');
+          if (mouthClosed) mouthClosed.setAttribute('opacity', mouthState ? '0' : '1');
+        }, 150);
+      }
+    }
+
+    // Store original eye values for blink reset
+    let originalEyeValues = null;
+
+    function toggleBlinking() {
+      const btn = document.getElementById('btn-blink-toggle');
+      const svg = document.querySelector('#svg-canvas svg');
+      if (!svg) return;
+
+      const eyeLeftWhite = svg.querySelector('#eye-left-white');
+      const eyeRightWhite = svg.querySelector('#eye-right-white');
+      const eyeLeftPupil = svg.querySelector('#eye-left-pupil');
+      const eyeRightPupil = svg.querySelector('#eye-right-pupil');
+
+      if (blinkingInterval) {
+        // Stop blinking
+        clearInterval(blinkingInterval);
+        blinkingInterval = null;
+        btn.textContent = '👁️ Blink';
+        btn.classList.remove('active');
+
+        // Restore original eye values
+        if (originalEyeValues) {
+          if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', originalEyeValues.leftWhiteRy);
+          if (eyeRightWhite) eyeRightWhite.setAttribute('ry', originalEyeValues.rightWhiteRy);
+          if (eyeLeftPupil) {
+            if (originalEyeValues.leftPupilUsesR) eyeLeftPupil.setAttribute('r', originalEyeValues.leftPupilRy);
+            else eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
+          }
+          if (eyeRightPupil) {
+            if (originalEyeValues.rightPupilUsesR) eyeRightPupil.setAttribute('r', originalEyeValues.rightPupilRy);
+            else eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+          }
+        }
+      } else {
+        // Start blinking - store current values first
+        if (!originalSvgState) saveOriginalState();
+        btn.textContent = '👁️ Stop Blink';
+        btn.classList.add('active');
+
+        // Store current eye values (check both ry and r for pupils)
+        originalEyeValues = {
+          leftWhiteRy: eyeLeftWhite ? eyeLeftWhite.getAttribute('ry') : '7',
+          rightWhiteRy: eyeRightWhite ? eyeRightWhite.getAttribute('ry') : '7',
+          leftPupilRy: eyeLeftPupil ? (eyeLeftPupil.getAttribute('ry') || eyeLeftPupil.getAttribute('r')) : '5',
+          rightPupilRy: eyeRightPupil ? (eyeRightPupil.getAttribute('ry') || eyeRightPupil.getAttribute('r')) : '5',
+          leftPupilUsesR: eyeLeftPupil ? !eyeLeftPupil.getAttribute('ry') : false,
+          rightPupilUsesR: eyeRightPupil ? !eyeRightPupil.getAttribute('ry') : false
+        };
+
+        blinkingInterval = setInterval(() => {
+          // Blink (close eyes - both whites and pupils)
+          if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', '0.5');
+          if (eyeRightWhite) eyeRightWhite.setAttribute('ry', '0.5');
+          if (eyeLeftPupil) {
+            if (originalEyeValues.leftPupilUsesR) eyeLeftPupil.setAttribute('r', '0.3');
+            else eyeLeftPupil.setAttribute('ry', '0.3');
+          }
+          if (eyeRightPupil) {
+            if (originalEyeValues.rightPupilUsesR) eyeRightPupil.setAttribute('r', '0.3');
+            else eyeRightPupil.setAttribute('ry', '0.3');
+          }
+
+          // Open eyes after 100ms
+          setTimeout(() => {
+            if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', originalEyeValues.leftWhiteRy);
+            if (eyeRightWhite) eyeRightWhite.setAttribute('ry', originalEyeValues.rightWhiteRy);
+            if (eyeLeftPupil) {
+              if (originalEyeValues.leftPupilUsesR) eyeLeftPupil.setAttribute('r', originalEyeValues.leftPupilRy);
+              else eyeLeftPupil.setAttribute('ry', originalEyeValues.leftPupilRy);
+            }
+            if (eyeRightPupil) {
+              if (originalEyeValues.rightPupilUsesR) eyeRightPupil.setAttribute('r', originalEyeValues.rightPupilRy);
+              else eyeRightPupil.setAttribute('ry', originalEyeValues.rightPupilRy);
+            }
+          }, 100);
+        }, 3000);
+      }
+    }
+
+    function toggleAnimPanel() {
+      const panel = document.getElementById('animation-preview-panel');
+      const toggle = document.getElementById('anim-panel-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggle.textContent = '▲';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '▼';
+      }
+    }
+
+    function resetAnimation() {
+      // Stop all animations
+      if (talkingInterval) {
+        clearInterval(talkingInterval);
+        talkingInterval = null;
+        document.getElementById('btn-talk-toggle').textContent = '🗣️ Start Talking';
+        document.getElementById('btn-talk-toggle').classList.remove('active');
+      }
+      if (blinkingInterval) {
+        clearInterval(blinkingInterval);
+        blinkingInterval = null;
+        document.getElementById('btn-blink-toggle').textContent = '👁️ Blink';
+        document.getElementById('btn-blink-toggle').classList.remove('active');
+      }
+
+      // Clear stored eye values and face values
+      originalEyeValues = null;
+      originalFaceValues = null;
+
+      // Restore original SVG state
+      if (originalSvgState) {
+        const container = document.getElementById('svg-canvas');
+        container.innerHTML = '';
+        container.appendChild(originalSvgState.cloneNode(true));
+
+        // Re-add click handlers to restored SVG elements
+        const svg = container.querySelector('svg');
+        if (svg) {
+          svg.querySelectorAll('*').forEach(el => {
+            if (el.tagName !== 'g' && el.tagName !== 'svg') {
+              el.style.cursor = 'pointer';
+              el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectElement(el);
+              });
+            }
+          });
+          svg.addEventListener('click', (e) => {
+            if (e.target === svg && !didBoxSelect) {
+              clearSelection();
+            }
+          });
+        }
+        buildElementTree();
+        originalSvgState = null;
+      }
+
+      currentEmotion = 'neutral';
+      document.querySelectorAll('.emotion-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
+      });
+
+      setStatus('Animation reset');
+    }
+
+    // Add emotion button listeners
+    document.querySelectorAll('.emotion-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setEditorEmotion(btn.dataset.emotion);
+        btn.blur(); // Remove focus so SVG can be clicked
+      });
+    });
+
+    // Reset animation state when sprite changes
+    const originalSelectCharacter = selectCharacter;
+    selectCharacter = async function(name) {
+      // Stop animations and clear state
+      if (talkingInterval) {
+        clearInterval(talkingInterval);
+        talkingInterval = null;
+        document.getElementById('btn-talk-toggle').textContent = '🗣️ Start Talking';
+        document.getElementById('btn-talk-toggle').classList.remove('active');
+      }
+      if (blinkingInterval) {
+        clearInterval(blinkingInterval);
+        blinkingInterval = null;
+        document.getElementById('btn-blink-toggle').textContent = '👁️ Blink';
+        document.getElementById('btn-blink-toggle').classList.remove('active');
+      }
+      originalSvgState = null;
+      originalEyeValues = null;
+      currentEmotion = 'neutral';
+      document.querySelectorAll('.emotion-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.emotion === 'neutral');
+      });
+
+      // Call original function
+      return originalSelectCharacter(name);
+    };
+
+    async function initializeEditor() {
+      const runtimeBackend = await (window.AITRuntime?.backendPromise || Promise.resolve(window.backend || null));
+      if (runtimeBackend) {
+        window.backend = runtimeBackend;
+      }
+
+      window.AITSettingsUI?.attachButton?.('#btn-settings');
+      window.addEventListener('ait:settings-updated', updateAiBanner);
+      window.addEventListener('ait:data-updated', async () => {
+        await Promise.all([loadSpriteList(), loadBackgrounds(), loadProps(), loadSkits()]);
+        if (currentSpriteName && !characterList.includes(currentSpriteName) && currentEditMode === 'sprite') {
+          createNewSprite();
+        }
+      });
+      applyModeUi();
+
+      await populateVoiceSelector();
+      restoreCollapsedState();
+      await Promise.all([
+        loadSpriteList(),
+        loadBackgrounds(),
+        loadProps(),
+        loadSkits()
+      ]);
+
+      if (characterList.includes('cat')) {
+        await selectCharacter('cat');
+      } else if (characterList.length > 0) {
+        await selectCharacter(characterList[0]);
+      } else {
+        createNewSprite();
+      }
+
+      connectWebSocket();
+      await maybeShowBrowserWelcome();
+    }
+
+    initializeEditor().catch((err) => {
+      console.error('Editor initialization failed:', err);
+      updateStatus(`Initialization failed: ${err.message}`);
+    });
+    
+    // Scroll wheel zoom
+    document.querySelector('.canvas-container').addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        zoomLevel = Math.min(400, zoomLevel + 10);
+      } else {
+        zoomLevel = Math.max(50, zoomLevel - 10);
+      }
+      applyZoom();
+    }, { passive: false });
+
+    // === BOX SELECTION ===
+    let isBoxSelecting = false;
+    let didBoxSelect = false;
+    let boxStart = { x: 0, y: 0 };
+
+    const canvasContainer = document.querySelector('.canvas-container');
+    const selectionBox = document.getElementById('selection-box');
+
+    canvasContainer.addEventListener('mousedown', (e) => {
+      // Only start box selection on empty space
+      const isEmptySpace = e.target === canvasContainer ||
+                          e.target.id === 'svg-canvas' ||
+                          e.target.id === 'selection-box' ||
+                          e.target.tagName === 'svg';
+
+      if (!isEmptySpace) return;
+      if (e.button !== 0) return;
+
+      isBoxSelecting = true;
+      didBoxSelect = false;
+
+      // Get position relative to the container
+      const rect = canvasContainer.getBoundingClientRect();
+      boxStart = {
+        x: e.clientX - rect.left + canvasContainer.scrollLeft,
+        y: e.clientY - rect.top + canvasContainer.scrollTop
+      };
+
+      // Initialize selection box
+      selectionBox.style.left = boxStart.x + 'px';
+      selectionBox.style.top = boxStart.y + 'px';
+      selectionBox.style.width = '0px';
+      selectionBox.style.height = '0px';
+
+      e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isBoxSelecting) return;
+
+      const rect = canvasContainer.getBoundingClientRect();
+      const currentX = e.clientX - rect.left + canvasContainer.scrollLeft;
+      const currentY = e.clientY - rect.top + canvasContainer.scrollTop;
+
+      // Calculate box dimensions (handle negative drag)
+      const x = Math.min(boxStart.x, currentX);
+      const y = Math.min(boxStart.y, currentY);
+      const width = Math.abs(currentX - boxStart.x);
+      const height = Math.abs(currentY - boxStart.y);
+
+      // Only show box if dragged more than 5 pixels
+      if (width > 5 || height > 5) {
+        didBoxSelect = true;
+        selectionBox.classList.add('active');
+        selectionBox.style.left = x + 'px';
+        selectionBox.style.top = y + 'px';
+        selectionBox.style.width = width + 'px';
+        selectionBox.style.height = height + 'px';
+      }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (!isBoxSelecting) return;
+
+      isBoxSelecting = false;
+
+      // Get bounding rect BEFORE hiding the selection box
+      const boxRect = selectionBox.getBoundingClientRect();
+      selectionBox.classList.remove('active');
+
+      if (didBoxSelect) {
+        const svgCanvas = document.getElementById('svg-canvas');
+        const svg = svgCanvas.querySelector('svg');
+        if (!svg) {
+          didBoxSelect = false;
+          return;
+        }
+
+        // Recursively find all selectable elements that intersect
+        const elementsToSelect = [];
+        const skipTags = ['defs', 'style', 'title', 'desc', 'metadata', 'svg'];
+
+        function checkElement(el) {
+          const tagName = el.tagName.toLowerCase();
+          if (skipTags.includes(tagName)) return;
+
+          try {
+            const elRect = el.getBoundingClientRect();
+
+            // Check if element intersects with selection box
+            const intersects = !(elRect.right < boxRect.left ||
+                                elRect.left > boxRect.right ||
+                                elRect.bottom < boxRect.top ||
+                                elRect.top > boxRect.bottom);
+
+            // Only add leaf elements (not groups)
+            if (intersects && elRect.width > 0 && elRect.height > 0) {
+              if (tagName !== 'g') {
+                elementsToSelect.push(el);
+              }
+            }
+          } catch (err) {
+            // Skip elements that can't be measured
+          }
+
+          // Recurse into children
+          if (el.children && el.children.length > 0) {
+            Array.from(el.children).forEach(checkElement);
+          }
+        }
+
+        Array.from(svg.children).forEach(checkElement);
+
+        if (elementsToSelect.length > 0) {
+          // Check if shift is held to add to selection
+          if (e.shiftKey) {
+            elementsToSelect.forEach(el => {
+              if (!selectedElements.includes(el)) {
+                selectElement(el, true);
+              }
+            });
+          } else {
+            selectMultipleElements(elementsToSelect);
+          }
+          updateStatus(`Selected ${selectedElements.length} element${selectedElements.length > 1 ? 's' : ''}`);
+        }
+        // Don't reset didBoxSelect here - let the click handler do it
+      }
+    });
+
+    // Deselect when clicking on canvas container (not after box selection)
+    canvasContainer.addEventListener('click', (e) => {
+      // Don't deselect if we just did box selection
+      if (didBoxSelect) {
+        didBoxSelect = false;
+        return;
+      }
+
+      // Only deselect if clicking directly on empty space
+      const isEmptySpace = e.target === canvasContainer ||
+                          e.target.id === 'svg-canvas' ||
+                          e.target.tagName === 'svg';
+
+      if (isEmptySpace) {
+        clearSelection();
+      }
+    });
+
+    // Prevent text selection while box selecting
+    canvasContainer.addEventListener('selectstart', (e) => {
+      if (isBoxSelecting) e.preventDefault();
+    });
+
+    // Shift+click on element to add to selection
+    document.getElementById('svg-canvas').addEventListener('click', (e) => {
+      if (e.shiftKey && e.target.tagName !== 'svg' && e.target.id !== 'svg-canvas') {
+        e.stopPropagation();
+        selectElement(e.target, true);
+      }
+    });
+
+    // --- Theme toggle ---
+    function applyTheme(theme) {
+      if (theme === 'ocean') {
+        document.documentElement.dataset.theme = 'ocean';
+        document.getElementById('themeIcon').innerHTML = '&#9728;';
+        document.getElementById('themeLabel').textContent = 'Beach';
+      } else {
+        delete document.documentElement.dataset.theme;
+        document.getElementById('themeIcon').innerHTML = '&#127754;';
+        document.getElementById('themeLabel').textContent = 'Ocean';
+      }
+    }
+    function toggleTheme() {
+      const current = document.documentElement.dataset.theme === 'ocean' ? 'ocean' : 'beach';
+      const next = current === 'ocean' ? 'beach' : 'ocean';
+      localStorage.setItem('pelicans-theme', next);
+      applyTheme(next);
+    }
+    (function initTheme() {
+      const saved = localStorage.getItem('pelicans-theme');
+      if (saved) { applyTheme(saved); return; }
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) { applyTheme('ocean'); }
+    })();
