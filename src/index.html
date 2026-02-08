@@ -120,6 +120,12 @@
       aspect-ratio: 16 / 9;
       border: none;
       border-radius: var(--radius-md);
+      transition: aspect-ratio 0.3s ease;
+    }
+
+    .stage-container iframe.portrait {
+      aspect-ratio: 9 / 16;
+      max-height: 70vh;
     }
 
     /* === SCRIPT SELECTOR === */
@@ -242,11 +248,12 @@
       <h2 class="section-title">Now Playing</h2>
 
       <div class="stage-container">
-        <iframe id="skitFrame" src="skit-player.html?embed=1&skit=luckyCharms" allow="autoplay"></iframe>
+        <iframe id="skitFrame" src="skit-player.html?embed=1&skit=batsDontEatLettuce" allow="autoplay"></iframe>
       </div>
 
       <div class="script-selector" id="skitSelector">
-        <button class="script-tab active" data-skit="luckyCharms">Lucky Charms</button>
+        <button class="script-tab active" data-skit="batsDontEatLettuce">Bats Don't Eat Lettuce</button>
+        <button class="script-tab" data-skit="luckyCharms">Lucky Charms</button>
         <button class="script-tab" data-skit="theBox">The Box</button>
         <button class="script-tab" data-skit="theNegotiation">The Negotiation</button>
       </div>
@@ -280,6 +287,17 @@
 
       // Reload iframe with new skit
       skitFrame.src = `skit-player.html?embed=1&skit=${skitName}`;
+    });
+
+    // Listen for orientation changes from embedded skit player
+    window.addEventListener('message', (e) => {
+      if (e.data?.type === 'skit-orientation') {
+        if (e.data.orientation === 'portrait') {
+          skitFrame.classList.add('portrait');
+        } else {
+          skitFrame.classList.remove('portrait');
+        }
+      }
     });
 
     // --- Theme toggle ---

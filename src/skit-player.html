@@ -573,6 +573,11 @@
         viewport.classList.remove('landscape');
       }
 
+      // Notify parent frame of orientation (for embed mode)
+      if (window.parent !== window) {
+        window.parent.postMessage({ type: 'skit-orientation', orientation }, '*');
+      }
+
       // Try new path first, fall back to legacy on error
       bgEl.onerror = function() {
         if (!this.src.includes(legacyPath)) {
@@ -738,6 +743,29 @@
     const blinkTimers = new Map();
     const blinkOriginalValues = new Map();
 
+    // Helper: <circle> elements use 'r', <ellipse> elements use 'ry'
+    // Some sprites have spurious 'ry' attributes on circles, so check tagName
+    function isCircleElement(el) {
+      return el && el.tagName.toLowerCase() === 'circle';
+    }
+
+    function setPupilRy(el, value) {
+      if (!el) return;
+      if (isCircleElement(el)) {
+        el.setAttribute('r', value);
+      } else {
+        el.setAttribute('ry', value);
+      }
+    }
+
+    function getPupilRy(el) {
+      if (!el) return '5';
+      if (isCircleElement(el)) {
+        return el.getAttribute('r') || '5';
+      }
+      return el.getAttribute('ry') || el.getAttribute('r') || '5';
+    }
+
     function blink(charName) {
       const char = characters[charName];
       if (!char || !char.el) return;
@@ -753,22 +781,16 @@
         blinkOriginalValues.set(charName, {
           leftWhiteRy: eyeLeftWhite?.getAttribute('ry') || '7',
           rightWhiteRy: eyeRightWhite?.getAttribute('ry') || '7',
-          leftPupilRy: eyeLeftPupil?.getAttribute('ry') || eyeLeftPupil?.getAttribute('r') || '5',
-          rightPupilRy: eyeRightPupil?.getAttribute('ry') || eyeRightPupil?.getAttribute('r') || '5'
+          leftPupilRy: getPupilRy(eyeLeftPupil),
+          rightPupilRy: getPupilRy(eyeRightPupil)
         });
       }
 
       // Close eyes (squish ry)
       if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', '0.5');
       if (eyeRightWhite) eyeRightWhite.setAttribute('ry', '0.5');
-      if (eyeLeftPupil) {
-        if (eyeLeftPupil.getAttribute('ry')) eyeLeftPupil.setAttribute('ry', '0.3');
-        else eyeLeftPupil.setAttribute('r', '0.3');
-      }
-      if (eyeRightPupil) {
-        if (eyeRightPupil.getAttribute('ry')) eyeRightPupil.setAttribute('ry', '0.3');
-        else eyeRightPupil.setAttribute('r', '0.3');
-      }
+      setPupilRy(eyeLeftPupil, '0.3');
+      setPupilRy(eyeRightPupil, '0.3');
 
       // Open eyes after blink duration
       setTimeout(() => {
@@ -776,14 +798,8 @@
         if (!orig) return;
         if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', orig.leftWhiteRy);
         if (eyeRightWhite) eyeRightWhite.setAttribute('ry', orig.rightWhiteRy);
-        if (eyeLeftPupil) {
-          if (eyeLeftPupil.getAttribute('ry')) eyeLeftPupil.setAttribute('ry', orig.leftPupilRy);
-          else eyeLeftPupil.setAttribute('r', orig.leftPupilRy);
-        }
-        if (eyeRightPupil) {
-          if (eyeRightPupil.getAttribute('ry')) eyeRightPupil.setAttribute('ry', orig.rightPupilRy);
-          else eyeRightPupil.setAttribute('r', orig.rightPupilRy);
-        }
+        setPupilRy(eyeLeftPupil, orig.leftPupilRy);
+        setPupilRy(eyeRightPupil, orig.rightPupilRy);
       }, 100);
     }
     
@@ -1528,13 +1544,13 @@
       const eyeCx = parseFloat(eyeL.getAttribute('cx') || 40);
       const eyeRCx = parseFloat(eyeR?.getAttribute('cx') || 60);
 
-      // Get pupil values - check each eye independently for circle vs ellipse
+      // Get pupil values - check tagName to distinguish circle (uses r) vs ellipse (uses ry)
       const pupilR = svg.querySelector('#eye-right-pupil');
-      const pupilLRy = parseFloat(pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5);
-      const pupilRRy = parseFloat(pupilR?.getAttribute('ry') || pupilR?.getAttribute('r') || 5);
+      const pupilLUsesR = pupilL && isCircleElement(pupilL);
+      const pupilRUsesR = pupilR && isCircleElement(pupilR);
+      const pupilLRy = parseFloat(pupilLUsesR ? (pupilL?.getAttribute('r') || 5) : (pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5));
+      const pupilRRy = parseFloat(pupilRUsesR ? (pupilR?.getAttribute('r') || 5) : (pupilR?.getAttribute('ry') || pupilR?.getAttribute('r') || 5));
       const pupilCy = parseFloat(pupilL?.getAttribute('cy') || eyeCy);
-      const pupilLUsesR = pupilL && !pupilL.hasAttribute('ry');
-      const pupilRUsesR = pupilR && !pupilR.hasAttribute('ry');
 
       // Get brow path data and centers
       const browLeftD = browL?.getAttribute('d') || '';
@@ -2254,6 +2270,10 @@
           } else {
             viewport.classList.remove('landscape');
           }
+          // Notify parent frame of orientation (for embed mode)
+          if (window.parent !== window) {
+            window.parent.postMessage({ type: 'skit-orientation', orientation: bgOrientation }, '*');
+          }
         } else {
           setBackground(bgName, bgOrientation);
         }
@@ -2368,9 +2388,14 @@
 
       const scale = config.scale || 1;
       const baseY = config.startY ?? config.y ?? 88;
+
+      // Use startX for initial position if specified (for offscreen starts)
+      const initialX = config.startX !== undefined ? config.startX : config.x;
+
       characters[name] = {
         el: div,
-        x: config.x,
+        x: initialX,
+        targetX: config.x,
         baseY: baseY,
         scale: scale,
         currentEmotion: 'neutral',
@@ -2380,14 +2405,17 @@
         originalFaceValues: originalFaceValues
       };
 
-      div.style.left = config.x + '%';
+      div.style.left = initialX + '%';
       div.style.bottom = `${100 - baseY}%`;
       div.style.setProperty('--char-scale', scale);
-      
-      if (config.startOffscreen) {
+
+      // Add position class for head rotation direction (based on target x)
+      div.classList.add(config.x < 50 ? 'pos-left' : 'pos-right');
+
+      if (config.startOffscreen || config.startX !== undefined) {
         div.classList.add('offscreen');
       }
-      
+
       // Auto-face toward center
       if (config.x > 50) {
         div.classList.add('facing-left');
