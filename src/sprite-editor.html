@@ -157,7 +157,55 @@
       color: var(--sand-warm);
       margin: 0 5px;
     }
-    
+
+    .toolbar-dropdown-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .toolbar-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 1000;
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      min-width: 120px;
+      margin-top: 2px;
+    }
+
+    .toolbar-dropdown.open {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toolbar-dropdown button {
+      background: none !important;
+      border: none !important;
+      padding: 8px 16px !important;
+      text-align: left;
+      cursor: pointer;
+      color: var(--wing-dark);
+      font-size: 0.85em;
+      white-space: nowrap;
+      border-radius: 0 !important;
+    }
+
+    .toolbar-dropdown button:hover {
+      background: var(--ocean-foam) !important;
+    }
+
+    .toolbar-dropdown button:first-child {
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0 !important;
+    }
+
+    .toolbar-dropdown button:last-child {
+      border-radius: 0 0 var(--radius-sm) var(--radius-sm) !important;
+    }
+
     kbd {
       background: var(--plumage-cream);
       border: 1px solid var(--sand-warm);
@@ -1944,7 +1992,7 @@
 
     .community-modal-content {
       background: var(--plumage-cream);
-      border: 1px solid var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
       border-radius: 8px;
       padding: 24px;
       width: 480px;
@@ -1974,8 +2022,8 @@
     .community-modal select {
       width: 100%;
       padding: 8px 10px;
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
       border-radius: 4px;
       color: var(--wing-dark);
       font-size: 0.9em;
@@ -1996,8 +2044,8 @@
 
     .community-tab {
       padding: 6px 12px;
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
       border-radius: 4px;
       color: var(--wing-gray);
       cursor: pointer;
@@ -2011,14 +2059,14 @@
     }
 
     .community-tab.active {
-      background: var(--plumage-cream);
+      background: var(--ocean-foam);
       border-color: var(--ocean-blue);
       color: var(--ocean-blue);
     }
 
     .community-preview {
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
       border-radius: 4px;
       padding: 12px;
       min-height: 80px;
@@ -2089,7 +2137,7 @@
     .community-progress-bar {
       width: 100%;
       height: 6px;
-      background: #fff;
+      background: var(--plumage-white);
       border-radius: 3px;
       overflow: hidden;
     }
@@ -2210,7 +2258,7 @@
 
     .import-modal-content {
       background: var(--plumage-cream);
-      border: 1px solid var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
       border-radius: 8px;
       padding: 24px;
       width: 480px;
@@ -2237,8 +2285,8 @@
     .import-modal input[type="text"] {
       width: 100%;
       padding: 10px 12px;
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
       border-radius: 4px;
       color: var(--wing-dark);
       font-size: 0.9em;
@@ -2255,8 +2303,8 @@
     }
 
     .import-preview {
-      background: #fff;
-      border: 1px solid var(--plumage-cream);
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
       border-radius: 4px;
       padding: 12px;
       margin-bottom: 14px;
@@ -2386,9 +2434,9 @@
     .voice-selector select {
       flex: 1;
       padding: 6px 8px;
-      background: #fff;
+      background: var(--plumage-white);
       color: var(--wing-dark);
-      border: 1px solid var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
       border-radius: 4px;
       font-size: 0.85em;
     }
@@ -2999,8 +3047,24 @@
   <header>
     <a href="/" class="pelicans-nav-logo" style="text-decoration:none;">pelicans<span>.art</span></a>
     <div class="toolbar">
-      <button id="btn-new">📄 New</button>
-      <button id="btn-random">🎲 Random</button>
+      <div class="toolbar-dropdown-wrapper">
+        <button id="btn-new">📄 New ▾</button>
+        <div class="toolbar-dropdown" id="new-dropdown">
+          <button onclick="newAsset('sprite')">Character</button>
+          <button onclick="newAsset('prop')">Prop</button>
+          <button onclick="newAsset('background')">Background</button>
+          <button onclick="newAsset('skit')">Script</button>
+        </div>
+      </div>
+      <div class="toolbar-dropdown-wrapper">
+        <button id="btn-random">🎲 Random ▾</button>
+        <div class="toolbar-dropdown" id="random-dropdown">
+          <button onclick="randomAsset('sprite')">Character</button>
+          <button onclick="randomAsset('prop')">Prop</button>
+          <button onclick="randomAsset('background')">Background</button>
+          <button onclick="randomAsset('skit')">Script</button>
+        </div>
+      </div>
       <span class="toolbar-divider">|</span>
       <button id="btn-add-rect" title="Add Rectangle">▭</button>
       <button id="btn-add-ellipse" title="Add Ellipse">⬭</button>
@@ -10842,6 +10906,104 @@
       }
     }
     
+    function toggleToolbarDropdown(id) {
+      // Close all other toolbar dropdowns first
+      document.querySelectorAll('.toolbar-dropdown').forEach(d => {
+        if (d.id !== id) d.classList.remove('open');
+      });
+      document.getElementById(id).classList.toggle('open');
+    }
+
+    // Close toolbar dropdowns when clicking elsewhere
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.toolbar-dropdown-wrapper')) {
+        document.querySelectorAll('.toolbar-dropdown').forEach(d => d.classList.remove('open'));
+      }
+    });
+
+    function newAsset(type) {
+      document.querySelectorAll('.toolbar-dropdown').forEach(d => d.classList.remove('open'));
+      const typeSelect = document.getElementById('command-type');
+
+      if (type === 'sprite') {
+        createNewSprite();
+        typeSelect.value = 'sprite';
+      } else if (type === 'prop') {
+        clearAllSelections();
+        currentEditMode = 'prop';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        typeSelect.value = 'prop';
+        updateCommandContext();
+        updatePanelVisibility();
+        updateStatus('New prop - describe what you want to create');
+      } else if (type === 'background') {
+        clearAllSelections();
+        currentEditMode = 'background';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        typeSelect.value = 'background';
+        updateCommandContext();
+        updatePanelVisibility();
+        updateStatus('New background - describe what you want to create');
+      } else if (type === 'skit') {
+        clearAllSelections();
+        currentEditMode = 'skit';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        typeSelect.value = 'skit';
+        updateCommandContext();
+        updatePanelVisibility();
+        updateStatus('New script - describe what you want to create');
+      }
+
+      updateCommandPlaceholder();
+      document.getElementById('command-input').focus();
+    }
+
+    function randomAsset(type) {
+      document.querySelectorAll('.toolbar-dropdown').forEach(d => d.classList.remove('open'));
+      const typeSelect = document.getElementById('command-type');
+      const input = document.getElementById('command-input');
+
+      const prompts = {
+        'sprite': 'Create a random unique character with interesting features and personality',
+        'prop': 'Create a random interesting prop or item',
+        'background': 'Create a random interesting scene or setting',
+        'skit': 'Create a random short comedic skit with interesting characters'
+      };
+
+      // Set up command palette for this type
+      if (type === 'sprite') {
+        createNewSprite();
+      } else {
+        clearAllSelections();
+        currentEditMode = type === 'background' ? 'background' : type === 'skit' ? 'skit' : 'prop';
+        currentSprite = null;
+        currentSpriteName = null;
+        currentBackgroundName = null;
+        currentSkitId = null;
+        currentMeta = null;
+        updatePanelVisibility();
+      }
+
+      typeSelect.value = type;
+      updateCommandPlaceholder();
+      updateCommandContext();
+      input.value = prompts[type];
+      input.focus();
+      submitCommand();
+    }
+
     function createNewSprite() {
       const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="100" height="150">
   <g id="body">
@@ -10901,8 +11063,8 @@
     document.getElementById('btn-undo').onclick = undo;
     document.getElementById('btn-redo').onclick = redo;
     document.getElementById('btn-save').onclick = saveSprite;
-    document.getElementById('btn-random').onclick = createRandomCharacter;
-    document.getElementById('btn-new').onclick = createNewSprite;
+    document.getElementById('btn-random').onclick = (e) => { e.stopPropagation(); toggleToolbarDropdown('random-dropdown'); };
+    document.getElementById('btn-new').onclick = (e) => { e.stopPropagation(); toggleToolbarDropdown('new-dropdown'); };
     document.getElementById('btn-add-rect').onclick = () => addShape('rect');
     document.getElementById('btn-add-ellipse').onclick = () => addShape('ellipse');
     document.getElementById('btn-add-circle').onclick = () => addShape('circle');
