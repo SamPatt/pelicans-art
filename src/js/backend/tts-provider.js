@@ -91,11 +91,32 @@
       throw new Error('Missing custom TTS endpoint URL');
     }
     const cfg = normalizeVoiceConfig(voiceConfig);
-    const response = await fetchImpl(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, voice: cfg.id, pitch: cfg.pitch, rate: cfg.speed, volume: cfg.volume })
-    });
+
+    // Use FormData to avoid CORS preflight (multipart/form-data is a "simple" content type).
+    // Many TTS servers (pocket-tts, etc.) also accept form data natively.
+    const formData = new FormData();
+    formData.append('text', text);
+    formData.append('voice', cfg.id);
+    formData.append('pitch', String(cfg.pitch));
+    formData.append('rate', String(cfg.speed));
+    formData.append('volume', String(cfg.volume));
+
+    let response;
+    try {
+      response = await fetchImpl(endpoint, {
+        method: 'POST',
+        body: formData
+      });
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('NetworkError')) {
+        throw new Error(
+          `Cannot reach TTS endpoint at ${endpoint}. ` +
+          'If the server is running on a different port, it must send CORS headers ' +
+          '(Access-Control-Allow-Origin: *). Alternatively, use "Browser Voices" TTS mode.'
+        );
+      }
+      throw err;
+    }
     if (!response.ok) {
       throw new Error(`Custom TTS failed (${response.status})`);
     }

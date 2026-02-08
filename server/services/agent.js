@@ -81,12 +81,34 @@ REQUIRED ELEMENT IDs (the animation system depends on these exact IDs):
 - eye-right-pupil: Right pupil (circle, class="pupil")
 - brow-left: Left eyebrow (path)
 - brow-right: Right eyebrow (path)
-- mouth-open: Mouth position marker (ellipse with cx/cy for position, stroke for mouth line color, fill for inside color, opacity="0")
+- mouth-closed: Closed mouth (path in head-bottom, stroke for mouth color)
+- mouth-open: Mouth position marker (ellipse in head-bottom, cx/cy for position, opacity="0")
 
 REQUIRED GROUPS:
 - id="body": Torso, arms, legs
 - id="head-top": Hair, forehead, eyes, brows
 - id="head-bottom": Nose, jaw, mouth
+
+REQUIRED SVG STRUCTURE EXAMPLE:
+<g id="body"> - torso, arms, legs
+<g id="head-top"> - contains face shape, hair, eyes, pupils, brows, nose:
+  <ellipse id="eye-left-white" cx="42" cy="42" rx="4" ry="3" fill="#ffffff"/>
+  <ellipse id="eye-right-white" cx="58" cy="42" rx="4" ry="3" fill="#ffffff"/>
+  <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#333"/>
+  <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#333"/>
+  <path id="brow-left" d="M37 36 Q42 34 47 36" stroke="#333" stroke-width="1.5" fill="none"/>
+  <path id="brow-right" d="M53 36 Q58 34 63 36" stroke="#333" stroke-width="1.5" fill="none"/>
+<g id="head-bottom"> - contains chin/jaw area and mouth elements:
+  <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
+  <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
+
+MOUTH REQUIREMENTS (critical for animation):
+- mouth-open MUST be an <ellipse> with cx, cy, rx, ry attributes (not a path)
+- mouth-closed is a <path> showing the default closed mouth
+- Both must be inside <g id="head-bottom">
+- mouth-open starts hidden with opacity="0" (the runtime creates a mouth-group for emotions)
+- The cx/cy of mouth-open sets the center point for all mouth animations
+- The stroke color of mouth-closed is used for all mouth expression paths
 
 ANATOMY REQUIREMENTS:
 - HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
@@ -106,29 +128,11 @@ IMPORTANT: The SVG MUST include a data-meta attribute with embedded JSON contain
 - name: Character display name
 - description: Brief description
 - tags: Array of descriptive tags
-- voice: { id, pitch, speed, volume }
 
 Example data-meta attribute:
-data-meta='{"name":"Bob","description":"A friendly neighbor","tags":["male","adult"],"voice":{"id":"marius","pitch":0,"speed":1,"volume":1}}'
+data-meta='{"name":"Bob","description":"A friendly neighbor","tags":["male","adult"]}'
 
 Note: Escape single quotes in JSON values as &#39;
-
-VOICE OPTIONS (choose one for voice.id):
-- "marius" - male voice
-- "javert" - male voice (deeper)
-- "jean" - male voice
-- "fantine" - female voice
-- "cosette" - female voice (younger)
-- "eponine" - female voice
-- "azelma" - female voice
-- "alba" - neutral voice
-
-VOICE SETTINGS:
-- pitch: -1 to 1 (negative = deeper, positive = higher)
-- speed: 0.5 to 2 (1 = normal)
-- volume: 0.5 to 2 (1 = normal)
-
-Choose voice settings that match the character (e.g., large characters: deeper pitch, excited characters: faster speed).
 
 Output ONLY valid JSON. No explanation, no markdown code blocks.`,
 
@@ -289,16 +293,19 @@ PROPS NOTES:
 - Props start invisible unless "visible": true
 
 AVAILABLE ACTIONS:
-- shot: type can be "wide", "medium", "closeup", "extreme-closeup", "two-shot"
-  - For closeup and extreme-closeup, add "who" to focus on a specific character: { "do": "shot", "type": "closeup", "who": "character-id" }
+- shot: camera shot type (type + optional who)
+  - type: "wide", "medium", "closeup", "extreme-closeup", "two-shot"
+  - For closeup/extreme-closeup, add "who" to focus on a character: { "do": "shot", "type": "closeup", "who": "character-id" }
   - For two-shot, optionally specify "who" as an array: { "do": "shot", "type": "two-shot", "who": ["char1", "char2"] }
 - say: character speaks (who + line + optional offset)
 - emote: change expression (who + emotion)
 - pause: wait (duration in seconds)
 - enter: character enters (who + from: left/right + to: x position)
 - exit: character exits (who + to: left/right)
-- move: character moves (who + to: x position)
+- move: character moves (who + to: x position + optional duration in seconds)
 - look: eye direction (who + at: left/right/up/down/audience)
+- face: flip character direction (who + dir: left/right)
+- follow: camera follows character (who, or omit who to stop following)
 
 AVAILABLE EMOTIONS:
 neutral, happy, sad, angry, worried, skeptical, tired, smug, dead, surprised, excited
@@ -319,6 +326,7 @@ PROP ACTIONS:
 - prop-rotate: rotate prop (what + angle + optional duration)
 - prop-scale: scale prop (what + scale + optional duration)
 - prop-animate: play animation preset (what + animation: bounce/spin/shake/pulse/float + optional duration)
+- prop-flip: flip prop horizontally (what + optional flipped: true/false)
 
 PROP HOLD NOTES:
 - Props attached with prop-hold follow the character as they move

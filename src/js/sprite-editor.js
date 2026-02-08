@@ -434,7 +434,7 @@
           return `
           <div class="background-item" data-name="${name}" data-ait-onclick="selectBackground('${name}')">
             <div class="bg-thumbnail">
-              <img src="${thumbPath}" alt="${name}" onerror="handleBgThumbError(this, '${name}')">
+              <img src="${thumbPath}" alt="${name}" data-bg-name="${name}">
             </div>
             <span style="flex:1">${name}</span>
             <button class="item-delete-btn" data-ait-onclick="event.stopPropagation(); showDeleteConfirm(this, 'background', '${name}')" title="Delete">🗑️</button>
@@ -443,20 +443,23 @@
         }));
         list.innerHTML = items.join('');
 
+        // Bind error handlers via addEventListener (CSP-safe, no inline onerror)
+        list.querySelectorAll('img[data-bg-name]').forEach(img => {
+          img.addEventListener('error', () => {
+            const bgName = img.dataset.bgName;
+            const legacyPath = `backgrounds/${bgName}.svg`;
+            if (!img.src.endsWith(legacyPath)) {
+              img.src = legacyPath;
+            } else {
+              img.parentElement.innerHTML = '🖼️';
+            }
+          });
+        });
+
         document.getElementById('bg-count').textContent = `(${backgroundList.length})`;
       } catch (e) {
         console.error('Failed to load backgrounds:', e);
         document.getElementById('bg-count').textContent = '(0)';
-      }
-    }
-
-    // Handle background thumbnail load error - try legacy path
-    function handleBgThumbError(img, name) {
-      const legacyPath = `backgrounds/${name}.svg`;
-      if (!img.src.endsWith(legacyPath)) {
-        img.src = legacyPath;
-      } else {
-        img.parentElement.innerHTML = '🖼️';
       }
     }
 
@@ -475,7 +478,7 @@
           return `
           <div class="prop-item" data-name="${name}" data-ait-onclick="selectProp('${name}')">
             <div class="prop-thumbnail">
-              <img src="${thumbPath}" alt="${name}" onerror="this.parentElement.innerHTML='🎁'">
+              <img src="${thumbPath}" alt="${name}">
             </div>
             <span style="flex:1">${name}</span>
             <button class="item-delete-btn" data-ait-onclick="event.stopPropagation(); showDeleteConfirm(this, 'prop', '${name}')" title="Delete">🗑️</button>
@@ -483,6 +486,11 @@
         `;
         }));
         list.innerHTML = items.join('');
+
+        // Bind error handlers via addEventListener (CSP-safe)
+        list.querySelectorAll('.prop-thumbnail img').forEach(img => {
+          img.addEventListener('error', () => { img.parentElement.innerHTML = '🎁'; });
+        });
 
         document.getElementById('prop-count').textContent = `(${propList.length})`;
       } catch (e) {
@@ -4916,9 +4924,6 @@
     let currentVariants = ['front'];
     
     async function loadSpriteList() {
-      const list = document.getElementById('sprite-list');
-      list.innerHTML = '';
-
       try {
         const backend = await requireBackend();
         const sprites = await backend.listSprites();
@@ -4934,6 +4939,10 @@
           characterList = [];
         }
       }
+
+      // Clear and repopulate synchronously after async work to avoid race conditions
+      const list = document.getElementById('sprite-list');
+      list.innerHTML = '';
 
       for (const name of characterList) {
         const item = document.createElement('div');

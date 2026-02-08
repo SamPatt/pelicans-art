@@ -57,76 +57,233 @@
 
   const SPRITE_PROMPT = `You are an SVG character artist creating sprites for animated comedy skits.
 
-CRITICAL REQUIREMENTS:
-- Output valid JSON with shape: {"svg":"<svg ...>...</svg>","meta":{...}}
-- viewBox must be "0 0 100 150"
-- Required element IDs: eye-left-white, eye-right-white, eye-left-pupil, eye-right-pupil, brow-left, brow-right, mouth-open
-- Required groups: body, head-top, head-bottom
-- Character must face forward and head must connect to body
-- Flat cartoon style, bold readable shapes
+CRITICAL STRUCTURE REQUIREMENTS:
+- viewBox MUST be "0 0 100 150"
+- All coordinates must fit within this viewBox
 
-Metadata requirements in meta object:
-- name, description, tags[]
-- voice: {id,pitch,speed,volume}
+REQUIRED GROUPS:
+- id="body": Torso, arms, legs
+- id="head-top": Hair, forehead, eyes, brows
+- id="head-bottom": Nose, jaw, mouth
 
-Output only valid JSON.`;
+REQUIRED ELEMENT IDs (the animation system depends on these exact IDs):
+- eye-left-white: Left eye white (ellipse)
+- eye-right-white: Right eye white (ellipse)
+- eye-left-pupil: Left pupil (circle, class="pupil")
+- eye-right-pupil: Right pupil (circle, class="pupil")
+- brow-left: Left eyebrow (path)
+- brow-right: Right eyebrow (path)
+- mouth-closed: Closed mouth (path in head-bottom, stroke for mouth color)
+- mouth-open: Mouth position marker (ellipse in head-bottom, cx/cy for position, opacity="0")
 
-  const PROP_PROMPT = `You are an SVG artist creating props for animated comedy skits.
+REQUIRED SVG STRUCTURE EXAMPLE:
+<g id="body"> - torso, arms, legs
+<g id="head-top"> - contains face shape, hair, eyes, pupils, brows, nose:
+  <ellipse id="eye-left-white" cx="42" cy="42" rx="4" ry="3" fill="#ffffff"/>
+  <ellipse id="eye-right-white" cx="58" cy="42" rx="4" ry="3" fill="#ffffff"/>
+  <circle id="eye-left-pupil" class="pupil" cx="42" cy="42" r="2" fill="#333"/>
+  <circle id="eye-right-pupil" class="pupil" cx="58" cy="42" r="2" fill="#333"/>
+  <path id="brow-left" d="M37 36 Q42 34 47 36" stroke="#333" stroke-width="1.5" fill="none"/>
+  <path id="brow-right" d="M53 36 Q58 34 63 36" stroke="#333" stroke-width="1.5" fill="none"/>
+<g id="head-bottom"> - contains chin/jaw area and mouth elements:
+  <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
+  <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
 
-Requirements:
-- Output only SVG
-- viewBox must be "0 0 100 100"
-- Keep simple flat cartoon style
-- centered composition
-- no complex filters/gradients
-`;
+MOUTH REQUIREMENTS (critical for animation):
+- mouth-open MUST be an <ellipse> with cx, cy, rx, ry attributes (not a path)
+- mouth-closed is a <path> showing the default closed mouth
+- Both must be inside <g id="head-bottom">
+- mouth-open starts hidden with opacity="0" (the runtime creates a mouth-group for emotions)
+- The cx/cy of mouth-open sets the center point for all mouth animations
+- The stroke color of mouth-closed is used for all mouth expression paths
+
+ANATOMY REQUIREMENTS:
+- HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
+
+STYLE GUIDELINES:
+- Simple, flat cartoon style suitable for comedy
+- Bold colors, clear shapes
+- Expressive features that will animate well
+- Character should face forward (front view)
+
+OUTPUT FORMAT - You must respond with valid JSON:
+{
+  "svg": "<svg viewBox='0 0 100 150'>...</svg>",
+  "meta": { "name": "...", "description": "...", "tags": [] }
+}
+
+Output ONLY valid JSON. No explanation, no markdown code blocks.`;
+
+  const PROP_PROMPT = `You are an SVG artist creating props (objects/items) for animated comedy skits.
+
+CRITICAL STRUCTURE REQUIREMENTS:
+- viewBox MUST be "0 0 100 100"
+- All coordinates must fit within this viewBox
+- The prop should be centered in the viewBox
+
+STYLE GUIDELINES:
+- Simple, flat cartoon style matching the show's aesthetic
+- Bold colors, clear shapes
+- No complex gradients or effects
+- Props should be recognizable at small sizes
+- Objects should look good when held by characters
+
+COMMON PROP TYPES:
+- Food/drink: coffee cups, pizza slices, sandwiches
+- Tools: hammers, wrenches, phones
+- Weapons (cartoon): swords, ray guns, rubber chickens
+- Everyday objects: books, keys, bags
+- Symbolic items: hearts, stars, money bags
+
+Output ONLY a valid SVG element starting with:
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+
+No explanation, no markdown code blocks.`;
 
   function buildBackgroundPrompt(orientation = 'landscape') {
     const isPortrait = orientation === 'portrait';
     const width = isPortrait ? 225 : 400;
     const height = isPortrait ? 400 : 225;
-    return `You are an SVG scene artist creating skit backgrounds.
+    const viewBox = `0 0 ${width} ${height}`;
+    return `You are an SVG scene artist creating backgrounds for animated comedy skits.
 
-REQUIRED DIMENSIONS:
-- viewBox="0 0 ${width} ${height}"
-- This output is ${isPortrait ? 'portrait' : 'landscape'} orientation.
+REQUIRED DIMENSIONS - THIS IS CRITICAL:
+- viewBox="${viewBox}" (exactly ${width} wide by ${height} tall)
+- This is a ${isPortrait ? 'PORTRAIT (tall/vertical)' : 'LANDSCAPE (wide/horizontal)'} background
 
-Style:
-- flat cartoon style
-- include depth layers
-- keep floor space for characters
+STYLE:
+- Simple, flat cartoon style
+- Include background, midground, and foreground layers
+- Leave space for characters at the bottom
 
-Output only SVG.`;
+Output ONLY a valid SVG element starting with:
+<svg viewBox="${viewBox}" xmlns="http://www.w3.org/2000/svg">
+
+No explanation, no markdown code blocks.`;
   }
 
   function buildSkitPrompt({ backgrounds = [], sprites = [], props = [] } = {}) {
     const bgList = backgrounds.length
-      ? backgrounds.map((b) => `- ${b.name} (${(b.orientations || ['landscape']).join(', ')})`).join('\n')
-      : '- none';
-    const spriteList = sprites.length ? sprites.map((s) => `- ${s.name || s}`).join('\n') : '- none';
-    const propList = props.length ? props.map((p) => `- ${p.name || p}`).join('\n') : '- none';
+      ? backgrounds.map((b) => `- "${b.name}" (${(b.orientations || ['landscape']).join(', ')})`).join('\n')
+      : '- (none available - omit background field)';
+    const spriteList = sprites.length
+      ? sprites.map((s) => `- "${s.name || s}"`).join('\n')
+      : '- (none available)';
+    const propList = props.length
+      ? props.map((p) => `- "${p.name || p}"`).join('\n')
+      : '- (none available)';
 
-    return `You are a comedy writer generating short improv skits in JSON.
+    return `You are a comedy writer creating short animated skits.
 
-AVAILABLE BACKGROUNDS:
+AVAILABLE BACKGROUNDS (use for stage.background and stage.orientation):
 ${bgList}
 
-AVAILABLE SPRITES:
+AVAILABLE SPRITES (use these for cast character sprites):
 ${spriteList}
 
-AVAILABLE PROPS:
+AVAILABLE PROPS (use these for props section):
 ${propList}
 
-Output valid JSON with structure:
+OUTPUT FORMAT - Valid JSON with this structure:
 {
-  "meta": { "title": "...", "description": "..." },
-  "stage": { "background": "...", "orientation": "landscape" },
-  "cast": { "id": { "sprite": "...", "x": 50, "startX": -20 } },
-  "props": {},
-  "script": [ { "do": "say", "who": "id", "line": "..." } ]
+  "meta": {
+    "title": "Skit Title",
+    "description": "Brief description"
+  },
+  "stage": {
+    "background": "background-name",
+    "orientation": "landscape"
+  },
+  "cast": {
+    "character-id": {
+      "sprite": "sprite-name",
+      "x": 30,
+      "startX": -20
+    }
+  },
+  "props": {
+    "prop-instance-id": {
+      "prop": "prop-asset-name",
+      "x": 50,
+      "y": 80,
+      "scale": 1.0,
+      "layer": "background",
+      "visible": false
+    }
+  },
+  "script": [
+    { "do": "shot", "type": "wide" },
+    { "do": "say", "who": "character-id", "line": "Dialogue here" },
+    { "do": "say", "who": "other-char", "line": "Interrupting!", "offset": -1.5 },
+    { "do": "emote", "who": "character-id", "emotion": "happy" },
+    { "do": "spawn", "what": "prop-instance-id", "who": "character-id" },
+    { "do": "prop-drop", "what": "prop-instance-id", "at": [50, 80] }
+  ]
 }
 
-Keep runtime under 90s and produce escalating comedic beats.`;
+STAGE NOTES:
+- "background" should be one of the available background names
+- "orientation" should be one of the available orientations for that background (defaults to "landscape" if omitted)
+
+CAST NOTES:
+- "x" is the character's target position (0-100, where 50 is center)
+- "startX" is the initial position (use -20 for offscreen left, 120 for offscreen right)
+- Characters with startX will start offscreen and can "enter" to their x position
+
+PROPS NOTES:
+- "props" section defines prop instances with their initial state
+- "layer" can be "background" (behind characters) or "foreground" (in front of characters)
+- Props start invisible unless "visible": true
+
+AVAILABLE ACTIONS:
+- shot: camera shot type (type + optional who)
+  - type: "wide", "medium", "closeup", "extreme-closeup", "two-shot"
+  - For closeup/extreme-closeup, add "who" to focus on a character: { "do": "shot", "type": "closeup", "who": "character-id" }
+  - For two-shot, optionally specify "who" as an array: { "do": "shot", "type": "two-shot", "who": ["char1", "char2"] }
+- say: character speaks (who + line + optional offset)
+- emote: change expression (who + emotion)
+- pause: wait (duration in seconds)
+- enter: character enters (who + from: left/right + to: x position)
+- exit: character exits (who + to: left/right)
+- move: character moves (who + to: x position + optional duration in seconds)
+- look: eye direction (who + at: left/right/up/down/audience)
+- face: flip character direction (who + dir: left/right)
+- follow: camera follows character (who, or omit who to stop following)
+
+AVAILABLE EMOTIONS:
+neutral, happy, sad, angry, worried, skeptical, tired, smug, dead, surprised, excited
+
+OFFSET TIMING (for interruptions and overlapping dialogue):
+- Add "offset" to any action (negative number in seconds)
+- The action starts that many seconds BEFORE the previous action ends
+- Example: { "do": "say", "who": "bob", "line": "Wait!", "offset": -1.5 } starts 1.5s before the previous line ends
+- Great for: interruptions, reactions during speech, overlapping dialogue
+- The previous speaker's audio is cut when the new speaker starts
+
+PROP ACTIONS:
+- spawn: make prop visible (what + optional at: [x, y] + optional who: character to hold it)
+- despawn: hide prop (what)
+- prop-move: animate prop to position (what + to: [x, y] + optional duration)
+- prop-hold: attach prop to character's hand (what + who + optional holdOffset: [x, y])
+- prop-drop: detach prop from character (what + optional at: [x, y])
+- prop-rotate: rotate prop (what + angle + optional duration)
+- prop-scale: scale prop (what + scale + optional duration)
+- prop-animate: play animation preset (what + animation: bounce/spin/shake/pulse/float + optional duration)
+- prop-flip: flip prop horizontally (what + optional flipped: true/false)
+
+PROP HOLD NOTES:
+- Props attached with prop-hold follow the character as they move
+- holdOffset adjusts where prop appears relative to character: [x-offset, y-offset]
+- Positive x = to character's right, negative y = higher up
+
+COMEDY GUIDELINES:
+- Find the "game" (central comic idea)
+- Two POVs work well: one absurd, one normal/foil
+- Escalate the same joke, don't add new ones
+- End with a button (strong final laugh)
+- Keep it under 90 seconds
+
+Output ONLY valid JSON. No explanation, no markdown code blocks.`;
   }
 
   function getSystemPrompt(type, opts = {}) {

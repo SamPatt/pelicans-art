@@ -19,7 +19,7 @@
 
   const defaults = {
     provider: 'openrouter',
-    model: 'anthropic/claude-sonnet-4',
+    model: 'google/gemini-3-flash-preview',
     ttsMode: 'none',
     ttsProvider: 'openai',
     ttsVoice: 'alloy',

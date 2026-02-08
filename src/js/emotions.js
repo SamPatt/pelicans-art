@@ -178,7 +178,11 @@ export function createMouthGroup(svg, origValues) {
   if (mouthOpen) {
     mouthCx = parseFloat(mouthOpen.getAttribute('cx') || 50);
     mouthCy = parseFloat(mouthOpen.getAttribute('cy') || 68);
-    mouthStroke = mouthOpen.getAttribute('stroke') || '#8d6e63';
+    // Prefer mouth-closed stroke (usually the visible mouth color), then mouth-open stroke/fill
+    mouthStroke = mouthClosed?.getAttribute('stroke')
+      || mouthOpen.getAttribute('stroke')
+      || mouthOpen.getAttribute('fill')
+      || '#8d6e63';
   } else if (mouthClosed) {
     // Fallback for legacy sprites with mouth-closed
     const center = origValues?.mouthCenter || getPathCenter(mouthClosed.getAttribute('d') || '');

@@ -64,7 +64,7 @@
   async function callLLM(systemPrompt, userPrompt, settings, fetchImpl = fetch) {
     const provider = settings?.provider || 'openrouter';
     const apiKey = settings?.apiKey || '';
-    const model = settings?.model || (provider === 'openai' ? 'gpt-4o' : provider === 'anthropic' ? 'claude-sonnet-4-20250514' : 'anthropic/claude-sonnet-4');
+    const model = settings?.model || (provider === 'openai' ? 'gpt-4o' : provider === 'anthropic' ? 'claude-sonnet-4-20250514' : 'google/gemini-3-flash-preview');
 
     if (!apiKey) {
       throw new Error('Missing AI API key. Open Settings and configure your provider key.');

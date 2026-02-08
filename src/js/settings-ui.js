@@ -62,7 +62,7 @@
           </div>
           <div>
             <label for="ait-model">AI Model</label>
-            <input id="ait-model" type="text" placeholder="anthropic/claude-sonnet-4">
+            <input id="ait-model" type="text" placeholder="google/gemini-3-flash-preview">
           </div>
 
           <div class="full row-flex">
