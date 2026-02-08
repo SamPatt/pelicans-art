@@ -6,15 +6,16 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>Pelicans.art Sprite Editor v3</title>
+  <title>pelicans.art — Editor</title>
+  <link rel="stylesheet" href="pelicans-theme.css">
   <!-- SVG Sprite Editor -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #1a1a2e;
-      color: #eee;
+      font-family: var(--font-body);
+      background: var(--plumage-cream);
+      color: var(--wing-dark);
       height: 100vh;
       overflow: hidden;
     }
@@ -31,7 +32,7 @@
         width: 100%;
         max-height: 120px;
         border-right: none;
-        border-bottom: 1px solid #0f3460;
+        border-bottom: 2px solid var(--plumage-cream);
       }
       
       .panel-left .sprite-list {
@@ -52,7 +53,7 @@
       .panel-right {
         width: 100%;
         border-left: none;
-        border-top: 1px solid #0f3460;
+        border-top: 1px solid var(--plumage-cream);
         min-height: 200px;
         padding-bottom: 20px;
       }
@@ -97,17 +98,18 @@
     
     /* Header */
     header {
-      background: #16213e;
+      background: #fff;
       padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid #0f3460;
+      border-bottom: 2px solid var(--plumage-cream);
     }
-    
+
     header h1 {
+      font-family: var(--font-display);
       font-size: 1.2em;
-      color: #e94560;
+      color: var(--wing-dark);
     }
     
     .toolbar {
@@ -116,17 +118,20 @@
     }
     
     .toolbar button {
-      background: #0f3460;
-      border: none;
-      color: #eee;
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      color: var(--wing-dark);
       padding: 8px 16px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       font-size: 0.9em;
+      font-family: var(--font-body);
+      transition: all var(--duration-fast);
     }
-    
+
     .toolbar button:hover {
-      background: #e94560;
+      background: var(--ocean-foam);
+      border-color: var(--ocean-blue);
     }
     
     .toolbar button:disabled {
@@ -135,25 +140,27 @@
     }
 
     .toolbar button.save-success {
-      background: #4ecca3 !important;
-      color: #111 !important;
+      background: #4CAF50 !important;
+      color: #fff !important;
+      border-color: #4CAF50 !important;
       transition: background 0.2s, color 0.2s;
     }
 
     .toolbar button.save-error {
-      background: #e94560 !important;
+      background: var(--mouth-red) !important;
       color: #fff !important;
+      border-color: var(--mouth-red) !important;
       transition: background 0.2s, color 0.2s;
     }
 
     .toolbar-divider {
-      color: #444;
+      color: var(--sand-warm);
       margin: 0 5px;
     }
     
     kbd {
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 3px;
       padding: 2px 6px;
       font-family: monospace;
@@ -161,26 +168,28 @@
     }
     
     .zoom-controls {
-      background: #16213e;
+      background: #fff;
       padding: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      border-bottom: 1px solid #0f3460;
+      border-bottom: 1px solid var(--plumage-cream);
     }
-    
+
     .zoom-controls button {
-      background: #0f3460;
-      border: none;
-      color: #eee;
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      color: var(--wing-dark);
       padding: 5px 10px;
-      border-radius: 3px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
+      transition: all var(--duration-fast);
     }
-    
+
     .zoom-controls button:hover {
-      background: #e94560;
+      background: var(--ocean-foam);
+      border-color: var(--ocean-blue);
     }
     
     #zoom-level {
@@ -202,12 +211,12 @@
       height: 20px;
       border-radius: 3px;
       cursor: pointer;
-      border: 1px solid #444;
+      border: 1px solid var(--sand-warm);
     }
     
     .color-swatch:hover {
       transform: scale(1.2);
-      border-color: #fff;
+      border-color: var(--wing-dark);
     }
     
     /* Main layout */
@@ -219,17 +228,18 @@
     /* Left panel - sprite list */
     .panel-left {
       width: 200px;
-      background: #16213e;
-      border-right: 1px solid #0f3460;
+      background: var(--plumage-white);
+      border-right: 1px solid var(--plumage-cream);
       overflow-y: auto;
     }
     
     .panel-header {
       padding: 10px;
-      font-weight: bold;
-      border-bottom: 1px solid #0f3460;
+      font-family: var(--font-body);
+      font-weight: 600;
+      border-bottom: 1px solid var(--plumage-cream);
       font-size: 0.9em;
-      color: #e94560;
+      color: var(--wing-dark);
     }
     
     .sprite-list {
@@ -239,19 +249,24 @@
     .sprite-item {
       padding: 8px 10px;
       cursor: pointer;
-      border-radius: 4px;
       font-size: 0.85em;
       display: flex;
       align-items: center;
       gap: 8px;
+      border-bottom: 1px solid var(--plumage-cream);
     }
-    
+
+    .sprite-item:nth-child(even) {
+      background: rgba(237, 232, 223, 0.35);
+    }
+
     .sprite-item:hover {
-      background: #0f3460;
+      background: var(--ocean-foam);
     }
-    
+
     .sprite-item.active {
-      background: #e94560;
+      background: var(--pouch-orange);
+      color: #fff;
     }
     
     .sprite-item .icon {
@@ -263,7 +278,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      background: #0d0d1a;
+      background: var(--plumage-cream);
     }
     
     .canvas-container {
@@ -280,10 +295,10 @@
     }
 
     #svg-canvas {
-      background: #2a2a4a;
-      border: 2px solid #0f3460;
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      background: #fff;
+      border: 1px solid var(--sand-warm);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
       cursor: default;
       margin: auto;
       width: fit-content;
@@ -295,16 +310,16 @@
     
     /* Selection highlight */
     .selected-element {
-      outline: 2px dashed #e94560;
+      outline: 2px dashed var(--pouch-orange);
       outline-offset: 2px;
       /* SVG elements need filter for highlight since outline doesn't work */
-      filter: drop-shadow(0 0 3px #e94560) drop-shadow(0 0 3px #e94560);
+      filter: drop-shadow(0 0 3px var(--pouch-orange)) drop-shadow(0 0 3px var(--pouch-orange));
     }
 
     /* Box selection marquee */
     #selection-box {
       position: absolute;
-      border: 2px dashed #4ecca3;
+      border: 2px dashed var(--ocean-blue);
       background: rgba(78, 204, 163, 0.1);
       pointer-events: none;
       z-index: 1000;
@@ -320,7 +335,7 @@
       position: absolute;
       width: 10px;
       height: 10px;
-      background: #e94560;
+      background: var(--pouch-orange);
       border: 2px solid #fff;
       border-radius: 2px;
       cursor: pointer;
@@ -338,7 +353,7 @@
     
     .selection-box {
       position: absolute;
-      border: 2px dashed #e94560;
+      border: 2px dashed var(--pouch-orange);
       pointer-events: none;
       z-index: 999;
     }
@@ -346,32 +361,38 @@
     /* Element tree */
     .element-tree {
       height: 300px;
-      background: #16213e;
-      border-top: 1px solid #0f3460;
+      background: var(--plumage-white);
+      border-top: 1px solid var(--plumage-cream);
       overflow-y: auto;
       font-size: 0.8em;
     }
     
     .tree-item {
-      padding: 4px 10px;
+      padding: 5px 10px;
       cursor: pointer;
       white-space: nowrap;
+      border-bottom: 1px solid var(--plumage-cream);
     }
-    
+
+    .tree-item:nth-child(even) {
+      background: rgba(237, 232, 223, 0.35);
+    }
+
     .tree-item:hover {
-      background: #0f3460;
+      background: var(--ocean-foam);
     }
-    
+
     .tree-item.selected {
-      background: #e94560;
+      background: var(--pouch-orange);
+      color: #fff;
     }
     
     .tree-item .tag {
-      color: #4ecca3;
+      color: var(--ocean-blue);
     }
     
     .tree-item .id {
-      color: #ffd93d;
+      color: var(--wing-gray);
     }
     
     .tree-indent {
@@ -380,8 +401,8 @@
     }
 
     .tree-item .layer-badge {
-      background: #0f3460;
-      color: #888;
+      background: var(--plumage-cream);
+      color: var(--wing-gray);
       font-size: 0.75em;
       padding: 1px 5px;
       border-radius: 3px;
@@ -397,19 +418,21 @@
     /* Right panel - properties */
     .panel-right {
       width: 280px;
-      background: #16213e;
-      border-left: 1px solid #0f3460;
+      background: var(--plumage-white);
+      border-left: 1px solid var(--plumage-cream);
       overflow-y: auto;
     }
     
     .property-group {
       padding: 10px;
-      border-bottom: 1px solid #0f3460;
+      border-bottom: 1px solid var(--plumage-cream);
     }
     
     .property-group h3 {
+      font-family: var(--font-display);
       font-size: 0.85em;
-      color: #e94560;
+      color: var(--wing-dark);
+      font-weight: 600;
       margin-bottom: 10px;
     }
     
@@ -423,17 +446,18 @@
     .property-row label {
       width: 60px;
       font-size: 0.8em;
-      color: #aaa;
+      color: var(--wing-gray);
     }
     
     .property-row input, .property-row select {
       flex: 1;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
-      color: #eee;
+      background: #fff;
+      border: 1px solid var(--sand-warm);
+      color: var(--wing-dark);
       padding: 5px 8px;
-      border-radius: 3px;
+      border-radius: var(--radius-sm);
       font-size: 0.85em;
+      font-family: var(--font-body);
     }
     
     .property-row input[type="color"] {
@@ -445,22 +469,24 @@
     
     .property-row input:focus, .property-row select:focus {
       outline: none;
-      border-color: #e94560;
+      border-color: var(--ocean-blue);
+      box-shadow: 0 0 0 3px rgba(45,142,196,0.12);
     }
     
     .no-selection {
       padding: 20px;
       text-align: center;
-      color: #666;
+      color: var(--sand-warm);
       font-size: 0.9em;
     }
     
     /* Status bar */
     .status-bar {
-      background: #0f3460;
+      background: #fff;
+      border-top: 1px solid var(--plumage-cream);
       padding: 5px 15px;
       font-size: 0.8em;
-      color: #aaa;
+      color: var(--wing-gray);
       display: flex;
       justify-content: space-between;
     }
@@ -475,7 +501,7 @@
       position: absolute;
       width: 8px;
       height: 8px;
-      background: #e94560;
+      background: var(--pouch-orange);
       border: 1px solid #fff;
       pointer-events: all;
       cursor: move;
@@ -486,7 +512,7 @@
       width: 36px;
       height: 36px;
       font-size: 1.3em;
-      background: #0f3460;
+      background: var(--plumage-cream);
       border: 2px solid transparent;
       border-radius: 6px;
       cursor: pointer;
@@ -494,19 +520,19 @@
     }
 
     .emotion-btn:hover {
-      background: #1a4a7a;
+      background: var(--ocean-foam);
       transform: scale(1.1);
     }
 
     .emotion-btn.active {
-      border-color: #e94560;
-      background: #2a1a3a;
+      border-color: var(--pouch-orange);
+      background: #FFF3E0;
     }
 
     #animation-preview-panel button {
-      background: #0f3460;
+      background: var(--plumage-cream);
       border: none;
-      color: #eee;
+      color: var(--wing-dark);
       padding: 8px 12px;
       border-radius: 4px;
       cursor: pointer;
@@ -514,18 +540,18 @@
     }
 
     #animation-preview-panel button:hover {
-      background: #1a4a7a;
+      background: var(--ocean-foam);
     }
 
     #animation-preview-panel button.active {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     /* AI Command Bar */
     #command-bar {
-      background: linear-gradient(135deg, #1a1a3e 0%, #16213e 100%);
-      border-bottom: 2px solid #4ecca3;
+      background: #fff;
+      border-bottom: 2px solid var(--ocean-shallow);
       padding: 12px 20px;
       display: flex;
       align-items: center;
@@ -533,13 +559,13 @@
     }
 
     #command-bar .command-context {
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
       min-width: 120px;
     }
 
     #command-bar .command-context .sprite-name {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       font-weight: bold;
     }
 
@@ -547,16 +573,16 @@
       flex: 1;
       display: flex;
       align-items: center;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
-      border-radius: 6px;
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
+      border-radius: var(--radius-full);
       padding: 4px 12px;
       gap: 8px;
     }
 
     #command-bar .command-input-wrapper:focus-within {
-      border-color: #4ecca3;
-      box-shadow: 0 0 10px rgba(78, 204, 163, 0.2);
+      border-color: var(--ocean-blue);
+      box-shadow: 0 0 0 3px rgba(45,142,196,0.12);
     }
 
     #command-bar .command-icon {
@@ -567,56 +593,60 @@
       flex: 1;
       background: transparent;
       border: none;
-      color: #eee;
+      color: var(--wing-dark);
+      font-family: var(--font-body);
       font-size: 0.95em;
       padding: 8px 0;
       outline: none;
     }
 
     #command-bar #command-input::placeholder {
-      color: #666;
+      color: var(--sand-warm);
     }
 
     #command-bar #command-submit {
-      background: #4ecca3;
-      color: #111;
+      background: linear-gradient(135deg, var(--pouch-orange), var(--pouch-deep));
+      color: #fff;
       border: none;
       padding: 10px 20px;
-      border-radius: 6px;
+      border-radius: var(--radius-full);
       cursor: pointer;
       font-weight: bold;
+      font-family: var(--font-body);
       font-size: 0.9em;
       transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(245,166,35,0.3);
     }
 
     #command-bar #command-submit:hover {
-      background: #3db892;
+      filter: brightness(1.08);
+      box-shadow: 0 4px 12px rgba(245,166,35,0.4);
       transform: translateY(-1px);
     }
 
     #command-bar #command-submit:disabled {
-      background: #2a4a4a;
-      color: #666;
+      background: var(--sand-warm);
+      color: var(--sand-warm);
       cursor: not-allowed;
       transform: none;
     }
 
     #command-bar #command-submit.generating {
-      background: #e94560;
+      background: var(--pouch-orange);
     }
 
     #command-bar .command-status {
       font-size: 0.8em;
-      color: #888;
+      color: var(--wing-gray);
       min-width: 100px;
     }
 
     #command-bar .command-status.error {
-      color: #e94560;
+      color: var(--pouch-orange);
     }
 
     #command-bar .command-status.success {
-      color: #4ecca3;
+      color: var(--ocean-blue);
     }
 
     @keyframes pulse {
@@ -635,8 +665,8 @@
 
     #asset-picker-btn {
       background: transparent;
-      border: 1px solid #0f3460;
-      color: #4ecca3;
+      border: 1px solid var(--plumage-cream);
+      color: var(--ocean-blue);
       padding: 4px 10px;
       border-radius: 4px;
       cursor: pointer;
@@ -646,8 +676,8 @@
     }
 
     #asset-picker-btn:hover {
-      background: #0f3460;
-      border-color: #4ecca3;
+      background: var(--plumage-cream);
+      border-color: var(--ocean-blue);
     }
 
     .asset-picker-dropdown {
@@ -655,8 +685,8 @@
       position: absolute;
       top: calc(100% + 6px);
       left: 0;
-      background: #1a1a2e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-cream);
+      border: 1px solid var(--plumage-cream);
       border-radius: 6px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.5);
       max-height: 320px;
@@ -674,7 +704,7 @@
       padding: 6px 12px 4px;
       font-size: 0.75em;
       font-weight: bold;
-      color: #e94560;
+      color: var(--pouch-orange);
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -688,30 +718,30 @@
 
     .asset-picker-item {
       padding: 4px 10px;
-      background: #0f3460;
-      border: 1px solid #1a4a7a;
+      background: var(--plumage-cream);
+      border: 1px solid var(--ocean-foam);
       border-radius: 4px;
-      color: #4ecca3;
+      color: var(--ocean-blue);
       cursor: pointer;
       font-size: 0.82em;
       transition: all 0.15s;
     }
 
     .asset-picker-item:hover {
-      background: #1a4a7a;
-      border-color: #4ecca3;
+      background: var(--ocean-foam);
+      border-color: var(--ocean-blue);
     }
 
     .asset-picker-empty {
       padding: 4px 12px 8px;
       font-size: 0.8em;
-      color: #666;
+      color: var(--sand-warm);
       font-style: italic;
     }
 
     /* === Collapsible Sidebar Sections === */
     .sidebar-section {
-      border-bottom: 1px solid #0f3460;
+      border-bottom: 1px solid var(--plumage-cream);
     }
 
     .section-header {
@@ -720,21 +750,25 @@
       padding: 10px 12px;
       cursor: pointer;
       user-select: none;
-      background: #16213e;
       font-weight: bold;
       font-size: 0.9em;
-      color: #e94560;
+      border-bottom: 1px solid var(--plumage-cream);
     }
 
     .section-header:hover {
-      background: #1a2a4e;
+      filter: brightness(0.97);
+    }
+
+    .section-header {
+      background: #E8F4F9;
+      color: #1B6B96;
     }
 
     .section-icon {
       margin-right: 8px;
       transition: transform 0.2s;
       font-size: 10px;
-      color: #888;
+      color: var(--wing-gray);
     }
 
     .sidebar-section.collapsed .section-icon {
@@ -747,7 +781,7 @@
 
     .section-count {
       margin-left: auto;
-      color: #666;
+      color: var(--sand-warm);
       font-size: 0.75em;
       font-weight: normal;
     }
@@ -765,20 +799,25 @@
       cursor: pointer;
       font-size: 0.85em;
       gap: 8px;
+      border-bottom: 1px solid var(--plumage-cream);
+    }
+
+    .background-item:nth-child(even) {
+      background: rgba(237, 232, 223, 0.35);
     }
 
     .background-item:hover {
-      background: #0f3460;
+      background: var(--ocean-foam);
     }
 
     .background-item.active {
-      background: #e94560;
+      background: var(--pouch-orange);
     }
 
     .bg-thumbnail {
       width: 40px;
       height: 30px;
-      background: #0d0d1a;
+      background: #fff;
       border-radius: 3px;
       overflow: hidden;
       display: flex;
@@ -800,20 +839,25 @@
       cursor: pointer;
       font-size: 0.85em;
       gap: 8px;
+      border-bottom: 1px solid var(--plumage-cream);
+    }
+
+    .prop-item:nth-child(even) {
+      background: rgba(237, 232, 223, 0.35);
     }
 
     .prop-item:hover {
-      background: #0f3460;
+      background: var(--ocean-foam);
     }
 
     .prop-item.active {
-      background: #e94560;
+      background: var(--pouch-orange);
     }
 
     .prop-thumbnail {
       width: 30px;
       height: 30px;
-      background: #0d0d1a;
+      background: #fff;
       border-radius: 3px;
       overflow: hidden;
       display: flex;
@@ -833,7 +877,7 @@
       align-items: center;
       gap: 8px;
       padding: 6px 10px;
-      background: #1a4a7a;
+      background: var(--ocean-foam);
       border-radius: 4px;
       margin-bottom: 4px;
       font-size: 0.85em;
@@ -841,15 +885,15 @@
 
     .prop-id {
       font-weight: bold;
-      color: #4ecca3;
+      color: var(--ocean-blue);
     }
 
     .prop-asset {
-      color: #aaa;
+      color: var(--wing-gray);
     }
 
     .prop-layer {
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.8em;
     }
 
@@ -857,13 +901,13 @@
       margin-left: auto;
       background: none;
       border: none;
-      color: #666;
+      color: var(--sand-warm);
       cursor: pointer;
       padding: 2px 6px;
     }
 
     .prop-member .item-delete-btn:hover {
-      color: #e94560;
+      color: var(--pouch-orange);
     }
 
     /* Prop action styling in script */
@@ -884,7 +928,7 @@
     /* === Stage Setup === */
     .stage-setup-container {
       margin-top: 8px;
-      border: 1px solid #1a4a7a;
+      border: 1px solid var(--ocean-foam);
       border-radius: 6px;
       overflow: hidden;
     }
@@ -893,7 +937,7 @@
       position: relative;
       width: 100%;
       aspect-ratio: 4 / 3;
-      background: #0d0d1a;
+      background: #fff;
       overflow: hidden;
     }
 
@@ -937,7 +981,7 @@
     }
 
     .stage-prop-item.selected {
-      box-shadow: 0 0 0 3px #e94560;
+      box-shadow: 0 0 0 3px var(--pouch-orange);
     }
 
     .stage-prop-item.dragging {
@@ -966,7 +1010,7 @@
     }
 
     .stage-char-item.selected {
-      box-shadow: 0 0 0 3px #4ecca3;
+      box-shadow: 0 0 0 3px var(--ocean-blue);
     }
 
     .stage-char-item.dragging {
@@ -982,8 +1026,8 @@
 
     .stage-setup-controls {
       padding: 10px;
-      background: #16213e;
-      border-top: 1px solid #1a4a7a;
+      background: var(--plumage-white);
+      border-top: 1px solid var(--ocean-foam);
     }
 
     .stage-select-row {
@@ -995,15 +1039,15 @@
 
     .stage-select-row label {
       font-size: 0.85em;
-      color: #aaa;
+      color: var(--wing-gray);
     }
 
     .stage-select-row select {
       flex: 1;
       padding: 4px 8px;
-      background: #0f3460;
-      border: 1px solid #1a4a7a;
-      color: #eee;
+      background: var(--plumage-cream);
+      border: 1px solid var(--ocean-foam);
+      color: var(--wing-dark);
       border-radius: 4px;
     }
 
@@ -1022,16 +1066,16 @@
     .stage-prop-controls .control-row label {
       width: 80px;
       font-size: 0.85em;
-      color: #aaa;
+      color: var(--wing-gray);
     }
 
     .stage-prop-controls .control-row input[type="range"] {
       flex: 1;
-      accent-color: #4ecca3;
+      accent-color: var(--ocean-blue);
     }
 
     .stage-prop-controls .control-row input[type="checkbox"] {
-      accent-color: #4ecca3;
+      accent-color: var(--ocean-blue);
       width: 18px;
       height: 18px;
     }
@@ -1039,16 +1083,16 @@
     .stage-prop-controls .control-row span {
       width: 40px;
       font-size: 0.8em;
-      color: #4ecca3;
+      color: var(--ocean-blue);
       text-align: right;
     }
 
     .stage-prop-controls .control-row select {
       flex: 1;
       padding: 4px 8px;
-      background: #0f3460;
-      border: 1px solid #1a4a7a;
-      color: #eee;
+      background: var(--plumage-cream);
+      border: 1px solid var(--ocean-foam);
+      color: var(--wing-dark);
       border-radius: 4px;
     }
 
@@ -1060,14 +1104,19 @@
       cursor: pointer;
       font-size: 0.85em;
       gap: 8px;
+      border-bottom: 1px solid var(--plumage-cream);
+    }
+
+    .skit-item:nth-child(even) {
+      background: rgba(237, 232, 223, 0.35);
     }
 
     .skit-item:hover {
-      background: #0f3460;
+      background: var(--ocean-foam);
     }
 
     .skit-item.active {
-      background: #e94560;
+      background: var(--pouch-orange);
     }
 
     .skit-icon {
@@ -1082,9 +1131,9 @@
     }
 
     .skit-play-btn {
-      background: #4ecca3;
+      background: var(--ocean-blue);
       border: none;
-      color: #111;
+      color: var(--wing-dark);
       padding: 4px 8px;
       border-radius: 3px;
       cursor: pointer;
@@ -1092,14 +1141,14 @@
     }
 
     .skit-play-btn:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     /* === Delete buttons for list items === */
     .item-delete-btn {
       background: transparent;
       border: none;
-      color: #666;
+      color: var(--sand-warm);
       padding: 4px 6px;
       border-radius: 3px;
       cursor: pointer;
@@ -1117,7 +1166,7 @@
     }
 
     .item-delete-btn:hover {
-      color: #e94560;
+      color: var(--pouch-orange);
     }
 
     .delete-confirm {
@@ -1160,24 +1209,24 @@
     /* === Skit Editor Panel === */
     .skit-editor-panel {
       padding: 20px;
-      background: #0d0d1a;
+      background: #fff;
       height: 100%;
       overflow-y: auto;
     }
 
     .skit-editor-panel h3 {
-      color: #e94560;
+      color: var(--pouch-orange);
       margin-bottom: 8px;
     }
 
     .skit-editor-panel h4 {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       margin: 15px 0 8px 0;
       font-size: 0.9em;
     }
 
     .skit-meta p {
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.9em;
     }
 
@@ -1186,7 +1235,7 @@
       flex-direction: column;
       gap: 5px;
       padding: 8px 10px;
-      background: #16213e;
+      background: var(--plumage-white);
       border-radius: 4px;
       margin-bottom: 5px;
       font-size: 0.85em;
@@ -1198,12 +1247,12 @@
     }
 
     .cast-id {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       font-weight: bold;
     }
 
     .cast-sprite {
-      color: #888;
+      color: var(--wing-gray);
     }
 
     .cast-fields {
@@ -1214,7 +1263,7 @@
     }
 
     .cast-fields label {
-      color: #aaa;
+      color: var(--wing-gray);
       display: flex;
       align-items: center;
       gap: 5px;
@@ -1222,18 +1271,18 @@
 
     .cast-fields select {
       padding: 3px 5px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
-      color: #eee;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      color: var(--wing-dark);
       border-radius: 3px;
     }
 
     .cast-manual-input input {
       width: 50px;
       padding: 3px 5px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
-      color: #eee;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      color: var(--wing-dark);
       border-radius: 3px;
     }
 
@@ -1251,43 +1300,43 @@
     .skit-background-selector select {
       flex: 1;
       padding: 8px 10px;
-      background: #16213e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-white);
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 0.9em;
       cursor: pointer;
     }
 
     .skit-background-selector select:hover {
-      border-color: #4ecca3;
+      border-color: var(--ocean-blue);
     }
 
     .skit-background-selector .ok-btn {
       padding: 8px 16px;
-      background: #4ecca3;
+      background: var(--ocean-blue);
       border: none;
       border-radius: 4px;
-      color: #111;
+      color: var(--wing-dark);
       font-weight: bold;
       font-size: 0.85em;
       cursor: pointer;
     }
 
     .skit-background-selector .ok-btn:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     .skit-background-preview {
       margin-top: 8px;
       border-radius: 4px;
       overflow: hidden;
-      background: #16213e;
+      background: var(--plumage-white);
       aspect-ratio: 4/3;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #555;
+      color: var(--sand-warm);
       font-size: 0.8em;
     }
 
@@ -1305,15 +1354,15 @@
     .skit-background-collapsed {
       display: none;
       padding: 8px 12px;
-      background: #16213e;
+      background: var(--plumage-white);
       border-radius: 4px;
       cursor: pointer;
       font-size: 0.9em;
-      color: #4ecca3;
+      color: var(--ocean-blue);
     }
 
     .skit-background-collapsed:hover {
-      background: #1a2a4e;
+      background: var(--plumage-cream);
     }
 
     .skit-background-selector.collapsed .skit-background-collapsed {
@@ -1327,7 +1376,7 @@
     }
 
     .skit-background-collapsed .edit-hint {
-      color: #666;
+      color: var(--sand-warm);
       font-size: 0.8em;
     }
 
@@ -1338,12 +1387,12 @@
       gap: 8px;
       margin-top: 8px;
       padding: 8px;
-      background: #16213e;
+      background: var(--plumage-white);
       border-radius: 4px;
     }
 
     .orientation-label {
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
     }
 
@@ -1354,24 +1403,24 @@
 
     .orientation-btn {
       padding: 4px 12px;
-      background: #0f3460;
-      border: 1px solid #1a3a60;
+      background: var(--plumage-cream);
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #aaa;
+      color: var(--wing-gray);
       font-size: 0.8em;
       cursor: pointer;
       transition: all 0.15s;
     }
 
     .orientation-btn:hover {
-      background: #1a3a60;
-      color: #eee;
+      background: var(--plumage-cream);
+      color: var(--wing-dark);
     }
 
     .orientation-btn.active {
-      background: #4ecca3;
-      border-color: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      border-color: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .skit-background-selector.collapsed .orientation-row {
@@ -1381,25 +1430,25 @@
     .script-line {
       padding: 8px 12px;
       margin-bottom: 4px;
-      background: #16213e;
+      background: var(--plumage-white);
       border-radius: 4px;
       font-size: 0.85em;
-      border-left: 3px solid #0f3460;
+      border-left: 3px solid var(--plumage-cream);
     }
 
     .script-line.say {
-      border-left-color: #4ecca3;
+      border-left-color: var(--ocean-blue);
     }
 
     .script-line.emote {
       border-left-color: #ffd93d;
       font-style: italic;
-      color: #aaa;
+      color: var(--wing-gray);
     }
 
     .script-line.shot {
-      border-left-color: #e94560;
-      color: #e94560;
+      border-left-color: var(--pouch-orange);
+      color: var(--pouch-orange);
       font-size: 0.8em;
     }
 
@@ -1419,7 +1468,7 @@
     }
 
     .script-line:hover {
-      background: #1a2a4e;
+      background: var(--plumage-cream);
     }
 
     .script-line .content {
@@ -1447,16 +1496,16 @@
     }
 
     .script-line .action-btn:hover {
-      background: #0f3460;
+      background: var(--plumage-cream);
     }
 
     .script-line .action-btn.delete:hover {
-      background: #e94560;
+      background: var(--pouch-orange);
       color: white;
     }
 
     .offset-badge {
-      background: #e94560;
+      background: var(--pouch-orange);
       color: white;
       padding: 1px 4px;
       border-radius: 3px;
@@ -1467,7 +1516,7 @@
     /* Script card reorder grip */
     .script-line .reorder-grip {
       cursor: grab;
-      color: #444;
+      color: var(--sand-warm);
       padding: 0 8px 0 0;
       user-select: none;
       font-size: 0.9em;
@@ -1477,7 +1526,7 @@
 
     .script-line:hover .reorder-grip {
       opacity: 1;
-      color: #666;
+      color: var(--sand-warm);
     }
 
     .script-line .reorder-grip:active {
@@ -1486,11 +1535,11 @@
 
     .script-line.dragging {
       opacity: 0.5;
-      background: #0f3460;
+      background: var(--plumage-cream);
     }
 
     .script-line.drag-over {
-      border-top: 2px solid #4ecca3;
+      border-top: 2px solid var(--ocean-blue);
       margin-top: -2px;
     }
 
@@ -1509,9 +1558,9 @@
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      background: #0f3460;
-      border: 1px dashed #4ecca3;
-      color: #4ecca3;
+      background: var(--plumage-cream);
+      border: 1px dashed var(--ocean-blue);
+      color: var(--ocean-blue);
       font-size: 12px;
       line-height: 1;
       cursor: pointer;
@@ -1528,8 +1577,8 @@
     }
 
     .script-insert-gap .insert-btn:hover {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
       transform: translateY(-50%) scale(1.2);
     }
 
@@ -1537,7 +1586,7 @@
     .script-insert-gap.drag-over {
       height: 40px;
       background: rgba(78, 204, 163, 0.1);
-      border: 2px dashed #4ecca3;
+      border: 2px dashed var(--ocean-blue);
       border-radius: 4px;
     }
 
@@ -1545,28 +1594,28 @@
       width: 100%;
       padding: 10px;
       margin-top: 10px;
-      background: #16213e;
-      border: 2px dashed #0f3460;
+      background: var(--plumage-white);
+      border: 2px dashed var(--plumage-cream);
       border-radius: 6px;
-      color: #4ecca3;
+      color: var(--ocean-blue);
       cursor: pointer;
       font-size: 0.9em;
       transition: all 0.2s;
     }
 
     .add-action-btn:hover {
-      background: #1a2a4e;
-      border-color: #4ecca3;
+      background: var(--plumage-cream);
+      border-color: var(--ocean-blue);
     }
 
     .skit-save-btn {
       width: 100%;
       padding: 12px;
       margin-top: 15px;
-      background: #4ecca3;
+      background: var(--ocean-blue);
       border: none;
       border-radius: 6px;
-      color: #111;
+      color: var(--wing-dark);
       cursor: pointer;
       font-weight: bold;
       font-size: 0.95em;
@@ -1574,12 +1623,12 @@
     }
 
     .skit-save-btn:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     .skit-save-btn:disabled {
-      background: #2a4a4a;
-      color: #666;
+      background: var(--sand-warm);
+      color: var(--sand-warm);
       cursor: not-allowed;
     }
 
@@ -1587,7 +1636,7 @@
       width: 100%;
       padding: 12px;
       margin-top: 8px;
-      background: #e94560;
+      background: var(--pouch-orange);
       border: none;
       border-radius: 6px;
       color: #fff;
@@ -1602,23 +1651,23 @@
     }
 
     .skit-publish-btn:disabled {
-      background: #4a2a2a;
-      color: #666;
+      background: var(--sand-warm);
+      color: var(--wing-gray);
       cursor: not-allowed;
     }
 
     .skit-publish-btn.publishing {
       background: #c49000;
-      color: #111;
+      color: var(--wing-dark);
     }
 
     .skit-publish-btn.publish-success {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .skit-publish-btn.publish-error {
-      background: #e94560;
+      background: var(--pouch-orange);
       color: #fff;
     }
 
@@ -1634,14 +1683,14 @@
     .publish-progress-bar {
       width: 100%;
       height: 6px;
-      background: #1a1a2e;
+      background: var(--plumage-cream);
       border-radius: 3px;
       overflow: hidden;
     }
 
     .publish-progress-fill {
       height: 100%;
-      background: #e94560;
+      background: var(--pouch-orange);
       border-radius: 3px;
       transition: width 0.3s ease;
       width: 0%;
@@ -1649,7 +1698,7 @@
 
     .publish-progress-text {
       font-size: 0.75em;
-      color: #888;
+      color: var(--wing-gray);
       margin-top: 4px;
     }
 
@@ -1672,8 +1721,8 @@
     }
 
     .action-modal-content {
-      background: #1a1a2e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-cream);
+      border: 1px solid var(--plumage-cream);
       border-radius: 8px;
       padding: 20px;
       width: 400px;
@@ -1683,7 +1732,7 @@
     }
 
     .action-modal h3 {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       margin-bottom: 15px;
     }
 
@@ -1693,7 +1742,7 @@
 
     .action-modal label {
       display: block;
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
       margin-bottom: 4px;
     }
@@ -1703,10 +1752,10 @@
     .action-modal textarea {
       width: 100%;
       padding: 8px 10px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 0.9em;
     }
 
@@ -1731,21 +1780,21 @@
     }
 
     .action-modal .btn-save {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .action-modal .btn-cancel {
-      background: #333;
-      color: #eee;
+      background: var(--sand-warm);
+      color: var(--wing-dark);
     }
 
     .action-modal .btn-save:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     .action-modal .btn-cancel:hover {
-      background: #444;
+      background: var(--sand-warm);
     }
 
     /* === Naming Modal === */
@@ -1767,8 +1816,8 @@
     }
 
     .naming-modal-content {
-      background: #1a1a2e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-cream);
+      border: 1px solid var(--plumage-cream);
       border-radius: 8px;
       padding: 20px;
       width: 360px;
@@ -1776,7 +1825,7 @@
     }
 
     .naming-modal h3 {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       margin-bottom: 15px;
       font-size: 1.1em;
     }
@@ -1787,7 +1836,7 @@
 
     .naming-modal label {
       display: block;
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
       margin-bottom: 4px;
     }
@@ -1795,17 +1844,17 @@
     .naming-modal input {
       width: 100%;
       padding: 10px 12px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 1em;
       box-sizing: border-box;
     }
 
     .naming-modal input:focus {
       outline: none;
-      border-color: #4ecca3;
+      border-color: var(--ocean-blue);
     }
 
     .naming-modal .quick-buttons {
@@ -1817,18 +1866,18 @@
 
     .naming-modal .quick-btn {
       padding: 6px 14px;
-      background: #0f3460;
-      border: 1px solid #1a4a7a;
+      background: var(--plumage-cream);
+      border: 1px solid var(--ocean-foam);
       border-radius: 4px;
-      color: #4ecca3;
+      color: var(--ocean-blue);
       cursor: pointer;
       font-size: 0.9em;
       transition: all 0.15s;
     }
 
     .naming-modal .quick-btn:hover {
-      background: #1a4a7a;
-      border-color: #4ecca3;
+      background: var(--ocean-foam);
+      border-color: var(--ocean-blue);
     }
 
     .naming-modal .modal-buttons {
@@ -1847,25 +1896,25 @@
     }
 
     .naming-modal .btn-ok {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .naming-modal .btn-cancel {
-      background: #333;
-      color: #eee;
+      background: var(--sand-warm);
+      color: var(--wing-dark);
     }
 
     .naming-modal .btn-ok:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     .naming-modal .btn-cancel:hover {
-      background: #444;
+      background: var(--sand-warm);
     }
 
     .naming-modal .error-msg {
-      color: #e94560;
+      color: var(--pouch-orange);
       font-size: 0.85em;
       margin-top: 6px;
       display: none;
@@ -1894,8 +1943,8 @@
     }
 
     .community-modal-content {
-      background: #1a1a2e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-cream);
+      border: 1px solid var(--plumage-cream);
       border-radius: 8px;
       padding: 24px;
       width: 480px;
@@ -1905,7 +1954,7 @@
     }
 
     .community-modal h3 {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       margin-bottom: 16px;
       font-size: 1.1em;
     }
@@ -1916,7 +1965,7 @@
 
     .community-modal label {
       display: block;
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
       margin-bottom: 4px;
     }
@@ -1925,16 +1974,16 @@
     .community-modal select {
       width: 100%;
       padding: 8px 10px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 0.9em;
       box-sizing: border-box;
     }
 
     .community-modal input[type="text"]:focus {
-      border-color: #4ecca3;
+      border-color: var(--ocean-blue);
       outline: none;
     }
 
@@ -1947,29 +1996,29 @@
 
     .community-tab {
       padding: 6px 12px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #888;
+      color: var(--wing-gray);
       cursor: pointer;
       font-size: 0.8em;
       transition: all 0.15s;
     }
 
     .community-tab:hover {
-      border-color: #4ecca3;
-      color: #ccc;
+      border-color: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .community-tab.active {
-      background: #0f3460;
-      border-color: #4ecca3;
-      color: #4ecca3;
+      background: var(--plumage-cream);
+      border-color: var(--ocean-blue);
+      color: var(--ocean-blue);
     }
 
     .community-preview {
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
       padding: 12px;
       min-height: 80px;
@@ -1986,7 +2035,7 @@
     }
 
     .community-preview .preview-text {
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
       line-height: 1.5;
     }
@@ -2013,18 +2062,18 @@
 
     .community-variant-label {
       font-size: 0.7em;
-      color: #4ecca3;
+      color: var(--ocean-blue);
       margin-top: 6px;
     }
 
     .community-size-estimate {
       font-size: 0.8em;
-      color: #888;
+      color: var(--wing-gray);
       margin-bottom: 14px;
     }
 
     .community-size-estimate.over-limit {
-      color: #e94560;
+      color: var(--pouch-orange);
       font-weight: bold;
     }
 
@@ -2040,14 +2089,14 @@
     .community-progress-bar {
       width: 100%;
       height: 6px;
-      background: #0d0d1a;
+      background: #fff;
       border-radius: 3px;
       overflow: hidden;
     }
 
     .community-progress-fill {
       height: 100%;
-      background: #4ecca3;
+      background: var(--ocean-blue);
       border-radius: 3px;
       transition: width 0.3s ease;
       width: 0%;
@@ -2064,11 +2113,11 @@
     }
 
     .community-feedback.success {
-      color: #4ecca3;
+      color: var(--ocean-blue);
     }
 
     .community-feedback.error {
-      color: #e94560;
+      color: var(--pouch-orange);
     }
 
     .community-modal .modal-buttons {
@@ -2088,32 +2137,32 @@
     }
 
     .community-modal .btn-upload {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .community-modal .btn-upload:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     .community-modal .btn-upload:disabled {
-      background: #2a4a3a;
-      color: #666;
+      background: var(--sand-warm);
+      color: var(--sand-warm);
       cursor: not-allowed;
     }
 
     .community-modal .btn-cancel {
-      background: #333;
-      color: #eee;
+      background: var(--sand-warm);
+      color: var(--wing-dark);
     }
 
     .community-modal .btn-cancel:hover {
-      background: #444;
+      background: var(--sand-warm);
     }
 
     .community-share-btn {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
       border: none;
       padding: 6px 12px;
       border-radius: 4px;
@@ -2123,13 +2172,13 @@
     }
 
     .community-share-btn:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     .import-btn {
-      background: #0f3460;
-      color: #4ecca3;
-      border: 1px solid #4ecca3;
+      background: var(--plumage-cream);
+      color: var(--ocean-blue);
+      border: 1px solid var(--ocean-blue);
       padding: 6px 12px;
       border-radius: 4px;
       cursor: pointer;
@@ -2138,7 +2187,7 @@
     }
 
     .import-btn:hover {
-      background: #1a4a7a;
+      background: var(--ocean-foam);
     }
 
     /* Import Modal */
@@ -2160,8 +2209,8 @@
     }
 
     .import-modal-content {
-      background: #1a1a2e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-cream);
+      border: 1px solid var(--plumage-cream);
       border-radius: 8px;
       padding: 24px;
       width: 480px;
@@ -2169,7 +2218,7 @@
     }
 
     .import-modal h3 {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       margin-bottom: 16px;
       font-size: 1.1em;
     }
@@ -2180,7 +2229,7 @@
 
     .import-modal label {
       display: block;
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
       margin-bottom: 4px;
     }
@@ -2188,26 +2237,26 @@
     .import-modal input[type="text"] {
       width: 100%;
       padding: 10px 12px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 0.9em;
       font-family: monospace;
     }
 
     .import-modal input[type="text"]:focus {
-      border-color: #4ecca3;
+      border-color: var(--ocean-blue);
       outline: none;
     }
 
     .import-modal input[type="text"]::placeholder {
-      color: #555;
+      color: var(--sand-warm);
     }
 
     .import-preview {
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
       padding: 12px;
       margin-bottom: 14px;
@@ -2215,7 +2264,7 @@
     }
 
     .import-preview-empty {
-      color: #555;
+      color: var(--sand-warm);
       font-size: 0.85em;
       text-align: center;
     }
@@ -2226,8 +2275,8 @@
 
     .import-preview-info .type-badge {
       display: inline-block;
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
       padding: 2px 8px;
       border-radius: 3px;
       font-size: 0.8em;
@@ -2237,13 +2286,13 @@
     }
 
     .import-preview-info .name {
-      color: #eee;
+      color: var(--wing-dark);
       font-weight: bold;
       margin-bottom: 4px;
     }
 
     .import-preview-info .id {
-      color: #888;
+      color: var(--wing-gray);
       font-family: monospace;
       font-size: 0.8em;
     }
@@ -2262,13 +2311,13 @@
 
     .import-feedback.success {
       background: rgba(78, 204, 163, 0.15);
-      color: #4ecca3;
+      color: var(--ocean-blue);
       border: 1px solid rgba(78, 204, 163, 0.3);
     }
 
     .import-feedback.error {
       background: rgba(233, 69, 96, 0.15);
-      color: #e94560;
+      color: var(--pouch-orange);
       border: 1px solid rgba(233, 69, 96, 0.3);
     }
 
@@ -2289,27 +2338,27 @@
     }
 
     .import-modal .btn-import {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .import-modal .btn-import:hover {
-      background: #3db892;
+      background: var(--ocean-deep);
     }
 
     .import-modal .btn-import:disabled {
-      background: #2a4a3a;
-      color: #666;
+      background: var(--sand-warm);
+      color: var(--sand-warm);
       cursor: not-allowed;
     }
 
     .import-modal .btn-cancel {
-      background: #333;
-      color: #eee;
+      background: var(--sand-warm);
+      color: var(--wing-dark);
     }
 
     .import-modal .btn-cancel:hover {
-      background: #444;
+      background: var(--sand-warm);
     }
 
     .community-voice-input {
@@ -2317,13 +2366,13 @@
     }
 
     .community-voice-input input[type="file"] {
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
     }
 
     /* === Voice Settings Panel === */
     .voice-section {
-      border-top: 1px solid #0f3460;
+      border-top: 1px solid var(--plumage-cream);
       margin-top: 10px;
     }
 
@@ -2337,20 +2386,20 @@
     .voice-selector select {
       flex: 1;
       padding: 6px 8px;
-      background: #0d0d1a;
-      color: #eee;
-      border: 1px solid #0f3460;
+      background: #fff;
+      color: var(--wing-dark);
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
       font-size: 0.85em;
     }
 
     .voice-preview-btn {
       padding: 6px 12px;
-      background: #4a4a4a;
+      background: var(--plumage-cream);
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 0.85em;
     }
 
@@ -2360,7 +2409,7 @@
     }
 
     .voice-preview-btn:hover:not(:disabled) {
-      background: #5a5a5a;
+      background: var(--sand-warm);
     }
 
     .voice-params {
@@ -2376,26 +2425,26 @@
     .voice-param-row label {
       width: 55px;
       font-size: 0.75em;
-      color: #888;
+      color: var(--wing-gray);
     }
 
     .voice-param-row input[type="range"] {
       flex: 1;
       margin: 0 8px;
-      accent-color: #4ecca3;
+      accent-color: var(--ocean-blue);
     }
 
     .voice-param-row span {
       width: 35px;
       text-align: right;
       font-size: 0.75em;
-      color: #aaa;
+      color: var(--wing-gray);
     }
 
     .save-voice-btn {
       width: 100%;
       padding: 8px;
-      background: #2a6a2a;
+      background: var(--ocean-blue);
       border: none;
       border-radius: 4px;
       color: #fff;
@@ -2404,13 +2453,13 @@
     }
 
     .save-voice-btn:hover {
-      background: #3a8a3a;
+      background: var(--ocean-deep);
     }
 
     .create-voice-btn {
       width: 100%;
       padding: 8px;
-      background: #4a1a6a;
+      background: var(--ocean-blue);
       border: none;
       border-radius: 4px;
       color: #fff;
@@ -2420,7 +2469,7 @@
     }
 
     .create-voice-btn:hover {
-      background: #6a2a8a;
+      background: var(--ocean-deep);
     }
 
     /* === Voice Creator Modal === */
@@ -2442,8 +2491,8 @@
     }
 
     .voice-creator-content {
-      background: #1a1a2e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-cream);
+      border: 1px solid var(--plumage-cream);
       border-radius: 8px;
       padding: 20px;
       width: 600px;
@@ -2453,7 +2502,7 @@
     }
 
     .voice-creator-content h3 {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       margin-bottom: 15px;
       font-size: 1.2em;
     }
@@ -2467,19 +2516,19 @@
     .voice-creator-tab {
       flex: 1;
       padding: 10px;
-      background: #0f3460;
-      border: 1px solid #1a4a7a;
+      background: var(--plumage-cream);
+      border: 1px solid var(--ocean-foam);
       border-radius: 4px;
-      color: #888;
+      color: var(--wing-gray);
       cursor: pointer;
       font-size: 0.9em;
       text-align: center;
     }
 
     .voice-creator-tab.active {
-      background: #1a4a7a;
-      color: #4ecca3;
-      border-color: #4ecca3;
+      background: var(--ocean-foam);
+      color: var(--ocean-blue);
+      border-color: var(--ocean-blue);
     }
 
     .voice-input-section {
@@ -2492,7 +2541,7 @@
 
     .voice-input-section label {
       display: block;
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.85em;
       margin-bottom: 6px;
     }
@@ -2500,26 +2549,26 @@
     .voice-input-section input[type="file"] {
       width: 100%;
       padding: 10px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #888;
+      color: var(--wing-gray);
     }
 
     .voice-input-section input[type="text"] {
       width: 100%;
       padding: 10px 12px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 1em;
       box-sizing: border-box;
     }
 
     .voice-waveform-container {
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
       padding: 10px;
       margin-bottom: 15px;
@@ -2537,8 +2586,8 @@
       top: 10px;
       height: 100px;
       background: rgba(78, 204, 163, 0.2);
-      border-left: 2px solid #4ecca3;
-      border-right: 2px solid #4ecca3;
+      border-left: 2px solid var(--ocean-blue);
+      border-right: 2px solid var(--ocean-blue);
       pointer-events: none;
     }
 
@@ -2547,7 +2596,7 @@
       top: 10px;
       width: 10px;
       height: 100px;
-      background: #4ecca3;
+      background: var(--ocean-blue);
       cursor: ew-resize;
     }
 
@@ -2564,7 +2613,7 @@
       gap: 15px;
       margin-bottom: 15px;
       padding: 10px;
-      background: #0d0d1a;
+      background: #fff;
       border-radius: 4px;
     }
 
@@ -2576,7 +2625,7 @@
     .quality-item label {
       display: block;
       font-size: 0.75em;
-      color: #666;
+      color: var(--sand-warm);
       margin-bottom: 4px;
     }
 
@@ -2585,9 +2634,9 @@
       font-weight: bold;
     }
 
-    .quality-good { color: #4ecca3; }
+    .quality-good { color: var(--ocean-blue); }
     .quality-ok { color: #ffd93d; }
-    .quality-bad { color: #e94560; }
+    .quality-bad { color: var(--pouch-orange); }
 
     .voice-segment-info {
       display: flex;
@@ -2599,24 +2648,24 @@
     .voice-segment-info input {
       width: 80px;
       padding: 6px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       text-align: center;
     }
 
     .voice-segment-info button {
       padding: 6px 12px;
-      background: #0f3460;
+      background: var(--plumage-cream);
       border: none;
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       cursor: pointer;
     }
 
     .voice-segment-info button:hover {
-      background: #1a4a7a;
+      background: var(--ocean-foam);
     }
 
     .voice-name-input {
@@ -2626,22 +2675,22 @@
     .voice-name-input input {
       width: 100%;
       padding: 10px 12px;
-      background: #0d0d1a;
-      border: 1px solid #0f3460;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 1em;
     }
 
     .voice-preview-section {
       margin-bottom: 20px;
       padding: 15px;
-      background: #0d0d1a;
+      background: #fff;
       border-radius: 4px;
     }
 
     .voice-preview-section h4 {
-      color: #888;
+      color: var(--wing-gray);
       font-size: 0.9em;
       margin-bottom: 10px;
     }
@@ -2650,10 +2699,10 @@
       width: 100%;
       height: 60px;
       padding: 8px;
-      background: #16213e;
-      border: 1px solid #0f3460;
+      background: var(--plumage-white);
+      border: 1px solid var(--plumage-cream);
       border-radius: 4px;
-      color: #eee;
+      color: var(--wing-dark);
       resize: none;
       margin-bottom: 10px;
     }
@@ -2673,17 +2722,17 @@
     }
 
     .voice-preview-play {
-      background: #4a4a4a;
-      color: #eee;
+      background: var(--plumage-cream);
+      color: var(--wing-dark);
     }
 
     .voice-preview-play:hover {
-      background: #5a5a5a;
+      background: var(--sand-warm);
     }
 
     .voice-preview-play:disabled {
-      background: #333;
-      color: #666;
+      background: var(--sand-warm);
+      color: var(--sand-warm);
       cursor: not-allowed;
     }
 
@@ -2702,18 +2751,18 @@
     }
 
     .voice-creator-actions .btn-cancel {
-      background: #333;
-      color: #eee;
+      background: var(--sand-warm);
+      color: var(--wing-dark);
     }
 
     .voice-creator-actions .btn-save {
-      background: #2a6a2a;
+      background: var(--ocean-blue);
       color: #fff;
     }
 
     .voice-creator-actions .btn-upload {
-      background: #4ecca3;
-      color: #111;
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
     }
 
     .voice-creator-actions button:hover {
@@ -2735,25 +2784,25 @@
     }
 
     .voice-creator-status.info {
-      background: #16213e;
-      color: #4ecca3;
+      background: var(--plumage-white);
+      color: var(--ocean-blue);
     }
 
     .voice-creator-status.error {
-      background: #3a1a1a;
-      color: #e94560;
+      background: #FFEBEE;
+      color: var(--pouch-orange);
     }
 
     .voice-creator-status.success {
-      background: #1a3a1a;
-      color: #4ecca3;
+      background: #E8F5E9;
+      color: var(--ocean-blue);
     }
 
     .voice-processing-spinner {
       display: inline-block;
       width: 16px;
       height: 16px;
-      border: 2px solid #4ecca3;
+      border: 2px solid var(--ocean-blue);
       border-top-color: transparent;
       border-radius: 50%;
       animation: spin 1s linear infinite;
@@ -2768,17 +2817,17 @@
     /* === Edit Mode Indicator === */
     .edit-mode-indicator {
       padding: 5px 10px;
-      background: #2a2a4a;
-      border-bottom: 1px solid #0f3460;
+      background: var(--plumage-cream);
+      border-bottom: 1px solid var(--plumage-cream);
       font-size: 0.8em;
-      color: #888;
+      color: var(--wing-gray);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
     .edit-mode-indicator .mode-type {
-      color: #4ecca3;
+      color: var(--ocean-blue);
       font-weight: bold;
     }
 
@@ -2796,7 +2845,7 @@
         <button class="modal-close" onclick="document.getElementById('help-modal').style.display='none'">×</button>
       </div>
       <div class="modal-body">
-        <table style="width:100%;color:#aaa;font-size:0.9em;">
+        <table style="width:100%;color:var(--wing-gray);font-size:0.9em;">
           <tr><td><kbd>Ctrl+Z</kbd></td><td>Undo</td></tr>
           <tr><td><kbd>Ctrl+Y</kbd> / <kbd>Ctrl+Shift+Z</kbd></td><td>Redo</td></tr>
           <tr><td><kbd>Ctrl+S</kbd></td><td>Save/Download</td></tr>
@@ -2805,8 +2854,8 @@
           <tr><td><kbd>Click</kbd></td><td>Select element</td></tr>
           <tr><td><kbd>Drag</kbd></td><td>Move element</td></tr>
         </table>
-        <hr style="border-color:#0f3460;margin:15px 0;">
-        <p style="color:#666;font-size:0.85em;">Sprite must have emotion-compatible IDs:<br>
+        <hr style="border-color:var(--plumage-cream);margin:15px 0;">
+        <p style="color:var(--sand-warm);font-size:0.85em;">Sprite must have emotion-compatible IDs:<br>
         eye-left-white, eye-right-white, eye-left-pupil, eye-right-pupil, brow-left, brow-right, mouth-closed, mouth-open</p>
       </div>
     </div>
@@ -2836,23 +2885,23 @@
             <button id="btn-remove-bg" onclick="startBackgroundRemoval()">🪄 Remove BG</button>
             <button onclick="goToAnimationPreview()">✨ Next: Preview</button>
           </div>
-          <div id="bg-status" style="margin-top:10px;color:#4ecca3;font-size:0.9em;"></div>
-          <textarea id="bg-log" readonly style="width:100%;height:80px;margin-top:10px;background:#0d0d1a;color:#888;border:1px solid #333;font-size:0.75em;display:none;"></textarea>
+          <div id="bg-status" style="margin-top:10px;color:var(--ocean-blue);font-size:0.9em;"></div>
+          <textarea id="bg-log" readonly style="width:100%;height:80px;margin-top:10px;background:#fff;color:var(--wing-gray);border:1px solid var(--sand-warm);font-size:0.75em;display:none;"></textarea>
           <button id="copy-log-btn" style="display:none;margin-top:5px;font-size:0.75em;" onclick="navigator.clipboard.writeText(document.getElementById('bg-log').value)">📋 Copy Log</button>
         </div>
         <div id="photo-step-3" class="photo-step" style="display:none;">
           <p>Preview talking animation:</p>
           <canvas id="anim-preview-canvas" width="300" height="400"></canvas>
           <div style="margin:10px 0;">
-            <label style="color:#aaa;font-size:0.9em;">Mouth Open: <span id="anim-mouth-val">0</span>%</label>
+            <label style="color:var(--wing-gray);font-size:0.9em;">Mouth Open: <span id="anim-mouth-val">0</span>%</label>
             <input type="range" id="anim-mouth-slider" min="0" max="100" value="0" oninput="updateAnimPreview()" style="width:100%;">
           </div>
           <div class="photo-controls">
             <button onclick="testTalkingAnim()">🗣️ Test Talking</button>
             <button onclick="stopTalkingAnim()">⏹️ Stop</button>
-            <button onclick="generatePhotoSprite()" style="background:#4ecca3;">✨ Generate Sprite</button>
+            <button onclick="generatePhotoSprite()" style="background:var(--ocean-blue);">✨ Generate Sprite</button>
           </div>
-          <div style="margin-top:10px;color:#888;font-size:0.85em;">
+          <div style="margin-top:10px;color:var(--wing-gray);font-size:0.85em;">
             Jaw puppet animation will be used for talking in skits.
           </div>
         </div>
@@ -2874,7 +2923,7 @@
       z-index: 1000;
     }
     .modal-content {
-      background: #16213e;
+      background: var(--plumage-white);
       border-radius: 10px;
       width: 90%;
       max-width: 500px;
@@ -2886,16 +2935,16 @@
       justify-content: space-between;
       align-items: center;
       padding: 15px 20px;
-      border-bottom: 1px solid #0f3460;
+      border-bottom: 1px solid var(--plumage-cream);
     }
     .modal-header h2 {
       font-size: 1.2em;
-      color: #e94560;
+      color: var(--pouch-orange);
     }
     .modal-close {
       background: none;
       border: none;
-      color: #eee;
+      color: var(--wing-dark);
       font-size: 1.5em;
       cursor: pointer;
     }
@@ -2904,15 +2953,15 @@
     }
     .photo-step p {
       margin-bottom: 15px;
-      color: #aaa;
+      color: var(--wing-gray);
     }
     #photo-upload {
       width: 100%;
       padding: 10px;
-      background: #0d0d1a;
-      border: 2px dashed #0f3460;
+      background: #fff;
+      border: 2px dashed var(--plumage-cream);
       border-radius: 8px;
-      color: #eee;
+      color: var(--wing-dark);
       cursor: pointer;
     }
     #photo-preview-container {
@@ -2920,13 +2969,13 @@
       text-align: center;
     }
     #photo-canvas, #photo-edit-canvas {
-      background: #0d0d1a;
+      background: #fff;
       border-radius: 8px;
       max-width: 100%;
     }
     #face-status {
       margin-top: 10px;
-      color: #4ecca3;
+      color: var(--ocean-blue);
     }
     .photo-controls {
       margin-top: 15px;
@@ -2935,7 +2984,7 @@
       justify-content: center;
     }
     .photo-controls button {
-      background: #e94560;
+      background: var(--pouch-orange);
       border: none;
       color: #fff;
       padding: 10px 20px;
@@ -2948,7 +2997,7 @@
   </style>
   
   <header>
-    <h1>🎭 Pelicans.art Sprite Editor</h1>
+    <a href="/" class="pelicans-nav-logo" style="text-decoration:none;">pelicans<span>.art</span></a>
     <div class="toolbar">
       <button id="btn-new">📄 New</button>
       <button id="btn-random">🎲 Random</button>
@@ -2958,7 +3007,7 @@
       <button id="btn-add-circle" title="Add Circle">○</button>
       <span class="toolbar-divider">|</span>
       <button id="btn-duplicate" title="Duplicate (Ctrl+D)">⧉</button>
-      <button id="btn-delete" title="Delete (Del)" style="color:#e94560;">🗑️</button>
+      <button id="btn-delete" title="Delete (Del)" style="color:var(--pouch-orange);">🗑️</button>
       <button id="btn-layer-up" title="Move Layer Up">⬆</button>
       <button id="btn-layer-down" title="Move Layer Down">⬇</button>
       <span class="toolbar-divider">|</span>
@@ -2968,7 +3017,6 @@
       <button id="btn-community-share" class="community-share-btn" onclick="openCommunityModal()" title="Share to Community">Share</button>
       <button id="btn-import" class="import-btn" onclick="openImportModal()" title="Import from Community">Import</button>
       <span class="toolbar-divider">|</span>
-      <button id="btn-test" title="Test in Skit Player">▶️ Test</button>
       <button id="btn-help" title="Keyboard Shortcuts">❓</button>
     </div>
   </header>
@@ -2978,7 +3026,7 @@
     <div class="command-context">
       <span id="command-context-text">No sprite selected</span>
     </div>
-    <select id="command-type" onchange="updateCommandPlaceholder()" style="background:#0d0d1a;border:1px solid #0f3460;color:#eee;padding:8px 12px;border-radius:6px;font-size:0.9em;cursor:pointer;">
+    <select id="command-type" onchange="updateCommandPlaceholder()" style="background:#fff;border:1px solid var(--plumage-cream);color:var(--wing-dark);padding:8px 12px;border-radius:6px;font-size:0.9em;cursor:pointer;">
       <option value="auto">Auto-detect</option>
       <option value="sprite">Character</option>
       <option value="prop">Prop</option>
@@ -3074,7 +3122,7 @@
     <!-- Center: Canvas -->
     <div class="panel-center">
       <!-- Variant Tabs -->
-      <div class="variant-tabs" id="variant-tabs" style="display:flex;gap:4px;padding:8px;background:#16213e;border-bottom:1px solid #0f3460;">
+      <div class="variant-tabs" id="variant-tabs" style="display:flex;gap:4px;padding:8px;background:var(--plumage-white);border-bottom:1px solid var(--plumage-cream);">
         <!-- Populated by JS -->
       </div>
       <div class="zoom-controls">
@@ -3122,8 +3170,8 @@
         <h4>🎁 Props</h4>
         <div id="skit-props-list"></div>
         <div class="prop-buttons" style="display: flex; gap: 8px; margin-top: 8px;">
-          <button class="add-prop-btn" onclick="addSkitProp('background')" style="flex:1;padding:6px;background:#0f3460;border:none;color:#eee;border-radius:4px;cursor:pointer;">+ Background Prop</button>
-          <button class="add-prop-btn" onclick="addSkitProp('foreground')" style="flex:1;padding:6px;background:#0f3460;border:none;color:#eee;border-radius:4px;cursor:pointer;">+ Foreground Prop</button>
+          <button class="add-prop-btn" onclick="addSkitProp('background')" style="flex:1;padding:6px;background:var(--plumage-cream);border:none;color:var(--wing-dark);border-radius:4px;cursor:pointer;">+ Background Prop</button>
+          <button class="add-prop-btn" onclick="addSkitProp('foreground')" style="flex:1;padding:6px;background:var(--plumage-cream);border:none;color:var(--wing-dark);border-radius:4px;cursor:pointer;">+ Foreground Prop</button>
         </div>
 
         <h4>🎬 Stage Setup</h4>
@@ -3169,7 +3217,7 @@
               <div class="control-row">
                 <label>Visible:</label>
                 <input type="checkbox" id="stage-prop-visible" onchange="updateStagePropVisible(this.checked)">
-                <span style="flex:1;font-size:0.8em;color:#888;">Show at start (no spawn needed)</span>
+                <span style="flex:1;font-size:0.8em;color:var(--wing-gray);">Show at start (no spawn needed)</span>
               </div>
             </div>
             <div id="stage-char-controls" class="stage-prop-controls" style="display:none;">
@@ -3197,7 +3245,7 @@
         <button class="add-action-btn" onclick="openAddActionModal()">+ Add Action</button>
         <button class="skit-save-btn" id="skit-save-btn" onclick="saveSkitChanges()">Save Script</button>
         <button class="skit-publish-btn" id="skit-publish-btn" onclick="publishCurrentSkit()" disabled>Publish Script</button>
-        <button class="skit-publish-btn" id="btn-community-share-skit" onclick="openCommunityModal()" style="background:#4ecca3;color:#111;margin-top:4px;">Share to Community</button>
+        <button class="skit-publish-btn" id="btn-community-share-skit" onclick="openCommunityModal()" style="background:var(--ocean-blue);color:var(--wing-dark);margin-top:4px;">Share to Community</button>
         <div class="publish-progress" id="publish-progress">
           <div class="publish-progress-bar">
             <div class="publish-progress-fill" id="publish-progress-fill"></div>
@@ -3343,7 +3391,7 @@
           <div id="voice-input-url" class="voice-input-section hidden">
             <label>Enter URL to audio file</label>
             <input type="text" id="voice-upload-url" placeholder="https://example.com/voice-sample.wav">
-            <button onclick="loadVoiceFromUrl()" style="margin-top:8px;padding:8px 16px;background:#0f3460;border:none;color:#eee;border-radius:4px;cursor:pointer;">Load Audio</button>
+            <button onclick="loadVoiceFromUrl()" style="margin-top:8px;padding:8px 16px;background:var(--plumage-cream);border:none;color:var(--wing-dark);border-radius:4px;cursor:pointer;">Load Audio</button>
           </div>
 
           <div id="voice-waveform-section" style="display:none;">
@@ -3372,19 +3420,19 @@
             </div>
 
             <div class="voice-segment-info">
-              <label style="color:#888;font-size:0.85em;">Segment:</label>
+              <label style="color:var(--wing-gray);font-size:0.85em;">Segment:</label>
               <input type="number" id="voice-segment-start" value="0" min="0" step="0.5" onchange="updateVoiceSegment()"> s
-              <span style="color:#666;">to</span>
+              <span style="color:var(--sand-warm);">to</span>
               <input type="number" id="voice-segment-end" value="10" min="1" step="0.5" onchange="updateVoiceSegment()"> s
               <button onclick="autoSelectBestSegment()">🎯 Auto-Select Best</button>
             </div>
 
             <div class="voice-name-input">
-              <label style="display:block;color:#888;font-size:0.85em;margin-bottom:6px;">Voice Name</label>
+              <label style="display:block;color:var(--wing-gray);font-size:0.85em;margin-bottom:6px;">Voice Name</label>
               <input type="text" id="voice-creator-name" placeholder="my-custom-voice" oninput="validateVoiceName(this)">
             </div>
 
-            <button id="voice-process-btn" onclick="processVoice()" style="width:100%;padding:12px;background:#4a1a6a;border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:bold;margin-bottom:15px;">
+            <button id="voice-process-btn" onclick="processVoice()" style="width:100%;padding:12px;background:var(--ocean-blue);border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:bold;margin-bottom:15px;">
               ⚙️ Process Voice
             </button>
           </div>
@@ -3399,10 +3447,10 @@
             <audio id="voice-preview-audio" style="display:none;"></audio>
 
             <div id="voice-winner-section" style="margin-top:12px;padding:12px;background:rgba(0,212,170,0.1);border-radius:6px;display:none;">
-              <p style="margin:0 0 8px 0;color:#888;font-size:0.9em;">Which sounds better? (required to save)</p>
+              <p style="margin:0 0 8px 0;color:var(--wing-gray);font-size:0.9em;">Which sounds better? (required to save)</p>
               <div style="display:flex;gap:8px;">
-                <button id="voice-pick-safetensors" onclick="pickVoiceWinner('safetensors')" style="flex:1;padding:8px;background:#1a1a2e;border:2px solid #333;color:#eee;border-radius:4px;cursor:pointer;">🏆 Safetensors</button>
-                <button id="voice-pick-wav" onclick="pickVoiceWinner('wav')" style="flex:1;padding:8px;background:#1a1a2e;border:2px solid #333;color:#eee;border-radius:4px;cursor:pointer;">🏆 Direct WAV</button>
+                <button id="voice-pick-safetensors" onclick="pickVoiceWinner('safetensors')" style="flex:1;padding:8px;background:var(--plumage-cream);border:2px solid var(--sand-warm);color:var(--wing-dark);border-radius:4px;cursor:pointer;">🏆 Safetensors</button>
+                <button id="voice-pick-wav" onclick="pickVoiceWinner('wav')" style="flex:1;padding:8px;background:var(--plumage-cream);border:2px solid var(--sand-warm);color:var(--wing-dark);border-radius:4px;cursor:pointer;">🏆 Direct WAV</button>
               </div>
             </div>
           </div>
@@ -3461,7 +3509,7 @@
             <button id="btn-blink-toggle" onclick="toggleBlinking(); this.blur();" style="flex:1;">👁️ Blink</button>
           </div>
           <div class="property-row" style="margin-top:5px;">
-            <button onclick="resetAnimation(); this.blur();" style="width:100%;background:#e94560;">⟲ Reset to Original</button>
+            <button onclick="resetAnimation(); this.blur();" style="width:100%;background:var(--pouch-orange);">⟲ Reset to Original</button>
           </div>
         </div>
 
@@ -3537,7 +3585,7 @@
   <div class="status-bar">
     <span id="status-left">Ready</span>
     <span id="status-right">Undo: 0 | Redo: 0</span>
-    <span style="color:#666;">v4.1</span>
+    <span style="color:var(--sand-warm);">v4.1</span>
   </div>
 
   <script>
@@ -3913,8 +3961,8 @@
 
       for (const o of currentBackgroundOrientations) {
         const tab = document.createElement('button');
-        tab.style.cssText = 'padding:6px 12px;background:#0f3460;border:none;color:#eee;border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
-        if (o === currentBackgroundOrientation) tab.style.background = '#e94560';
+        tab.style.cssText = 'padding:6px 12px;background:var(--plumage-cream);border:none;color:var(--wing-dark);border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
+        if (o === currentBackgroundOrientation) tab.style.background = 'var(--pouch-orange)';
         tab.textContent = o.charAt(0).toUpperCase() + o.slice(1);
         tab.onclick = () => {
           currentBackgroundOrientation = o;
@@ -3930,7 +3978,7 @@
 
       if (!hasLandscape || !hasPortrait) {
         const addBtn = document.createElement('button');
-        addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed #888;color:#888;border-radius:4px;cursor:pointer;font-size:12px;';
+        addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed var(--wing-gray);color:var(--wing-gray);border-radius:4px;cursor:pointer;font-size:12px;';
         addBtn.textContent = hasLandscape ? '+ Portrait' : '+ Landscape';
         addBtn.onclick = addNewBackgroundOrientation;
         tabs.appendChild(addBtn);
@@ -4138,7 +4186,7 @@
             </span>
           </div>
         </div>
-      `}).join('') || '<p style="color:#666;font-size:0.85em;">No cast defined</p>';
+      `}).join('') || '<p style="color:var(--sand-warm);font-size:0.85em;">No cast defined</p>';
       document.getElementById('skit-cast-list').innerHTML = castHtml;
 
       // Props
@@ -4149,7 +4197,7 @@
           <span class="prop-layer">[${prop.layer || 'background'}]</span>
           <button class="item-delete-btn" onclick="removeSkitProp('${id}')" title="Remove prop">✕</button>
         </div>
-      `).join('') || '<p style="color:#666;font-size:0.85em;">No props defined</p>';
+      `).join('') || '<p style="color:var(--sand-warm);font-size:0.85em;">No props defined</p>';
       document.getElementById('skit-props-list').innerHTML = propsHtml;
 
       // Script with drag handles and insertion gaps
@@ -4253,7 +4301,7 @@
       });
 
       if (!skit.script?.length) {
-        scriptHtml = '<p style="color:#666;font-size:0.85em;">No script defined</p>';
+        scriptHtml = '<p style="color:var(--sand-warm);font-size:0.85em;">No script defined</p>';
       }
 
       document.getElementById('skit-script-list').innerHTML = scriptHtml;
@@ -5202,7 +5250,7 @@
           bgContainer.innerHTML = `<img src="/backgrounds/${bgName}.svg" alt="${bgName}">`;
         }
       } else {
-        bgContainer.innerHTML = '<div style="width:100%;height:100%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;color:#666;">No background</div>';
+        bgContainer.innerHTML = '<div style="width:100%;height:100%;background:var(--plumage-cream);display:flex;align-items:center;justify-content:center;color:var(--sand-warm);">No background</div>';
       }
 
       // Populate combined selector with characters and props
@@ -5814,7 +5862,7 @@
       const btn = document.getElementById('skit-save-btn');
       if (btn) {
         btn.textContent = 'Save Script *';
-        btn.style.background = '#e94560';
+        btn.style.background = 'var(--pouch-orange)';
       }
     }
 
@@ -5884,7 +5932,7 @@
 
         skitDirty = false;
         btn.textContent = 'Saved!';
-        btn.style.background = '#4ecca3';
+        btn.style.background = 'var(--ocean-blue)';
         updateStatus('Script saved');
 
         setTimeout(() => {
@@ -6435,7 +6483,7 @@
           url = new URL(input);
         }
       } catch (e) {
-        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Invalid URL format</div>';
+        preview.innerHTML = '<div class="import-preview-empty" style="color:var(--pouch-orange);">Invalid URL format</div>';
         importBtn.disabled = true;
         return;
       }
@@ -6446,13 +6494,13 @@
       // Validate type
       const validTypes = ['characters', 'props', 'backgrounds', 'skits', 'voices'];
       if (!type || !validTypes.includes(type)) {
-        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Unsupported asset type. Supported: characters, props, backgrounds, skits, voices</div>';
+        preview.innerHTML = '<div class="import-preview-empty" style="color:var(--pouch-orange);">Unsupported asset type. Supported: characters, props, backgrounds, skits, voices</div>';
         importBtn.disabled = true;
         return;
       }
 
       if (!id) {
-        preview.innerHTML = '<div class="import-preview-empty" style="color:#e94560;">Missing asset ID in URL</div>';
+        preview.innerHTML = '<div class="import-preview-empty" style="color:var(--pouch-orange);">Missing asset ID in URL</div>';
         importBtn.disabled = true;
         return;
       }
@@ -7036,8 +7084,8 @@
       document.getElementById('voice-upload-btn').disabled = true;
       document.getElementById('voice-save-btn').textContent = '💾 Save Locally';
       // Reset winner button styles
-      document.getElementById('voice-pick-safetensors').style.borderColor = '#333';
-      document.getElementById('voice-pick-wav').style.borderColor = '#333';
+      document.getElementById('voice-pick-safetensors').style.borderColor = 'var(--sand-warm)';
+      document.getElementById('voice-pick-wav').style.borderColor = 'var(--sand-warm)';
 
       switchVoiceCreatorTab('upload');
       document.getElementById('voice-creator-modal').classList.add('visible');
@@ -7193,10 +7241,10 @@
 
       const barWidth = canvas.width / waveform.length;
 
-      ctx.fillStyle = '#0d0d1a';
+      ctx.fillStyle = '#EDE8DF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#4ecca3';
+      ctx.fillStyle = '#2D8EC4';
       for (let i = 0; i < waveform.length; i++) {
         const height = waveform[i] * canvas.height * 0.9;
         const y = (canvas.height - height) / 2;
@@ -7409,13 +7457,13 @@
       if (winner === 'safetensors') {
         safetensorsBtn.style.borderColor = '#00d4aa';
         safetensorsBtn.style.background = 'rgba(0,212,170,0.2)';
-        wavBtn.style.borderColor = '#333';
-        wavBtn.style.background = '#1a1a2e';
+        wavBtn.style.borderColor = 'var(--sand-warm)';
+        wavBtn.style.background = 'var(--plumage-cream)';
       } else {
         wavBtn.style.borderColor = '#00d4aa';
         wavBtn.style.background = 'rgba(0,212,170,0.2)';
-        safetensorsBtn.style.borderColor = '#333';
-        safetensorsBtn.style.background = '#1a1a2e';
+        safetensorsBtn.style.borderColor = 'var(--sand-warm)';
+        safetensorsBtn.style.background = 'var(--plumage-cream)';
       }
 
       // Enable save/upload buttons now that winner is picked
@@ -8514,8 +8562,8 @@
       
       for (const v of currentVariants) {
         const tab = document.createElement('button');
-        tab.style.cssText = 'padding:6px 12px;background:#0f3460;border:none;color:#eee;border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
-        if (v === currentVariant) tab.style.background = '#e94560';
+        tab.style.cssText = 'padding:6px 12px;background:var(--plumage-cream);border:none;color:var(--wing-dark);border-radius:4px 4px 0 0;cursor:pointer;font-size:12px;';
+        if (v === currentVariant) tab.style.background = 'var(--pouch-orange)';
         tab.textContent = v.charAt(0).toUpperCase() + v.slice(1);
         tab.onclick = () => {
           currentVariant = v;
@@ -8527,7 +8575,7 @@
       
       // Add new variant button
       const addBtn = document.createElement('button');
-      addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed #888;color:#888;border-radius:4px;cursor:pointer;font-size:12px;';
+      addBtn.style.cssText = 'padding:6px 12px;background:transparent;border:1px dashed var(--wing-gray);color:var(--wing-gray);border-radius:4px;cursor:pointer;font-size:12px;';
       addBtn.textContent = '+ New';
       addBtn.onclick = addNewVariant;
       tabs.appendChild(addBtn);
@@ -8965,7 +9013,7 @@
       
       // Color presets
       html += `<div class="color-presets">
-        <span style="color:#888;font-size:0.75em;">Quick:</span>
+        <span style="color:var(--wing-gray);font-size:0.75em;">Quick:</span>
         ${colorPreset('#fce4d4', 'Light skin')}
         ${colorPreset('#d4a574', 'Medium skin')}
         ${colorPreset('#8d5524', 'Dark skin')}
@@ -10172,9 +10220,9 @@
       const angle = (mouthOpen / 100) * 12 * (Math.PI / 180);
       
       // Clear canvas
-      ctx.fillStyle = '#1a1a2e';
+      ctx.fillStyle = '#EDE8DF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
+
       // Draw upper face (stays still)
       ctx.save();
       ctx.beginPath();
@@ -10322,10 +10370,10 @@
               };
               
               // Draw face box
-              ctx.strokeStyle = '#e94560';
+              ctx.strokeStyle = '#F5A623';
               ctx.lineWidth = 2;
               ctx.strokeRect(box.x, box.y, box.width, box.height);
-              
+
               // Draw eye points (cyan)
               ctx.fillStyle = '#4ecdc4';
               [...faceLandmarks.rightEye, ...faceLandmarks.leftEye].forEach(pt => {
@@ -10333,9 +10381,9 @@
                 ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
                 ctx.fill();
               });
-              
+
               // Draw mouth points (green)
-              ctx.fillStyle = '#4ecca3';
+              ctx.fillStyle = '#2D8EC4';
               faceLandmarks.outerLips.forEach(pt => {
                 ctx.beginPath();
                 ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
@@ -10397,7 +10445,7 @@
       const ctx = canvas.getContext('2d');
       
       // Clear
-      ctx.fillStyle = '#1a1a2e';
+      ctx.fillStyle = '#EDE8DF';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Calculate source region from original image coordinates
@@ -10430,7 +10478,7 @@
       ctx.restore();
       
       // Border around crop
-      ctx.strokeStyle = '#e94560';
+      ctx.strokeStyle = '#F5A623';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.roundRect(destX, destY, destW, destH, 10);
@@ -10477,7 +10525,7 @@
             drawEditCanvas();
             document.getElementById('bg-status').textContent = '✓ Background removed! Ready to generate.';
             btn.textContent = '✓ BG Removed';
-            btn.style.background = '#4ecca3';
+            btn.style.background = 'var(--ocean-blue)';
           };
           processedImg.src = URL.createObjectURL(resultBlob);
         } else {
@@ -10753,7 +10801,7 @@
         newEl.setAttribute('y', '60');
         newEl.setAttribute('width', '20');
         newEl.setAttribute('height', '20');
-        newEl.setAttribute('fill', '#e94560');
+        newEl.setAttribute('fill', '#F5A623');
       } else if (type === 'ellipse') {
         newEl = document.createElementNS(svgNS, 'ellipse');
         newEl.setAttribute('cx', '50');
@@ -10863,10 +10911,6 @@
     document.getElementById('btn-help').onclick = () => {
       document.getElementById('help-modal').style.display = 'flex';
     };
-    document.getElementById('btn-test').onclick = () => {
-      window.open('skit-player.html', '_blank');
-    };
-
     // === ANIMATION PREVIEW ===
     // Transform-based emotion config - works for any sprite regardless of face position
     const TRANSFORM_EMOTIONS = {
@@ -10968,7 +11012,7 @@
       // Update Edit button
       if (editBtn) {
         editBtn.classList.toggle('active', isEditing);
-        editBtn.style.background = isEditing ? '#16a34a' : '#4b5563';
+        editBtn.style.background = isEditing ? '#16a34a' : 'var(--plumage-cream)';
       }
 
       // Update emotion preview buttons

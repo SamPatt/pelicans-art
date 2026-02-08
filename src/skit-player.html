@@ -3,22 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AI Improv Theater</title>
+  <title>pelicans.art — Watch</title>
+  <link rel="stylesheet" href="pelicans-theme.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body {
-      background: #1a1a2e;
+      background: linear-gradient(180deg, var(--player-surface) 0%, var(--player-bg) 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-family: system-ui, sans-serif;
-      color: #eee;
-      padding: 10px;
+      font-family: var(--font-body);
+      color: var(--player-text);
+      padding: 0;
     }
-    
-    h1 { color: #e94560; font-size: 18px; margin-bottom: 10px; }
+
+    .player-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      flex: 1;
+      width: 100%;
+    }
+
+    h1 { color: var(--pouch-orange); font-size: 18px; margin-bottom: 10px; display: none; }
     
     /* Default portrait viewport - 9:16 aspect ratio, scaled to fill ~75% of screen */
     #viewport {
@@ -28,8 +38,8 @@
       aspect-ratio: 9 / 16;
       background: #000;
       overflow: hidden;
-      border-radius: 8px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      border-radius: var(--radius-md);
+      box-shadow: 0 0 30px rgba(45,142,196,0.1), 0 10px 40px rgba(0,0,0,0.4);
       transition: aspect-ratio 0.3s ease;
     }
 
@@ -39,9 +49,9 @@
       height: 75vh;
       width: auto;
     }
-    
+
     @media (max-width: 500px) {
-      body { padding: 5px; }
+      .player-body { padding: 5px; }
       h1 { font-size: 14px; margin-bottom: 5px; }
       #viewport { height: auto; width: 100%; max-height: 70vh; border-radius: 0; }
       #viewport.landscape { height: auto; width: 100%; max-height: 70vh; }
@@ -258,26 +268,53 @@
       justify-content: center;
       max-width: 400px;
     }
-    
+
     button {
       padding: 10px 18px;
       border: none;
-      border-radius: 4px;
-      background: #4a4a6a;
-      color: white;
+      border-radius: var(--radius-sm);
+      background: var(--player-border);
+      color: var(--player-text);
       cursor: pointer;
-      font-size: 14px;
+      font-size: var(--text-sm);
+      font-family: var(--font-body);
+      transition: all var(--duration-fast);
     }
-    button:hover { background: #5a5a8a; }
-    button.active { background: #e94560; }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    
+    button:hover { background: var(--ocean-deep); }
+    button.active {
+      background: linear-gradient(135deg, var(--pouch-orange), var(--pouch-deep));
+      color: #fff;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    #playBtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pouch-orange), var(--pouch-deep));
+      color: #fff;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+      text-indent: 2px; /* visually center the triangle */
+      padding: 0;
+      box-shadow: 0 2px 8px rgba(245,166,35,0.3);
+    }
+
+    #playBtn:hover {
+      box-shadow: 0 4px 16px rgba(245,166,35,0.5);
+      filter: brightness(1.1);
+    }
+
     #status {
       margin-top: 10px;
-      color: #888;
-      font-size: 12px;
+      color: rgba(232,228,223,0.5);
+      font-size: var(--text-xs);
     }
-    
+
     #debug {
       position: fixed;
       top: 10px;
@@ -285,18 +322,46 @@
       background: rgba(0,0,0,0.8);
       color: #0f0;
       padding: 8px;
-      font-family: monospace;
+      font-family: var(--font-mono);
       font-size: 11px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       display: none;
+    }
+
+    /* URL loader input */
+    #url-loader input[type="text"] {
+      background: var(--player-surface);
+      border: 1px solid var(--player-border);
+      color: var(--player-text);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+    }
+
+    #url-loader input[type="text"]:focus {
+      outline: none;
+      border-color: var(--ocean-blue);
+      box-shadow: 0 0 0 3px rgba(45,142,196,0.15);
     }
   </style>
 </head>
 <body class="captions-off">
-  <h1>🎭 AI Improv Theater</h1>
-  
+  <!-- NAV (dark variant) -->
+  <nav class="pelicans-nav dark">
+    <a href="/" class="pelicans-nav-logo">pelicans<span>.art</span></a>
+    <ul class="pelicans-nav-links">
+      <li><a href="/sprite-editor.html">Create</a></li>
+      <li><a href="/" class="active">Watch</a></li>
+      <li><a href="/community.html">Community</a></li>
+    </ul>
+  </nav>
+
+  <div class="player-body">
+  <h1>AI Improv Theater</h1>
+
   <div id="debug"></div>
-  
+
   <div id="viewport">
     <div id="stage">
       <img id="background" src="backgrounds/restaurant.svg" alt="">
@@ -305,7 +370,7 @@
   </div>
   
   <div id="controls">
-    <button id="playBtn" onclick="togglePlay()" disabled>▶ Play</button>
+    <button id="playBtn" onclick="togglePlay()" disabled>▶</button>
     <button id="captionBtn" onclick="toggleCaptions()">CC</button>
     <button onclick="loadSkit('luckyCharms')" class="active">Lucky Charms</button>
     <button onclick="loadSkit('trumpAlien')">Trump/Alien</button>
@@ -318,6 +383,7 @@
   </div>
   
   <div id="status">Loading...</div>
+  </div><!-- end player-body -->
 
   <script>
     console.log('[Player] Script started');
@@ -2374,7 +2440,7 @@
       // Start blinking for all characters
       Object.keys(characters).forEach(name => startBlinking(name));
       
-      document.getElementById('playBtn').textContent = '⏸ Pause';
+      document.getElementById('playBtn').textContent = '⏸';
       
       if (sequentialMode) {
         processNextSequentialBeat();
@@ -2389,7 +2455,7 @@
       openDuration = 0;
       stopAllBlinking();
       if (animationId) cancelAnimationFrame(animationId);
-      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('playBtn').textContent = '▶';
       document.getElementById('caption').classList.remove('visible');
       Object.values(characters).forEach(c => {
         c.el.classList.remove('speaking', 'look-left', 'look-right', 'look-up', 'look-down', 'blinking');

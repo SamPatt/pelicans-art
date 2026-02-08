@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pelicans.art — Design Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ============================================
+       DESIGN TOKENS
+       ============================================ */
+    :root {
+      /* Pouch (Primary Warm) */
+      --pouch-orange: #F5A623;
+      --pouch-light: #FFCC80;
+      --pouch-deep: #E8871E;
+
+      /* Plumage (Neutrals) */
+      --plumage-white: #F7F5F0;
+      --plumage-cream: #EDE8DF;
+
+      /* Wing (Darks) */
+      --wing-dark: #2D2D2D;
+      --wing-gray: #5A5A5A;
+      --wing-tip: #424242;
+
+      /* Ocean (Secondary Cool) */
+      --ocean-blue: #2D8EC4;
+      --ocean-deep: #1B6B96;
+      --ocean-shallow: #B8DFF0;
+      --ocean-foam: #E8F4F9;
+
+      /* Functional */
+      --bill-yellow: #FFB300;
+      --bill-ridge: #FF8F00;
+      --mouth-red: #E05544;
+      --mouth-pink: #F48FB1;
+      --sand-warm: #D4C5A9;
+      --sand-pale: #EDE6D6;
+      --sky-light: #87CEEB;
+      --water-dark: #1A4A62;
+
+      /* Player Dark */
+      --player-bg: #0F1923;
+      --player-surface: #1A2A38;
+      --player-border: #2A3A4A;
+      --player-text: #E8E4DF;
+
+      /* Fonts */
+      --font-display: 'Fredoka', system-ui, sans-serif;
+      --font-body: 'Nunito Sans', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Type Scale */
+      --text-xs: 12px;
+      --text-sm: 14px;
+      --text-base: 16px;
+      --text-lg: 18px;
+      --text-xl: 22px;
+      --text-2xl: 28px;
+      --text-3xl: 36px;
+
+      /* Radius */
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --radius-full: 9999px;
+
+      /* Shadows */
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+      --shadow-lg: 0 4px 20px rgba(0,0,0,0.10);
+      --shadow-glow: 0 0 20px rgba(245,166,35,0.15);
+      --shadow-ocean: 0 0 20px rgba(45,142,196,0.12);
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+
+      /* Easing */
+      --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--plumage-white);
+      color: var(--wing-gray);
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================
+       STICKY SIDE NAV
+       ============================================ */
+    .page-layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .side-nav {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 220px;
+      height: 100vh;
+      background: #fff;
+      border-right: 1px solid var(--plumage-cream);
+      padding: var(--space-6) var(--space-4);
+      overflow-y: auto;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    .side-nav-logo {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: var(--text-lg);
+      color: var(--wing-dark);
+      margin-bottom: var(--space-2);
+    }
+
+    .side-nav-logo span { color: var(--pouch-orange); }
+
+    .side-nav-subtitle {
+      font-size: var(--text-xs);
+      color: var(--sand-warm);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      margin-bottom: var(--space-5);
+      padding-bottom: var(--space-3);
+      border-bottom: 1px solid var(--plumage-cream);
+    }
+
+    .side-nav a {
+      display: block;
+      padding: 6px 10px;
+      color: var(--wing-gray);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      border-radius: var(--radius-sm);
+      transition: all 150ms var(--ease-standard);
+      margin-bottom: 2px;
+    }
+
+    .side-nav a:hover {
+      background: var(--ocean-foam);
+      color: var(--ocean-blue);
+    }
+
+    .side-nav a.active {
+      background: var(--pouch-orange);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    .main-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    section {
+      padding: var(--space-12) var(--space-8);
+      border-bottom: 1px solid var(--plumage-cream);
+    }
+
+    section:last-child { border-bottom: none; }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 600;
+      color: var(--wing-dark);
+      margin-bottom: var(--space-2);
+    }
+
+    .section-desc {
+      color: var(--wing-gray);
+      font-size: var(--text-base);
+      margin-bottom: var(--space-8);
+      max-width: 640px;
+    }
+
+    .subsection-title {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      font-weight: 500;
+      color: var(--wing-dark);
+      margin-bottom: var(--space-4);
+      margin-top: var(--space-8);
+    }
+
+    .subsection-title:first-of-type { margin-top: 0; }
+
+    /* ============================================
+       1. COLOR PALETTE
+       ============================================ */
+    .color-group {
+      margin-bottom: var(--space-8);
+    }
+
+    .color-group-label {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--wing-gray);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: var(--space-3);
+    }
+
+    .color-row {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      width: 120px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      transition: transform 200ms var(--ease-bounce), box-shadow 200ms ease;
+    }
+
+    .color-swatch:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .color-swatch-block {
+      height: 72px;
+      width: 100%;
+    }
+
+    .color-swatch-info {
+      padding: 8px 10px;
+    }
+
+    .color-swatch-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--wing-dark);
+      display: block;
+      line-height: 1.3;
+    }
+
+    .color-swatch-hex {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--wing-gray);
+    }
+
+    /* Gradient strip */
+    .gradient-strip {
+      height: 80px;
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gradient-strip::after {
+      content: attr(data-label);
+      position: absolute;
+      bottom: 8px;
+      left: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.85);
+      background: rgba(0,0,0,0.25);
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ============================================
+       2. TYPOGRAPHY
+       ============================================ */
+    .type-sample {
+      margin-bottom: var(--space-5);
+      padding: var(--space-4);
+      background: #fff;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--plumage-cream);
+    }
+
+    .type-sample-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ocean-blue);
+      margin-bottom: var(--space-2);
+    }
+
+    .type-sample-text.display { font-family: var(--font-display); color: var(--wing-dark); font-weight: 600; }
+    .type-sample-text.body { font-family: var(--font-body); color: var(--wing-gray); }
+    .type-sample-text.mono { font-family: var(--font-mono); color: var(--wing-tip); }
+
+    /* ============================================
+       3. BUTTONS
+       ============================================ */
+    .button-row {
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: var(--space-5);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 150ms var(--ease-standard);
+      border: none;
+      outline: none;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-pouch {
+      background: linear-gradient(135deg, var(--pouch-orange) 0%, var(--pouch-deep) 100%);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: var(--radius-full);
+      box-shadow: 0 2px 8px rgba(245,166,35,0.3);
+    }
+
+    .btn-pouch:hover {
+      box-shadow: 0 4px 16px rgba(245,166,35,0.4);
+      filter: brightness(1.08);
+    }
+
+    .btn-ocean {
+      background: transparent;
+      color: var(--ocean-blue);
+      padding: 10px 24px;
+      border-radius: var(--radius-full);
+      border: 2px solid var(--ocean-blue);
+    }
+
+    .btn-ocean:hover {
+      background: var(--ocean-foam);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--wing-gray);
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-ghost:hover { background: var(--plumage-cream); }
+
+    /* small variants */
+    .btn-sm { font-size: var(--text-sm); padding: 6px 16px; }
+    .btn-lg { font-size: var(--text-lg); padding: 14px 32px; }
+
+    /* ============================================
+       4. CARDS
+       ============================================ */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: var(--space-5);
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: all 200ms var(--ease-bounce);
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 20px rgba(245,166,35,0.12);
+      border-color: var(--sand-warm);
+    }
+
+    .card-thumb {
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--ocean-foam);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-thumb.bg-sand { background: var(--sand-pale); }
+
+    .card-thumb img,
+    .card-thumb svg {
+      height: 120px;
+      width: auto;
+      transition: transform 300ms var(--ease-bounce);
+    }
+
+    .card:hover .card-thumb img,
+    .card:hover .card-thumb svg {
+      transform: translateY(-4px);
+    }
+
+    .card-body { padding: var(--space-4); }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: var(--text-base);
+      color: var(--wing-dark);
+      margin-bottom: 2px;
+    }
+
+    .card-author {
+      font-size: var(--text-sm);
+      color: var(--ocean-blue);
+      margin-bottom: var(--space-2);
+    }
+
+    .card-meta {
+      display: flex;
+      gap: var(--space-4);
+      font-size: var(--text-xs);
+      color: var(--wing-gray);
+    }
+
+    .card-meta .heart { color: var(--mouth-red); }
+
+    /* ============================================
+       5. TAGS / BADGES
+       ============================================ */
+    .tags-row {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      border: 1px solid transparent;
+    }
+
+    .tag-character { background: #E8F4F9; color: #1B6B96; border-color: #B8DFF0; }
+    .tag-background { background: #EDE6D6; color: #8B7355; border-color: #D4C5A9; }
+    .tag-prop { background: #FFF3E0; color: #E8871E; border-color: #FFCC80; }
+    .tag-skit { background: #FCE4EC; color: #C62828; border-color: #F48FB1; }
+    .tag-new { background: var(--pouch-orange); color: #fff; }
+
+    /* ============================================
+       6. NAVIGATION DEMO
+       ============================================ */
+    .demo-nav {
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      height: 60px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: var(--space-5);
+    }
+
+    .demo-nav-logo {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: var(--text-xl);
+      color: var(--wing-dark);
+    }
+
+    .demo-nav-logo span { color: var(--pouch-orange); }
+
+    .demo-nav-links {
+      display: flex;
+      gap: var(--space-6);
+      list-style: none;
+    }
+
+    .demo-nav-links a {
+      text-decoration: none;
+      color: var(--wing-gray);
+      font-size: var(--text-base);
+      font-weight: 500;
+      padding-bottom: 4px;
+      transition: color 150ms;
+    }
+
+    .demo-nav-links a:hover { color: var(--wing-dark); }
+
+    .demo-nav-links a.active {
+      color: var(--ocean-blue);
+      border-bottom: 2px solid var(--pouch-orange);
+    }
+
+    .demo-nav-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius-full);
+      background: var(--ocean-shallow);
+      border: 2px solid var(--ocean-blue);
+    }
+
+    /* ============================================
+       7. PAGE MOCKUPS
+       ============================================ */
+    .mockup-frame {
+      border: 1px solid var(--plumage-cream);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      margin-bottom: var(--space-8);
+    }
+
+    .mockup-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--wing-gray);
+      padding: 6px 12px;
+      background: var(--plumage-cream);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* --- HERO MOCKUP --- */
+    .hero-mockup {
+      background: linear-gradient(180deg, #87CEEB 0%, #2D8EC4 40%, #1B6B96 100%);
+      padding: var(--space-12) var(--space-8);
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+      min-height: 360px;
+      overflow: hidden;
+    }
+
+    .hero-text {
+      flex: 1;
+      z-index: 2;
+    }
+
+    .hero-text h1 {
+      font-family: var(--font-display);
+      font-size: 42px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: var(--space-3);
+    }
+
+    .hero-text p {
+      color: rgba(255,255,255,0.85);
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-6);
+      max-width: 400px;
+    }
+
+    .hero-text .btn-ocean {
+      color: #fff;
+      border-color: rgba(255,255,255,0.6);
+    }
+
+    .hero-text .btn-ocean:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: #fff;
+    }
+
+    .hero-pelican {
+      flex-shrink: 0;
+      transform: rotate(5deg);
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.15));
+      z-index: 2;
+      animation: hero-bob 4s ease-in-out infinite;
+    }
+
+    @keyframes hero-bob {
+      0%, 100% { transform: rotate(5deg) translateY(0); }
+      50% { transform: rotate(5deg) translateY(-10px); }
+    }
+
+    .hero-wave {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      z-index: 1;
+    }
+
+    /* --- PLAYER MOCKUP --- */
+    .player-mockup {
+      background: linear-gradient(180deg, var(--player-surface) 0%, var(--player-bg) 100%);
+      padding: var(--space-8);
+    }
+
+    .player-stage {
+      background: #000;
+      border-radius: var(--radius-md);
+      aspect-ratio: 16/9;
+      max-width: 700px;
+      margin: 0 auto var(--space-5);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(45,142,196,0.1);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .player-stage-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.9;
+    }
+
+    .player-stage-char {
+      position: relative;
+      z-index: 2;
+      height: 55%;
+      width: auto;
+      margin: 0 20px;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    }
+
+    .player-title-row {
+      max-width: 700px;
+      margin: 0 auto var(--space-4);
+    }
+
+    .player-title {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      color: var(--player-text);
+      font-weight: 600;
+    }
+
+    .player-author {
+      font-size: var(--text-sm);
+      color: var(--ocean-blue);
+    }
+
+    /* Transport controls */
+    .player-controls {
+      max-width: 700px;
+      margin: 0 auto var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+    }
+
+    .transport-btn {
+      background: none;
+      border: none;
+      color: var(--player-text);
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+      opacity: 0.7;
+      transition: opacity 150ms;
+    }
+
+    .transport-btn:hover { opacity: 1; }
+
+    .play-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pouch-orange), var(--pouch-deep));
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(245,166,35,0.3);
+      transition: all 150ms var(--ease-standard);
+      flex-shrink: 0;
+    }
+
+    .play-btn:hover { box-shadow: 0 4px 16px rgba(245,166,35,0.5); filter: brightness(1.1); }
+
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: var(--player-border);
+      border-radius: 2px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 38%;
+      background: linear-gradient(90deg, var(--pouch-orange), var(--pouch-deep));
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      right: -5px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 12px;
+      height: 12px;
+      background: var(--pouch-orange);
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(245,166,35,0.4);
+    }
+
+    .player-time {
+      font-family: var(--font-mono);
+      font-size: var(--text-xs);
+      color: var(--player-text);
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+
+    /* Script panel */
+    .player-script {
+      max-width: 700px;
+      margin: 0 auto;
+      background: var(--player-surface);
+      border: 1px solid var(--player-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+    }
+
+    .script-label {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      color: var(--player-text);
+      opacity: 0.5;
+      margin-bottom: var(--space-3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .script-line {
+      padding: 6px 10px;
+      border-left: 3px solid transparent;
+      margin-bottom: 4px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      font-size: var(--text-sm);
+      color: var(--player-text);
+      opacity: 0.5;
+      transition: all 150ms;
+    }
+
+    .script-line.active {
+      border-left-color: var(--pouch-orange);
+      background: rgba(245,166,35,0.06);
+      opacity: 1;
+    }
+
+    .script-line .char-name { color: var(--ocean-blue); font-weight: 600; }
+
+    /* --- EDITOR MOCKUP --- */
+    .editor-mockup {
+      background: var(--plumage-cream);
+      display: grid;
+      grid-template-columns: 180px 1fr 200px;
+      grid-template-rows: auto 1fr;
+      height: 480px;
+      overflow: hidden;
+    }
+
+    .editor-toolbar {
+      grid-column: 1 / -1;
+      background: #fff;
+      border-bottom: 1px solid var(--plumage-cream);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .editor-toolbar-logo {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: var(--text-lg);
+      color: var(--wing-dark);
+    }
+
+    .editor-toolbar-logo span { color: var(--pouch-orange); }
+
+    .editor-toolbar-actions { display: flex; gap: var(--space-2); }
+
+    .editor-sidebar-left {
+      background: var(--plumage-white);
+      border-right: 1px solid var(--plumage-cream);
+      padding: var(--space-3);
+      overflow-y: auto;
+    }
+
+    .editor-sidebar-section {
+      margin-bottom: var(--space-4);
+    }
+
+    .editor-sidebar-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--sand-warm);
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    .editor-scene-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      font-size: var(--text-sm);
+      color: var(--wing-gray);
+      cursor: pointer;
+      margin-bottom: 2px;
+      transition: background 100ms;
+    }
+
+    .editor-scene-item:hover { background: var(--plumage-cream); }
+
+    .editor-scene-item.active {
+      border-left: 3px solid var(--pouch-orange);
+      color: var(--wing-dark);
+      font-weight: 600;
+      background: var(--ocean-foam);
+    }
+
+    .editor-asset-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      font-size: var(--text-sm);
+      color: var(--wing-gray);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 100ms;
+    }
+
+    .editor-asset-item:hover { background: var(--plumage-cream); }
+
+    .editor-asset-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 4px;
+      background: var(--ocean-foam);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .editor-asset-thumb img {
+      height: 24px;
+      width: auto;
+    }
+
+    .editor-center {
+      padding: var(--space-4);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+
+    .editor-stage {
+      flex: 1;
+      background: #fff;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .editor-stage-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .editor-stage-char {
+      position: relative;
+      z-index: 2;
+      height: 50%;
+      width: auto;
+      margin: 0 10px;
+    }
+
+    .editor-stage-char.selected {
+      outline: 2px dashed var(--pouch-orange);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+    .editor-timeline {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .timeline-track {
+      flex: 1;
+      height: 4px;
+      background: var(--sand-warm);
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .timeline-fill {
+      width: 22%;
+      height: 100%;
+      background: var(--ocean-blue);
+      border-radius: 2px;
+    }
+
+    .timeline-keyframe {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      background: var(--pouch-orange);
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 4px rgba(0,0,0,0.15);
+    }
+
+    .timeline-playhead {
+      position: absolute;
+      top: -8px;
+      bottom: -8px;
+      width: 2px;
+      background: var(--mouth-red);
+      left: 22%;
+      border-radius: 1px;
+    }
+
+    .timeline-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--wing-gray);
+      flex-shrink: 0;
+    }
+
+    .editor-dialogue {
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .dialogue-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 4px 0;
+      font-size: var(--text-sm);
+      border-bottom: 1px solid var(--plumage-cream);
+    }
+
+    .dialogue-line:last-child { border-bottom: none; }
+
+    .dialogue-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-full);
+      background: var(--ocean-foam);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .dialogue-avatar img { height: 20px; width: auto; }
+
+    .dialogue-name { color: var(--ocean-blue); font-weight: 600; }
+
+    .dialogue-add {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 0;
+      font-size: var(--text-sm);
+      color: var(--sand-warm);
+      cursor: pointer;
+    }
+
+    .editor-sidebar-right {
+      background: var(--plumage-white);
+      border-left: 1px solid var(--plumage-cream);
+      padding: var(--space-3);
+      overflow-y: auto;
+    }
+
+    .prop-group {
+      margin-bottom: var(--space-4);
+    }
+
+    .prop-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--sand-warm);
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    .prop-select {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--plumage-cream);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      color: var(--wing-dark);
+      background: #fff;
+      margin-bottom: var(--space-3);
+    }
+
+    .prop-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: var(--space-2);
+    }
+
+    .prop-slider-label {
+      font-size: var(--text-xs);
+      color: var(--wing-gray);
+      width: 20px;
+    }
+
+    .prop-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--sand-warm);
+      outline: none;
+    }
+
+    .prop-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--pouch-orange);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(245,166,35,0.3);
+    }
+
+    .emotion-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .emotion-btn {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--plumage-cream);
+      border-radius: var(--radius-sm);
+      background: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 100ms;
+    }
+
+    .emotion-btn.active {
+      border-color: var(--pouch-orange);
+      background: #FFF3E0;
+    }
+
+    .emotion-btn:hover { border-color: var(--ocean-blue); }
+
+    /* --- COMMUNITY MOCKUP --- */
+    .community-mockup {
+      background: var(--plumage-white);
+      padding: var(--space-8);
+    }
+
+    .community-header {
+      margin-bottom: var(--space-6);
+    }
+
+    .community-header h2 {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      color: var(--wing-dark);
+      font-weight: 600;
+    }
+
+    .community-header p {
+      color: var(--wing-gray);
+      font-size: var(--text-base);
+    }
+
+    .community-tabs {
+      display: flex;
+      gap: var(--space-2);
+      margin-bottom: var(--space-5);
+    }
+
+    .community-tab {
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      background: var(--plumage-cream);
+      color: var(--wing-gray);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: var(--font-body);
+      transition: all 150ms var(--ease-standard);
+    }
+
+    .community-tab:hover { background: var(--sand-warm); color: var(--wing-dark); }
+
+    .community-tab.active {
+      background: var(--pouch-orange);
+      color: #fff;
+    }
+
+    .community-filters {
+      display: flex;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5);
+      align-items: center;
+    }
+
+    .community-search {
+      flex: 1;
+      max-width: 320px;
+      padding: 8px 16px 8px 36px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--sand-warm);
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235A5A5A' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") 12px center no-repeat;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      color: var(--wing-dark);
+      outline: none;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+
+    .community-search:focus {
+      border-color: var(--ocean-blue);
+      box-shadow: 0 0 0 3px rgba(45,142,196,0.12);
+    }
+
+    .community-sort {
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--sand-warm);
+      background: #fff;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      color: var(--wing-gray);
+    }
+
+    /* ============================================
+       8. PERSONALITY DETAILS
+       ============================================ */
+    .personality-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: var(--space-5);
+    }
+
+    .personality-card {
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      border-radius: var(--radius-md);
+      padding: var(--space-5);
+      text-align: center;
+    }
+
+    .personality-card h4 {
+      font-family: var(--font-display);
+      font-size: var(--text-base);
+      color: var(--wing-dark);
+      margin-bottom: var(--space-3);
+    }
+
+    /* Wave divider */
+    .wave-divider {
+      width: 100%;
+      overflow: hidden;
+      line-height: 0;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-8);
+    }
+
+    .empty-state svg { opacity: 0.6; }
+
+    .empty-bubble {
+      background: var(--ocean-foam);
+      border: 1px solid var(--ocean-shallow);
+      border-radius: var(--radius-lg);
+      padding: 8px 20px;
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      color: var(--ocean-deep);
+      position: relative;
+    }
+
+    .empty-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid var(--ocean-foam);
+    }
+
+    /* Pelican loading */
+    .loading-pelican {
+      display: inline-block;
+    }
+
+    .loading-pelican .mouth-open { animation: pelican-gulp 1.2s ease-in-out infinite; }
+    .loading-pelican .mouth-closed { animation: pelican-gulp-inv 1.2s ease-in-out infinite; }
+
+    @keyframes pelican-gulp {
+      0%, 40% { opacity: 0; }
+      50%, 80% { opacity: 1; }
+      90%, 100% { opacity: 0; }
+    }
+
+    @keyframes pelican-gulp-inv {
+      0%, 40% { opacity: 1; }
+      50%, 80% { opacity: 0; }
+      90%, 100% { opacity: 1; }
+    }
+
+    .loading-label {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      color: var(--wing-gray);
+      margin-top: var(--space-2);
+    }
+
+    /* Toast */
+    .toast-demo {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3);
+      background: #E8F5E9;
+      border: 1px solid #A5D6A7;
+      border-radius: var(--radius-md);
+      padding: 10px 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .toast-icon {
+      font-size: 20px;
+    }
+
+    .toast-text {
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      color: #2E7D32;
+      font-weight: 500;
+    }
+
+    /* Sound toggle */
+    .sound-toggle {
+      display: flex;
+      gap: var(--space-4);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sound-btn {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--plumage-cream);
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 150ms;
+    }
+
+    .sound-btn:hover { border-color: var(--ocean-blue); }
+
+    .sound-btn.active { border-color: var(--pouch-orange); background: #FFF3E0; }
+
+    .sound-label {
+      font-size: var(--text-xs);
+      color: var(--wing-gray);
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    /* ============================================
+       9. BEFORE / AFTER
+       ============================================ */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+
+    .comparison-col h4 {
+      font-family: var(--font-display);
+      font-size: var(--text-base);
+      margin-bottom: var(--space-4);
+      text-align: center;
+    }
+
+    .comparison-card {
+      padding: var(--space-5);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-4);
+    }
+
+    /* Old style */
+    .old-style {
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+    }
+
+    .old-style .comp-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #0f3460;
+      margin-bottom: 12px;
+    }
+
+    .old-style .comp-nav-logo {
+      font-family: 'Courier New', monospace;
+      color: #e94560;
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    .old-style .comp-nav-logo span { color: #4ecca3; }
+
+    .old-style .comp-nav-links {
+      display: flex;
+      gap: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+
+    .old-style .comp-nav-links a {
+      color: #888;
+      text-decoration: none;
+    }
+
+    .old-style .comp-nav-links a.active { color: #4ecca3; }
+
+    .old-style .comp-btn {
+      display: inline-block;
+      padding: 8px 16px;
+      border: 1px solid #e94560;
+      color: #e94560;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      border-radius: 4px;
+      background: transparent;
+      margin-right: 8px;
+    }
+
+    .old-style .comp-card {
+      background: #0a0a0f;
+      border: 1px solid #0f3460;
+      border-radius: 6px;
+      padding: 10px;
+      margin-top: 12px;
+    }
+
+    .old-style .comp-card-title {
+      font-family: 'Courier New', monospace;
+      color: #eee;
+      font-size: 13px;
+    }
+
+    .old-style .comp-card-sub {
+      font-family: 'Courier New', monospace;
+      color: #4ecca3;
+      font-size: 11px;
+    }
+
+    /* New style */
+    .new-style {
+      background: var(--plumage-white);
+      border: 1px solid var(--plumage-cream);
+    }
+
+    .new-style .comp-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--plumage-cream);
+      margin-bottom: 12px;
+    }
+
+    .new-style .comp-nav-logo {
+      font-family: var(--font-display);
+      color: var(--wing-dark);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .new-style .comp-nav-logo span { color: var(--pouch-orange); }
+
+    .new-style .comp-nav-links {
+      display: flex;
+      gap: 12px;
+      font-size: 13px;
+    }
+
+    .new-style .comp-nav-links a {
+      color: var(--wing-gray);
+      text-decoration: none;
+      font-family: var(--font-body);
+    }
+
+    .new-style .comp-nav-links a.active {
+      color: var(--ocean-blue);
+      border-bottom: 2px solid var(--pouch-orange);
+      padding-bottom: 2px;
+    }
+
+    .new-style .comp-card {
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      margin-top: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .new-style .comp-card-title {
+      font-family: var(--font-display);
+      color: var(--wing-dark);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .new-style .comp-card-sub {
+      font-family: var(--font-body);
+      color: var(--ocean-blue);
+      font-size: 12px;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 900px) {
+      .side-nav { display: none; }
+      .editor-mockup { grid-template-columns: 1fr; height: auto; }
+      .editor-sidebar-left, .editor-sidebar-right { display: none; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .hero-mockup { flex-direction: column; text-align: center; }
+      .hero-pelican { margin-top: -20px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-layout">
+    <!-- ======================== SIDE NAV ======================== -->
+    <nav class="side-nav" id="sideNav">
+      <div class="side-nav-logo">pelicans<span>.art</span></div>
+      <div class="side-nav-subtitle">Design Preview</div>
+      <a href="#colors" class="active">Colors</a>
+      <a href="#typography">Typography</a>
+      <a href="#buttons">Buttons</a>
+      <a href="#cards">Cards</a>
+      <a href="#tags">Tags &amp; Badges</a>
+      <a href="#navigation">Navigation</a>
+      <a href="#mockup-landing">Landing Page</a>
+      <a href="#mockup-player">Player</a>
+      <a href="#mockup-editor">Editor</a>
+      <a href="#mockup-community">Community</a>
+      <a href="#personality">Personality</a>
+      <a href="#comparison">Before / After</a>
+    </nav>
+
+    <!-- ======================== MAIN ======================== -->
+    <main class="main-content">
+
+      <!-- ====== 1. COLORS ====== -->
+      <section id="colors">
+        <h2 class="section-title">Color Palette</h2>
+        <p class="section-desc">Derived from the pelican's natural plumage — warm amber pouch, white body, dark wing tips — balanced with coastal ocean blue.</p>
+
+        <div class="color-group">
+          <div class="color-group-label">Pouch (Primary Warm)</div>
+          <div class="color-row">
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #F5A623;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Pouch Orange</span><span class="color-swatch-hex">#F5A623</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #FFCC80;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Pouch Light</span><span class="color-swatch-hex">#FFCC80</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #E8871E;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Pouch Deep</span><span class="color-swatch-hex">#E8871E</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="color-group">
+          <div class="color-group-label">Plumage (Neutrals)</div>
+          <div class="color-row">
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #F7F5F0; border-bottom: 1px solid #EDE8DF;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Plumage White</span><span class="color-swatch-hex">#F7F5F0</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #EDE8DF;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Plumage Cream</span><span class="color-swatch-hex">#EDE8DF</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="color-group">
+          <div class="color-group-label">Wing (Darks)</div>
+          <div class="color-row">
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #2D2D2D;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Wing Dark</span><span class="color-swatch-hex">#2D2D2D</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #5A5A5A;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Wing Gray</span><span class="color-swatch-hex">#5A5A5A</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #424242;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Wing Tip</span><span class="color-swatch-hex">#424242</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="color-group">
+          <div class="color-group-label">Ocean (Secondary Cool)</div>
+          <div class="color-row">
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #2D8EC4;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Ocean Blue</span><span class="color-swatch-hex">#2D8EC4</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #1B6B96;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Ocean Deep</span><span class="color-swatch-hex">#1B6B96</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #B8DFF0;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Ocean Shallow</span><span class="color-swatch-hex">#B8DFF0</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #E8F4F9;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Ocean Foam</span><span class="color-swatch-hex">#E8F4F9</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="color-group">
+          <div class="color-group-label">Functional</div>
+          <div class="color-row">
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #FFB300;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Bill Yellow</span><span class="color-swatch-hex">#FFB300</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #FF8F00;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Bill Ridge</span><span class="color-swatch-hex">#FF8F00</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #E05544;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Mouth Red</span><span class="color-swatch-hex">#E05544</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #F48FB1;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Mouth Pink</span><span class="color-swatch-hex">#F48FB1</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #D4C5A9;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Sand Warm</span><span class="color-swatch-hex">#D4C5A9</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #EDE6D6;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Sand Pale</span><span class="color-swatch-hex">#EDE6D6</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #87CEEB;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Sky Light</span><span class="color-swatch-hex">#87CEEB</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #1A4A62;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Water Dark</span><span class="color-swatch-hex">#1A4A62</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="color-group">
+          <div class="color-group-label">Player Dark Mode</div>
+          <div class="color-row">
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #0F1923;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Player BG</span><span class="color-swatch-hex">#0F1923</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #1A2A38;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Player Surface</span><span class="color-swatch-hex">#1A2A38</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #2A3A4A;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Player Border</span><span class="color-swatch-hex">#2A3A4A</span></div>
+            </div>
+            <div class="color-swatch">
+              <div class="color-swatch-block" style="background: #E8E4DF;"></div>
+              <div class="color-swatch-info"><span class="color-swatch-name">Player Text</span><span class="color-swatch-hex">#E8E4DF</span></div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subsection-title">Gradients</h3>
+        <div class="gradient-strip" style="background: linear-gradient(180deg, #87CEEB 0%, #2D8EC4 40%, #1B6B96 100%);" data-label="Hero / Ocean Horizon"></div>
+        <div class="gradient-strip" style="background: linear-gradient(135deg, #F5A623 0%, #E8871E 100%);" data-label="Pouch CTA Button"></div>
+        <div class="gradient-strip" style="background: linear-gradient(180deg, #1A2A38 0%, #0F1923 100%);" data-label="Player / Deep Water Night"></div>
+      </section>
+
+      <!-- ====== 2. TYPOGRAPHY ====== -->
+      <section id="typography">
+        <h2 class="section-title">Typography</h2>
+        <p class="section-desc">Fredoka for headings — thick, bubbly, cartoony. Nunito Sans for body — clean and readable. JetBrains Mono for code.</p>
+
+        <h3 class="subsection-title">Fredoka (Display)</h3>
+        <div class="type-sample">
+          <div class="type-sample-label">--text-3xl &middot; 36px &middot; Hero Headline</div>
+          <div class="type-sample-text display" style="font-size: 36px;">Make silly cartoons talk.</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">--text-2xl &middot; 28px &middot; Page Title</div>
+          <div class="type-sample-text display" style="font-size: 28px;">Community Assets</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">--text-xl &middot; 22px &middot; Section Header</div>
+          <div class="type-sample-text display" style="font-size: 22px;">Featured Skits</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">--text-lg &middot; 18px &middot; Card Title</div>
+          <div class="type-sample-text display" style="font-size: 18px;">Office Shenanigans</div>
+        </div>
+
+        <h3 class="subsection-title">Nunito Sans (Body)</h3>
+        <div class="type-sample">
+          <div class="type-sample-label">--text-base &middot; 16px &middot; Body Text</div>
+          <div class="type-sample-text body" style="font-size: 16px;">Browse characters, backgrounds, and props shared by the flock. Create your own animated skits with AI-powered improv.</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">--text-sm &middot; 14px &middot; Captions</div>
+          <div class="type-sample-text body" style="font-size: 14px;">Created by @pelican_fan &middot; 3 characters &middot; 2 min</div>
+        </div>
+        <div class="type-sample">
+          <div class="type-sample-label">--text-xs &middot; 12px &middot; Metadata</div>
+          <div class="type-sample-text body" style="font-size: 12px;">Auto-saved 2s ago &middot; Last edited Feb 8, 2026</div>
+        </div>
+
+        <h3 class="subsection-title">JetBrains Mono (Code)</h3>
+        <div class="type-sample">
+          <div class="type-sample-label">14px &middot; Editor / Technical</div>
+          <div class="type-sample-text mono" style="font-size: 14px;">--pouch-orange: #F5A623;</div>
+        </div>
+      </section>
+
+      <!-- ====== 3. BUTTONS ====== -->
+      <section id="buttons">
+        <h2 class="section-title">Buttons</h2>
+        <p class="section-desc">Three tiers: warm Pouch gradient for primary actions, Ocean outline for secondary, Ghost for toolbars.</p>
+
+        <h3 class="subsection-title">Primary (Pouch)</h3>
+        <div class="button-row">
+          <button class="btn btn-pouch btn-lg">Start Creating</button>
+          <button class="btn btn-pouch">Publish Skit</button>
+          <button class="btn btn-pouch btn-sm">Save</button>
+        </div>
+
+        <h3 class="subsection-title">Secondary (Ocean)</h3>
+        <div class="button-row">
+          <button class="btn btn-ocean btn-lg">Watch Skits</button>
+          <button class="btn btn-ocean">Load More</button>
+          <button class="btn btn-ocean btn-sm">Preview</button>
+        </div>
+
+        <h3 class="subsection-title">Ghost</h3>
+        <div class="button-row">
+          <button class="btn btn-ghost">Save Draft</button>
+          <button class="btn btn-ghost">Undo</button>
+          <button class="btn btn-ghost">Settings</button>
+        </div>
+      </section>
+
+      <!-- ====== 4. CARDS ====== -->
+      <section id="cards">
+        <h2 class="section-title">Cards</h2>
+        <p class="section-desc">Content containers with real sprite SVGs. Hover to see the warm glow + bounce animation.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-thumb">
+              <img src="sprites/pelican/front.svg" alt="Pelican">
+            </div>
+            <div class="card-body">
+              <div class="card-title">Pelican</div>
+              <div class="card-author">@studio</div>
+              <div class="card-meta">
+                <span><span class="heart">&#9829;</span> 42</span>
+                <span>&#8595; 18</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-thumb">
+              <img src="sprites/cat/front.svg" alt="Cat">
+            </div>
+            <div class="card-body">
+              <div class="card-title">Cat</div>
+              <div class="card-author">@studio</div>
+              <div class="card-meta">
+                <span><span class="heart">&#9829;</span> 34</span>
+                <span>&#8595; 8</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-thumb">
+              <img src="sprites/pirate/front.svg" alt="Pirate">
+            </div>
+            <div class="card-body">
+              <div class="card-title">Pirate</div>
+              <div class="card-author">@studio</div>
+              <div class="card-meta">
+                <span><span class="heart">&#9829;</span> 23</span>
+                <span>&#8595; 11</span>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-thumb bg-sand">
+              <img src="backgrounds/park.svg" alt="Park" style="height: 100%; width: 100%; object-fit: cover;">
+            </div>
+            <div class="card-body">
+              <div class="card-title">City Park</div>
+              <div class="card-author">@studio</div>
+              <div class="card-meta">
+                <span><span class="heart">&#9829;</span> 56</span>
+                <span>&#8595; 31</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 5. TAGS ====== -->
+      <section id="tags">
+        <h2 class="section-title">Tags &amp; Badges</h2>
+        <p class="section-desc">Pill-shaped category labels, each with its own color.</p>
+        <div class="tags-row">
+          <span class="tag tag-character">Characters</span>
+          <span class="tag tag-background">Backgrounds</span>
+          <span class="tag tag-prop">Props</span>
+          <span class="tag tag-skit">Skits</span>
+          <span class="tag tag-new">New</span>
+        </div>
+      </section>
+
+      <!-- ====== 6. NAVIGATION ====== -->
+      <section id="navigation">
+        <h2 class="section-title">Navigation</h2>
+        <p class="section-desc">Top nav bar with logo treatment. "pelicans" in dark, ".art" in pouch orange.</p>
+        <div class="demo-nav">
+          <div class="demo-nav-logo">pelicans<span>.art</span></div>
+          <ul class="demo-nav-links">
+            <li><a href="#" class="active">Create</a></li>
+            <li><a href="#">Watch</a></li>
+            <li><a href="#">Community</a></li>
+          </ul>
+          <div class="demo-nav-avatar"></div>
+        </div>
+      </section>
+
+      <!-- ====== 7a. LANDING HERO ====== -->
+      <section id="mockup-landing" style="padding: 0;">
+        <div style="padding: var(--space-12) var(--space-8) var(--space-6);">
+          <h2 class="section-title">Landing Page</h2>
+          <p class="section-desc">Ocean gradient hero with pelican mascot, wave divider, and dual CTAs.</p>
+        </div>
+        <div class="mockup-frame">
+          <div class="mockup-label">Landing &mdash; Hero Section</div>
+          <div class="hero-mockup">
+            <div class="hero-text">
+              <h1>Make silly cartoons talk.</h1>
+              <p>AI-powered improv with cartoony characters you create. Pick your cast, write a scene, and watch them perform.</p>
+              <div class="button-row">
+                <button class="btn btn-pouch btn-lg">Start Creating</button>
+                <button class="btn btn-ocean btn-lg">Watch Skits</button>
+              </div>
+            </div>
+            <div class="hero-pelican">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="180" height="270">
+                <g id="body">
+                  <ellipse cx="50" cy="110" rx="28" ry="35" fill="#f5f5f5"/>
+                  <ellipse cx="50" cy="115" rx="20" ry="28" fill="#ffffff"/>
+                  <ellipse cx="25" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+                  <ellipse cx="75" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+                  <ellipse cx="22" cy="125" rx="6" ry="10" fill="#424242"/>
+                  <ellipse cx="78" cy="125" rx="6" ry="10" fill="#424242"/>
+                  <ellipse cx="40" cy="145" rx="8" ry="4" fill="#ffb300"/>
+                  <ellipse cx="60" cy="145" rx="8" ry="4" fill="#ffb300"/>
+                </g>
+                <g id="head-top">
+                  <ellipse cx="50" cy="75" rx="12" ry="18" fill="#f5f5f5"/>
+                  <ellipse cx="50" cy="45" rx="18" ry="16" fill="#f5f5f5"/>
+                  <path d="M45 30 Q50 22 55 30" stroke="#e0e0e0" stroke-width="4" fill="none" stroke-linecap="round"/>
+                  <ellipse cx="42" cy="43" rx="5" ry="6" fill="#ffffff"/>
+                  <ellipse cx="58" cy="43" rx="5" ry="6" fill="#ffffff"/>
+                  <ellipse cx="42" cy="44" rx="2" ry="3" fill="#000000"/>
+                  <ellipse cx="58" cy="44" rx="2" ry="3" fill="#000000"/>
+                  <circle cx="40" cy="41" r="1.5" fill="#fff" opacity="0.8"/>
+                  <circle cx="56" cy="41" r="1.5" fill="#fff" opacity="0.8"/>
+                </g>
+                <g id="head-bottom">
+                  <path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/>
+                  <path d="M50 44 L50 55" stroke="#ff8f00" stroke-width="1" opacity="0.5"/>
+                  <path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/>
+                  <path d="M38 60 Q50 72 62 60" stroke="#ffb300" stroke-width="1" fill="none" opacity="0.5"/>
+                  <path d="M40 65 Q50 75 60 65" stroke="#ffb300" stroke-width="1" fill="none" opacity="0.5"/>
+                  <ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/>
+                  <!-- Mouth open for hero -->
+                  <ellipse cx="50" cy="68" rx="10" ry="8" fill="#f44336" opacity="1"/>
+                </g>
+              </svg>
+            </div>
+            <!-- Wave divider -->
+            <svg class="hero-wave" viewBox="0 0 1200 60" preserveAspectRatio="none">
+              <path d="M0 30 Q150 0 300 30 T600 30 T900 30 T1200 30 L1200 60 L0 60Z" fill="#F7F5F0"/>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 7b. PLAYER ====== -->
+      <section id="mockup-player" style="padding: 0;">
+        <div style="padding: var(--space-12) var(--space-8) var(--space-6);">
+          <h2 class="section-title">Skit Player</h2>
+          <p class="section-desc">The one dark page. Deep ocean night background so the stage pops. Pouch-orange progress, script panel with active line.</p>
+        </div>
+        <div class="mockup-frame">
+          <div class="mockup-label">Player &mdash; Watch Mode</div>
+          <div class="player-mockup">
+            <!-- Stage -->
+            <div class="player-stage">
+              <img class="player-stage-bg" src="backgrounds/park.svg" alt="Park background">
+              <img class="player-stage-char" src="sprites/pelican/front.svg" alt="Pelican" style="margin-left: 40px;">
+              <img class="player-stage-char" src="sprites/cat/front.svg" alt="Cat" style="margin-right: 40px;">
+            </div>
+
+            <!-- Title -->
+            <div class="player-title-row">
+              <div class="player-title">Park Encounter</div>
+              <div class="player-author">by @pelican_fan</div>
+            </div>
+
+            <!-- Transport -->
+            <div class="player-controls">
+              <button class="transport-btn">&#9198;</button>
+              <button class="play-btn">
+                <svg width="16" height="18" viewBox="0 0 16 18" fill="white"><polygon points="0,0 16,9 0,18"/></svg>
+              </button>
+              <button class="transport-btn">&#9197;</button>
+              <div class="progress-track">
+                <div class="progress-fill"></div>
+              </div>
+              <span class="player-time">1:23 / 3:45</span>
+            </div>
+
+            <!-- Script -->
+            <div class="player-script">
+              <div class="script-label">Script</div>
+              <div class="script-line">
+                <span class="char-name">Pelican:</span> "I ate a fish THIS big."
+              </div>
+              <div class="script-line">
+                <span class="char-name">Cat:</span> "That's your foot."
+              </div>
+              <div class="script-line active">
+                <span class="char-name">Pelican:</span> "...still counts."
+              </div>
+              <div class="script-line">
+                <span class="char-name">Cat:</span> *licks paw disapprovingly*
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 7c. EDITOR ====== -->
+      <section id="mockup-editor" style="padding: 0;">
+        <div style="padding: var(--space-12) var(--space-8) var(--space-6);">
+          <h2 class="section-title">Skit Editor</h2>
+          <p class="section-desc">Light mode workspace. Three-panel layout: scenes/assets, stage + timeline, properties panel.</p>
+        </div>
+        <div class="mockup-frame">
+          <div class="mockup-label">Editor &mdash; Create Mode</div>
+          <div class="editor-mockup">
+            <!-- Toolbar -->
+            <div class="editor-toolbar">
+              <div class="editor-toolbar-logo">pelicans<span>.art</span></div>
+              <div class="editor-toolbar-actions">
+                <button class="btn btn-ghost btn-sm">Save Draft</button>
+                <button class="btn btn-ocean btn-sm">Preview</button>
+                <button class="btn btn-pouch btn-sm">Publish</button>
+              </div>
+            </div>
+
+            <!-- Left sidebar -->
+            <div class="editor-sidebar-left">
+              <div class="editor-sidebar-section">
+                <div class="editor-sidebar-label">Scenes</div>
+                <div class="editor-scene-item active">Scene 1</div>
+                <div class="editor-scene-item">Scene 2</div>
+                <div class="editor-scene-item">Scene 3</div>
+                <div class="editor-scene-item" style="color: var(--sand-warm);">+ Add Scene</div>
+              </div>
+              <div class="editor-sidebar-section">
+                <div class="editor-sidebar-label">Assets</div>
+                <div class="editor-asset-item">
+                  <div class="editor-asset-thumb"><img src="sprites/pelican/front.svg" alt=""></div>
+                  <span>Pelican</span>
+                </div>
+                <div class="editor-asset-item">
+                  <div class="editor-asset-thumb"><img src="sprites/cat/front.svg" alt=""></div>
+                  <span>Cat</span>
+                </div>
+                <div class="editor-asset-item">
+                  <div class="editor-asset-thumb" style="background: var(--sand-pale);"><img src="backgrounds/park.svg" alt="" style="height: 100%; width: 100%; object-fit: cover;"></div>
+                  <span>Park</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Center -->
+            <div class="editor-center">
+              <div class="editor-stage">
+                <img class="editor-stage-bg" src="backgrounds/park.svg" alt="">
+                <img class="editor-stage-char selected" src="sprites/pelican/front.svg" alt="">
+                <img class="editor-stage-char" src="sprites/cat/front.svg" alt="">
+              </div>
+              <div class="editor-timeline">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="var(--wing-gray)"><polygon points="0,0 14,7 0,14"/></svg>
+                <div class="timeline-track">
+                  <div class="timeline-fill"></div>
+                  <div class="timeline-keyframe" style="left: 10%;"></div>
+                  <div class="timeline-keyframe" style="left: 35%;"></div>
+                  <div class="timeline-keyframe" style="left: 65%;"></div>
+                  <div class="timeline-keyframe" style="left: 90%;"></div>
+                  <div class="timeline-playhead"></div>
+                </div>
+                <span class="timeline-time">0:03 / 0:15</span>
+              </div>
+              <div class="editor-dialogue">
+                <div class="dialogue-line">
+                  <div class="dialogue-avatar"><img src="sprites/pelican/front.svg" alt=""></div>
+                  <div><span class="dialogue-name">Pelican:</span> "I ate a fish THIS big."</div>
+                </div>
+                <div class="dialogue-line">
+                  <div class="dialogue-avatar"><img src="sprites/cat/front.svg" alt=""></div>
+                  <div><span class="dialogue-name">Cat:</span> "That's your foot."</div>
+                </div>
+                <div class="dialogue-add">+ Add dialogue line</div>
+              </div>
+            </div>
+
+            <!-- Right sidebar -->
+            <div class="editor-sidebar-right">
+              <div class="prop-group">
+                <div class="prop-label">Character</div>
+                <select class="prop-select">
+                  <option>Pelican</option>
+                  <option>Cat</option>
+                </select>
+              </div>
+              <div class="prop-group">
+                <div class="prop-label">Position</div>
+                <div class="prop-slider-row">
+                  <span class="prop-slider-label">X</span>
+                  <input type="range" class="prop-slider" min="0" max="100" value="35">
+                </div>
+                <div class="prop-slider-row">
+                  <span class="prop-slider-label">Y</span>
+                  <input type="range" class="prop-slider" min="0" max="100" value="70">
+                </div>
+              </div>
+              <div class="prop-group">
+                <div class="prop-label">Emotion</div>
+                <div class="emotion-grid">
+                  <button class="emotion-btn active" title="Happy">&#128522;</button>
+                  <button class="emotion-btn" title="Angry">&#128544;</button>
+                  <button class="emotion-btn" title="Sad">&#128546;</button>
+                  <button class="emotion-btn" title="Scared">&#128561;</button>
+                  <button class="emotion-btn" title="Surprised">&#128558;</button>
+                  <button class="emotion-btn" title="Neutral">&#128528;</button>
+                </div>
+              </div>
+              <div class="prop-group">
+                <div class="prop-label">Voice</div>
+                <select class="prop-select">
+                  <option>Marius</option>
+                  <option>Jean</option>
+                </select>
+                <div class="prop-slider-row">
+                  <span class="prop-slider-label" style="width: 36px; font-size: 10px;">Pitch</span>
+                  <input type="range" class="prop-slider" min="-100" max="100" value="10">
+                </div>
+                <div class="prop-slider-row">
+                  <span class="prop-slider-label" style="width: 36px; font-size: 10px;">Speed</span>
+                  <input type="range" class="prop-slider" min="50" max="150" value="90">
+                </div>
+              </div>
+              <div class="prop-group">
+                <div class="prop-label">Animation</div>
+                <select class="prop-select">
+                  <option>None</option>
+                  <option>Bounce</option>
+                  <option>Shake</option>
+                  <option>Float</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 7d. COMMUNITY ====== -->
+      <section id="mockup-community" style="padding: 0;">
+        <div style="padding: var(--space-12) var(--space-8) var(--space-6);">
+          <h2 class="section-title">Community</h2>
+          <p class="section-desc">Browsable gallery with pill tabs, search, and asset cards. Light and airy.</p>
+        </div>
+        <div class="mockup-frame">
+          <div class="mockup-label">Community &mdash; Browse Assets</div>
+          <div class="community-mockup">
+            <div class="community-header">
+              <h2>Community</h2>
+              <p>Browse characters, backgrounds, and props shared by the flock.</p>
+            </div>
+
+            <div class="community-tabs">
+              <button class="community-tab active">Characters</button>
+              <button class="community-tab">Backgrounds</button>
+              <button class="community-tab">Props</button>
+              <button class="community-tab">Skits</button>
+            </div>
+
+            <div class="community-filters">
+              <input type="text" class="community-search" placeholder="Search characters...">
+              <select class="community-sort">
+                <option>Newest</option>
+                <option>Most Liked</option>
+                <option>Most Used</option>
+              </select>
+            </div>
+
+            <div class="card-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="card">
+                <div class="card-thumb">
+                  <img src="sprites/pelican/front.svg" alt="Pelican">
+                </div>
+                <div class="card-body">
+                  <div class="card-title">Pelican</div>
+                  <div class="card-author">@studio</div>
+                  <div class="card-meta">
+                    <span><span class="heart">&#9829;</span> 42</span>
+                    <span>&#8595; 18</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-thumb">
+                  <img src="sprites/cat/front.svg" alt="Cat">
+                </div>
+                <div class="card-body">
+                  <div class="card-title">Cat</div>
+                  <div class="card-author">@whiskers</div>
+                  <div class="card-meta">
+                    <span><span class="heart">&#9829;</span> 34</span>
+                    <span>&#8595; 8</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-thumb">
+                  <img src="sprites/pirate/front.svg" alt="Pirate">
+                </div>
+                <div class="card-body">
+                  <div class="card-title">Pirate</div>
+                  <div class="card-author">@arrr_tist</div>
+                  <div class="card-meta">
+                    <span><span class="heart">&#9829;</span> 23</span>
+                    <span>&#8595; 11</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-thumb">
+                  <img src="sprites/batman/front.svg" alt="Batman">
+                </div>
+                <div class="card-body">
+                  <div class="card-title">Batman</div>
+                  <div class="card-author">@gotham_nights</div>
+                  <div class="card-meta">
+                    <span><span class="heart">&#9829;</span> 67</span>
+                    <span>&#8595; 29</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-thumb">
+                  <img src="sprites/waiter/front.svg" alt="Waiter">
+                </div>
+                <div class="card-body">
+                  <div class="card-title">Waiter</div>
+                  <div class="card-author">@fine_dining</div>
+                  <div class="card-meta">
+                    <span><span class="heart">&#9829;</span> 15</span>
+                    <span>&#8595; 6</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-thumb">
+                  <img src="sprites/sun/front.svg" alt="Sun">
+                </div>
+                <div class="card-body">
+                  <div class="card-title">Sun</div>
+                  <div class="card-author">@bright_ideas</div>
+                  <div class="card-meta">
+                    <span><span class="heart">&#9829;</span> 51</span>
+                    <span>&#8595; 22</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="text-align: center; margin-top: var(--space-6);">
+              <button class="btn btn-ocean">Load More</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 8. PERSONALITY ====== -->
+      <section id="personality">
+        <h2 class="section-title">Personality Details</h2>
+        <p class="section-desc">Small touches that make pelicans.art feel uniquely "pelican."</p>
+
+        <div class="personality-grid">
+          <!-- Wave divider -->
+          <div class="personality-card">
+            <h4>Wave Divider</h4>
+            <svg viewBox="0 0 600 40" preserveAspectRatio="none" style="width: 100%; height: 40px;">
+              <path d="M0 20 Q75 0 150 20 T300 20 T450 20 T600 20 L600 40 L0 40Z" fill="var(--ocean-shallow)"/>
+            </svg>
+            <p style="font-size: var(--text-sm); color: var(--wing-gray); margin-top: var(--space-2);">Replaces flat &lt;hr&gt; dividers</p>
+          </div>
+
+          <!-- Empty state -->
+          <div class="personality-card">
+            <h4>Empty State</h4>
+            <div class="empty-state" style="padding: var(--space-4);">
+              <div class="empty-bubble">Nothing in the pouch yet!</div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="60" height="90" style="opacity: 0.5;">
+                <g id="body">
+                  <ellipse cx="50" cy="110" rx="28" ry="35" fill="#f5f5f5"/>
+                  <ellipse cx="50" cy="115" rx="20" ry="28" fill="#ffffff"/>
+                  <ellipse cx="25" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+                  <ellipse cx="75" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+                  <ellipse cx="22" cy="125" rx="6" ry="10" fill="#424242"/>
+                  <ellipse cx="78" cy="125" rx="6" ry="10" fill="#424242"/>
+                  <ellipse cx="40" cy="145" rx="8" ry="4" fill="#ffb300"/>
+                  <ellipse cx="60" cy="145" rx="8" ry="4" fill="#ffb300"/>
+                </g>
+                <g id="head-top">
+                  <ellipse cx="50" cy="75" rx="12" ry="18" fill="#f5f5f5"/>
+                  <ellipse cx="50" cy="45" rx="18" ry="16" fill="#f5f5f5"/>
+                  <ellipse cx="42" cy="43" rx="5" ry="6" fill="#ffffff"/>
+                  <ellipse cx="58" cy="43" rx="5" ry="6" fill="#ffffff"/>
+                  <ellipse cx="44" cy="44" rx="2" ry="3" fill="#000000"/>
+                  <ellipse cx="56" cy="44" rx="2" ry="3" fill="#000000"/>
+                  <!-- Confused eyebrows (raised) -->
+                  <path d="M34 33 L46 37" stroke="#9e9e9e" stroke-width="2" fill="none"/>
+                  <path d="M54 37 L66 33" stroke="#9e9e9e" stroke-width="2" fill="none"/>
+                </g>
+                <g id="head-bottom">
+                  <path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/>
+                  <path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/>
+                  <ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/>
+                  <path d="M44 68 Q50 66 56 68" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div class="personality-card">
+            <h4>Loading Animation</h4>
+            <div style="padding: var(--space-4); text-align: center;">
+              <div class="loading-pelican">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="60" height="90">
+                  <g id="body">
+                    <ellipse cx="50" cy="110" rx="28" ry="35" fill="#f5f5f5"/>
+                    <ellipse cx="50" cy="115" rx="20" ry="28" fill="#ffffff"/>
+                    <ellipse cx="25" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+                    <ellipse cx="75" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+                    <ellipse cx="22" cy="125" rx="6" ry="10" fill="#424242"/>
+                    <ellipse cx="78" cy="125" rx="6" ry="10" fill="#424242"/>
+                    <ellipse cx="40" cy="145" rx="8" ry="4" fill="#ffb300"/>
+                    <ellipse cx="60" cy="145" rx="8" ry="4" fill="#ffb300"/>
+                  </g>
+                  <g id="head-top">
+                    <ellipse cx="50" cy="75" rx="12" ry="18" fill="#f5f5f5"/>
+                    <ellipse cx="50" cy="45" rx="18" ry="16" fill="#f5f5f5"/>
+                    <ellipse cx="42" cy="43" rx="5" ry="6" fill="#ffffff"/>
+                    <ellipse cx="58" cy="43" rx="5" ry="6" fill="#ffffff"/>
+                    <ellipse cx="42" cy="44" rx="2" ry="3" fill="#000000"/>
+                    <ellipse cx="58" cy="44" rx="2" ry="3" fill="#000000"/>
+                  </g>
+                  <g id="head-bottom">
+                    <path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/>
+                    <path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/>
+                    <ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/>
+                    <path class="mouth-closed" d="M44 68 Q50 66 56 68" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+                    <ellipse class="mouth-open" cx="50" cy="68" rx="10" ry="8" fill="#f44336" opacity="0"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="loading-label">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Toast -->
+          <div class="personality-card">
+            <h4>Success Toast</h4>
+            <div style="padding: var(--space-4); text-align: center;">
+              <div class="toast-demo">
+                <span class="toast-icon">&#9996;</span>
+                <span class="toast-text">Saved!</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sound toggle -->
+          <div class="personality-card">
+            <h4>Sound Toggle</h4>
+            <div class="sound-toggle" style="padding: var(--space-4);">
+              <div>
+                <button class="sound-btn active" onclick="this.classList.toggle('active'); this.nextElementSibling?.previousElementSibling?.classList.toggle('active');" title="Sound On">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="30 40 40 45" width="36" height="36">
+                    <path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/>
+                    <path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/>
+                    <ellipse cx="50" cy="68" rx="10" ry="8" fill="#f44336"/>
+                    <ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/>
+                  </svg>
+                </button>
+                <div class="sound-label">On</div>
+              </div>
+              <div>
+                <button class="sound-btn" title="Sound Off">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="30 40 40 45" width="36" height="36">
+                    <path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/>
+                    <path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/>
+                    <path d="M44 68 Q50 66 56 68" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+                    <ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/>
+                  </svg>
+                </button>
+                <div class="sound-label">Off</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 404 -->
+          <div class="personality-card">
+            <h4>404 Page</h4>
+            <div class="empty-state" style="padding: var(--space-4);">
+              <div style="font-family: var(--font-display); font-size: var(--text-3xl); color: var(--sand-warm); font-weight: 700;">404</div>
+              <div class="empty-bubble">This page swam away.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== 9. BEFORE / AFTER ====== -->
+      <section id="comparison">
+        <h2 class="section-title">Before / After</h2>
+        <p class="section-desc">Side-by-side: the current cyberpunk/dark aesthetic vs. the new pelican-themed coastal design.</p>
+
+        <div class="comparison-grid">
+          <div class="comparison-col">
+            <h4 style="color: var(--mouth-red);">Current</h4>
+
+            <div class="comparison-card old-style">
+              <div class="comp-nav">
+                <div class="comp-nav-logo">AI <span>Improv</span></div>
+                <div class="comp-nav-links">
+                  <a href="#" class="active">Theater</a>
+                  <a href="#">Editor</a>
+                  <a href="#">Community</a>
+                </div>
+              </div>
+              <div class="comp-btn">Play Skit</div>
+              <div class="comp-btn" style="border-color: #4ecca3; color: #4ecca3;">Edit</div>
+              <div class="comp-card">
+                <div class="comp-card-title">Pelican</div>
+                <div class="comp-card-sub">@studio &middot; &#9829; 42</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="comparison-col">
+            <h4 style="color: #2E7D32;">New (pelicans.art)</h4>
+
+            <div class="comparison-card new-style">
+              <div class="comp-nav">
+                <div class="comp-nav-logo">pelicans<span>.art</span></div>
+                <div class="comp-nav-links">
+                  <a href="#" class="active">Create</a>
+                  <a href="#">Watch</a>
+                  <a href="#">Community</a>
+                </div>
+              </div>
+              <div style="display: flex; gap: 8px; margin-bottom: 4px;">
+                <button class="btn btn-pouch btn-sm">Start Creating</button>
+                <button class="btn btn-ocean btn-sm">Watch</button>
+              </div>
+              <div class="comp-card">
+                <div class="comp-card-title">Pelican</div>
+                <div class="comp-card-sub">@studio &middot; <span style="color: var(--mouth-red);">&#9829;</span> 42</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== FOOTER ====== -->
+      <footer style="background: var(--water-dark); padding: var(--space-8); text-align: center; position: relative;">
+        <svg viewBox="0 0 1200 30" preserveAspectRatio="none" style="position: absolute; top: -29px; left: 0; width: 100%; height: 30px;">
+          <path d="M0 15 Q150 0 300 15 T600 15 T900 15 T1200 15 L1200 30 L0 30Z" fill="var(--water-dark)"/>
+        </svg>
+        <div style="font-family: var(--font-display); font-size: var(--text-xl); color: #fff; margin-bottom: var(--space-2);">
+          pelicans<span style="color: var(--pouch-orange);">.art</span>
+        </div>
+        <div style="font-size: var(--text-sm); color: rgba(255,255,255,0.5);">
+          Stuff it in the pouch.
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- ======================== SCRIPTS ======================== -->
+  <script>
+    // Sticky nav highlighting on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.side-nav a');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => link.classList.remove('active'));
+          const target = document.querySelector(`.side-nav a[href="#${entry.target.id}"]`);
+          if (target) target.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -60% 0px' });
+
+    sections.forEach(section => observer.observe(section));
+
+    // Community tab switching
+    document.querySelectorAll('.community-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.community-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+
+    // Emotion button switching
+    document.querySelectorAll('.emotion-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.emotion-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

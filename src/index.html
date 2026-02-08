@@ -3,254 +3,540 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Improv Theater</title>
+  <title>pelicans.art — AI Improv Theater</title>
+  <link rel="stylesheet" href="pelicans-theme.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+
     body {
-      background: #0a0a0f;
-      color: #eee;
-      font-family: 'Courier New', monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px;
+      background: var(--plumage-white);
+      color: var(--wing-gray);
+      font-family: var(--font-body);
       min-height: 100vh;
     }
-    
-    h1 {
-      color: #e94560;
-      margin-bottom: 5px;
-      font-size: 28px;
+
+    /* === HERO === */
+    .hero {
+      background: linear-gradient(180deg, #87CEEB 0%, #2D8EC4 40%, #1B6B96 100%);
+      padding: 60px 40px 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-10);
+      position: relative;
+      overflow: hidden;
+      min-height: 380px;
     }
-    
-    .subtitle {
-      color: #666;
-      margin-bottom: 20px;
-      font-size: 14px;
+
+    .hero-text {
+      max-width: 480px;
+      z-index: 2;
     }
-    
+
+    .hero-text h1 {
+      font-family: var(--font-display);
+      font-size: 44px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: var(--space-3);
+    }
+
+    .hero-text p {
+      color: rgba(255,255,255,0.85);
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-6);
+      line-height: 1.6;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: var(--space-4);
+      flex-wrap: wrap;
+    }
+
+    .hero-buttons .btn-ocean {
+      color: #fff;
+      border-color: rgba(255,255,255,0.6);
+    }
+
+    .hero-buttons .btn-ocean:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: #fff;
+    }
+
+    .hero-pelican {
+      flex-shrink: 0;
+      z-index: 2;
+      transform: rotate(5deg);
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.15));
+      animation: hero-bob 4s ease-in-out infinite;
+    }
+
+    @keyframes hero-bob {
+      0%, 100% { transform: rotate(5deg) translateY(0); }
+      50% { transform: rotate(5deg) translateY(-10px); }
+    }
+
+    .hero-wave {
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      z-index: 1;
+    }
+
+    /* === MAIN CONTENT === */
+    .main-content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: var(--space-8) var(--space-6);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: var(--text-2xl);
+      font-weight: 600;
+      color: var(--wing-dark);
+      margin-bottom: var(--space-5);
+    }
+
+    /* === STAGE === */
+    .stage-section {
+      margin-bottom: var(--space-8);
+    }
+
     .stage-container {
-      background: #1a1a2e;
-      border: 3px solid #e94560;
-      border-radius: 8px;
+      background: var(--player-bg);
+      border-radius: var(--radius-md);
       overflow: hidden;
       position: relative;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.12);
     }
-    
+
     #stage {
       display: block;
     }
-    
+
     .loading-overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 25, 35, 0.92);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 10;
+      border-radius: var(--radius-md);
     }
-    
-    .loading-overlay.hidden {
-      display: none;
+
+    .loading-overlay.hidden { display: none; }
+
+    .loading-pelican-anim {
+      margin-bottom: var(--space-4);
     }
-    
-    .loading-spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid #333;
-      border-top-color: #e94560;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 15px;
+
+    .loading-pelican-anim .mouth-open { animation: pelican-gulp 1.2s ease-in-out infinite; }
+    .loading-pelican-anim .mouth-closed { animation: pelican-gulp-inv 1.2s ease-in-out infinite; }
+
+    @keyframes pelican-gulp {
+      0%, 40% { opacity: 0; }
+      50%, 80% { opacity: 1; }
+      90%, 100% { opacity: 0; }
     }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    @keyframes pelican-gulp-inv {
+      0%, 40% { opacity: 1; }
+      50%, 80% { opacity: 0; }
+      90%, 100% { opacity: 1; }
     }
-    
+
     .loading-text {
-      color: #e94560;
-      font-size: 14px;
-      margin-bottom: 10px;
+      color: var(--pouch-orange);
+      font-family: var(--font-display);
+      font-size: var(--text-sm);
+      margin-bottom: var(--space-3);
     }
-    
+
     .loading-progress {
-      width: 300px;
-      height: 6px;
-      background: #333;
-      border-radius: 3px;
+      width: 240px;
+      height: 4px;
+      background: var(--player-border);
+      border-radius: 2px;
       overflow: hidden;
     }
-    
+
     .loading-progress-fill {
       height: 100%;
-      background: #e94560;
+      background: linear-gradient(90deg, var(--pouch-orange), var(--pouch-deep));
       width: 0%;
       transition: width 0.3s;
+      border-radius: 2px;
     }
-    
+
+    /* === CONTROLS === */
     .controls {
       display: flex;
-      gap: 10px;
-      margin-top: 15px;
+      gap: var(--space-3);
+      margin-top: var(--space-4);
       align-items: center;
+      flex-wrap: wrap;
     }
-    
-    button {
-      background: #e94560;
-      color: white;
+
+    .play-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pouch-orange), var(--pouch-deep));
       border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
       cursor: pointer;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(245,166,35,0.3);
+      transition: all var(--duration-fast) var(--ease-standard);
+      flex-shrink: 0;
+      color: #fff;
+      font-size: 16px;
     }
-    
-    button:hover {
-      background: #ff6b6b;
+
+    .play-btn:hover {
+      box-shadow: 0 4px 16px rgba(245,166,35,0.5);
+      filter: brightness(1.1);
     }
-    
-    button:disabled {
-      background: #444;
+
+    .play-btn:disabled {
+      opacity: 0.4;
       cursor: not-allowed;
+      filter: grayscale(0.5);
     }
-    
-    .time-display {
-      background: #16213e;
-      padding: 10px 15px;
-      border-radius: 5px;
-      min-width: 120px;
-      text-align: center;
+
+    .stop-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--duration-fast);
+      color: var(--wing-gray);
+      font-size: 14px;
     }
-    
+
+    .stop-btn:hover {
+      background: var(--sand-pale);
+      border-color: var(--wing-gray);
+    }
+
+    /* Progress bar */
     .progress-container {
-      margin-top: 15px;
-      width: 800px;
+      margin-top: var(--space-3);
     }
-    
+
     .progress-bar {
       width: 100%;
-      height: 8px;
-      background: #16213e;
-      border-radius: 4px;
+      height: 6px;
+      background: var(--plumage-cream);
+      border-radius: 3px;
       overflow: hidden;
       cursor: pointer;
+      transition: height var(--duration-fast);
     }
-    
+
+    .progress-bar:hover { height: 8px; }
+
     .progress-fill {
       height: 100%;
-      background: #e94560;
+      background: linear-gradient(90deg, var(--pouch-orange), var(--pouch-deep));
       width: 0%;
       transition: width 0.1s linear;
+      border-radius: 3px;
     }
-    
-    .script-info {
-      margin-top: 20px;
-      padding: 15px;
-      background: #16213e;
-      border-radius: 5px;
-      max-width: 800px;
+
+    .time-display {
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      color: var(--wing-gray);
+      background: var(--plumage-cream);
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      min-width: 110px;
+      text-align: center;
     }
-    
-    .script-info h3 {
-      color: #e94560;
-      margin-bottom: 10px;
-    }
-    
-    .script-selector {
-      margin-top: 15px;
-      display: flex;
-      gap: 10px;
-    }
-    
-    .script-selector button {
-      background: #16213e;
-      border: 1px solid #e94560;
-    }
-    
-    .script-selector button.active {
-      background: #e94560;
-    }
-    
+
     .audio-toggle {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-left: 15px;
-      color: #888;
-      font-size: 13px;
+      gap: 6px;
+      margin-left: auto;
+      color: var(--wing-gray);
+      font-size: var(--text-sm);
+      cursor: pointer;
     }
-    
+
     .audio-toggle input {
       width: 18px;
       height: 18px;
       cursor: pointer;
+      accent-color: var(--pouch-orange);
     }
-    
+
+    /* === SCRIPT SELECTOR === */
+    .script-selector {
+      margin-top: var(--space-5);
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .script-tab {
+      padding: 8px 18px;
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      border-radius: var(--radius-full);
+      color: var(--wing-gray);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 600;
+      transition: all var(--duration-fast) var(--ease-standard);
+    }
+
+    .script-tab:hover {
+      background: var(--sand-warm);
+      color: var(--wing-dark);
+    }
+
+    .script-tab.active {
+      background: var(--pouch-orange);
+      border-color: var(--pouch-orange);
+      color: #fff;
+    }
+
+    /* === SCRIPT INFO === */
+    .script-info {
+      margin-top: var(--space-5);
+      padding: var(--space-5);
+      background: #fff;
+      border: 1px solid var(--plumage-cream);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .script-info h3 {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      color: var(--wing-dark);
+      margin-bottom: var(--space-2);
+    }
+
+    .script-info p {
+      color: var(--wing-gray);
+      font-size: var(--text-sm);
+      line-height: 1.5;
+    }
+
     .voice-info {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #666;
+      margin-top: var(--space-2);
+      font-size: var(--text-xs);
+      color: var(--sand-warm);
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      .hero {
+        flex-direction: column;
+        padding: 40px 24px 60px;
+        text-align: center;
+      }
+
+      .hero-text h1 { font-size: 32px; }
+
+      .hero-buttons { justify-content: center; }
+
+      .hero-pelican { margin-top: -10px; }
+
+      .main-content { padding: var(--space-5) var(--space-4); }
+
+      .controls { gap: var(--space-2); }
+
+      .time-display { min-width: 90px; font-size: var(--text-xs); }
     }
   </style>
 </head>
 <body>
-  <h1>🎭 AI Improv Theater</h1>
-  <p class="subtitle">where AIs perform questionable comedy</p>
-  
-  <div class="stage-container">
-    <canvas id="stage" width="800" height="450"></canvas>
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="loading-spinner"></div>
-      <div class="loading-text" id="loadingText">Generating voices...</div>
-      <div class="loading-progress">
-        <div class="loading-progress-fill" id="loadingProgressFill"></div>
+  <!-- NAV -->
+  <nav class="pelicans-nav">
+    <a href="/" class="pelicans-nav-logo">pelicans<span>.art</span></a>
+    <ul class="pelicans-nav-links">
+      <li><a href="/sprite-editor.html">Create</a></li>
+      <li><a href="/" class="active">Watch</a></li>
+      <li><a href="/community.html">Community</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Make silly cartoons talk.</h1>
+      <p>AI-powered improv with cartoony characters you create. Pick your cast, write a scene, and watch them perform.</p>
+      <div class="hero-buttons">
+        <a href="/sprite-editor.html" class="btn btn-pouch" style="font-size: var(--text-lg); padding: 12px 28px;">Start Creating</a>
+        <a href="/community.html" class="btn btn-ocean" style="font-size: var(--text-lg); padding: 12px 28px;">Browse Community</a>
+      </div>
+    </div>
+    <div class="hero-pelican">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="160" height="240">
+        <g id="body">
+          <ellipse cx="50" cy="110" rx="28" ry="35" fill="#f5f5f5"/>
+          <ellipse cx="50" cy="115" rx="20" ry="28" fill="#ffffff"/>
+          <ellipse cx="25" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+          <ellipse cx="75" cy="105" rx="10" ry="25" fill="#e0e0e0"/>
+          <ellipse cx="22" cy="125" rx="6" ry="10" fill="#424242"/>
+          <ellipse cx="78" cy="125" rx="6" ry="10" fill="#424242"/>
+          <ellipse cx="40" cy="145" rx="8" ry="4" fill="#ffb300"/>
+          <ellipse cx="60" cy="145" rx="8" ry="4" fill="#ffb300"/>
+        </g>
+        <g id="head-top">
+          <ellipse cx="50" cy="75" rx="12" ry="18" fill="#f5f5f5"/>
+          <ellipse cx="50" cy="45" rx="18" ry="16" fill="#f5f5f5"/>
+          <path d="M45 30 Q50 22 55 30" stroke="#e0e0e0" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <ellipse cx="42" cy="43" rx="5" ry="6" fill="#ffffff"/>
+          <ellipse cx="58" cy="43" rx="5" ry="6" fill="#ffffff"/>
+          <ellipse cx="42" cy="44" rx="2" ry="3" fill="#000000"/>
+          <ellipse cx="58" cy="44" rx="2" ry="3" fill="#000000"/>
+          <circle cx="40" cy="41" r="1.5" fill="#fff" opacity="0.8"/>
+          <circle cx="56" cy="41" r="1.5" fill="#fff" opacity="0.8"/>
+        </g>
+        <g id="head-bottom">
+          <path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/>
+          <path d="M50 44 L50 55" stroke="#ff8f00" stroke-width="1" opacity="0.5"/>
+          <path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/>
+          <path d="M38 60 Q50 72 62 60" stroke="#ffb300" stroke-width="1" fill="none" opacity="0.5"/>
+          <path d="M40 65 Q50 75 60 65" stroke="#ffb300" stroke-width="1" fill="none" opacity="0.5"/>
+          <ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/>
+          <path d="M44 68 Q50 66 56 68" stroke="#8d6e63" stroke-width="1.5" fill="none"/>
+          <ellipse cx="50" cy="68" rx="10" ry="8" fill="#f44336" opacity="0"/>
+        </g>
+      </svg>
+    </div>
+    <svg class="hero-wave" viewBox="0 0 1200 60" preserveAspectRatio="none">
+      <path d="M0 30 Q150 0 300 30 T600 30 T900 30 T1200 30 L1200 60 L0 60Z" fill="var(--plumage-white)"/>
+    </svg>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    <div class="stage-section">
+      <h2 class="section-title">Now Playing</h2>
+
+      <div class="stage-container">
+        <canvas id="stage" width="800" height="450"></canvas>
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="loading-pelican-anim">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" width="60" height="90">
+              <g><ellipse cx="50" cy="110" rx="28" ry="35" fill="#f5f5f5"/><ellipse cx="50" cy="115" rx="20" ry="28" fill="#fff"/><ellipse cx="25" cy="105" rx="10" ry="25" fill="#e0e0e0"/><ellipse cx="75" cy="105" rx="10" ry="25" fill="#e0e0e0"/><ellipse cx="22" cy="125" rx="6" ry="10" fill="#424242"/><ellipse cx="78" cy="125" rx="6" ry="10" fill="#424242"/><ellipse cx="40" cy="145" rx="8" ry="4" fill="#ffb300"/><ellipse cx="60" cy="145" rx="8" ry="4" fill="#ffb300"/></g>
+              <g><ellipse cx="50" cy="75" rx="12" ry="18" fill="#f5f5f5"/><ellipse cx="50" cy="45" rx="18" ry="16" fill="#f5f5f5"/><ellipse cx="42" cy="43" rx="5" ry="6" fill="#fff"/><ellipse cx="58" cy="43" rx="5" ry="6" fill="#fff"/><ellipse cx="42" cy="44" rx="2" ry="3" fill="#000"/><ellipse cx="58" cy="44" rx="2" ry="3" fill="#000"/></g>
+              <g><path d="M32 48 Q50 44 68 48 L65 55 Q50 52 35 55 Z" fill="#ffb300"/><path d="M35 55 Q30 70 50 78 Q70 70 65 55" fill="#ffcc80"/><ellipse cx="50" cy="78" rx="4" ry="2" fill="#ff8f00"/><path class="mouth-closed" d="M44 68 Q50 66 56 68" stroke="#8d6e63" stroke-width="1.5" fill="none"/><ellipse class="mouth-open" cx="50" cy="68" rx="10" ry="8" fill="#f44336" opacity="0"/></g>
+            </svg>
+          </div>
+          <div class="loading-text" id="loadingText">Generating voices...</div>
+          <div class="loading-progress">
+            <div class="loading-progress-fill" id="loadingProgressFill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-container">
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="play-btn" id="playBtn" disabled>&#9654;</button>
+        <button class="stop-btn" id="stopBtn">&#9632;</button>
+        <div class="time-display">
+          <span id="currentTime">0.0</span>s / <span id="totalTime">0</span>s
+        </div>
+        <div class="audio-toggle">
+          <input type="checkbox" id="audioEnabled" checked>
+          <label for="audioEnabled">Audio</label>
+        </div>
+      </div>
+
+      <div class="script-selector">
+        <button id="script0Btn" class="script-tab active">The Box</button>
+        <button id="script1Btn" class="script-tab">The Performance Review</button>
+        <button id="script2Btn" class="script-tab">Existential Kitchen</button>
+      </div>
+
+      <div class="script-info">
+        <h3 id="scriptTitle">Loading...</h3>
+        <p id="scriptDesc"></p>
+        <p class="voice-info" id="voiceInfo"></p>
       </div>
     </div>
   </div>
-  
-  <div class="progress-container">
-    <div class="progress-bar" id="progressBar">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-  </div>
-  
-  <div class="controls">
-    <button id="playBtn" disabled>▶ Play</button>
-    <button id="stopBtn">⬛ Stop</button>
-    <div class="time-display">
-      <span id="currentTime">0.0</span>s / <span id="totalTime">0</span>s
-    </div>
-    <div class="audio-toggle">
-      <input type="checkbox" id="audioEnabled" checked>
-      <label for="audioEnabled">🔊 Audio</label>
-    </div>
-  </div>
-  
-  <div class="script-selector">
-    <button id="script1Btn" class="active">The Performance Review</button>
-    <button id="script2Btn">Existential Kitchen</button>
-  </div>
-  
-  <div class="script-info">
-    <h3 id="scriptTitle">Loading...</h3>
-    <p id="scriptDesc"></p>
-    <p class="voice-info" id="voiceInfo"></p>
-  </div>
+
+  <!-- FOOTER -->
+  <footer class="pelicans-footer">
+    <svg class="pelicans-footer-wave" viewBox="0 0 1200 30" preserveAspectRatio="none">
+      <path d="M0 15 Q150 0 300 15 T600 15 T900 15 T1200 15 L1200 30 L0 30Z" fill="var(--water-dark)"/>
+    </svg>
+    <div class="pelicans-footer-logo">pelicans<span>.art</span></div>
+    <div class="pelicans-footer-tagline">Stuff it in the pouch.</div>
+  </footer>
 
   <script src="renderer.js"></script>
   <script src="audio-manager.js"></script>
   <script>
     // Test scripts from our AI generation
     const scripts = {
+      theBox: {
+        meta: { title: "The Box", duration: 30 },
+        stage: { background: "apartment", width: 800, height: 450, orientation: "landscape" },
+        cast: {
+          girl: { sprite: "girl", x: 22, startPos: [176, 320], voice: "cosette", scale: 1.6 },
+          cat: { sprite: "cat", x: 65, startPos: [520, 320], voice: "javert" }
+        },
+        props: {
+          "cat-tree": { prop: "cat-tree", x: 90.25, y: 76.68, scale: 3, layer: "background", visible: true },
+          "cardboard-box": { prop: "cardboard-box", x: 65.14, y: 107.55, scale: 4, layer: "foreground", visible: true }
+        },
+        script: [
+          { t: 0, do: "shot", type: "wide" },
+          { t: 0, do: "emote", who: "cat", emotion: "excited" },
+          { t: 0.5, do: "say", who: "girl", line: "I spent two hundred dollars on that cat tree.", duration: 2.5 },
+          { t: 3.5, do: "shot", type: "medium" },
+          { t: 3.5, do: "say", who: "cat", line: "And I appreciate the gesture.", duration: 2 },
+          { t: 6, do: "emote", who: "girl", emotion: "angry" },
+          { t: 6.5, do: "say", who: "girl", line: "You're sitting in the box it came in!", duration: 2 },
+          { t: 9, do: "shot", type: "closeup", who: "cat" },
+          { t: 9, do: "emote", who: "cat", emotion: "smug" },
+          { t: 9.5, do: "say", who: "cat", line: "Yes. The box. My throne.", duration: 2 },
+          { t: 12, do: "shot", type: "two-shot" },
+          { t: 12, do: "emote", who: "cat", emotion: "happy" },
+          { t: 12.5, do: "say", who: "girl", line: "It's cardboard!", duration: 1.5 },
+          { t: 14.5, do: "say", who: "cat", line: "Cardboard that perfectly contains my essence.", duration: 2.5 },
+          { t: 17.5, do: "shot", type: "closeup", who: "cat" },
+          { t: 17.5, do: "emote", who: "cat", emotion: "happy" },
+          { t: 18, do: "say", who: "cat", line: "When I'm in the box, I know exactly where I end and the world begins.", duration: 3 },
+          { t: 21.5, do: "shot", type: "closeup", who: "girl" },
+          { t: 21.5, do: "emote", who: "girl", emotion: "worried" },
+          { t: 22, do: "say", who: "girl", line: "That's... weirdly philosophical.", duration: 2 },
+          { t: 24.5, do: "shot", type: "medium" },
+          { t: 24.5, do: "emote", who: "cat", emotion: "neutral" },
+          { t: 25, do: "say", who: "cat", line: "Also... it smells like cardboard.", duration: 2 },
+          { t: 27.5, do: "emote", who: "girl", emotion: "tired" },
+          { t: 27.5, do: "shot", type: "wide" },
+          { t: 28, do: "say", who: "girl", line: "Fine. Keep your box. I'm returning the cat tree.", duration: 2.5 }
+        ],
+        description: "A girl tries to understand why her cat is obsessed with an empty box."
+      },
+
       performanceReview: {
         meta: { title: "The Performance Review", duration: 18 },
         stage: { background: "office", width: 800, height: 450 },
@@ -278,7 +564,7 @@
         ],
         description: "Being fired from a job you don't have. The sword is never addressed."
       },
-      
+
       existentialKitchen: {
         meta: { title: "Existential Kitchen", duration: 16 },
         stage: { background: "kitchen", width: 800, height: 450 },
@@ -307,7 +593,7 @@
         description: "The cat has been talking this whole time. The banana knows too much."
       }
     };
-    
+
     // Initialize renderer
     const canvas = document.getElementById('stage');
     const renderer = new SkitRenderer(canvas, {
@@ -315,24 +601,24 @@
         document.getElementById('currentTime').textContent = time.toFixed(1);
         const duration = renderer.script?.meta?.duration || 1;
         document.getElementById('progressFill').style.width = (time / duration * 100) + '%';
-        
+
         // Trigger audio playback
         if (audioEnabled && audioManager) {
           audioManager.playAudioAt(time);
         }
       },
       onEnd: () => {
-        document.getElementById('playBtn').textContent = '▶ Play';
+        document.getElementById('playBtn').innerHTML = '&#9654;';
         // Delay stopping audio so final line can finish
         if (audioManager) {
           setTimeout(() => {
             audioManager.stopAll();
             audioManager.resetTriggers();
-          }, 3000);  // 3 second grace period for final audio
+          }, 3000);
         }
       }
     });
-    
+
     // Initialize audio manager
     const audioManager = new AudioManager({
       onProgress: (completed, total, message) => {
@@ -344,36 +630,37 @@
         document.getElementById('playBtn').disabled = false;
       }
     });
-    
-    let currentScript = 'performanceReview';
+
+    let currentScript = 'theBox';
     let audioEnabled = true;
-    
+
     async function loadScript(name) {
       currentScript = name;
       const script = scripts[name];
-      
+
       // Update UI
       document.getElementById('scriptTitle').textContent = script.meta.title;
       document.getElementById('scriptDesc').textContent = script.description;
       document.getElementById('totalTime').textContent = script.meta.duration;
       document.getElementById('currentTime').textContent = '0.0';
       document.getElementById('progressFill').style.width = '0%';
-      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('playBtn').innerHTML = '&#9654;';
       document.getElementById('playBtn').disabled = true;
-      
+
       // Update button states
+      document.getElementById('script0Btn').classList.toggle('active', name === 'theBox');
       document.getElementById('script1Btn').classList.toggle('active', name === 'performanceReview');
       document.getElementById('script2Btn').classList.toggle('active', name === 'existentialKitchen');
-      
+
       // Load into renderer
       renderer.load(script);
-      
+
       // Show voice info
-      const voices = [...new Set(script.script.filter(b => b.do === 'say').map(b => 
+      const voices = [...new Set(script.script.filter(b => b.do === 'say').map(b =>
         `${b.who}: ${audioManager.getVoiceForCharacter(b.who)}`
       ))];
       document.getElementById('voiceInfo').textContent = `Voices: ${voices.join(', ')}`;
-      
+
       // Generate audio
       if (audioEnabled) {
         document.getElementById('loadingOverlay').classList.remove('hidden');
@@ -383,28 +670,28 @@
         document.getElementById('playBtn').disabled = false;
       }
     }
-    
+
     // Controls
     document.getElementById('playBtn').addEventListener('click', () => {
       if (renderer.isPlaying) {
         renderer.pause();
-        document.getElementById('playBtn').textContent = '▶ Play';
+        document.getElementById('playBtn').innerHTML = '&#9654;';
         if (audioManager) audioManager.stopAll();
       } else {
         renderer.play();
-        document.getElementById('playBtn').textContent = '⏸ Pause';
+        document.getElementById('playBtn').innerHTML = '&#9646;&#9646;';
       }
     });
-    
+
     document.getElementById('stopBtn').addEventListener('click', () => {
       renderer.stop();
-      document.getElementById('playBtn').textContent = '▶ Play';
+      document.getElementById('playBtn').innerHTML = '&#9654;';
       if (audioManager) {
         audioManager.stopAll();
         audioManager.resetTriggers();
       }
     });
-    
+
     document.getElementById('progressBar').addEventListener('click', (e) => {
       const rect = e.target.getBoundingClientRect();
       const x = e.clientX - rect.left;
@@ -413,20 +700,21 @@
       renderer.seek(percent * duration);
       if (audioManager) audioManager.seekTo(percent * duration);
     });
-    
+
     document.getElementById('audioEnabled').addEventListener('change', (e) => {
       audioEnabled = e.target.checked;
       if (audioEnabled && currentScript) {
         loadScript(currentScript);
       }
     });
-    
+
     // Script selection
+    document.getElementById('script0Btn').addEventListener('click', () => loadScript('theBox'));
     document.getElementById('script1Btn').addEventListener('click', () => loadScript('performanceReview'));
     document.getElementById('script2Btn').addEventListener('click', () => loadScript('existentialKitchen'));
-    
+
     // Load initial script
-    loadScript('performanceReview');
+    loadScript('theBox');
   </script>
 </body>
 </html>

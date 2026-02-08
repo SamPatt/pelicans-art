@@ -49,22 +49,27 @@ app.post('/tts/tts', async (req, res) => {
     const chunks = [];
     req.on('data', chunk => chunks.push(chunk));
     req.on('end', async () => {
-      const body = Buffer.concat(chunks);
-      const response = await fetch(`${TTS_URL}/tts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': req.get('Content-Type')
-        },
-        body
-      });
+      try {
+        const body = Buffer.concat(chunks);
+        const response = await fetch(`${TTS_URL}/tts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': req.get('Content-Type')
+          },
+          body
+        });
 
-      if (!response.ok) {
-        return res.status(response.status).send(await response.text());
+        if (!response.ok) {
+          return res.status(response.status).send(await response.text());
+        }
+
+        res.set('Content-Type', 'audio/wav');
+        const buffer = await response.buffer();
+        res.send(buffer);
+      } catch (err) {
+        console.error('TTS proxy error:', err.message);
+        res.status(502).json({ error: true, message: 'TTS service unavailable' });
       }
-
-      res.set('Content-Type', 'audio/wav');
-      const buffer = await response.buffer();
-      res.send(buffer);
     });
   } catch (err) {
     console.error('TTS proxy error:', err);
