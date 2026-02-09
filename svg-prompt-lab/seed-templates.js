@@ -37,6 +37,7 @@ STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy
 - Bold colors, clear shapes
 - Expressive features that will animate well
+- Character should face forward (front view) unless instructed otherwise
 
 OUTPUT FORMAT - You must respond with ONLY a valid SVG element. No JSON wrapping, no explanation, no markdown code blocks.
 Output starts with: <svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">`,

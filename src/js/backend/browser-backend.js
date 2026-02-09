@@ -205,7 +205,8 @@
           if (current.otherVariants && Object.keys(current.otherVariants).length) {
             variantContext += '\nOther existing views for reference:\n';
             for (const [v, svg] of Object.entries(current.otherVariants)) {
-              variantContext += `--- ${v} view ---\n${svg}\n`;
+              const capped = svg.length > 3000 ? svg.slice(0, 3000) + '\n<!-- truncated -->' : svg;
+              variantContext += `--- ${v} view ---\n${capped}\n`;
             }
           }
           userPrompt = `Modify this existing ${type}.${variantContext}\n\nCurrent:\n${current.svg || ''}\n\nInstruction:\n${request.command}`;

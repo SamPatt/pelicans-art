@@ -94,6 +94,7 @@ STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy
 - Bold colors, clear shapes
 - Expressive features that will animate well
+- Character should face forward (front view) unless instructed otherwise
 
 OUTPUT FORMAT - You must respond with valid JSON:
 {

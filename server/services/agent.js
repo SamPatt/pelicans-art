@@ -98,6 +98,7 @@ STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy
 - Bold colors, clear shapes
 - Expressive features that will animate well
+- Character should face forward (front view) unless instructed otherwise
 
 OUTPUT FORMAT - You must respond with valid JSON:
 {
@@ -332,7 +333,8 @@ function buildUserPrompt(mode, command, current) {
     if (current.otherVariants && Object.keys(current.otherVariants).length) {
       variantContext += '\nOther existing views for reference:\n';
       for (const [v, svg] of Object.entries(current.otherVariants)) {
-        variantContext += `--- ${v} view ---\n${svg}\n`;
+        const capped = svg.length > 3000 ? svg.slice(0, 3000) + '\n<!-- truncated -->' : svg;
+        variantContext += `--- ${v} view ---\n${capped}\n`;
       }
     }
     return `Current SVG:\n${current.svg}\n${variantContext}\nModification requested: ${command}`;

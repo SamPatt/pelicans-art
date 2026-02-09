@@ -4771,13 +4771,18 @@
               meta: currentMeta || {},
               variant: currentVariant || 'front'
             };
-            // Include other variant SVGs so AI can maintain visual consistency
+            // Include other variant SVGs (truncated) so AI can maintain visual consistency
             if (currentVariants.length > 1) {
+              const MAX_VARIANT_SVG = 3000;
               const otherVariants = {};
               for (const v of currentVariants) {
                 if (v !== currentVariant) {
                   try {
-                    otherVariants[v] = await backend.getSprite(currentSpriteName, v);
+                    let svg = await backend.getSprite(currentSpriteName, v);
+                    if (svg.length > MAX_VARIANT_SVG) {
+                      svg = svg.slice(0, MAX_VARIANT_SVG) + '\n<!-- truncated for brevity -->';
+                    }
+                    otherVariants[v] = svg;
                   } catch (_) {}
                 }
               }
@@ -4800,30 +4805,37 @@
           }
         }
 
+        // Snapshot identity before async call — user may switch sprite/variant during generation
+        const snapshotSpriteName = currentSpriteName;
+        const snapshotVariant = currentVariant || 'front';
+        const snapshotMeta = currentMeta ? { ...currentMeta } : {};
+
         const result = await backend.generateAsset(payload);
 
         if (result.success) {
           if (result.saved) {
-            // Already saved (server edit mode) - reload the current variant
+            // Already saved (server edit mode) - reload the snapshotted variant
             setCommandStatus('success', 'Saved!');
             input.value = '';
-            if (assetType === 'sprite' && currentSpriteName) {
-              await loadVariant(currentSpriteName, currentVariant || 'front');
+            if (assetType === 'sprite' && snapshotSpriteName) {
+              await loadVariant(snapshotSpriteName, snapshotVariant);
             }
           } else if (!isCreateMode && assetType === 'sprite') {
-            // Browser edit mode — save to the correct variant
-            const variant = currentVariant || 'front';
-            if (variant === 'front') {
+            // Browser edit mode — save to the snapshotted variant
+            if (snapshotVariant === 'front') {
               const aiMeta = result.asset.meta || {};
-              const meta = { ...(currentMeta || {}), ...aiMeta };
-              await backend.saveSprite(currentSpriteName, result.asset.svg, meta);
+              const meta = { ...snapshotMeta, ...aiMeta };
+              await backend.saveSprite(snapshotSpriteName, result.asset.svg, meta);
             } else {
-              await backend.saveSpriteVariant(currentSpriteName, variant, result.asset.svg);
+              await backend.saveSpriteVariant(snapshotSpriteName, snapshotVariant, result.asset.svg);
             }
-            currentSprite = result.asset.svg;
-            renderSprite();
-            buildElementTree();
-            setCommandStatus('success', `Saved ${currentSpriteName}/${variant}`);
+            // Only update canvas if user is still viewing the same sprite/variant
+            if (currentSpriteName === snapshotSpriteName && currentVariant === snapshotVariant) {
+              currentSprite = result.asset.svg;
+              renderSprite();
+              buildElementTree();
+            }
+            setCommandStatus('success', `Saved ${snapshotSpriteName}/${snapshotVariant}`);
             input.value = '';
           } else if (assetType === 'sprite') {
             // New sprite - use AI-generated meta, with fallbacks
