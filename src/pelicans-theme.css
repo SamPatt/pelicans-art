@@ -170,6 +170,7 @@
   justify-content: space-between;
   position: relative;
   z-index: 100;
+  overflow: hidden;
 }
 
 .pelicans-nav-logo {
@@ -179,6 +180,8 @@
   color: var(--wing-dark);
   text-decoration: none;
   margin-right: var(--space-8);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .pelicans-nav-logo span { color: var(--pouch-orange); }
