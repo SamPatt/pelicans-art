@@ -311,8 +311,33 @@
       color: #fff;
     }
 
+    .mode-card-mobile-note {
+      display: none;
+      margin-top: var(--space-2);
+      color: var(--sand-warm);
+      font-family: var(--font-body);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      text-align: center;
+    }
+
     /* === RESPONSIVE === */
     @media (max-width: 768px) {
+      .nav-studio-link {
+        display: none;
+      }
+
+      .try-browser-link {
+        pointer-events: none;
+        opacity: 0.45;
+        filter: grayscale(1);
+        cursor: default;
+      }
+
+      .mode-card-mobile-note {
+        display: block;
+      }
+
       .hero {
         flex-direction: column;
         padding: 40px 24px 60px;
@@ -336,7 +361,7 @@
   <nav class="pelicans-nav">
     <a href="./" class="pelicans-nav-logo">pelicans<span>.art</span></a>
     <ul class="pelicans-nav-links">
-      <li><a href="sprite-editor.html?mode=browser">Studio</a></li>
+      <li class="nav-studio-link"><a href="sprite-editor.html?mode=browser">Studio</a></li>
       <li><a href="./" class="active">Watch</a></li>
       <li><a href="community.html">The <span style="color:var(--pouch-orange)">Pouch</span></a></li>
       <li><button class="theme-toggle" id="themeToggle"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>
@@ -403,7 +428,8 @@
           <li>Import/export all local assets</li>
           <li>No server install required</li>
         </ul>
-        <a href="sprite-editor.html?mode=browser" class="btn btn-pouch mode-card-btn">Try in Browser</a>
+        <a href="sprite-editor.html?mode=browser" class="btn btn-pouch mode-card-btn try-browser-link">Try in Browser</a>
+        <div class="mode-card-mobile-note">No mobile support yet</div>
       </div>
       <div class="mode-card">
         <h3>Install For Full Features</h3>
@@ -451,6 +477,12 @@
     <div class="pelicans-footer-tagline">Stuff it in the pouch.</div>
   </footer>
 
+  <script>
+    // Block "Try in Browser" on mobile (pointer-events:none unreliable on Android)
+    document.querySelector('.try-browser-link')?.addEventListener('click', function(e) {
+      if (window.innerWidth <= 768) e.preventDefault();
+    });
+  </script>
   <script src="js/index.js"></script>
 </body>
 </html>
