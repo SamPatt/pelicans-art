@@ -4762,23 +4762,29 @@
           payload.orientation = 'landscape';
         }
 
-        // Include current state for edit mode
+        // Snapshot identity now — before any async work that could race with user navigation
+        const snapshotSpriteName = currentSpriteName;
+        const snapshotVariant = currentVariant || 'front';
+        const snapshotMeta = currentMeta ? { ...currentMeta } : {};
+        const snapshotSprite = currentSprite;
+
+        // Include current state for edit mode (using snapshot values)
         if (!isCreateMode) {
-          if (assetType === 'sprite' && currentSprite) {
+          if (assetType === 'sprite' && snapshotSprite) {
             payload.current = {
-              name: currentSpriteName,
-              svg: currentSprite,
-              meta: currentMeta || {},
-              variant: currentVariant || 'front'
+              name: snapshotSpriteName,
+              svg: snapshotSprite,
+              meta: snapshotMeta,
+              variant: snapshotVariant
             };
             // Include other variant SVGs (truncated) so AI can maintain visual consistency
             if (currentVariants.length > 1) {
               const MAX_VARIANT_SVG = 3000;
               const otherVariants = {};
               for (const v of currentVariants) {
-                if (v !== currentVariant) {
+                if (v !== snapshotVariant) {
                   try {
-                    let svg = await backend.getSprite(currentSpriteName, v);
+                    let svg = await backend.getSprite(snapshotSpriteName, v);
                     if (svg.length > MAX_VARIANT_SVG) {
                       svg = svg.slice(0, MAX_VARIANT_SVG) + '\n<!-- truncated for brevity -->';
                     }
@@ -4790,10 +4796,10 @@
                 payload.current.otherVariants = otherVariants;
               }
             }
-          } else if (assetType === 'background' && currentSprite) {
+          } else if (assetType === 'background' && snapshotSprite) {
             payload.current = {
               name: currentBackgroundName,
-              svg: currentSprite
+              svg: snapshotSprite
             };
             // Include current orientation for editing
             payload.orientation = currentBackgroundOrientation || 'landscape';
@@ -4805,19 +4811,15 @@
           }
         }
 
-        // Snapshot identity before async call — user may switch sprite/variant during generation
-        const snapshotSpriteName = currentSpriteName;
-        const snapshotVariant = currentVariant || 'front';
-        const snapshotMeta = currentMeta ? { ...currentMeta } : {};
-
         const result = await backend.generateAsset(payload);
 
         if (result.success) {
           if (result.saved) {
-            // Already saved (server edit mode) - reload the snapshotted variant
+            // Already saved (server edit mode) - reload only if user is still on the same sprite/variant
             setCommandStatus('success', 'Saved!');
             input.value = '';
-            if (assetType === 'sprite' && snapshotSpriteName) {
+            if (assetType === 'sprite' && snapshotSpriteName
+                && currentSpriteName === snapshotSpriteName && currentVariant === snapshotVariant) {
               await loadVariant(snapshotSpriteName, snapshotVariant);
             }
           } else if (!isCreateMode && assetType === 'sprite') {
