@@ -197,7 +197,18 @@
       let userPrompt = request.command || '';
       if (request.mode === 'edit' && current) {
         if (type === 'sprite' || type === 'prop' || type === 'background') {
-          userPrompt = `Modify this existing ${type}.\n\nCurrent:\n${current.svg || ''}\n\nInstruction:\n${request.command}`;
+          const variant = current.variant || 'front';
+          let variantContext = '';
+          if (variant !== 'front') {
+            variantContext = `\nYou are editing the "${variant}" view variant. Maintain the same character design, colors, and proportions.\n`;
+          }
+          if (current.otherVariants && Object.keys(current.otherVariants).length) {
+            variantContext += '\nOther existing views for reference:\n';
+            for (const [v, svg] of Object.entries(current.otherVariants)) {
+              variantContext += `--- ${v} view ---\n${svg}\n`;
+            }
+          }
+          userPrompt = `Modify this existing ${type}.${variantContext}\n\nCurrent:\n${current.svg || ''}\n\nInstruction:\n${request.command}`;
         } else if (type === 'skit') {
           userPrompt = `Modify this skit JSON.\n\nCurrent:\n${JSON.stringify(current.skit || current, null, 2)}\n\nInstruction:\n${request.command}`;
         }

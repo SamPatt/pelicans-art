@@ -4,7 +4,7 @@
 
 import { Router } from 'express';
 import { generateAsset, checkOpenClawConnection } from '../services/agent.js';
-import { saveSprite, getSprite, saveBackground, saveSkit } from '../services/storage.js';
+import { saveSprite, getSprite, saveSpriteVariant, saveBackground, saveSkit } from '../services/storage.js';
 
 const router = Router();
 
@@ -67,13 +67,19 @@ router.post('/generate', async (req, res, next) => {
 
     // For edit mode with a name, save automatically and broadcast
     if (mode === 'edit' && current?.name && type === 'sprite') {
-      // Merge AI-generated meta into existing meta (AI values override)
-      const updatedMeta = {
-        ...(current.meta || {}),
-        ...(result.meta || {})
-      };
+      const variant = current.variant || 'front';
 
-      await saveSprite(current.name, result.svg, updatedMeta);
+      if (variant === 'front') {
+        // Merge AI-generated meta into existing meta (AI values override)
+        const updatedMeta = {
+          ...(current.meta || {}),
+          ...(result.meta || {})
+        };
+        await saveSprite(current.name, result.svg, updatedMeta);
+      } else {
+        // Non-front variants only save SVG, no meta merge
+        await saveSpriteVariant(current.name, variant, result.svg);
+      }
 
       // Broadcast update via WebSocket
       const wss = req.app.get('wss');
@@ -81,7 +87,8 @@ router.post('/generate', async (req, res, next) => {
         wss.broadcast({
           type: 'sprite:updated',
           name: current.name,
-          sprite: { name: current.name, svg: result.svg, meta: updatedMeta }
+          variant,
+          sprite: { name: current.name, svg: result.svg }
         });
       }
 

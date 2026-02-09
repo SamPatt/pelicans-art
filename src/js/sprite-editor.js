@@ -4768,8 +4768,23 @@
             payload.current = {
               name: currentSpriteName,
               svg: currentSprite,
-              meta: currentMeta || {}
+              meta: currentMeta || {},
+              variant: currentVariant || 'front'
             };
+            // Include other variant SVGs so AI can maintain visual consistency
+            if (currentVariants.length > 1) {
+              const otherVariants = {};
+              for (const v of currentVariants) {
+                if (v !== currentVariant) {
+                  try {
+                    otherVariants[v] = await backend.getSprite(currentSpriteName, v);
+                  } catch (_) {}
+                }
+              }
+              if (Object.keys(otherVariants).length) {
+                payload.current.otherVariants = otherVariants;
+              }
+            }
           } else if (assetType === 'background' && currentSprite) {
             payload.current = {
               name: currentBackgroundName,
@@ -4789,8 +4804,26 @@
 
         if (result.success) {
           if (result.saved) {
-            // Already saved (edit mode) - WebSocket will handle reload
+            // Already saved (server edit mode) - reload the current variant
             setCommandStatus('success', 'Saved!');
+            input.value = '';
+            if (assetType === 'sprite' && currentSpriteName) {
+              await loadVariant(currentSpriteName, currentVariant || 'front');
+            }
+          } else if (!isCreateMode && assetType === 'sprite') {
+            // Browser edit mode — save to the correct variant
+            const variant = currentVariant || 'front';
+            if (variant === 'front') {
+              const aiMeta = result.asset.meta || {};
+              const meta = { ...(currentMeta || {}), ...aiMeta };
+              await backend.saveSprite(currentSpriteName, result.asset.svg, meta);
+            } else {
+              await backend.saveSpriteVariant(currentSpriteName, variant, result.asset.svg);
+            }
+            currentSprite = result.asset.svg;
+            renderSprite();
+            buildElementTree();
+            setCommandStatus('success', `Saved ${currentSpriteName}/${variant}`);
             input.value = '';
           } else if (assetType === 'sprite') {
             // New sprite - use AI-generated meta, with fallbacks
