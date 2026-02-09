@@ -473,12 +473,13 @@
     }
 
     /* Canvas Tools sidebar */
-    .canvas-tools-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+    .canvas-tools-row {
+      display: flex;
       gap: 6px;
+      margin-bottom: 6px;
     }
-    .canvas-tools-grid button {
+    .canvas-tools-row button {
+      flex: 1;
       background: var(--plumage-cream);
       border: 1px solid var(--sand-warm);
       color: var(--wing-dark);
@@ -490,13 +491,17 @@
       transition: all var(--duration-fast);
       white-space: nowrap;
     }
-    .canvas-tools-grid button:hover {
+    .canvas-tools-row button:hover {
       background: var(--ocean-foam);
       border-color: var(--ocean-blue);
     }
-    .canvas-tools-grid button:disabled {
+    .canvas-tools-row button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+    }
+    .canvas-tools-row button.canvas-tool-lg {
+      padding: 10px 4px;
+      font-size: 0.9em;
     }
 
     /* Right panel - properties */
@@ -3591,16 +3596,22 @@
           <span id="canvas-tools-toggle" style="font-size:0.8em;">▼</span>
         </div>
         <div id="canvas-tools-panel" class="property-group">
-          <div class="canvas-tools-grid">
+          <div class="canvas-tools-row">
+            <button id="btn-undo" class="canvas-tool-lg" disabled>↩️ Undo</button>
+            <button id="btn-redo" class="canvas-tool-lg" disabled>↪️ Redo</button>
+          </div>
+          <div class="canvas-tools-row">
+            <button id="btn-delete" title="Delete (Del)">🗑️ Delete</button>
+            <button id="btn-duplicate" title="Duplicate (Ctrl+D)">⧉ Duplicate</button>
+          </div>
+          <div class="canvas-tools-row">
+            <button id="btn-layer-up" title="Move Layer Up">⬆ Layer Up</button>
+            <button id="btn-layer-down" title="Move Layer Down">⬇ Layer Down</button>
+          </div>
+          <div class="canvas-tools-row">
             <button id="btn-add-rect" title="Add Rectangle">▭ Rect</button>
             <button id="btn-add-ellipse" title="Add Ellipse">⬭ Ellipse</button>
             <button id="btn-add-circle" title="Add Circle">○ Circle</button>
-            <button id="btn-duplicate" title="Duplicate (Ctrl+D)">⧉ Duplicate</button>
-            <button id="btn-delete" title="Delete (Del)">🗑️ Delete</button>
-            <button id="btn-layer-up" title="Move Layer Up">⬆ Layer Up</button>
-            <button id="btn-layer-down" title="Move Layer Down">⬇ Layer Down</button>
-            <button id="btn-undo" disabled>↩️ Undo</button>
-            <button id="btn-redo" disabled>↪️ Redo</button>
           </div>
         </div>
       </div>
