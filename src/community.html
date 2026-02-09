@@ -500,11 +500,16 @@
     .voice-player { margin-bottom: var(--space-4); }
     .voice-player audio { width: 100%; }
 
+    @media (max-width: 768px) {
+      .nav-studio-link {
+        display: none;
+      }
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       .container { padding: var(--space-4); }
       .asset-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
-      .pelicans-nav { padding: 0 var(--space-4); flex-wrap: wrap; gap: var(--space-2); height: auto; padding-top: var(--space-3); padding-bottom: var(--space-3); }
     }
   </style>
 </head>
@@ -513,7 +518,7 @@
 <nav class="pelicans-nav">
   <a href="./" class="pelicans-nav-logo">pelicans<span>.art</span></a>
   <ul class="pelicans-nav-links">
-    <li><a href="sprite-editor.html">Studio</a></li>
+    <li class="nav-studio-link"><a href="sprite-editor.html">Studio</a></li>
     <li><a href="./">Watch</a></li>
     <li><a href="community.html" class="active">The <span style="color:var(--pouch-orange)">Pouch</span></a></li>
     <li><button class="theme-toggle" id="themeToggle"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>

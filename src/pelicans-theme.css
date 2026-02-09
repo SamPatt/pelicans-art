@@ -321,6 +321,36 @@
 
 .theme-toggle-icon { font-size: 16px; line-height: 1; }
 
+/* === Mobile nav === */
+@media (max-width: 768px) {
+  .pelicans-nav {
+    padding: 0 var(--space-3);
+  }
+
+  .pelicans-nav-logo {
+    margin-right: var(--space-3);
+    font-size: var(--text-base);
+  }
+
+  .pelicans-nav-links {
+    gap: var(--space-3);
+  }
+
+  .pelicans-nav-links a {
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+
+  /* Theme toggle: icon only on mobile */
+  #themeLabel {
+    display: none;
+  }
+
+  .theme-toggle {
+    padding: 6px 8px;
+  }
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
