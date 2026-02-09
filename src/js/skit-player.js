@@ -1383,7 +1383,37 @@
       } catch (e) { console.warn('Cache write failed:', e); }
     }
     
+    function getTtsSettings() {
+      return typeof AITSettings !== 'undefined' ? AITSettings.get() : null;
+    }
+
+    function getTtsMode() {
+      const settings = getTtsSettings();
+      return settings?.ttsMode || 'none';
+    }
+
     async function generateAudio(text, voice) {
+      // Check browser TTS settings
+      const settings = getTtsSettings();
+      const mode = settings?.ttsMode || 'none';
+
+      // webspeech is handled live during playback, not pre-generated
+      if (mode === 'webspeech' || mode === 'none') return null;
+
+      // cloud or custom mode - use AITTtsProvider
+      if ((mode === 'cloud' || mode === 'custom') && typeof AITTtsProvider !== 'undefined') {
+        const voiceConfig = {
+          id: settings.ttsVoice || 'alloy',
+          speed: settings.ttsRate || 1,
+          pitch: settings.ttsPitch || 1,
+          volume: settings.ttsVolume || 1
+        };
+        const blob = await AITTtsProvider.generateSpeech(text, voiceConfig, settings, {});
+        if (blob) return blob;
+        return null;
+      }
+
+      // Fallback: server endpoints (when no browser settings available)
       const cacheKey = `${voice}:${text}`;
       const cached = await getCachedAudio(cacheKey);
       if (cached) return cached;
@@ -1680,43 +1710,64 @@
           beatIndexMap.set(b, idx);
         }
       });
-      
-      for (let i = 0; i < sayActions.length; i++) {
-        const beat = sayActions[i];
-        const char = characters[beat.who];
-        document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
-        
-        if (!char) {
-          console.warn(`Character "${beat.who}" not found in cast. Available: ${Object.keys(characters).join(', ')}`);
-          continue;
-        }
-        
-        try {
-          const blob = await generateAudio(beat.line, char.voice);
-          const audio = new Audio(URL.createObjectURL(blob));
-          const source = audioContext.createMediaElementSource(audio);
-          
-          // Use gain node for volume (allows > 1.0 boost)
-          const gainNode = audioContext.createGain();
-          gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
-          source.connect(gainNode);
-          gainNode.connect(analyser);
-          
-          // Use t-based key if available, otherwise use sequential index
+
+      const ttsModeSkit = getTtsMode();
+
+      if (ttsModeSkit === 'webspeech') {
+        // Web Speech plays live during playback - store markers
+        for (let i = 0; i < sayActions.length; i++) {
+          const beat = sayActions[i];
           const cacheKey = beat.t !== undefined
             ? `${beat.t}-${beat.who}`
             : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
           audioCache.set(cacheKey, {
-            audio,
+            webspeech: true,
             beat,
             charName: beat.who,
-            gainNode,
-            volume: char.volume !== undefined ? char.volume : 1.0,
-            speed: char.speed !== undefined ? char.speed : 1.0,
-            pitch: char.pitch !== undefined ? char.pitch : 0
+            volume: 1.0,
+            speed: 1.0,
+            pitch: 0
           });
-        } catch (e) {
-          console.error('TTS error:', e);
+        }
+      } else if (ttsModeSkit !== 'none') {
+        for (let i = 0; i < sayActions.length; i++) {
+          const beat = sayActions[i];
+          const char = characters[beat.who];
+          document.getElementById('status').textContent = `Loading audio ${i+1}/${sayActions.length}...`;
+
+          if (!char) {
+            console.warn(`Character "${beat.who}" not found in cast. Available: ${Object.keys(characters).join(', ')}`);
+            continue;
+          }
+
+          try {
+            const blob = await generateAudio(beat.line, char.voice);
+            if (!blob) continue;
+            const audio = new Audio(URL.createObjectURL(blob));
+            const source = audioContext.createMediaElementSource(audio);
+
+            // Use gain node for volume (allows > 1.0 boost)
+            const gainNode = audioContext.createGain();
+            gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
+            source.connect(gainNode);
+            gainNode.connect(analyser);
+
+            // Use t-based key if available, otherwise use sequential index
+            const cacheKey = beat.t !== undefined
+              ? `${beat.t}-${beat.who}`
+              : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
+            audioCache.set(cacheKey, {
+              audio,
+              beat,
+              charName: beat.who,
+              gainNode,
+              volume: char.volume !== undefined ? char.volume : 1.0,
+              speed: char.speed !== undefined ? char.speed : 1.0,
+              pitch: char.pitch !== undefined ? char.pitch : 0
+            });
+          } catch (e) {
+            console.error('TTS error:', e);
+          }
         }
       }
       
@@ -1887,6 +1938,7 @@
         // Decode audio into AudioBuffers (mobile-friendly)
         audioCache.clear();
         const sayActions = skit.script.filter(b => b.do === 'say');
+        let hasEmbeddedAudio = false;
 
         for (let i = 0; i < sayActions.length; i++) {
           const beat = sayActions[i];
@@ -1894,6 +1946,7 @@
           const audioData = skit.assets?.audio?.[`line-${i}`];
 
           if (audioData) {
+            hasEmbeddedAudio = true;
             document.getElementById('status').textContent = `Decoding audio ${i+1}/${sayActions.length}...`;
             try {
               // Convert data URL to ArrayBuffer and decode
@@ -1919,6 +1972,57 @@
               });
             } catch (e) {
               console.warn(`Failed to decode audio ${i}:`, e);
+            }
+          }
+        }
+
+        // If no embedded audio, fall back to browser TTS settings
+        if (!hasEmbeddedAudio) {
+          const ttsUrlMode = getTtsMode();
+          if (ttsUrlMode === 'webspeech') {
+            for (let i = 0; i < sayActions.length; i++) {
+              const beat = sayActions[i];
+              const cacheKey = beat.t !== undefined
+                ? `${beat.t}-${beat.who}`
+                : `seq-${i}-${beat.who}`;
+              audioCache.set(cacheKey, {
+                webspeech: true,
+                beat,
+                charName: beat.who,
+                volume: 1.0,
+                speed: 1.0,
+                pitch: 0
+              });
+            }
+          } else if (ttsUrlMode === 'cloud' || ttsUrlMode === 'custom') {
+            for (let i = 0; i < sayActions.length; i++) {
+              const beat = sayActions[i];
+              document.getElementById('status').textContent = `Generating audio ${i + 1}/${sayActions.length}...`;
+              try {
+                const blob = await generateAudio(beat.line, '');
+                if (!blob) continue;
+                const audio = new Audio(URL.createObjectURL(blob));
+                const source = audioContext.createMediaElementSource(audio);
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = 1.0;
+                source.connect(gainNode);
+                gainNode.connect(analyser);
+
+                const cacheKey = beat.t !== undefined
+                  ? `${beat.t}-${beat.who}`
+                  : `seq-${i}-${beat.who}`;
+                audioCache.set(cacheKey, {
+                  audio,
+                  beat,
+                  charName: beat.who,
+                  gainNode,
+                  volume: 1.0,
+                  speed: 1.0,
+                  pitch: 0
+                });
+              } catch (e) {
+                console.error('TTS error for', beat.who, ':', e);
+              }
             }
           }
         }
@@ -2049,6 +2153,11 @@
           if (cached?.audio && Number.isFinite(cached.audio.duration)) {
             return cached.audio.duration / speed;
           }
+          if (cached?.webspeech && beat.line) {
+            // Estimate web speech duration: ~150 words per minute
+            const words = beat.line.split(/\s+/).length;
+            return Math.max(1, (words / 150) * 60 / speed);
+          }
           return 2;
         }
         case 'move':
@@ -2122,6 +2231,10 @@
       if (currentSourceNode) {
         try { currentSourceNode.stop(); } catch(e) {}
         currentSourceNode = null;
+      }
+      // Cancel any in-progress web speech
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
       }
       scheduledAdvanceIndices.clear();
     }
@@ -2401,8 +2514,51 @@
             if (currentSourceNode) {
               try { currentSourceNode.stop(); } catch(e) {}
             }
-            
-            if (cached.buffer) {
+            // Cancel any in-progress web speech
+            if ('speechSynthesis' in window) {
+              speechSynthesis.cancel();
+            }
+
+            if (cached.webspeech) {
+              // Web Speech API - play live
+              const charEl = characters[beat.who]?.el;
+              if (charEl) charEl.classList.add('speaking');
+
+              // Handle sequential mode offset timing (estimate duration from text length)
+              if (sequentialMode) {
+                const nextBeat = currentSkit.script[sequentialIndex];
+                if (nextBeat?.offset < 0) {
+                  const estimatedDuration = getActionDuration(beat);
+                  const triggerTime = Math.max(0, estimatedDuration + nextBeat.offset) * 1000;
+                  const currentBeatIndex = sequentialIndex - 1;
+                  const sessionId = playSessionId;
+                  scheduledAdvanceIndices.add(currentBeatIndex);
+                  setTimeout(() => {
+                    if (sessionId !== playSessionId) return;
+                    processNextSequentialBeat();
+                  }, triggerTime);
+                }
+              }
+
+              const settings = getTtsSettings() || {};
+              const wsVoiceConfig = {
+                id: settings.ttsWebSpeechVoice || settings.ttsVoice || 'default',
+                speed: settings.ttsRate || 1,
+                pitch: settings.ttsPitch || 1,
+                volume: settings.ttsVolume || 1
+              };
+              if (typeof AITTtsProvider !== 'undefined') {
+                AITTtsProvider.playWebSpeech(beat.line, wsVoiceConfig, settings)
+                  .then(onAudioEnd)
+                  .catch(() => onAudioEnd());
+              } else {
+                // Fallback: basic speechSynthesis
+                const utterance = new SpeechSynthesisUtterance(beat.line);
+                utterance.onend = onAudioEnd;
+                utterance.onerror = () => onAudioEnd();
+                speechSynthesis.speak(utterance);
+              }
+            } else if (cached.buffer) {
               // New-style: AudioBuffer (mobile-friendly)
               const sourceNode = audioContext.createBufferSource();
               sourceNode.buffer = cached.buffer;
@@ -2667,48 +2823,66 @@
         // Generate audio and set up cache (same pattern as loadSkit)
         const sayActions = (skit.script || []).filter(b => b.do === 'say');
         const totalLines = sayActions.length;
+        const ttsMode = getTtsMode();
 
-        for (let i = 0; i < sayActions.length; i++) {
-          const beat = sayActions[i];
-          document.getElementById('status').textContent = `Generating audio ${i + 1}/${totalLines}...`;
-
-          const char = characters[beat.who];
-          if (!char) {
-            console.warn(`Character "${beat.who}" not found`);
-            continue;
-          }
-
-          // Use character's voice from meta.json (with fallback validation)
-          let voice = char.voice || DEFAULT_VOICE;
-          if (!VALID_VOICES.includes(voice) && !voice.startsWith('http') && !voice.startsWith('custom:')) {
-            console.warn(`Invalid voice "${voice}" for ${beat.who}, using default`);
-            voice = DEFAULT_VOICE;
-          }
-
-          try {
-            const blob = await generateAudio(beat.line, voice);
-            const audio = new Audio(URL.createObjectURL(blob));
-            const source = audioContext.createMediaElementSource(audio);
-
-            // Use gain node for volume
-            const gainNode = audioContext.createGain();
-            gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
-            source.connect(gainNode);
-            gainNode.connect(analyser);
-
-            // Use sequential index for cache key (API skits don't have t values)
+        if (ttsMode === 'webspeech') {
+          // Web Speech plays live during playback - store markers so the player knows
+          for (let i = 0; i < sayActions.length; i++) {
+            const beat = sayActions[i];
             const cacheKey = `seq-${i}-${beat.who}`;
             audioCache.set(cacheKey, {
-              audio,
+              webspeech: true,
               beat,
               charName: beat.who,
-              gainNode,
-              volume: char.volume !== undefined ? char.volume : 1.0,
-              speed: char.speed !== undefined ? char.speed : 1.0,
-              pitch: char.pitch !== undefined ? char.pitch : 0
+              volume: 1.0,
+              speed: 1.0,
+              pitch: 0
             });
-          } catch (e) {
-            console.error('TTS error for', beat.who, ':', e);
+          }
+        } else if (ttsMode !== 'none') {
+          for (let i = 0; i < sayActions.length; i++) {
+            const beat = sayActions[i];
+            document.getElementById('status').textContent = `Generating audio ${i + 1}/${totalLines}...`;
+
+            const char = characters[beat.who];
+            if (!char) {
+              console.warn(`Character "${beat.who}" not found`);
+              continue;
+            }
+
+            // Use character's voice from meta.json (with fallback validation)
+            let voice = char.voice || DEFAULT_VOICE;
+            if (!VALID_VOICES.includes(voice) && !voice.startsWith('http') && !voice.startsWith('custom:')) {
+              console.warn(`Invalid voice "${voice}" for ${beat.who}, using default`);
+              voice = DEFAULT_VOICE;
+            }
+
+            try {
+              const blob = await generateAudio(beat.line, voice);
+              if (!blob) continue;
+              const audio = new Audio(URL.createObjectURL(blob));
+              const source = audioContext.createMediaElementSource(audio);
+
+              // Use gain node for volume
+              const gainNode = audioContext.createGain();
+              gainNode.gain.value = char.volume !== undefined ? char.volume : 1.0;
+              source.connect(gainNode);
+              gainNode.connect(analyser);
+
+              // Use sequential index for cache key (API skits don't have t values)
+              const cacheKey = `seq-${i}-${beat.who}`;
+              audioCache.set(cacheKey, {
+                audio,
+                beat,
+                charName: beat.who,
+                gainNode,
+                volume: char.volume !== undefined ? char.volume : 1.0,
+                speed: char.speed !== undefined ? char.speed : 1.0,
+                pitch: char.pitch !== undefined ? char.pitch : 0
+              });
+            } catch (e) {
+              console.error('TTS error for', beat.who, ':', e);
+            }
           }
         }
 

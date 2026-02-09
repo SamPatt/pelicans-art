@@ -2903,11 +2903,13 @@
           back_svg = await backend.getSprite(currentSpriteName, 'back');
         } catch (e) { /* optional */ }
       }
+      const meta = currentMeta || { name: currentSpriteName };
+      if (!meta.type) meta.type = 'creature';
       const payload = {
         username,
-        name: currentMeta?.name || currentSpriteName,
+        name: meta.name || currentSpriteName,
         front_svg,
-        meta: currentMeta || { name: currentSpriteName, type: 'creature' },
+        meta,
       };
       if (back_svg) payload.back_svg = back_svg;
       return payload;
@@ -4221,18 +4223,26 @@
     function updatePanelVisibility() {
       const spriteWrapper = document.getElementById('sprite-settings-wrapper');
       const propWrapper = document.getElementById('prop-settings-wrapper');
+      const canvasToolsWrapper = document.getElementById('canvas-tools-wrapper');
       applyVoiceCreationSupport();
 
       if (currentEditMode === 'sprite') {
         spriteWrapper.style.display = 'block';
         propWrapper.style.display = 'none';
+        canvasToolsWrapper.style.display = 'block';
       } else if (currentEditMode === 'prop') {
         spriteWrapper.style.display = 'none';
         propWrapper.style.display = 'block';
-      } else {
-        // background or skit - hide both
+        canvasToolsWrapper.style.display = 'block';
+      } else if (currentEditMode === 'background') {
         spriteWrapper.style.display = 'none';
         propWrapper.style.display = 'none';
+        canvasToolsWrapper.style.display = 'block';
+      } else {
+        // skit - hide all
+        spriteWrapper.style.display = 'none';
+        propWrapper.style.display = 'none';
+        canvasToolsWrapper.style.display = 'none';
       }
     }
 
@@ -5183,7 +5193,7 @@
         const tag = child.tagName.toLowerCase();
         const id = child.id ? ` <span class="id">#${child.id}</span>` : '';
         // Layer number: i+1 of totalSiblings (1-indexed, higher = on top)
-        const layerBadge = depth === 0 ? `<span class="layer-badge">${i + 1}/${totalSiblings}</span>` : '';
+        const layerBadge = `<span class="layer-badge">${i + 1}/${totalSiblings}</span>`;
 
         item.innerHTML = `${indent}<span class="tag">&lt;${tag}&gt;</span>${id}${layerBadge}`;
         item.onclick = (e) => selectElement(child, e.shiftKey);
@@ -5342,22 +5352,23 @@
     
     function setupResizeHandle(handle, el, pos) {
       const svg = document.querySelector('#svg-canvas svg');
-      let startX, startY, startBBox;
-      
+      let startX, startY, startBBox, startTransform;
+
       function getCoords(e) {
         if (e.touches) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
         return { x: e.clientX, y: e.clientY };
       }
-      
+
       function startResize(e) {
         e.preventDefault();
         e.stopPropagation();
         saveState();
-        
+
         const coords = getCoords(e);
         startX = coords.x;
         startY = coords.y;
         startBBox = el.getBBox();
+        startTransform = el.getAttribute('transform') || '';
         
         document.addEventListener('mousemove', doResize);
         document.addEventListener('mouseup', endResize);
@@ -5416,8 +5427,17 @@
             newPoints.push(px.toFixed(1), py.toFixed(1));
           }
           el.setAttribute('points', newPoints.join(' '));
+        } else {
+          // Fallback: transform-based scaling for path, line, text, g, etc.
+          const scaleX = newW / startBBox.width;
+          const scaleY = newH / startBBox.height;
+          el.setAttribute('transform',
+            `translate(${newX.toFixed(1)}, ${newY.toFixed(1)}) ` +
+            `scale(${scaleX.toFixed(4)}, ${scaleY.toFixed(4)}) ` +
+            `translate(${(-startBBox.x).toFixed(1)}, ${(-startBBox.y).toFixed(1)})`
+          );
         }
-        
+
         createResizeHandles(el);
         showProperties(el);
       }
@@ -7192,6 +7212,12 @@
 
       const newIndex = Array.from(parent.children).indexOf(selectedElement);
       updateStatus(`Layer ${newIndex + 1} of ${parent.children.length}`);
+
+      if (selectedElement._treeItem) {
+        selectedElement._treeItem.scrollIntoView({ block: 'nearest' });
+        selectedElement._treeItem.classList.add('tree-flash');
+        setTimeout(() => selectedElement._treeItem.classList.remove('tree-flash'), 600);
+      }
     }
 
     function moveLayerDown() {
@@ -7219,6 +7245,12 @@
 
       const newIndex = Array.from(parent.children).indexOf(selectedElement);
       updateStatus(`Layer ${newIndex + 1} of ${parent.children.length}`);
+
+      if (selectedElement._treeItem) {
+        selectedElement._treeItem.scrollIntoView({ block: 'nearest' });
+        selectedElement._treeItem.classList.add('tree-flash');
+        setTimeout(() => selectedElement._treeItem.classList.remove('tree-flash'), 600);
+      }
     }
     
     // === ADD SHAPES ===
@@ -8001,6 +8033,18 @@
       } else {
         panel.style.display = 'none';
         toggle.textContent = '▼';
+      }
+    }
+
+    function toggleCanvasTools() {
+      const panel = document.getElementById('canvas-tools-panel');
+      const toggle = document.getElementById('canvas-tools-toggle');
+      if (panel.style.display === 'none') {
+        panel.style.display = 'block';
+        toggle.textContent = '▼';
+      } else {
+        panel.style.display = 'none';
+        toggle.textContent = '▲';
       }
     }
 

@@ -464,6 +464,41 @@
       color: #fff;
     }
 
+    .tree-flash {
+      animation: tree-flash-anim 0.6s ease;
+    }
+    @keyframes tree-flash-anim {
+      0%   { background: var(--ocean-foam); }
+      100% { background: transparent; }
+    }
+
+    /* Canvas Tools sidebar */
+    .canvas-tools-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+    }
+    .canvas-tools-grid button {
+      background: var(--plumage-cream);
+      border: 1px solid var(--sand-warm);
+      color: var(--wing-dark);
+      padding: 6px 4px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.78em;
+      font-family: var(--font-body);
+      transition: all var(--duration-fast);
+      white-space: nowrap;
+    }
+    .canvas-tools-grid button:hover {
+      background: var(--ocean-foam);
+      border-color: var(--ocean-blue);
+    }
+    .canvas-tools-grid button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
     /* Right panel - properties */
     .panel-right {
       width: 280px;
@@ -3076,18 +3111,6 @@
           <button data-ait-onclick="randomAsset('skit')">Script</button>
         </div>
       </div>
-      <span class="toolbar-divider">|</span>
-      <button id="btn-add-rect" title="Add Rectangle">▭</button>
-      <button id="btn-add-ellipse" title="Add Ellipse">⬭</button>
-      <button id="btn-add-circle" title="Add Circle">○</button>
-      <span class="toolbar-divider">|</span>
-      <button id="btn-duplicate" title="Duplicate (Ctrl+D)">⧉</button>
-      <button id="btn-delete" title="Delete (Del)" style="color:var(--pouch-orange);">🗑️</button>
-      <button id="btn-layer-up" title="Move Layer Up">⬆</button>
-      <button id="btn-layer-down" title="Move Layer Down">⬇</button>
-      <span class="toolbar-divider">|</span>
-      <button id="btn-undo" disabled>↩️ Undo</button>
-      <button id="btn-redo" disabled>↪️ Redo</button>
       <button id="btn-save">💾 Save</button>
       <button id="btn-community-share" class="community-share-btn" data-ait-onclick="openCommunityModal()" title="Share to Community">Share</button>
       <button id="btn-import" class="import-btn" data-ait-onclick="openImportModal()" title="Import from Community">Import</button>
@@ -3559,6 +3582,27 @@
       <div class="panel-header">⚙️ Properties</div>
       <div id="properties-panel">
         <div class="no-selection">Select an element to edit</div>
+      </div>
+
+      <!-- Canvas Tools (sprites, props, backgrounds only) -->
+      <div id="canvas-tools-wrapper">
+        <div class="panel-header" style="margin-top:15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" data-ait-onclick="toggleCanvasTools()">
+          <span>Canvas Tools</span>
+          <span id="canvas-tools-toggle" style="font-size:0.8em;">▼</span>
+        </div>
+        <div id="canvas-tools-panel" class="property-group">
+          <div class="canvas-tools-grid">
+            <button id="btn-add-rect" title="Add Rectangle">▭ Rect</button>
+            <button id="btn-add-ellipse" title="Add Ellipse">⬭ Ellipse</button>
+            <button id="btn-add-circle" title="Add Circle">○ Circle</button>
+            <button id="btn-duplicate" title="Duplicate (Ctrl+D)">⧉ Duplicate</button>
+            <button id="btn-delete" title="Delete (Del)">🗑️ Delete</button>
+            <button id="btn-layer-up" title="Move Layer Up">⬆ Layer Up</button>
+            <button id="btn-layer-down" title="Move Layer Down">⬇ Layer Down</button>
+            <button id="btn-undo" disabled>↩️ Undo</button>
+            <button id="btn-redo" disabled>↪️ Redo</button>
+          </div>
+        </div>
       </div>
 
       <!-- Animation Preview Panel (sprites only) -->

@@ -110,6 +110,9 @@ MOUTH REQUIREMENTS (critical for animation):
 - The cx/cy of mouth-open sets the center point for all mouth animations
 - The stroke color of mouth-closed is used for all mouth expression paths
 
+EYE REQUIREMENTS:
+- Do NOT add highlight/reflection circles (small white circles) on or near the pupils. The animation system moves the pupils independently, so static highlights will not track with them and will look broken.
+
 ANATOMY REQUIREMENTS:
 - HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
 
