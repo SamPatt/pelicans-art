@@ -1,5 +1,4 @@
 (function initServerBackend(global) {
-  const SPRITE_VARIANTS = ['front', 'back', 'side', 'left', 'right', 'v2', 'v3', 'detailed', 'legacy', 'flop'];
   const BG_ORIENTATIONS = ['landscape', 'portrait'];
 
   class AITServerBackend {
@@ -32,14 +31,12 @@
     async listSprites() { return this._json('/api/sprites'); }
     async getSprite(name, variant = 'front') { return this._text(`sprites/${encodeURIComponent(name)}/${encodeURIComponent(variant)}.svg`); }
     async detectVariants(name) {
-      const found = [];
-      await Promise.all(SPRITE_VARIANTS.map(async (variant) => {
-        try {
-          const resp = await this.fetchImpl(`sprites/${encodeURIComponent(name)}/${encodeURIComponent(variant)}.svg`, { method: 'HEAD' });
-          if (resp.ok) found.push(variant);
-        } catch (_) {}
-      }));
-      return found.length ? found : ['front'];
+      try {
+        const variants = await this._json(`/api/sprites/${encodeURIComponent(name)}/variants`);
+        return Array.isArray(variants) && variants.length ? variants : ['front'];
+      } catch (_) {
+        return ['front'];
+      }
     }
     async getSpriteMeta(name) {
       const resp = await this.fetchImpl(`sprites/${encodeURIComponent(name)}/meta.json`);

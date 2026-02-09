@@ -34,28 +34,6 @@ function extractMetaFromSvgString(svg) {
   return {};
 }
 
-/**
- * Embed metadata into SVG as data-meta attribute
- * Uses single quotes for the attribute to avoid conflicts with JSON double quotes
- */
-function embedMetaInSvgString(svg, meta) {
-  if (!svg || typeof svg !== 'string') return svg;
-  if (!meta || Object.keys(meta).length === 0) return svg;
-
-  // Escape single quotes in JSON for single-quoted attribute
-  const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
-
-  // Try to replace single-quoted attribute first
-  if (/data-meta='[^']*'/.test(svg)) {
-    return svg.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
-  }
-  // Try to replace double-quoted attribute (from DOM serialization)
-  if (/data-meta="[^"]*"/.test(svg)) {
-    return svg.replace(/data-meta="[^"]*"/, `data-meta='${jsonStr}'`);
-  }
-  return svg.replace('<svg', `<svg data-meta='${jsonStr}'`);
-}
-
 // Read config at runtime to ensure .env is loaded
 function getConfig() {
   return {
@@ -114,7 +92,7 @@ EYE REQUIREMENTS:
 - Do NOT add highlight/reflection circles (small white circles) on or near the pupils. The animation system moves the pupils independently, so static highlights will not track with them and will look broken.
 
 ANATOMY REQUIREMENTS:
-- HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
+- HEAD-BODY CONNECTION: The head must be visually connected to the body. Do NOT draw a neck. Instead, ensure the head-bottom group overlaps or connects directly with the body group. No floating heads!
 
 STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy
@@ -124,18 +102,9 @@ STYLE GUIDELINES:
 
 OUTPUT FORMAT - You must respond with valid JSON:
 {
-  "svg": "<svg data-meta='...' viewBox='0 0 100 150'>...</svg>"
+  "svg": "<svg viewBox='0 0 100 150'>...</svg>",
+  "meta": { "name": "...", "description": "...", "tags": [] }
 }
-
-IMPORTANT: The SVG MUST include a data-meta attribute with embedded JSON containing:
-- name: Character display name
-- description: Brief description
-- tags: Array of descriptive tags
-
-Example data-meta attribute:
-data-meta='{"name":"Bob","description":"A friendly neighbor","tags":["male","adult"]}'
-
-Note: Escape single quotes in JSON values as &#39;
 
 Output ONLY valid JSON. No explanation, no markdown code blocks.`,
 
@@ -497,25 +466,17 @@ export async function generateAsset(request) {
     const skit = extractJson(content);
     return { skit };
   } else if (type === 'sprite') {
-    // Sprite returns JSON with svg (meta embedded in SVG data-meta attribute)
+    // Sprite returns JSON with { svg, meta }. Keep SVG extraction as a defensive parse step.
     const parsed = extractJson(content);
     if (!parsed.svg) {
       throw new Error('Sprite response missing svg field');
     }
-    // Extract and validate the SVG
-    let svg = extractSvg(parsed.svg);
+    const svg = extractSvg(parsed.svg);
+    let meta = parsed.meta || {};
 
-    // Try to extract meta from embedded data-meta attribute
-    let meta = extractMetaFromSvgString(svg);
-
-    // Fall back to separate meta object if AI didn't embed it
-    if (Object.keys(meta).length === 0 && parsed.meta) {
-      meta = {
-        name: parsed.meta?.name || 'Generated Character',
-        description: parsed.meta?.description || '',
-        tags: parsed.meta?.tags || [],
-        voice: parsed.meta?.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 }
-      };
+    // Back-compat fallback if a model still returns data-meta in the SVG.
+    if (!meta || Object.keys(meta).length === 0) {
+      meta = extractMetaFromSvgString(svg);
     }
 
     // Ensure meta has required fields with defaults
@@ -525,9 +486,6 @@ export async function generateAsset(request) {
       tags: meta.tags || [],
       voice: meta.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 }
     };
-
-    // Ensure meta is embedded in SVG before returning
-    svg = embedMetaInSvgString(svg, meta);
 
     return { svg, meta };
   } else {

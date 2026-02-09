@@ -5,6 +5,9 @@ const MAX_PAYLOAD = 3 * 1024 * 1024; // 3MB
 const USERNAME_RE = /^[a-zA-Z0-9_-]{1,30}$/;
 const SVG_DANGEROUS = /<\s*(script|foreignObject|iframe|embed|object)\b/i;
 const SVG_EVENT_HANDLER = /\bon\w+\s*=/i;
+const VARIANT_NAME_RE = /^[a-z0-9-]{1,30}$/;
+const RESERVED_VARIANT_NAMES = new Set(['meta', 'index']);
+const MAX_VARIANTS_PER_CHARACTER = 10;
 
 function corsHeaders() {
   return {
@@ -72,24 +75,57 @@ function validateUsername(username) {
   return null;
 }
 
+function normalizeCharacterVariants(body) {
+  const normalized = {};
+
+  if (body?.variants && typeof body.variants === 'object' && !Array.isArray(body.variants)) {
+    for (const [name, svg] of Object.entries(body.variants)) {
+      normalized[name] = svg;
+    }
+  }
+
+  // Backwards compatibility with old upload format.
+  if (Object.keys(normalized).length === 0 && body?.front_svg) {
+    normalized.front = body.front_svg;
+    if (body.back_svg) normalized.back = body.back_svg;
+  }
+
+  return normalized;
+}
+
 // === Validation per category ===
 
 function validateCharacter(body) {
-  if (!body.front_svg) return 'front_svg is required';
-  const svgErr = validateSvg(body.front_svg);
-  if (svgErr) return svgErr;
-  if (body.back_svg) {
-    const backErr = validateSvg(body.back_svg);
-    if (backErr) return 'back_svg: ' + backErr;
+  const variants = normalizeCharacterVariants(body);
+  if (!variants.front) return 'variants.front (or front_svg) is required';
+
+  const variantNames = Object.keys(variants);
+  if (variantNames.length > MAX_VARIANTS_PER_CHARACTER) {
+    return `Too many variants (max ${MAX_VARIANTS_PER_CHARACTER})`;
   }
+
+  for (const variantName of variantNames) {
+    if (!VARIANT_NAME_RE.test(variantName)) {
+      return `Invalid variant name: ${variantName}`;
+    }
+    if (RESERVED_VARIANT_NAMES.has(variantName)) {
+      return `Reserved variant name: ${variantName}`;
+    }
+    const svgErr = validateSvg(variants[variantName]);
+    if (svgErr) return `${variantName}: ${svgErr}`;
+  }
+
   // Try to extract meta from embedded data-meta attribute if not provided separately
   let meta = body.meta;
   if (!meta || typeof meta !== 'object') {
-    meta = extractMetaFromSvg(body.front_svg);
+    meta = extractMetaFromSvg(variants.front);
   }
   if (!meta || typeof meta !== 'object') return 'meta object is required (either in body.meta or embedded in SVG data-meta attribute)';
   if (!meta.name || typeof meta.name !== 'string') return 'meta.name (string) is required';
-  // type is optional for backwards compatibility
+
+  // Normalize body so storage can rely on one shape.
+  body.variants = variants;
+
   return null;
 }
 
@@ -174,17 +210,29 @@ function validateVoice(body) {
 
 // === Store files per category ===
 
-async function storeCharacter(bucket, slug, body, meta) {
-  // Use provided meta or extract from SVG
-  const charMeta = body.meta || extractMetaFromSvg(body.front_svg) || {};
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: charMeta.name, category: 'characters' };
-  await bucket.put(`characters/${slug}/front.svg`, body.front_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
-  if (body.back_svg) {
-    await bucket.put(`characters/${slug}/back.svg`, body.back_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
+async function storeCharacter(bucket, slug, body) {
+  const variants = normalizeCharacterVariants(body);
+  const variantNames = Object.keys(variants);
+  if (!variantNames.includes('front')) {
+    throw new Error('Character is missing required front variant');
   }
-  // Store meta.json for backwards compatibility
+
+  // Use provided meta or extract from SVG
+  const charMeta = {
+    ...(body.meta || extractMetaFromSvg(variants.front) || {}),
+    variants: variantNames
+  };
+  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: charMeta.name, category: 'characters' };
+
+  for (const [variantName, svg] of Object.entries(variants)) {
+    await bucket.put(`characters/${slug}/${variantName}.svg`, svg, {
+      customMetadata: commonMeta,
+      httpMetadata: { contentType: 'image/svg+xml' }
+    });
+  }
+
   await bucket.put(`characters/${slug}/meta.json`, JSON.stringify(charMeta, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
-  return { slug, files: ['front.svg', body.back_svg ? 'back.svg' : null, 'meta.json'].filter(Boolean) };
+  return { slug, files: [...variantNames.map(name => `${name}.svg`), 'meta.json'] };
 }
 
 async function storeProp(bucket, slug, body) {
@@ -504,13 +552,27 @@ async function handleGetMeta(env, category, slug) {
   }
   if (!obj) return err('Not found', 404);
 
-  const meta = obj.customMetadata || {};
+  const wrapperMeta = obj.customMetadata || {};
+  let bodyMeta = {};
+
+  if (category === 'characters' || category === 'props') {
+    try {
+      const parsed = JSON.parse(await obj.text());
+      if (parsed && typeof parsed === 'object') {
+        bodyMeta = parsed;
+      }
+    } catch {
+      bodyMeta = {};
+    }
+  }
+
   return json({
     slug,
     category,
-    name: meta.assetName,
-    username: meta.username,
-    uploadedAt: meta.uploadedAt,
+    ...bodyMeta,
+    name: bodyMeta.name || wrapperMeta.assetName || slug,
+    username: wrapperMeta.username,
+    uploadedAt: wrapperMeta.uploadedAt,
     size: obj.size,
     contentType: obj.httpMetadata?.contentType,
   });

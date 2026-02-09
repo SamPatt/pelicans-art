@@ -111,6 +111,22 @@ curl -X POST http://100.76.176.67:8001/tts \
 
 API docs available at: `http://100.76.176.67:8001/docs`
 
+## AI Generation Prompts
+
+Sprite/character creation prompts exist in **three locations** that must be kept in sync:
+
+| File | Mode | Output Format |
+|------|------|---------------|
+| `src/js/backend/prompts.js` | Browser mode | `{svg, meta}` JSON |
+| `server/services/agent.js` | Server/installed mode | `{svg, meta}` JSON |
+| `svg-prompt-lab/seed-templates.js` | Prompt lab tool | Raw SVG |
+
+When modifying sprite generation prompts, update **all three files**.
+
+**Style rules for sprite prompts:**
+- Do NOT reference necks — the AI draws them poorly. Head-bottom should overlap/connect directly with the body group.
+- No eye highlight/reflection circles (breaks pupil animation)
+
 ### Workspace Directory
 
 The OpenClaw bot has a workspace at `/home/openclaw/.openclaw/workspace/` where files can be shared. Data files (like JSON datasets) can be placed there for the bot to access.

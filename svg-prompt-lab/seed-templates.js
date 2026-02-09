@@ -30,7 +30,7 @@ REQUIRED GROUPS:
 - id="head-bottom": Nose, jaw, mouth
 
 ANATOMY REQUIREMENTS:
-- HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
+- HEAD-BODY CONNECTION: The head must be visually connected to the body. Do NOT draw a neck. Instead, ensure the head-bottom group overlaps or connects directly with the body group. No floating heads!
 - MOUTH ALIGNMENT: mouth-open and mouth-closed MUST be at the EXACT same X and Y position. The open mouth replaces the closed mouth during speech - if they're misaligned, the mouth will appear to jump around during lip-sync.
 
 STYLE GUIDELINES:

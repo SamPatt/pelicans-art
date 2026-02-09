@@ -42,32 +42,6 @@ export function extractMetaFromSvg(svg) {
   return {};
 }
 
-/**
- * Embed metadata into SVG as data-meta attribute
- * Uses single quotes for the attribute to avoid conflicts with JSON double quotes
- * @param {string} svg - SVG content
- * @param {Object} meta - Metadata to embed
- * @returns {string} SVG with embedded metadata
- */
-export function embedMetaInSvg(svg, meta) {
-  if (!svg || typeof svg !== 'string') return svg;
-  if (!meta || Object.keys(meta).length === 0) return svg;
-
-  // Escape single quotes in JSON for single-quoted attribute
-  const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
-
-  // Try to replace single-quoted attribute first
-  if (/data-meta='[^']*'/.test(svg)) {
-    return svg.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
-  }
-  // Try to replace double-quoted attribute (from DOM serialization)
-  if (/data-meta="[^"]*"/.test(svg)) {
-    return svg.replace(/data-meta="[^"]*"/, `data-meta='${jsonStr}'`);
-  }
-  // Insert data-meta after <svg
-  return svg.replace('<svg', `<svg data-meta='${jsonStr}'`);
-}
-
 export async function exists(filePath) {
   try {
     await fs.access(filePath);
@@ -90,6 +64,15 @@ export async function listDirs(dirPath) {
 
 export async function ensureDir(dirPath) {
   await fs.mkdir(dirPath, { recursive: true });
+}
+
+async function readJsonObject(filePath) {
+  if (!await exists(filePath)) return {};
+  try {
+    return JSON.parse(await fs.readFile(filePath, 'utf-8'));
+  } catch {
+    return {};
+  }
 }
 
 // --- Initialization ---
@@ -126,24 +109,19 @@ export async function listSprites() {
 
   const sprites = [];
   for (const name of spriteNames) {
-    let meta = {};
+    const metaPath = path.join(SPRITES_DIR, name, 'meta.json');
+    let meta = await readJsonObject(metaPath);
 
-    // Try to read metadata from SVG data-meta attribute first
-    const svgPath = path.join(SPRITES_DIR, name, 'front.svg');
-    if (await exists(svgPath)) {
-      try {
-        const svg = await fs.readFile(svgPath, 'utf-8');
-        meta = extractMetaFromSvg(svg);
-      } catch (e) { /* ignore read errors */ }
-    }
-
-    // Fall back to meta.json if no embedded metadata
+    // Back-compat fallback for legacy sprites with embedded metadata
     if (Object.keys(meta).length === 0) {
-      const metaPath = path.join(SPRITES_DIR, name, 'meta.json');
-      if (await exists(metaPath)) {
+      const svgPath = path.join(SPRITES_DIR, name, 'front.svg');
+      if (await exists(svgPath)) {
         try {
-          meta = JSON.parse(await fs.readFile(metaPath, 'utf-8'));
-        } catch (e) { /* ignore parse errors */ }
+          const svg = await fs.readFile(svgPath, 'utf-8');
+          meta = extractMetaFromSvg(svg);
+        } catch {
+          meta = {};
+        }
       }
     }
 
@@ -169,18 +147,12 @@ export async function getSprite(name) {
   }
 
   const svg = await fs.readFile(svgPath, 'utf-8');
+  const metaPath = path.join(spritePath, 'meta.json');
+  let meta = await readJsonObject(metaPath);
 
-  // Try to extract metadata from SVG data-meta attribute first
-  let meta = extractMetaFromSvg(svg);
-
-  // Fall back to meta.json if no embedded metadata
+  // Back-compat fallback for legacy sprites with embedded metadata
   if (Object.keys(meta).length === 0) {
-    const metaPath = path.join(spritePath, 'meta.json');
-    if (await exists(metaPath)) {
-      try {
-        meta = JSON.parse(await fs.readFile(metaPath, 'utf-8'));
-      } catch (e) { /* ignore parse errors */ }
-    }
+    meta = extractMetaFromSvg(svg);
   }
 
   return { name, svg, meta };
@@ -190,11 +162,44 @@ export async function saveSprite(name, svg, meta) {
   const spritePath = path.join(SPRITES_DIR, name);
   await ensureDir(spritePath);
 
-  // Embed metadata in SVG and write only front.svg (no separate meta.json)
-  const svgWithMeta = embedMetaInSvg(svg, meta);
-  await fs.writeFile(path.join(spritePath, 'front.svg'), svgWithMeta);
+  await fs.writeFile(path.join(spritePath, 'front.svg'), svg);
+  const metaPath = path.join(spritePath, 'meta.json');
+  const existingMeta = await readJsonObject(metaPath);
+  const nextMeta = { ...existingMeta, ...(meta || {}) };
+  const variants = await listSpriteVariants(name);
+  if (variants.length) nextMeta.variants = variants;
+  await fs.writeFile(metaPath, JSON.stringify(nextMeta, null, 2));
 
   return { name };
+}
+
+export async function listSpriteVariants(name) {
+  const spritePath = path.join(SPRITES_DIR, name);
+  if (!await exists(spritePath)) {
+    throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
+  }
+  const entries = await fs.readdir(spritePath, { withFileTypes: true });
+  const variants = entries
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.svg'))
+    .map((entry) => entry.name.replace(/\.svg$/i, ''));
+  variants.sort((a, b) => {
+    if (a === 'front') return -1;
+    if (b === 'front') return 1;
+    return a.localeCompare(b);
+  });
+  return variants;
+}
+
+export async function getSpriteVariant(name, variant = 'front') {
+  const spritePath = path.join(SPRITES_DIR, name);
+  if (!await exists(spritePath)) {
+    throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
+  }
+  const variantPath = path.join(spritePath, `${variant}.svg`);
+  if (!await exists(variantPath)) {
+    throw Object.assign(new Error(`Sprite variant not found: ${name}/${variant}`), { status: 404 });
+  }
+  return fs.readFile(variantPath, 'utf-8');
 }
 
 /**
@@ -210,6 +215,13 @@ export async function saveSpriteVariant(name, variant, svg) {
 
   const variantFile = `${variant}.svg`;
   await fs.writeFile(path.join(spritePath, variantFile), svg);
+
+  // Keep meta.json variants list current for consumers that use it for discovery.
+  const metaPath = path.join(spritePath, 'meta.json');
+  const meta = await readJsonObject(metaPath);
+  meta.variants = await listSpriteVariants(name);
+  await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
+
   return { name, variant };
 }
 
@@ -342,24 +354,19 @@ export async function listProps() {
 
   const props = [];
   for (const name of propNames) {
-    let meta = {};
+    const metaPath = path.join(PROPS_DIR, name, 'meta.json');
+    let meta = await readJsonObject(metaPath);
 
-    // Try to read metadata from SVG data-meta attribute first
-    const svgPath = path.join(PROPS_DIR, name, 'prop.svg');
-    if (await exists(svgPath)) {
-      try {
-        const svg = await fs.readFile(svgPath, 'utf-8');
-        meta = extractMetaFromSvg(svg);
-      } catch (e) { /* ignore read errors */ }
-    }
-
-    // Fall back to meta.json if no embedded metadata
+    // Back-compat fallback for legacy props with embedded metadata
     if (Object.keys(meta).length === 0) {
-      const metaPath = path.join(PROPS_DIR, name, 'meta.json');
-      if (await exists(metaPath)) {
+      const svgPath = path.join(PROPS_DIR, name, 'prop.svg');
+      if (await exists(svgPath)) {
         try {
-          meta = JSON.parse(await fs.readFile(metaPath, 'utf-8'));
-        } catch (e) { /* ignore parse errors */ }
+          const svg = await fs.readFile(svgPath, 'utf-8');
+          meta = extractMetaFromSvg(svg);
+        } catch {
+          meta = {};
+        }
       }
     }
 
@@ -388,18 +395,12 @@ export async function getProp(name) {
   }
 
   const svg = await fs.readFile(svgPath, 'utf-8');
+  const metaPath = path.join(propPath, 'meta.json');
+  let meta = await readJsonObject(metaPath);
 
-  // Try to extract metadata from SVG data-meta attribute first
-  let meta = extractMetaFromSvg(svg);
-
-  // Fall back to meta.json if no embedded metadata
+  // Back-compat fallback for legacy props with embedded metadata
   if (Object.keys(meta).length === 0) {
-    const metaPath = path.join(propPath, 'meta.json');
-    if (await exists(metaPath)) {
-      try {
-        meta = JSON.parse(await fs.readFile(metaPath, 'utf-8'));
-      } catch (e) { /* ignore parse errors */ }
-    }
+    meta = extractMetaFromSvg(svg);
   }
 
   return { name, svg, meta };
@@ -409,9 +410,8 @@ export async function saveProp(name, svg, meta) {
   const propPath = path.join(PROPS_DIR, name);
   await ensureDir(propPath);
 
-  // Embed metadata in SVG and write only prop.svg (no separate meta.json)
-  const svgWithMeta = embedMetaInSvg(svg, meta);
-  await fs.writeFile(path.join(propPath, 'prop.svg'), svgWithMeta);
+  await fs.writeFile(path.join(propPath, 'prop.svg'), svg);
+  await fs.writeFile(path.join(propPath, 'meta.json'), JSON.stringify(meta || {}, null, 2));
 
   return { name };
 }

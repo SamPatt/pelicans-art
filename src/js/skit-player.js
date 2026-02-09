@@ -172,10 +172,24 @@
     }
 
     async function loadSprite(spriteName, view = 'front') {
+      const bundledSvg = getPublishedSpriteSvg(spriteName, view);
+      if (bundledSvg) return bundledSvg;
       const spritePath = `sprites/${spriteName}/${view}.svg?v=${CACHE_BUSTER}`;
       const response = await fetch(spritePath);
       const svgText = await response.text();
       return svgText;
+    }
+
+    function decodeDataUrlToText(dataUrl) {
+      const base64 = dataUrl.split(',')[1];
+      return decodeURIComponent(escape(atob(base64)));
+    }
+
+    function getPublishedSpriteSvg(spriteName, view = 'front') {
+      const key = `${spriteName}-${view}`;
+      const dataUrl = window.publishedAssets?.sprites?.[key];
+      if (!dataUrl) return null;
+      return decodeDataUrlToText(dataUrl);
     }
     
     async function createCharacter(name, config) {
@@ -205,24 +219,10 @@
       const svgText = await loadSprite(config.sprite, 'front');
       el.innerHTML = svgText;
 
-      // Extract voice settings from embedded data-meta attribute
-      let metaVoice = null;
-      const svgEl = el.querySelector('svg');
-      if (svgEl) {
-        const metaStr = svgEl.getAttribute('data-meta');
-        if (metaStr) {
-          try {
-            // Unescape both &#39; and &quot; (defensive - getAttribute usually decodes these)
-            const unescaped = metaStr.replace(/&#39;/g, "'").replace(/&quot;/g, '"');
-            const meta = JSON.parse(unescaped);
-            metaVoice = meta.voice || null;
-          } catch (e) {
-            // Invalid JSON - that's fine, use defaults
-          }
-        }
-      }
+      // Voice metadata now comes from bundled spriteMeta/meta.json (not data-meta in SVG).
+      let metaVoice = window.publishedAssets?.spriteMeta?.[config.sprite]?.voice || null;
 
-      // Fall back to meta.json if no embedded metadata
+      // Fall back to local meta.json when bundled spriteMeta is not available.
       if (!metaVoice) {
         try {
           const metaResp = await fetch(`sprites/${config.sprite}/meta.json?v=${CACHE_BUSTER}`);
@@ -418,34 +418,6 @@
     // === PROP SYSTEM ===
     const propMetaCache = new Map();
 
-    // Helper to extract meta from SVG data-meta attribute
-    // Handles both single and double quoted attributes (DOM serialization uses double quotes)
-    function extractMetaFromSvg(svgText) {
-      if (!svgText || typeof svgText !== 'string') return null;
-
-      // Try single-quoted first (our canonical format, JSON uses " so no conflict)
-      let match = svgText.match(/data-meta='([^']*)'/);
-      if (match) {
-        try {
-          return JSON.parse(match[1].replace(/&#39;/g, "'"));
-        } catch (e) {
-          // Fall through to try double-quoted
-        }
-      }
-
-      // Try double-quoted (DOM serialization converts quotes and escapes " as &quot;)
-      match = svgText.match(/data-meta="([^"]*)"/);
-      if (match) {
-        try {
-          return JSON.parse(match[1].replace(/&quot;/g, '"'));
-        } catch (e) {
-          return null;
-        }
-      }
-
-      return null;
-    }
-
     async function loadPropMeta(propName) {
       if (propMetaCache.has(propName)) {
         return propMetaCache.get(propName);
@@ -455,23 +427,6 @@
         const meta = window.publishedAssets.propMeta[propName];
         propMetaCache.set(propName, meta);
         return meta;
-      }
-
-      // Try to extract meta from SVG data-meta attribute first
-      try {
-        const svgText = await loadPropSvg(propName);
-        const embeddedMeta = extractMetaFromSvg(svgText);
-        if (embeddedMeta && (embeddedMeta.holdOffset || embeddedMeta.defaultScale)) {
-          const meta = {
-            holdOffset: embeddedMeta.holdOffset || [0, 0],
-            defaultScale: embeddedMeta.defaultScale || 1,
-            ...embeddedMeta
-          };
-          propMetaCache.set(propName, meta);
-          return meta;
-        }
-      } catch (e) {
-        // SVG load failed, try meta.json
       }
 
       // Fall back to meta.json
@@ -1658,6 +1613,7 @@
     async function loadSkit(name) {
       const skit = skits[name];
       if (!skit) return;
+      window.publishedAssets = null;
       
       currentSkit = skit;
       currentSkitName = name;
@@ -1775,6 +1731,40 @@
       document.getElementById('playBtn').disabled = false;
     }
     
+    async function discoverSpriteVariantsForPublish(spriteName) {
+      // 1) API endpoint (authoritative in server mode; supports freeform names).
+      try {
+        const apiResp = await fetch(`/api/sprites/${encodeURIComponent(spriteName)}/variants`);
+        if (apiResp.ok) {
+          const apiVariants = await apiResp.json();
+          if (Array.isArray(apiVariants) && apiVariants.length > 0) {
+            return [...new Set(apiVariants)];
+          }
+        }
+      } catch (e) {}
+
+      // 2) meta.json variants list (works for static assets that include it).
+      try {
+        const metaResp = await fetch(`sprites/${spriteName}/meta.json?v=${CACHE_BUSTER}`);
+        if (metaResp.ok) {
+          const meta = await metaResp.json();
+          if (Array.isArray(meta?.variants) && meta.variants.length > 0) {
+            return [...new Set(meta.variants)];
+          }
+        }
+      } catch (e) {}
+
+      // 3) Legacy fallback for older asset folders.
+      const legacy = [];
+      for (const variantName of ['front', 'back']) {
+        try {
+          const resp = await fetch(`sprites/${spriteName}/${variantName}.svg?v=${CACHE_BUSTER}`);
+          if (resp.ok) legacy.push(variantName);
+        } catch (e) {}
+      }
+      return legacy.length ? legacy : ['front'];
+    }
+
     // === PUBLISH (export self-contained JSON) ===
     async function publishSkit(name) {
       const skit = skits[name];
@@ -1794,15 +1784,12 @@
       const sprites = {};
       for (const spriteName of spriteNames) {
         try {
-          const frontResp = await fetch(`sprites/${spriteName}/front.svg?v=${CACHE_BUSTER}`);
-          const frontSvg = await frontResp.text();
-          sprites[`${spriteName}-front`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(frontSvg)));
-          
-          // Try back sprite too
-          const backResp = await fetch(`sprites/${spriteName}/back.svg?v=${CACHE_BUSTER}`);
-          if (backResp.ok) {
-            const backSvg = await backResp.text();
-            sprites[`${spriteName}-back`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(backSvg)));
+          const variantNames = await discoverSpriteVariantsForPublish(spriteName);
+          for (const variantName of variantNames) {
+            const resp = await fetch(`sprites/${spriteName}/${variantName}.svg?v=${CACHE_BUSTER}`);
+            if (!resp.ok) continue;
+            const svgText = await resp.text();
+            sprites[`${spriteName}-${variantName}`] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgText)));
           }
         } catch (e) {
           console.warn(`Failed to load sprite ${spriteName}:`, e);
@@ -2772,6 +2759,7 @@
       console.log('[Player] Loading skit from API:', id);
       document.getElementById('status').textContent = 'Loading skit from API...';
       document.getElementById('playBtn').disabled = true;
+      window.publishedAssets = null;
 
       try {
         const resp = await fetch(`/api/skits/${id}`);

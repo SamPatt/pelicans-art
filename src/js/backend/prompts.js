@@ -42,19 +42,6 @@
     return {};
   }
 
-  function embedMetaInSvgString(svg, meta) {
-    if (!svg || typeof svg !== 'string') return svg;
-    if (!meta || Object.keys(meta).length === 0) return svg;
-    const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
-    if (/data-meta='[^']*'/.test(svg)) {
-      return svg.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
-    }
-    if (/data-meta="[^"]*"/.test(svg)) {
-      return svg.replace(/data-meta="[^"]*"/, `data-meta='${jsonStr}'`);
-    }
-    return svg.replace('<svg', `<svg data-meta='${jsonStr}'`);
-  }
-
   const SPRITE_PROMPT = `You are an SVG character artist creating sprites for animated comedy skits.
 
 CRITICAL STRUCTURE REQUIREMENTS:
@@ -101,7 +88,7 @@ EYE REQUIREMENTS:
 - Do NOT add highlight/reflection circles (small white circles) on or near the pupils. The animation system moves the pupils independently, so static highlights will not track with them and will look broken.
 
 ANATOMY REQUIREMENTS:
-- HEAD-BODY CONNECTION: The head must be visually connected to the body. Include a neck or ensure the head-bottom group overlaps/connects with the body group. No floating heads!
+- HEAD-BODY CONNECTION: The head must be visually connected to the body. Do NOT draw a neck. Instead, ensure the head-bottom group overlaps or connects directly with the body group. No floating heads!
 
 STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy
@@ -303,7 +290,6 @@ Output ONLY valid JSON. No explanation, no markdown code blocks.`;
     buildSkitPrompt,
     extractSvg,
     extractJson,
-    extractMetaFromSvgString,
-    embedMetaInSvgString
+    extractMetaFromSvgString
   };
 })(window);

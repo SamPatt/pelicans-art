@@ -42,51 +42,6 @@ function hasId(svg, id) {
 }
 
 /**
- * Validate data-meta attribute in SVG (warning, not error)
- * Returns { valid: boolean, errors: string[], warnings: string[], meta: Object|null }
- */
-export function validateDataMeta(svg) {
-  const warnings = [];
-  const errors = [];
-  let meta = null;
-
-  if (!svg || typeof svg !== 'string') {
-    return { valid: true, errors: [], warnings: ['SVG content is empty'], meta: null };
-  }
-
-  // Try single-quoted first (our canonical format, JSON uses " so no conflict)
-  let match = svg.match(/data-meta='([^']*)'/);
-  let unescapeFunc = (s) => s.replace(/&#39;/g, "'");
-
-  // Try double-quoted if single-quoted not found
-  if (!match) {
-    match = svg.match(/data-meta="([^"]*)"/);
-    unescapeFunc = (s) => s.replace(/&quot;/g, '"');
-  }
-
-  if (!match) {
-    return { valid: true, errors: [], warnings: ['No data-meta attribute found'], meta: null };
-  }
-
-  try {
-    meta = JSON.parse(unescapeFunc(match[1]));
-
-    // Check for recommended fields
-    if (!meta.name) {
-      warnings.push('data-meta missing name field');
-    }
-    if (!meta.voice) {
-      warnings.push('data-meta missing voice field');
-    }
-
-    return { valid: true, errors: [], warnings, meta };
-  } catch (e) {
-    errors.push('Invalid JSON in data-meta attribute: ' + e.message);
-    return { valid: false, errors, warnings: [], meta: null };
-  }
-}
-
-/**
  * Validate sprite SVG structure
  * Returns { valid: boolean, errors: string[], warnings: string[] }
  */

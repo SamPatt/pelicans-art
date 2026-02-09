@@ -309,10 +309,29 @@
 
   async function renderCharacterDetail(container, slug, meta) {
     const variants = [];
-    const frontResp = await fetch(`${API_URL}/characters/${slug}/front.svg`);
-    if (frontResp.ok) variants.push({ name: 'front', label: 'Front', svg: await frontResp.text() });
-    const backResp = await fetch(`${API_URL}/characters/${slug}/back.svg`);
-    if (backResp.ok) variants.push({ name: 'back', label: 'Back', svg: await backResp.text() });
+    const variantNames = Array.isArray(meta?.variants)
+      ? [...new Set(meta.variants.filter((v) => typeof v === 'string' && v.trim()))]
+      : [];
+
+    if (variantNames.length > 0) {
+      for (const variantName of variantNames) {
+        const resp = await fetch(`${API_URL}/characters/${slug}/${variantName}.svg`);
+        if (!resp.ok) continue;
+        variants.push({
+          name: variantName,
+          label: variantName.split('-').map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' '),
+          svg: await resp.text()
+        });
+      }
+    }
+
+    // Backwards compatibility for older community entries without meta.variants.
+    if (variants.length === 0) {
+      const frontResp = await fetch(`${API_URL}/characters/${slug}/front.svg`);
+      if (frontResp.ok) variants.push({ name: 'front', label: 'Front', svg: await frontResp.text() });
+      const backResp = await fetch(`${API_URL}/characters/${slug}/back.svg`);
+      if (backResp.ok) variants.push({ name: 'back', label: 'Back', svg: await backResp.text() });
+    }
 
     let tabsHtml = '';
     if (variants.length > 1) {
@@ -346,7 +365,7 @@
     const svg = window._charVariants?.[name];
     if (svg) document.getElementById('char-preview').innerHTML = svg;
     document.querySelectorAll('#char-variant-tabs .variant-tab').forEach(t => {
-      t.classList.toggle('active', t.textContent.toLowerCase() === name);
+      t.classList.toggle('active', t.dataset.charVariant === name);
     });
   }
 

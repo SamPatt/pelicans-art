@@ -4,6 +4,8 @@ import fetch from 'node-fetch';
 import fs from 'fs/promises';
 import {
   getSprite,
+  getSpriteVariant,
+  listSpriteVariants,
   getBackground,
   getProp,
   savePublished,
@@ -164,7 +166,15 @@ export async function publishSkit(skitId, skit, onProgress) {
 
     try {
       const sprite = await getSprite(spriteName);
-      assets.sprites[`${spriteName}-front`] = svgToDataUrl(sprite.svg);
+      const variants = await listSpriteVariants(spriteName);
+      if (!variants.length) {
+        assets.sprites[`${spriteName}-front`] = svgToDataUrl(sprite.svg);
+      } else {
+        for (const variantName of variants) {
+          const svg = await getSpriteVariant(spriteName, variantName);
+          assets.sprites[`${spriteName}-${variantName}`] = svgToDataUrl(svg);
+        }
+      }
       if (sprite.meta) assets.spriteMeta[spriteName] = sprite.meta;
     } catch (err) {
       console.warn(`Failed to load sprite ${spriteName}:`, err.message);

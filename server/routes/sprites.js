@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   listSprites,
+  listSpriteVariants,
   getSprite,
   saveSprite,
   saveSpriteVariant,
@@ -36,6 +37,19 @@ router.get('/:name', async (req, res, next) => {
   try {
     const sprite = await getSprite(req.params.name);
     res.json(sprite);
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
+ * GET /api/sprites/:name/variants
+ * List all available variants for a sprite
+ */
+router.get('/:name/variants', async (req, res, next) => {
+  try {
+    const variants = await listSpriteVariants(req.params.name);
+    res.json(variants);
   } catch (err) {
     next(err);
   }

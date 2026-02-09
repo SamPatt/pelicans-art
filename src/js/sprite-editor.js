@@ -63,24 +63,6 @@
       return {};
     }
 
-    // Uses single quotes for the attribute to avoid conflicts with JSON double quotes
-    function embedMetaInSvg(svgText, meta) {
-      if (!svgText || typeof svgText !== 'string') return svgText;
-      if (!meta || Object.keys(meta).length === 0) return svgText;
-
-      // Escape single quotes in JSON for single-quoted attribute
-      const jsonStr = JSON.stringify(meta).replace(/'/g, '&#39;');
-
-      // Try to replace single-quoted attribute first
-      if (/data-meta='[^']*'/.test(svgText)) {
-        return svgText.replace(/data-meta='[^']*'/, `data-meta='${jsonStr}'`);
-      }
-      // Try to replace double-quoted attribute (from DOM serialization)
-      if (/data-meta="[^"]*"/.test(svgText)) {
-        return svgText.replace(/data-meta="[^"]*"/, `data-meta='${jsonStr}'`);
-      }
-      return svgText.replace('<svg', `<svg data-meta='${jsonStr}'`);
-    }
     let previewAudioContext = null;
     let previewSourceNode = null;
 
@@ -2802,10 +2784,9 @@
           const payload = await buildCharacterPayload();
           if (generation !== communityPreviewGeneration) return;
           let gridHtml = '<div class="community-variant-grid">';
-          gridHtml += `<div class="community-variant-item">${payload.front_svg}<div class="community-variant-label">front</div></div>`;
-          if (payload.back_svg) {
-            gridHtml += `<div class="community-variant-item">${payload.back_svg}<div class="community-variant-label">back</div></div>`;
-          }
+          Object.entries(payload.variants || {}).forEach(([variantName, svgText]) => {
+            gridHtml += `<div class="community-variant-item">${svgText}<div class="community-variant-label">${variantName}</div></div>`;
+          });
           gridHtml += '</div>';
           preview.innerHTML = gridHtml;
           estimateCommunitySize(payload);
@@ -2887,32 +2868,36 @@
     async function buildCharacterPayload() {
       if (!currentSpriteName) return null;
       const username = document.getElementById('community-username').value.trim();
-      // Always fetch front.svg from disk to avoid sending the wrong variant
-      let front_svg;
+      const backend = await requireBackend();
+      const variantNames = Array.isArray(currentVariants) ? currentVariants : ['front'];
+      const variants = {};
+
+      // Front is required for community previews and listing.
+      if (!variantNames.includes('front')) {
+        throw new Error('Character must include a front variant.');
+      }
+
       try {
-        const backend = await requireBackend();
-        front_svg = await backend.getSprite(currentSpriteName, 'front');
+        variants.front = await backend.getSprite(currentSpriteName, 'front');
       } catch (e) {
         throw new Error('Could not load front.svg for this character.');
       }
-      // Fetch back.svg if it exists
-      let back_svg = null;
-      if (currentVariants && currentVariants.includes('back')) {
+
+      for (const variantName of variantNames) {
+        if (variantName === 'front') continue;
         try {
-          const backend = await requireBackend();
-          back_svg = await backend.getSprite(currentSpriteName, 'back');
+          variants[variantName] = await backend.getSprite(currentSpriteName, variantName);
         } catch (e) { /* optional */ }
       }
+
       const meta = currentMeta || { name: currentSpriteName };
       if (!meta.type) meta.type = 'creature';
-      const payload = {
+      return {
         username,
         name: meta.name || currentSpriteName,
-        front_svg,
+        variants,
         meta,
       };
-      if (back_svg) payload.back_svg = back_svg;
-      return payload;
     }
 
     function buildPropPayload() {
@@ -3259,43 +3244,73 @@
     }
 
     async function importCharacter(slug, displayName) {
-      // Fetch front SVG
-      const frontResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/front.svg`);
-      if (!frontResp.ok) throw new Error('Failed to fetch character SVG');
-      const frontSvg = await frontResp.text();
-
-      // Try to fetch back SVG (optional)
-      let backSvg = null;
+      // Fetch character detail (includes variants from worker meta endpoint merge).
+      let detail = null;
       try {
-        const backResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/back.svg`);
-        if (backResp.ok) backSvg = await backResp.text();
+        const detailResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}`);
+        if (detailResp.ok) detail = await detailResp.json();
       } catch (e) {}
 
-      // Fetch meta.json
-      let meta = { name: displayName };
-      try {
-        const metaResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/meta.json`);
-        if (metaResp.ok) meta = await metaResp.json();
-      } catch (e) {}
+      const variantNames = Array.isArray(detail?.variants)
+        ? [...new Set(detail.variants.filter(v => typeof v === 'string' && v.trim()))]
+        : [];
+
+      const variantSvgs = {};
+      if (variantNames.length > 0) {
+        for (const variantName of variantNames) {
+          const resp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/${variantName}.svg`);
+          if (resp.ok) {
+            variantSvgs[variantName] = await resp.text();
+          }
+        }
+      } else {
+        // Backwards compatibility: old uploads without variants metadata.
+        const frontResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/front.svg`);
+        if (!frontResp.ok) throw new Error('Failed to fetch character front.svg');
+        variantSvgs.front = await frontResp.text();
+
+        try {
+          const backResp = await fetch(`${COMMUNITY_API_URL}/characters/${slug}/back.svg`);
+          if (backResp.ok) {
+            variantSvgs.back = await backResp.text();
+          }
+        } catch (e) {}
+      }
+
+      if (!variantSvgs.front) {
+        throw new Error('Character is missing required front variant.');
+      }
+
+      const meta = (detail && typeof detail === 'object') ? { ...detail } : {};
+      delete meta.slug;
+      delete meta.category;
+      delete meta.username;
+      delete meta.uploadedAt;
+      delete meta.size;
+      delete meta.contentType;
+      delete meta.key;
+      if (!meta.name) meta.name = displayName;
+      meta.variants = Object.keys(variantSvgs);
 
       // Generate a local name (remove hash suffix from slug)
       const localName = slug.replace(/-[a-f0-9]{6}$/, '');
 
       const backend = await requireBackend();
-      await backend.saveSprite(localName, frontSvg, meta);
+      await backend.saveSprite(localName, variantSvgs.front, meta);
 
-      // Save back variant if exists
-      if (backSvg) {
+      // Save remaining variants (if any)
+      for (const [variantName, svgText] of Object.entries(variantSvgs)) {
+        if (variantName === 'front') continue;
         try {
-          await backend.saveSpriteVariant(localName, 'back', backSvg);
+          await backend.saveSpriteVariant(localName, variantName, svgText);
         } catch (e) {
-          console.warn('Failed to save back variant:', e);
+          console.warn(`Failed to save ${variantName} variant:`, e);
         }
       }
 
       showImportFeedback(`Imported character: ${localName}`, 'success');
       await loadSpriteList();
-      loadSpriteFromSvg(localName, frontSvg);
+      await selectCharacter(localName);
 
       setTimeout(() => closeImportModal(), 1500);
     }
@@ -3645,9 +3660,16 @@
           voice: voiceSettings
         };
 
-        // Save sprite with current in-memory SVG and updated meta
         const backend = await requireBackend();
-        await backend.saveSprite(currentSpriteName, currentSprite, updatedMeta);
+
+        // saveSprite() updates front.svg + meta.json, so preserve the real front variant
+        // when voice settings are edited while another variant is selected.
+        let frontSvg = currentSprite;
+        if ((currentVariant || 'front') !== 'front') {
+          frontSvg = await backend.getSprite(currentSpriteName, 'front');
+        }
+
+        await backend.saveSprite(currentSpriteName, frontSvg, updatedMeta);
         currentMeta = updatedMeta;
         updateStatus('Voice settings saved');
       } catch (err) {
@@ -5004,17 +5026,16 @@
       currentVariant = currentVariants.includes('front') ? 'front' : currentVariants[0];
       await loadVariant(name, currentVariant);
 
-      // Try to extract meta from embedded data-meta attribute in loaded SVG
-      let embeddedMeta = extractMetaFromSvg(currentSprite);
-
-      // Fall back to meta.json if no embedded metadata
+      // Prefer backend-provided meta.json, then fall back to legacy embedded data-meta.
+      let embeddedMeta = {};
+      try {
+        const backend = await requireBackend();
+        embeddedMeta = await backend.getSpriteMeta(name);
+      } catch (e) {
+        // No meta available - keep fallback behavior.
+      }
       if (Object.keys(embeddedMeta).length === 0) {
-        try {
-          const backend = await requireBackend();
-          embeddedMeta = await backend.getSpriteMeta(name);
-        } catch (e) {
-          // No meta available - use empty object
-        }
+        embeddedMeta = extractMetaFromSvg(currentSprite);
       }
 
       currentSpriteMeta = Object.keys(embeddedMeta).length > 0 ? embeddedMeta : null;
@@ -5925,13 +5946,8 @@
         return;
       }
 
-      // Embed meta in SVG before saving (for front variant)
       const variant = currentVariant || 'front';
-      let svgToSave = currentSprite;
-      if (variant === 'front' && currentMeta) {
-        svgToSave = embedMetaInSvg(currentSprite, currentMeta);
-        currentSprite = svgToSave; // Update local state too
-      }
+      const svgToSave = currentSprite;
 
       // Try to save via API
       try {

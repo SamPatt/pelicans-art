@@ -239,8 +239,14 @@
         try {
           const spriteRec = await this.storage.getSpriteRecord(spriteName);
           if (!spriteRec) throw new Error('missing sprite');
-          const front = spriteRec.variants?.front || Object.values(spriteRec.variants || {})[0];
-          if (front) assets.sprites[`${spriteName}-front`] = await this._svgToDataUrl(front);
+          const variants = spriteRec.variants || {};
+          for (const [variantName, svg] of Object.entries(variants)) {
+            if (!svg) continue;
+            assets.sprites[`${spriteName}-${variantName}`] = await this._svgToDataUrl(svg);
+          }
+          if (!Object.keys(variants).length) {
+            throw new Error('sprite has no variants');
+          }
           if (spriteRec.meta) assets.spriteMeta[spriteName] = spriteRec.meta;
         } catch (err) {
           failures.push({ type: 'sprite', name: spriteName, error: err.message });
