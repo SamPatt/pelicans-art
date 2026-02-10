@@ -1039,7 +1039,7 @@
         card,
         clone,
         offsetY: e.clientY - rect.top,
-        scrollContainer: document.getElementById('skit-editor-panel')
+        scrollContainer: document.querySelector('#skit-editor-panel .skit-editor-content')
       };
 
       document.addEventListener('mousemove', handleDragMouseMove);
