@@ -312,6 +312,11 @@ COMEDY GUIDELINES:
 - End with a button (strong final laugh)
 - Keep it under 90 seconds
 
+DIALOGUE STYLE:
+- NEVER use ALL-CAPS words for emphasis (TTS engines mispronounce them). Instead use exclamation marks, ellipses, or italics-style phrasing for stress.
+  - Bad: "I am NOT going to do that! This is INSANE!"
+  - Good: "I am not going to do that! This is insane!"
+
 Output ONLY valid JSON. No explanation, no markdown code blocks.`;
 }
 
