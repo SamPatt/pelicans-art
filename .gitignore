@@ -23,6 +23,8 @@ data/
 
 # Node.js
 node_modules/
+test-results/
+playwright-report/
 
 # Environment files (contain secrets)
 .env

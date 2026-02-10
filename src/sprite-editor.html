@@ -17,8 +17,16 @@
       font-family: var(--font-body);
       background: var(--plumage-cream);
       color: var(--wing-dark);
+      display: flex;
+      flex-direction: column;
       height: 100vh;
       overflow: hidden;
+    }
+
+    .pelicans-nav,
+    header,
+    #command-bar {
+      flex-shrink: 0;
     }
     
     /* Mobile responsive */
@@ -280,7 +288,8 @@
     /* Main layout */
     .main {
       display: flex;
-      height: calc(100vh - 110px); /* header + command bar */
+      flex: 1;
+      min-height: 0;
     }
     
     /* Left panel - sprite list */
@@ -1317,6 +1326,7 @@
 
     .skit-editor-content {
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       padding: 20px;
       padding-bottom: 10px;
