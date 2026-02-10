@@ -8,7 +8,10 @@
     }
   }
 
-  async function callOpenAICompatible({ baseUrl, apiKey, model, systemPrompt, userPrompt, extraHeaders = {}, fetchImpl = fetch }) {
+  async function callOpenAICompatible({ baseUrl, apiKey, model, systemPrompt, userPrompt, imageDataUrl, extraHeaders = {}, fetchImpl = fetch }) {
+    const userContent = imageDataUrl
+      ? [{ type: 'text', text: userPrompt }, { type: 'image_url', image_url: { url: imageDataUrl } }]
+      : userPrompt;
     const response = await fetchImpl(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -21,7 +24,7 @@
         temperature: 0.6,
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: userContent }
         ]
       })
     });
@@ -34,7 +37,17 @@
     return json?.choices?.[0]?.message?.content || '';
   }
 
-  async function callAnthropic({ apiKey, model, systemPrompt, userPrompt, fetchImpl = fetch }) {
+  async function callAnthropic({ apiKey, model, systemPrompt, userPrompt, imageDataUrl, fetchImpl = fetch }) {
+    let userContent = userPrompt;
+    if (imageDataUrl) {
+      const m = imageDataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      if (m) {
+        userContent = [
+          { type: 'image', source: { type: 'base64', media_type: m[1], data: m[2] } },
+          { type: 'text', text: userPrompt }
+        ];
+      }
+    }
     const response = await fetchImpl('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -45,10 +58,10 @@
       },
       body: JSON.stringify({
         model,
-        max_tokens: 3000,
+        max_tokens: 4096,
         temperature: 0.6,
         system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
+        messages: [{ role: 'user', content: userContent }]
       })
     });
 
@@ -61,7 +74,7 @@
     return textBlock?.text || '';
   }
 
-  async function callLLM(systemPrompt, userPrompt, settings, fetchImpl = fetch) {
+  async function callLLM(systemPrompt, userPrompt, settings, fetchImpl = fetch, imageDataUrl) {
     const provider = settings?.provider || 'openrouter';
     const apiKey = settings?.apiKey || '';
     const model = settings?.model || (provider === 'openai' ? 'gpt-4o' : provider === 'anthropic' ? 'claude-sonnet-4-20250514' : 'google/gemini-3-flash-preview');
@@ -77,6 +90,7 @@
         model,
         systemPrompt,
         userPrompt,
+        imageDataUrl,
         extraHeaders: {
           'HTTP-Referer': location.origin,
           'X-Title': 'AI Improv Theater'
@@ -92,12 +106,13 @@
         model,
         systemPrompt,
         userPrompt,
+        imageDataUrl,
         fetchImpl
       });
     }
 
     if (provider === 'anthropic') {
-      return callAnthropic({ apiKey, model, systemPrompt, userPrompt, fetchImpl });
+      return callAnthropic({ apiKey, model, systemPrompt, userPrompt, imageDataUrl, fetchImpl });
     }
 
     throw new Error(`Unsupported AI provider: ${provider}`);

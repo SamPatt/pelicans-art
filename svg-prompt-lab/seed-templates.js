@@ -33,6 +33,31 @@ ANATOMY REQUIREMENTS:
 - HEAD-BODY CONNECTION: The head must be visually connected to the body. Do NOT draw a neck. Instead, ensure the head-bottom group overlaps or connects directly with the body group. No floating heads!
 - MOUTH ALIGNMENT: mouth-open and mouth-closed MUST be at the EXACT same X and Y position. The open mouth replaces the closed mouth during speech - if they're misaligned, the mouth will appear to jump around during lip-sync.
 
+LAYOUT GUIDE (typical coordinate ranges within 100x150 viewBox):
+- Head region: y=10 to y=60 (top 40% of canvas)
+  - Eyes: y=35-42, left eye cx=40-44, right eye cx=56-60
+  - Brows: y=30-36, spanning ~10px wide (e.g., M37 36 Q42 34 47 36)
+  - Mouth: y=50-56, centered at x=50
+- Body region: y=60 to y=145 (bottom 60%)
+  - Shoulders: y=62-70
+  - Feet/shoes: y=135-145
+- Character should be horizontally centered around x=50
+- Head-bottom must overlap body top by 2-5px to avoid a gap
+
+PROPS AND ACCESSORIES:
+- Handheld props (canes, weapons, tools) go in the <g id="body"> group
+- Headwear (hats, crowns, helmets) go in <g id="head-top"> group, ABOVE the hair
+- Eyewear (glasses, goggles) go in <g id="head-top">, after eye elements
+- Furniture/vehicles the character sits on/in go in <g id="body">
+- Props should not overlap or obscure eye/mouth animation elements
+
+ANIMATION-FRIENDLY DESIGN TIPS:
+- Brow paths should span ~10-12px horizontally for good transform range
+- Eye whites should have ry >= 2.5 so squint/wide animations are visible
+- mouth-closed stroke color should contrast with skin tone
+- Leave 3-4px clearance between eyes and brows for brow movement
+- Pupils should be noticeably smaller than eye whites (r ~1.5-2 vs rx ~4-5)
+
 STYLE GUIDELINES:
 - Simple, flat cartoon style suitable for comedy
 - Bold colors, clear shapes

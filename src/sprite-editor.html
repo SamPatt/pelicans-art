@@ -712,6 +712,42 @@
       color: var(--sand-warm);
     }
 
+    #ref-image-btn {
+      background: none;
+      border: 1px solid var(--sand-warm);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--wing-gray);
+      padding: 4px 6px;
+      white-space: nowrap;
+    }
+    #ref-image-btn:hover {
+      border-color: var(--ocean-blue);
+      color: var(--ocean-blue);
+    }
+    #ref-image-preview {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    #ref-image-thumb {
+      height: 28px;
+      width: 28px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--sand-warm);
+    }
+    #ref-image-preview button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--wing-gray);
+      padding: 0 2px;
+    }
+
     #command-bar #command-submit {
       background: linear-gradient(135deg, var(--pouch-orange), var(--pouch-deep));
       color: #fff;
@@ -3273,6 +3309,14 @@
             <div class="asset-picker-items"></div>
           </div>
         </div>
+      </div>
+      <input type="file" id="ref-image-input" accept="image/*" style="display:none"
+             data-ait-onchange="handleRefImageSelect(event)">
+      <button id="ref-image-btn" type="button" data-ait-onclick="openRefImagePicker()"
+              title="Add reference image">IMG</button>
+      <div id="ref-image-preview" style="display:none">
+        <img id="ref-image-thumb">
+        <button data-ait-onclick="clearRefImage()">x</button>
       </div>
       <input type="text" id="command-input" placeholder="Describe what to create..."
              onkeydown="if(event.key==='Enter') submitCommand()">

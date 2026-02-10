@@ -76,6 +76,24 @@ REQUIRED SVG STRUCTURE EXAMPLE:
   <path id="mouth-closed" d="M46 52 Q50 55 54 52" stroke="#d4a59a" stroke-width="1.5" fill="none"/>
   <ellipse id="mouth-open" cx="50" cy="53" rx="4" ry="3" fill="#d4a59a" opacity="0"/>
 
+LAYOUT GUIDE (typical coordinate ranges within 100x150 viewBox):
+- Head region: y=10 to y=60 (top 40% of canvas)
+  - Eyes: y=35-42, left eye cx=40-44, right eye cx=56-60
+  - Brows: y=30-36, spanning ~10px wide (e.g., M37 36 Q42 34 47 36)
+  - Mouth: y=50-56, centered at x=50
+- Body region: y=60 to y=145 (bottom 60%)
+  - Shoulders: y=62-70
+  - Feet/shoes: y=135-145
+- Character should be horizontally centered around x=50
+- Head-bottom must overlap body top by 2-5px to avoid a gap
+
+PROPS AND ACCESSORIES:
+- Handheld props (canes, weapons, tools) go in the <g id="body"> group
+- Headwear (hats, crowns, helmets) go in <g id="head-top"> group, ABOVE the hair
+- Eyewear (glasses, goggles) go in <g id="head-top">, after eye elements
+- Furniture/vehicles the character sits on/in go in <g id="body">
+- Props should not overlap or obscure eye/mouth animation elements
+
 MOUTH REQUIREMENTS (critical for animation):
 - mouth-open MUST be an <ellipse> with cx, cy, rx, ry attributes (not a path)
 - mouth-closed is a <path> showing the default closed mouth
@@ -96,10 +114,24 @@ STYLE GUIDELINES:
 - Expressive features that will animate well
 - Character should face forward (front view) unless instructed otherwise
 
+ANIMATION-FRIENDLY DESIGN TIPS:
+- Brow paths should span ~10-12px horizontally for good transform range
+- Eye whites should have ry >= 2.5 so squint/wide animations are visible
+- mouth-closed stroke color should contrast with skin tone
+- Leave 3-4px clearance between eyes and brows for brow movement
+- Pupils should be noticeably smaller than eye whites (r ~1.5-2 vs rx ~4-5)
+
 OUTPUT FORMAT - You must respond with valid JSON:
 {
   "svg": "<svg viewBox='0 0 100 150'>...</svg>",
-  "meta": { "name": "...", "description": "...", "tags": [] }
+  "meta": {
+    "name": "...",
+    "type": "human|creature",
+    "description": "brief character description",
+    "tags": ["tag1", "tag2"],
+    "voice": { "id": "alloy", "pitch": 0, "speed": 1 },
+    "colors": { "skin": "#hex", "hair": "#hex", "primary": "#hex" }
+  }
 }
 
 Output ONLY valid JSON. No explanation, no markdown code blocks.`;

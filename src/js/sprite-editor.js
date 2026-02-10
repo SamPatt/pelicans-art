@@ -13,6 +13,7 @@
     let zoomLevel = 100;
     let currentMeta = null;
     let isGenerating = false;
+    let referenceImageDataUrl = null;
 
     // Edit mode state: 'sprite' | 'background' | 'skit'
     let currentEditMode = 'sprite';
@@ -4739,6 +4740,45 @@
       }
     });
 
+    function openRefImagePicker() {
+      document.getElementById('ref-image-input').click();
+    }
+
+    function handleRefImageSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1024;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          const scale = MAX / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        referenceImageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        // Check size (~500KB limit for reasonable API payload)
+        if (referenceImageDataUrl.length * 0.75 > 500 * 1024) {
+          referenceImageDataUrl = canvas.toDataURL('image/jpeg', 0.5);
+        }
+        document.getElementById('ref-image-thumb').src = referenceImageDataUrl;
+        document.getElementById('ref-image-preview').style.display = '';
+        URL.revokeObjectURL(img.src);
+      };
+      img.src = URL.createObjectURL(file);
+    }
+
+    function clearRefImage() {
+      referenceImageDataUrl = null;
+      document.getElementById('ref-image-preview').style.display = 'none';
+      document.getElementById('ref-image-thumb').src = '';
+      document.getElementById('ref-image-input').value = '';
+    }
+
     async function submitCommand() {
       const input = document.getElementById('command-input');
       const submitBtn = document.getElementById('command-submit');
@@ -4820,6 +4860,10 @@
           mode: isCreateMode ? 'create' : 'edit',
           command: command
         };
+
+        if (referenceImageDataUrl && assetType === 'sprite') {
+          payload.referenceImage = referenceImageDataUrl;
+        }
 
         // For new backgrounds, start with landscape orientation
         if (isCreateMode && assetType === 'background') {
@@ -4992,6 +5036,7 @@
         submitBtn.disabled = false;
         submitBtn.textContent = 'Generate';
         submitBtn.classList.remove('generating');
+        clearRefImage();
       }
     }
 

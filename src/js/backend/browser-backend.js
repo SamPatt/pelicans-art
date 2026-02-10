@@ -195,6 +195,10 @@
       });
 
       let userPrompt = request.command || '';
+      const imageDataUrl = (type === 'sprite') ? request.referenceImage : undefined;
+      if (imageDataUrl) {
+        userPrompt = 'Use the provided reference image as visual inspiration. Match the character\'s appearance, style, colors, and pose as closely as possible while following the SVG structure rules.\n\n' + userPrompt;
+      }
       if (request.mode === 'edit' && current) {
         if (type === 'sprite' || type === 'prop' || type === 'background') {
           const variant = current.variant || 'front';
@@ -215,7 +219,7 @@
         }
       }
 
-      const raw = await global.AITAiProvider.callLLM(systemPrompt, userPrompt, settings, this.fetchImpl);
+      const raw = await global.AITAiProvider.callLLM(systemPrompt, userPrompt, settings, this.fetchImpl, imageDataUrl);
       let asset;
 
       if (type === 'sprite') {
@@ -284,20 +288,33 @@
         }
       }
 
-      const sayActions = (skit.script || []).map((beat, idx) => ({ beat, idx })).filter(({ beat }) => beat.do === 'say');
+      const sayActions = (skit.script || []).filter((beat) => beat.do === 'say');
       const settings = global.AITSettings.get();
 
-      for (const { beat, idx } of sayActions) {
+      // For ElevenLabs, assign different voices to each character
+      const cloudVoiceMap = {};
+      if (settings.ttsMode === 'cloud' && settings.ttsProvider === 'elevenlabs' && global.AITTtsProvider?.fetchElevenLabsVoices) {
+        const voices = await global.AITTtsProvider.fetchElevenLabsVoices(settings.ttsKey);
+        if (voices.length) {
+          const castNames = Object.keys(skit.cast || {});
+          castNames.forEach((name, i) => {
+            cloudVoiceMap[name] = voices[i % voices.length].id;
+          });
+        }
+      }
+
+      for (let i = 0; i < sayActions.length; i++) {
+        const beat = sayActions[i];
         try {
           const char = skit.cast?.[beat.who];
           if (!char) continue;
-          const voice = assets.spriteMeta?.[char.sprite]?.voice?.id || char.voice || settings.ttsVoice || 'alloy';
+          const voice = cloudVoiceMap[beat.who] || assets.spriteMeta?.[char.sprite]?.voice?.id || char.voice || settings.ttsVoice || 'alloy';
           const blob = await global.AITTtsProvider.generateSpeech(beat.line, voice, settings, { forPublishing: true }, this.fetchImpl);
           if (blob) {
-            assets.audio[`line-${idx}`] = await blobToDataUrl(blob);
+            assets.audio[`line-${i}`] = await blobToDataUrl(blob);
           }
         } catch (err) {
-          failures.push({ type: 'audio', line: idx, error: err.message });
+          failures.push({ type: 'audio', line: i, error: err.message });
         }
       }
 
