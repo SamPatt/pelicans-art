@@ -1306,10 +1306,18 @@
 
     /* === Skit Editor Panel === */
     .skit-editor-panel {
-      padding: 20px;
       background: var(--plumage-white);
       height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .skit-editor-content {
+      flex: 1;
       overflow-y: auto;
+      padding: 20px;
+      padding-bottom: 10px;
     }
 
     .skit-editor-panel h3 {
@@ -1716,98 +1724,168 @@
       border-color: var(--ocean-blue);
     }
 
-    .skit-save-btn {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
+    /* === Skit Action Bar (sticky bottom) === */
+    .skit-action-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 15px;
+      border-top: 1px solid var(--sand-warm);
+      background: var(--plumage-cream);
+    }
+
+    .skit-bar-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 4px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75em;
+      font-weight: bold;
+      transition: all 0.2s;
+      min-width: 60px;
+    }
+
+    .skit-bar-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .skit-bar-btn .bar-btn-icon {
+      font-size: 1.4em;
+    }
+
+    .bar-btn-save {
       background: var(--ocean-blue);
-      border: none;
-      border-radius: 6px;
       color: var(--wing-dark);
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.95em;
-      transition: all 0.2s;
     }
-
-    .skit-save-btn:hover {
-      background: var(--ocean-deep);
-    }
-
-    .skit-save-btn:disabled {
-      background: var(--sand-warm);
-      color: var(--sand-warm);
-      cursor: not-allowed;
-    }
-
-    .skit-publish-btn {
-      width: 100%;
-      padding: 12px;
-      margin-top: 8px;
+    .bar-btn-save:hover:not(:disabled) { background: var(--ocean-deep); }
+    .bar-btn-save.dirty {
       background: var(--pouch-orange);
-      border: none;
-      border-radius: 6px;
       color: #fff;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 0.95em;
-      transition: all 0.2s;
     }
 
-    .skit-publish-btn:hover {
-      background: #d63550;
+    .bar-btn-preview {
+      background: var(--ocean-light);
+      color: var(--wing-dark);
     }
+    .bar-btn-preview:hover:not(:disabled) { filter: brightness(0.93); }
 
-    .skit-publish-btn:disabled {
-      background: var(--sand-warm);
-      color: var(--wing-gray);
-      cursor: not-allowed;
+    .bar-btn-pouch {
+      background: var(--pouch-orange);
+      color: #fff;
     }
+    .bar-btn-pouch:hover:not(:disabled) { filter: brightness(0.9); }
 
-    .skit-publish-btn.publishing {
+    .bar-btn-render {
+      background: var(--wing-dark);
+      color: var(--plumage-white);
+    }
+    .bar-btn-render:hover:not(:disabled) { filter: brightness(1.3); }
+    .bar-btn-render.rendering {
       background: #c49000;
       color: var(--wing-dark);
     }
 
-    .skit-publish-btn.publish-success {
-      background: var(--ocean-blue);
-      color: var(--wing-dark);
-    }
-
-    .skit-publish-btn.publish-error {
-      background: var(--pouch-orange);
-      color: #fff;
-    }
-
-    .publish-progress {
+    .skit-action-progress {
+      flex-basis: 100%;
       display: none;
-      margin-top: 8px;
     }
-
-    .publish-progress.active {
+    .skit-action-progress.active {
       display: block;
     }
-
-    .publish-progress-bar {
+    .skit-action-progress-bar {
       width: 100%;
       height: 6px;
-      background: var(--plumage-cream);
+      background: var(--plumage-white);
       border-radius: 3px;
       overflow: hidden;
     }
-
-    .publish-progress-fill {
+    .skit-action-progress-fill {
       height: 100%;
       background: var(--pouch-orange);
       border-radius: 3px;
       transition: width 0.3s ease;
       width: 0%;
     }
-
-    .publish-progress-text {
+    .skit-action-progress-text {
       font-size: 0.75em;
       color: var(--wing-gray);
       margin-top: 4px;
+    }
+
+    /* === Render Complete Modal === */
+    .render-complete-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .render-complete-modal.visible {
+      display: flex;
+    }
+    .render-complete-content {
+      background: var(--plumage-white);
+      border-radius: 12px;
+      padding: 30px;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+    }
+    .render-complete-content h3 {
+      color: var(--ocean-blue);
+      margin-bottom: 12px;
+    }
+    .render-complete-content .modal-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .render-complete-content .modal-buttons button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.9em;
+      transition: all 0.2s;
+    }
+    .render-complete-content .btn-download {
+      background: var(--ocean-blue);
+      color: var(--wing-dark);
+    }
+    .render-complete-content .btn-download:hover { background: var(--ocean-deep); }
+    .render-complete-content .btn-pouch {
+      background: var(--pouch-orange);
+      color: #fff;
+    }
+    .render-complete-content .btn-pouch:hover { filter: brightness(0.9); }
+    .render-complete-content .btn-close {
+      background: var(--plumage-cream);
+      color: var(--wing-dark);
+    }
+    .render-complete-content .btn-close:hover { background: var(--sand-warm); }
+
+    @media (max-width: 768px) {
+      .skit-bar-btn {
+        padding: 6px 2px;
+        font-size: 0.7em;
+        min-width: 50px;
+      }
+      .skit-bar-btn .bar-btn-icon {
+        font-size: 1.2em;
+      }
     }
 
     /* Action Edit Modal */
@@ -3267,6 +3345,7 @@
 
       <!-- Skit Editor Panel (hidden by default) -->
       <div id="skit-editor-panel" class="skit-editor-panel" style="display: none;">
+        <div class="skit-editor-content">
         <div class="skit-meta">
           <h3 id="skit-title">Untitled Script</h3>
           <p id="skit-description"></p>
@@ -3370,14 +3449,31 @@
         <h4>📝 Script</h4>
         <div id="skit-script-list"></div>
         <button class="add-action-btn" data-ait-onclick="openAddActionModal()">+ Add Action</button>
-        <button class="skit-save-btn" id="skit-save-btn" data-ait-onclick="saveSkitChanges()">Save Script</button>
-        <button class="skit-publish-btn" id="skit-publish-btn" data-ait-onclick="publishCurrentSkit()" disabled>Publish Script</button>
-        <button class="skit-publish-btn" id="btn-community-share-skit" data-ait-onclick="openCommunityModal()" style="background:var(--ocean-blue);color:var(--wing-dark);margin-top:4px;">Send to <span style="color:var(--pouch-orange)">Pouch</span></button>
-        <div class="publish-progress" id="publish-progress">
-          <div class="publish-progress-bar">
-            <div class="publish-progress-fill" id="publish-progress-fill"></div>
+        </div><!-- /.skit-editor-content -->
+
+        <div id="skit-action-bar" class="skit-action-bar">
+          <button class="skit-bar-btn bar-btn-save" id="skit-save-btn" data-ait-onclick="saveSkitChanges()" disabled>
+            <span class="bar-btn-icon">💾</span>
+            <span class="bar-btn-label">Save</span>
+          </button>
+          <button class="skit-bar-btn bar-btn-preview" id="skit-preview-btn" data-ait-onclick="previewCurrentSkit()" disabled>
+            <span class="bar-btn-icon">▶</span>
+            <span class="bar-btn-label">Preview</span>
+          </button>
+          <button class="skit-bar-btn bar-btn-pouch" id="skit-pouch-btn" data-ait-onclick="openCommunityModal('skits')" disabled>
+            <span class="bar-btn-icon">📦</span>
+            <span class="bar-btn-label">Pouch</span>
+          </button>
+          <button class="skit-bar-btn bar-btn-render" id="skit-render-btn" data-ait-onclick="publishCurrentSkit()" disabled>
+            <span class="bar-btn-icon">🎬</span>
+            <span class="bar-btn-label">Render</span>
+          </button>
+          <div class="skit-action-progress" id="skit-action-progress">
+            <div class="skit-action-progress-bar">
+              <div class="skit-action-progress-fill" id="skit-action-progress-fill"></div>
+            </div>
+            <div class="skit-action-progress-text" id="skit-action-progress-text"></div>
           </div>
-          <div class="publish-progress-text" id="publish-progress-text"></div>
         </div>
       </div>
 
@@ -3477,6 +3573,22 @@
             <button class="btn-cancel" data-ait-onclick="closeCommunityModal()">Cancel</button>
             <button class="btn-upload" id="community-upload-btn" data-ait-onclick="uploadToCommunity()">Upload</button>
             <button class="btn-upload" id="community-copy-link-btn" data-ait-onclick="copyCommunityLink()" style="display:none;">Copy Link</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Render Complete Modal -->
+      <div id="render-complete-modal" class="render-complete-modal">
+        <div class="render-complete-content">
+          <h3>Render Complete</h3>
+          <p id="render-success-msg"></p>
+          <div id="render-failures" style="display:none;">
+            <p id="render-failures-text" style="color:var(--pouch-orange)"></p>
+          </div>
+          <div class="modal-buttons">
+            <button class="btn-download" data-ait-onclick="downloadRenderedSkit()">Download Skit JSON</button>
+            <button class="btn-pouch" data-ait-onclick="closeRenderCompleteModal(); openCommunityModal('published')">Send to Pouch</button>
+            <button class="btn-close" data-ait-onclick="closeRenderCompleteModal()">Close</button>
           </div>
         </div>
       </div>

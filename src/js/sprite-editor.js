@@ -813,14 +813,20 @@
       document.querySelector('.element-tree').style.display = 'none';
       document.getElementById('variant-tabs').style.display = 'none';
       document.querySelector('.zoom-controls').style.display = 'none';
-      document.getElementById('skit-editor-panel').style.display = 'block';
+      document.getElementById('skit-editor-panel').style.display = 'flex';
 
       // Hide sprite/prop settings panels for skits
       updatePanelVisibility();
 
-      // Enable publish button
-      const publishBtn = document.getElementById('skit-publish-btn');
-      if (publishBtn) publishBtn.disabled = false;
+      // Enable action bar buttons and reset dirty state
+      document.querySelectorAll('#skit-action-bar .skit-bar-btn').forEach(btn => btn.disabled = false);
+      skitDirty = false;
+      const saveBtn = document.getElementById('skit-save-btn');
+      if (saveBtn) {
+        saveBtn.classList.remove('dirty');
+        const label = saveBtn.querySelector('.bar-btn-label');
+        if (label) label.textContent = 'Save';
+      }
 
       // Load skit data
       try {
@@ -2562,8 +2568,9 @@
       skitDirty = true;
       const btn = document.getElementById('skit-save-btn');
       if (btn) {
-        btn.textContent = 'Save Script *';
-        btn.style.background = 'var(--pouch-orange)';
+        btn.classList.add('dirty');
+        const label = btn.querySelector('.bar-btn-label');
+        if (label) label.textContent = 'Save *';
       }
     }
 
@@ -2617,41 +2624,45 @@
       if (!currentSkitId || !currentSkitData) return;
 
       const btn = document.getElementById('skit-save-btn');
+      const label = btn.querySelector('.bar-btn-label');
       btn.disabled = true;
-      btn.textContent = 'Saving...';
+      if (label) label.textContent = 'Saving...';
 
       try {
         const backend = await requireBackend();
         await backend.saveSkit(currentSkitId, currentSkitData);
 
         skitDirty = false;
-        btn.textContent = 'Saved!';
-        btn.style.background = 'var(--ocean-blue)';
+        btn.classList.remove('dirty');
+        if (label) label.textContent = 'Saved!';
         updateStatus('Script saved');
 
         setTimeout(() => {
-          btn.textContent = 'Save Script';
+          if (label) label.textContent = 'Save';
         }, 2000);
       } catch (err) {
         console.error('Save error:', err);
-        btn.textContent = 'Save Failed';
+        if (label) label.textContent = 'Failed';
         updateStatus('Error saving skit: ' + err.message);
       } finally {
         btn.disabled = false;
       }
     }
 
+    let lastRenderResult = null;
+
     async function publishCurrentSkit() {
       if (!currentSkitId) return;
 
-      const btn = document.getElementById('skit-publish-btn');
-      const progress = document.getElementById('publish-progress');
-      const progressFill = document.getElementById('publish-progress-fill');
-      const progressText = document.getElementById('publish-progress-text');
+      const btn = document.getElementById('skit-render-btn');
+      const label = btn.querySelector('.bar-btn-label');
+      const progress = document.getElementById('skit-action-progress');
+      const progressFill = document.getElementById('skit-action-progress-fill');
+      const progressText = document.getElementById('skit-action-progress-text');
 
       btn.disabled = true;
-      btn.textContent = 'Publishing...';
-      btn.className = 'skit-publish-btn publishing';
+      btn.classList.add('rendering');
+      if (label) label.textContent = 'Rendering...';
       progress.classList.add('active');
       progressFill.style.width = '0%';
       progressText.textContent = 'Starting...';
@@ -2659,30 +2670,28 @@
       try {
         const backend = await requireBackend();
         const result = await backend.publishSkit(currentSkitId);
-        const sizeKB = (result.size / 1024).toFixed(1);
+        lastRenderResult = result;
 
-        btn.textContent = `Published! (${sizeKB} KB)`;
-        btn.className = 'skit-publish-btn publish-success';
         progressFill.style.width = '100%';
-        progressText.textContent = result.complete ? 'All assets bundled' : 'Published with some warnings';
-        updateStatus(`Script published: ${sizeKB} KB`);
+        progressText.textContent = result.complete ? 'All assets bundled' : 'Rendered with some warnings';
+        const sizeKB = (result.size / 1024).toFixed(1);
+        updateStatus(`Script rendered: ${sizeKB} KB`);
 
-        setTimeout(() => {
-          btn.textContent = 'Publish Script';
-          btn.className = 'skit-publish-btn';
-          btn.disabled = false;
-          progress.classList.remove('active');
-        }, 3000);
+        btn.classList.remove('rendering');
+        if (label) label.textContent = 'Render';
+        btn.disabled = false;
+        progress.classList.remove('active');
+
+        showRenderCompleteModal(result);
       } catch (err) {
-        console.error('Publish error:', err);
-        btn.textContent = 'Publish Failed';
-        btn.className = 'skit-publish-btn publish-error';
+        console.error('Render error:', err);
+        if (label) label.textContent = 'Failed';
         progressText.textContent = err.message;
-        updateStatus('Error publishing script: ' + err.message);
+        updateStatus('Error rendering script: ' + err.message);
 
         setTimeout(() => {
-          btn.textContent = 'Publish Script';
-          btn.className = 'skit-publish-btn';
+          btn.classList.remove('rendering');
+          if (label) label.textContent = 'Render';
           btn.disabled = false;
           progress.classList.remove('active');
         }, 3000);
@@ -2691,6 +2700,54 @@
 
     function openSkitPlayer(id) {
       window.open(`skit-player.html?skit=${id}`, '_blank');
+    }
+
+    function previewCurrentSkit() {
+      if (!currentSkitId) return;
+      openSkitPlayer(currentSkitId);
+    }
+
+    function showRenderCompleteModal(result) {
+      const modal = document.getElementById('render-complete-modal');
+      const msg = document.getElementById('render-success-msg');
+      const failuresDiv = document.getElementById('render-failures');
+      const failuresText = document.getElementById('render-failures-text');
+
+      const sizeKB = (result.size / 1024).toFixed(1);
+      msg.textContent = `Skit rendered successfully (${sizeKB} KB)`;
+
+      if (!result.complete && result.warnings) {
+        failuresDiv.style.display = 'block';
+        failuresText.textContent = result.warnings;
+      } else {
+        failuresDiv.style.display = 'none';
+      }
+
+      modal.classList.add('visible');
+    }
+
+    function closeRenderCompleteModal() {
+      document.getElementById('render-complete-modal').classList.remove('visible');
+    }
+
+    async function downloadRenderedSkit() {
+      if (!currentSkitId) return;
+      try {
+        const backend = await requireBackend();
+        const published = await backend.getPublished(currentSkitId);
+        const blob = new Blob([JSON.stringify(published)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentSkitId}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('Download error:', err);
+        updateStatus('Error downloading skit: ' + err.message);
+      }
     }
 
     // === COMMUNITY SHARING ===
@@ -2708,7 +2765,7 @@
       localStorage.setItem('pelicans-community-username', name);
     }
 
-    function openCommunityModal() {
+    function openCommunityModal(tabOverride) {
       const modal = document.getElementById('community-modal');
       modal.classList.add('visible');
 
@@ -2726,6 +2783,11 @@
       document.getElementById('community-upload-btn').style.display = '';
       document.getElementById('community-copy-link-btn').style.display = 'none';
       document.getElementById('community-copy-link-btn').textContent = 'Copy Link';
+
+      if (tabOverride) {
+        setActiveCommunityTab(tabOverride);
+        return;
+      }
 
       // Auto-detect asset type from current edit mode
       let autoTab = 'characters';
@@ -4278,14 +4340,11 @@
       document.querySelectorAll('.skit-item').forEach(el => el.classList.remove('active'));
       // Clear element selection
       clearSelection();
-      // Disable publish button
-      const publishBtn = document.getElementById('skit-publish-btn');
-      if (publishBtn) {
-        publishBtn.disabled = true;
-        publishBtn.className = 'skit-publish-btn';
-        publishBtn.textContent = 'Publish Script';
-      }
-      const progress = document.getElementById('publish-progress');
+      // Disable action bar buttons
+      document.querySelectorAll('#skit-action-bar .skit-bar-btn').forEach(btn => btn.disabled = true);
+      const renderBtn = document.getElementById('skit-render-btn');
+      if (renderBtn) renderBtn.classList.remove('rendering');
+      const progress = document.getElementById('skit-action-progress');
       if (progress) progress.classList.remove('active');
     }
 
@@ -4473,10 +4532,10 @@
         }
       }
 
-      // Publish progress updates
+      // Publish/render progress updates
       if (msg.type === 'publish:progress' && msg.skitId === currentSkitId) {
-        const progressFill = document.getElementById('publish-progress-fill');
-        const progressText = document.getElementById('publish-progress-text');
+        const progressFill = document.getElementById('skit-action-progress-fill');
+        const progressText = document.getElementById('skit-action-progress-text');
         if (progressFill && msg.total > 0) {
           const pct = Math.round((msg.current / msg.total) * 100);
           progressFill.style.width = pct + '%';
@@ -4487,12 +4546,12 @@
       }
 
       if (msg.type === 'publish:complete' && msg.skitId === currentSkitId) {
-        const progressFill = document.getElementById('publish-progress-fill');
+        const progressFill = document.getElementById('skit-action-progress-fill');
         if (progressFill) progressFill.style.width = '100%';
       }
 
       if (msg.type === 'publish:error' && msg.skitId === currentSkitId) {
-        const progressText = document.getElementById('publish-progress-text');
+        const progressText = document.getElementById('skit-action-progress-text');
         if (progressText) progressText.textContent = 'Error: ' + (msg.error || 'Unknown error');
       }
     }
