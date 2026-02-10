@@ -293,11 +293,13 @@
       const sayActions = (skit.script || []).filter((beat) => beat.do === 'say');
       const settings = global.AITSettings.get();
 
-      // For ElevenLabs, assign different voices to each character
+      // For ElevenLabs, assign different voices to each character as fallback
       const cloudVoiceMap = {};
+      const cloudVoiceIds = new Set();
       if (settings.ttsMode === 'cloud' && settings.ttsProvider === 'elevenlabs' && global.AITTtsProvider?.fetchElevenLabsVoices) {
         const voices = await global.AITTtsProvider.fetchElevenLabsVoices(settings.ttsKey);
         if (voices.length) {
+          voices.forEach((v) => cloudVoiceIds.add(v.id));
           const castNames = Object.keys(skit.cast || {});
           castNames.forEach((name, i) => {
             cloudVoiceMap[name] = voices[i % voices.length].id;
@@ -310,7 +312,11 @@
         try {
           const char = skit.cast?.[beat.who];
           if (!char) continue;
-          const voice = assets.spriteMeta?.[char.sprite]?.voice?.id || char.voice || settings.ttsVoice || cloudVoiceMap[beat.who] || 'alloy';
+          const explicitVoice = assets.spriteMeta?.[char.sprite]?.voice?.id || char.voice || null;
+          // When using ElevenLabs, only honor explicit voice if it's a valid ElevenLabs ID;
+          // internal IDs like "alba" are meaningless to ElevenLabs and would fail or default.
+          const useExplicit = explicitVoice && (!cloudVoiceIds.size || cloudVoiceIds.has(explicitVoice));
+          const voice = (useExplicit ? explicitVoice : null) || cloudVoiceMap[beat.who] || settings.ttsVoice || 'alloy';
           const blob = await global.AITTtsProvider.generateSpeech(beat.line, voice, settings, { forPublishing: true }, this.fetchImpl);
           if (blob) {
             assets.audio[`line-${i}`] = await blobToDataUrl(blob);
