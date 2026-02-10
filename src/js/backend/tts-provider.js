@@ -64,12 +64,47 @@
     return response.blob();
   }
 
+  let _elevenLabsDefaultVoice = null;
+
+  async function getElevenLabsDefaultVoice(key, fetchImpl = fetch) {
+    if (_elevenLabsDefaultVoice) return _elevenLabsDefaultVoice;
+    try {
+      const r = await fetchImpl('https://api.elevenlabs.io/v1/voices', {
+        headers: { 'xi-api-key': key }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        if (data.voices?.length) {
+          _elevenLabsDefaultVoice = data.voices[0].voice_id;
+          return _elevenLabsDefaultVoice;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // ElevenLabs voice IDs are 20-char alphanumeric strings
+  function isElevenLabsVoiceId(v) {
+    return typeof v === 'string' && /^[a-zA-Z0-9]{15,}$/.test(v);
+  }
+
   async function callElevenLabsTts(text, voiceConfig, settings, fetchImpl = fetch) {
     const key = settings?.ttsKey;
-    const voice = settings?.ttsVoice || normalizeVoiceConfig(voiceConfig).id;
-    if (!key || !voice) {
-      throw new Error('ElevenLabs requires TTS key and voice ID');
+    let voice = settings?.ttsVoice || normalizeVoiceConfig(voiceConfig).id;
+    console.log('[TTS] ElevenLabs call — key present:', !!key, 'key length:', key?.length || 0, 'voice:', voice);
+    if (!key) {
+      throw new Error('ElevenLabs requires a TTS API key. Add it in Settings > Cloud TTS API Key, then Save.');
     }
+
+    // If voice doesn't look like an ElevenLabs ID (e.g. "alloy"), auto-fetch a valid one
+    if (!isElevenLabsVoiceId(voice)) {
+      const defaultVoice = await getElevenLabsDefaultVoice(key, fetchImpl);
+      if (defaultVoice) {
+        console.log(`[TTS] Voice "${voice}" is not a valid ElevenLabs ID, using "${defaultVoice}" from your account`);
+        voice = defaultVoice;
+      }
+    }
+
     const response = await fetchImpl(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voice)}`, {
       method: 'POST',
       headers: {
@@ -77,10 +112,15 @@
         'xi-api-key': key,
         Accept: 'audio/mpeg'
       },
-      body: JSON.stringify({ text, model_id: 'eleven_multilingual_v2' })
+      body: JSON.stringify({ text })
     });
     if (!response.ok) {
-      throw new Error(`ElevenLabs TTS failed (${response.status})`);
+      let detail = '';
+      try {
+        const body = await response.json();
+        detail = body?.detail?.message || body?.detail || JSON.stringify(body);
+      } catch (_) {}
+      throw new Error(`ElevenLabs TTS failed (${response.status})${detail ? ': ' + detail : ''}`);
     }
     return response.blob();
   }

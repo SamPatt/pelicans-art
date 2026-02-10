@@ -1,5 +1,18 @@
     console.log('[Player] Script started');
 
+    // === IndexedDB storage (for browser mode asset loading) ===
+    let _idbStorage = null;
+    async function getIDBStorage() {
+      if (_idbStorage) return _idbStorage;
+      if (!window.AITStorageIDB) return null;
+      try {
+        const s = new window.AITStorageIDB();
+        await s.init();
+        _idbStorage = s;
+        return s;
+      } catch (e) { return null; }
+    }
+
     // === STATE ===
     const characters = {};
     const props = {}; // propId -> { el, x, y, scale, rotation, visible, layer, heldBy, sprite }
@@ -143,7 +156,7 @@
     const CACHE_BUSTER = Date.now();
 
     // Set background with fallback for legacy flat file structure
-    function setBackground(bgName, orientation = 'landscape') {
+    async function setBackground(bgName, orientation = 'landscape') {
       const bgEl = document.getElementById('background');
       const viewport = document.getElementById('viewport');
       const newPath = `backgrounds/${bgName}/${orientation}.svg?v=${CACHE_BUSTER}`;
@@ -161,6 +174,20 @@
         window.parent.postMessage({ type: 'skit-orientation', orientation }, '*');
       }
 
+      // Try IndexedDB first (browser mode)
+      const idb = await getIDBStorage();
+      if (idb) {
+        try {
+          const rec = await idb.getBackgroundRecord(bgName);
+          const svg = rec?.orientations?.[orientation] || rec?.orientations?.landscape || Object.values(rec?.orientations || {})[0];
+          if (svg) {
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            bgEl.src = URL.createObjectURL(blob);
+            return;
+          }
+        } catch (e) { /* fall through to filesystem */ }
+      }
+
       // Try new path first, fall back to legacy on error
       bgEl.onerror = function() {
         if (!this.src.includes(legacyPath)) {
@@ -174,6 +201,17 @@
     async function loadSprite(spriteName, view = 'front') {
       const bundledSvg = getPublishedSpriteSvg(spriteName, view);
       if (bundledSvg) return bundledSvg;
+
+      // Try IndexedDB (browser mode)
+      const idb = await getIDBStorage();
+      if (idb) {
+        try {
+          const rec = await idb.getSpriteRecord(spriteName);
+          const svg = rec?.variants?.[view] || rec?.variants?.front || Object.values(rec?.variants || {})[0];
+          if (svg) return svg;
+        } catch (e) { /* fall through to filesystem */ }
+      }
+
       const spritePath = `sprites/${spriteName}/${view}.svg?v=${CACHE_BUSTER}`;
       const response = await fetch(spritePath);
       const svgText = await response.text();
@@ -221,6 +259,17 @@
 
       // Voice metadata now comes from bundled spriteMeta/meta.json (not data-meta in SVG).
       let metaVoice = window.publishedAssets?.spriteMeta?.[config.sprite]?.voice || null;
+
+      // Try IndexedDB for sprite meta (browser mode)
+      if (!metaVoice) {
+        const idb = await getIDBStorage();
+        if (idb) {
+          try {
+            const rec = await idb.getSpriteRecord(config.sprite);
+            if (rec?.meta?.voice) metaVoice = rec.meta.voice;
+          } catch (e) { /* fall through */ }
+        }
+      }
 
       // Fall back to local meta.json when bundled spriteMeta is not available.
       if (!metaVoice) {
@@ -429,6 +478,18 @@
         return meta;
       }
 
+      // Try IndexedDB (browser mode)
+      const idb = await getIDBStorage();
+      if (idb) {
+        try {
+          const rec = await idb.getPropRecord(propName);
+          if (rec?.meta) {
+            propMetaCache.set(propName, rec.meta);
+            return rec.meta;
+          }
+        } catch (e) { /* fall through */ }
+      }
+
       // Fall back to meta.json
       const metaPath = `props/${propName}/meta.json?v=${CACHE_BUSTER}`;
       try {
@@ -457,6 +518,19 @@
         propSvgCache.set(propName, svgText);
         return svgText;
       }
+
+      // Try IndexedDB (browser mode)
+      const idb = await getIDBStorage();
+      if (idb) {
+        try {
+          const rec = await idb.getPropRecord(propName);
+          if (rec?.svg) {
+            propSvgCache.set(propName, rec.svg);
+            return rec.svg;
+          }
+        } catch (e) { /* fall through */ }
+      }
+
       const propPath = `props/${propName}/prop.svg?v=${CACHE_BUSTER}`;
       try {
         const response = await fetch(propPath);
@@ -1732,6 +1806,16 @@
     }
     
     async function discoverSpriteVariantsForPublish(spriteName) {
+      // 0) IndexedDB (browser mode - authoritative when available)
+      const idb = await getIDBStorage();
+      if (idb) {
+        try {
+          const rec = await idb.getSpriteRecord(spriteName);
+          const keys = Object.keys(rec?.variants || {});
+          if (keys.length) return keys;
+        } catch (e) {}
+      }
+
       // 1) API endpoint (authoritative in server mode; supports freeform names).
       try {
         const apiResp = await fetch(`/api/sprites/${encodeURIComponent(spriteName)}/variants`);
@@ -2754,19 +2838,38 @@
       }
     }
     
+    // === LOAD SKIT FROM INDEXEDDB (browser mode) ===
+    async function loadSkitFromIndexedDB(id) {
+      if (!window.AITStorageIDB) throw new Error('IndexedDB storage not available');
+      const storage = new window.AITStorageIDB();
+      await storage.init();
+      const rec = await storage.getSkitRecord(id);
+      if (!rec) throw new Error(`Skit not found in IndexedDB: ${id}`);
+      return { id: rec.id, ...(rec.data || {}) };
+    }
+
     // === LOAD RAW SKIT FROM API ===
     async function loadSkitFromApi(id) {
-      console.log('[Player] Loading skit from API:', id);
-      document.getElementById('status').textContent = 'Loading skit from API...';
+      console.log('[Player] Loading skit:', id);
+      document.getElementById('status').textContent = 'Loading skit...';
       document.getElementById('playBtn').disabled = true;
       window.publishedAssets = null;
 
       try {
-        const resp = await fetch(`/api/skits/${id}`);
-        if (!resp.ok) {
-          throw new Error(`Failed to load skit: ${resp.status}`);
+        // Try IndexedDB first (browser mode stores skits there)
+        let skit;
+        try {
+          skit = await loadSkitFromIndexedDB(id);
+          console.log('[Player] Loaded skit from IndexedDB');
+        } catch (idbErr) {
+          console.log('[Player] IndexedDB not available, trying server API:', idbErr.message);
+          const resp = await fetch(`/api/skits/${id}`);
+          if (!resp.ok) {
+            throw new Error(`Failed to load skit: ${resp.status}`);
+          }
+          skit = await resp.json();
+          console.log('[Player] Loaded skit from server API');
         }
-        const skit = await resp.json();
 
         currentSkit = skit;
         currentSkitName = id;
@@ -2839,10 +2942,14 @@
             }
 
             // Use character's voice from meta.json (with fallback validation)
+            // In cloud/custom TTS mode, the per-character voice is ignored (settings.ttsVoice is used),
+            // so skip validation to avoid misleading warnings.
             let voice = char.voice || DEFAULT_VOICE;
-            if (!VALID_VOICES.includes(voice) && !voice.startsWith('http') && !voice.startsWith('custom:')) {
-              console.warn(`Invalid voice "${voice}" for ${beat.who}, using default`);
-              voice = DEFAULT_VOICE;
+            if (ttsMode !== 'cloud' && ttsMode !== 'custom') {
+              if (!VALID_VOICES.includes(voice) && !voice.startsWith('http') && !voice.startsWith('custom:')) {
+                console.warn(`Invalid voice "${voice}" for ${beat.who}, using default`);
+                voice = DEFAULT_VOICE;
+              }
             }
 
             try {
@@ -2870,6 +2977,11 @@
               });
             } catch (e) {
               console.error('TTS error for', beat.who, ':', e);
+              // Stop on auth errors — no point retrying every line
+              if (e.message?.includes('(401)') || e.message?.includes('(403)')) {
+                document.getElementById('status').textContent = `TTS auth error: ${e.message}`;
+                break;
+              }
             }
           }
         }

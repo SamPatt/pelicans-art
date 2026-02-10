@@ -208,6 +208,25 @@
     setStatus('Validating TTS key...');
     const result = await global.AITTtsProvider?.validateKey?.(provider, key);
     if (result?.ok) {
+      // For ElevenLabs, auto-populate voice field if it's still set to an OpenAI default
+      if (provider === 'elevenlabs') {
+        const currentVoice = q('ait-tts-voice').value.trim();
+        if (!currentVoice || currentVoice === 'alloy') {
+          try {
+            const r = await fetch('https://api.elevenlabs.io/v1/voices', {
+              headers: { 'xi-api-key': key }
+            });
+            if (r.ok) {
+              const data = await r.json();
+              if (data.voices?.length) {
+                q('ait-tts-voice').value = data.voices[0].voice_id;
+                setStatus(`TTS key valid. Voice set to "${data.voices[0].name}".`, 'ok');
+                return;
+              }
+            }
+          } catch (e) {}
+        }
+      }
       setStatus('TTS key is valid.', 'ok');
     } else {
       setStatus(`TTS key validation failed: ${result?.message || 'Unknown error'}`, 'error');
