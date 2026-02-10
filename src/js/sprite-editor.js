@@ -2750,6 +2750,11 @@
       }
     }
 
+    function watchRenderedSkit() {
+      if (!currentSkitId) return;
+      openSkitPlayer(currentSkitId);
+    }
+
     // === COMMUNITY SHARING ===
     const COMMUNITY_API_URL = 'https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community';
     let communityVoiceFile = null;

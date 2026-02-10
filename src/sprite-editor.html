@@ -1873,11 +1873,16 @@
       font-size: 0.9em;
       transition: all 0.2s;
     }
-    .render-complete-content .btn-download {
+    .render-complete-content .btn-watch {
       background: var(--ocean-blue);
       color: var(--wing-dark);
     }
-    .render-complete-content .btn-download:hover { background: var(--ocean-deep); }
+    .render-complete-content .btn-watch:hover { background: var(--ocean-deep); }
+    .render-complete-content .btn-download {
+      background: var(--ocean-light);
+      color: var(--wing-dark);
+    }
+    .render-complete-content .btn-download:hover { filter: brightness(0.93); }
     .render-complete-content .btn-pouch {
       background: var(--pouch-orange);
       color: #fff;
@@ -3598,6 +3603,7 @@
             <p id="render-failures-text" style="color:var(--pouch-orange)"></p>
           </div>
           <div class="modal-buttons">
+            <button class="btn-watch" data-ait-onclick="watchRenderedSkit()">▶ Watch</button>
             <button class="btn-download" data-ait-onclick="downloadRenderedSkit()">Download Skit JSON</button>
             <button class="btn-pouch" data-ait-onclick="closeRenderCompleteModal(); openCommunityModal('published')">Send to Pouch</button>
             <button class="btn-close" data-ait-onclick="closeRenderCompleteModal()">Close</button>
