@@ -196,9 +196,9 @@
 
       let userPrompt = request.command || '';
       const imageDataUrl = (type === 'sprite') ? request.referenceImage : undefined;
-      if (imageDataUrl) {
-        userPrompt = 'Use the provided reference image as visual inspiration. Match the character\'s appearance, style, colors, and pose as closely as possible while following the SVG structure rules.\n\n' + userPrompt;
-      }
+      const imageGuidance = imageDataUrl
+        ? 'Use the provided reference image as visual inspiration. Match the character\'s appearance, style, colors, and pose as closely as possible while following the SVG structure rules.\n\n'
+        : '';
       if (request.mode === 'edit' && current) {
         if (type === 'sprite' || type === 'prop' || type === 'background') {
           const variant = current.variant || 'front';
@@ -213,10 +213,12 @@
               variantContext += `--- ${v} view ---\n${capped}\n`;
             }
           }
-          userPrompt = `Modify this existing ${type}.${variantContext}\n\nCurrent:\n${current.svg || ''}\n\nInstruction:\n${request.command}`;
+          userPrompt = `${imageGuidance}Modify this existing ${type}.${variantContext}\n\nCurrent:\n${current.svg || ''}\n\nInstruction:\n${request.command}`;
         } else if (type === 'skit') {
           userPrompt = `Modify this skit JSON.\n\nCurrent:\n${JSON.stringify(current.skit || current, null, 2)}\n\nInstruction:\n${request.command}`;
         }
+      } else if (imageGuidance) {
+        userPrompt = imageGuidance + userPrompt;
       }
 
       const raw = await global.AITAiProvider.callLLM(systemPrompt, userPrompt, settings, this.fetchImpl, imageDataUrl);
@@ -308,7 +310,7 @@
         try {
           const char = skit.cast?.[beat.who];
           if (!char) continue;
-          const voice = cloudVoiceMap[beat.who] || assets.spriteMeta?.[char.sprite]?.voice?.id || char.voice || settings.ttsVoice || 'alloy';
+          const voice = assets.spriteMeta?.[char.sprite]?.voice?.id || char.voice || settings.ttsVoice || cloudVoiceMap[beat.who] || 'alloy';
           const blob = await global.AITTtsProvider.generateSpeech(beat.line, voice, settings, { forPublishing: true }, this.fetchImpl);
           if (blob) {
             assets.audio[`line-${i}`] = await blobToDataUrl(blob);

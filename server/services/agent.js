@@ -133,7 +133,7 @@ OUTPUT FORMAT - You must respond with valid JSON:
     "type": "human|creature",
     "description": "brief character description",
     "tags": ["tag1", "tag2"],
-    "voice": { "id": "alloy", "pitch": 0, "speed": 1 },
+    "voice": { "id": "alba", "pitch": 0, "speed": 1 },
     "colors": { "skin": "#hex", "hair": "#hex", "primary": "#hex" }
   }
 }
