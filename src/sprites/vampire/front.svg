@@ -1,0 +1,80 @@
+<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body: cape, suit, cane, legs -->
+  <g id="body">
+    <!-- Cape back -->
+    <path d="M20 68 L12 138 L50 145 L88 138 L80 68 Z" fill="#1a1a1a" stroke="#111" stroke-width="0.5"/>
+    <!-- Cape collar raised -->
+    <path d="M22 68 L18 55 L28 62 L50 65 L72 62 L82 55 L78 68 Z" fill="#2a0a0a" stroke="#1a1a1a" stroke-width="0.5"/>
+    <!-- Inner suit -->
+    <rect x="35" y="68" width="30" height="42" rx="2" fill="#2d2d2d"/>
+    <!-- Vest -->
+    <path d="M40 70 L40 105 L50 110 L60 105 L60 70 Z" fill="#3a1520"/>
+    <!-- White shirt front -->
+    <path d="M47 70 L47 98 L53 98 L53 70 Z" fill="#ddd8d0"/>
+    <!-- Belt -->
+    <rect x="36" y="106" width="28" height="3" rx="1" fill="#2a2a2a"/>
+    <!-- Legs -->
+    <rect x="37" y="112" width="11" height="24" rx="2" fill="#1a1a1a"/>
+    <rect x="52" y="112" width="11" height="24" rx="2" fill="#1a1a1a"/>
+    <!-- Shoes -->
+    <path d="M35 134 Q37 140 48 139 Q50 137 48 134 Z" fill="#111"/>
+    <path d="M52 134 Q50 137 52 139 Q63 140 65 134 Z" fill="#111"/>
+    <!-- Cane -->
+    <line x1="19" y1="62" x2="21" y2="140" stroke="#5a3a1a" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M15 60 Q15 54 20 54 Q25 54 25 60" fill="none" stroke="#5a3a1a" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Left arm holding cane -->
+    <path d="M32 72 Q26 80 19 65" fill="none" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="19" cy="63" r="3" fill="#c0b8c8"/>
+    <!-- Right arm -->
+    <path d="M68 72 Q76 85 74 98" fill="none" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="74" cy="98" r="3" fill="#c0b8c8"/>
+  </g>
+
+  <!-- Head top: ears, hair, eyes, brows -->
+  <g id="head-top">
+    <!-- Head upper shape -->
+    <path d="M33 42 Q33 14 50 14 Q67 14 67 42 Z" fill="#c0b8c8"/>
+    <!-- Bat ears -->
+    <path d="M33 32 L24 14 L36 28 Z" fill="#c0b8c8" stroke="#9a9098" stroke-width="0.5"/>
+    <path d="M67 32 L76 14 L64 28 Z" fill="#c0b8c8" stroke="#9a9098" stroke-width="0.5"/>
+    <!-- Inner ear -->
+    <path d="M34 30 L28 18 L36 28 Z" fill="#a89aa8"/>
+    <path d="M66 30 L72 18 L64 28 Z" fill="#a89aa8"/>
+    <!-- Hair widow's peak -->
+    <path d="M33 26 Q33 14 50 14 Q67 14 67 26 L60 26 Q50 20 40 26 Z" fill="#1a1a1a"/>
+    <path d="M45 26 L50 18 L55 26 Z" fill="#1a1a1a"/>
+    <!-- Eye whites -->
+    <ellipse id="eye-left-white" cx="42" cy="37" rx="5" ry="3" fill="#f0e8e0"/>
+    <ellipse id="eye-right-white" cx="58" cy="37" rx="5" ry="3" fill="#f0e8e0"/>
+    <!-- Pupils (blood red) -->
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="37" r="1.8" fill="#8a1010"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="37" r="1.8" fill="#8a1010"/>
+    <!-- Heavy brows -->
+    <path id="brow-left" d="M35 32 Q42 29 48 33" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+    <path id="brow-right" d="M52 33 Q58 29 65 32" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Wrinkle lines -->
+    <path d="M39 34 Q42 33 45 34" fill="none" stroke="#9a9098" stroke-width="0.3"/>
+    <path d="M55 34 Q58 33 61 34" fill="none" stroke="#9a9098" stroke-width="0.3"/>
+    <path d="M44 30 Q50 28 56 30" fill="none" stroke="#9a9098" stroke-width="0.3"/>
+  </g>
+
+  <!-- Head bottom: jaw, mouth, chin -->
+  <g id="head-bottom">
+    <!-- Lower face -->
+    <path d="M33 42 Q33 62 50 62 Q67 62 67 42 Z" fill="#c0b8c8"/>
+    <!-- Nose (hooked, vampiric) -->
+    <path d="M49 40 L47 48 Q50 50 53 48" fill="none" stroke="#8a8090" stroke-width="1"/>
+    <!-- Cheek hollows -->
+    <path d="M36 50 Q38 48 40 50" fill="none" stroke="#9a9098" stroke-width="0.4"/>
+    <path d="M60 50 Q62 48 64 50" fill="none" stroke="#9a9098" stroke-width="0.4"/>
+    <!-- Mouth closed (slight frown) -->
+    <path id="mouth-closed" d="M43 54 Q50 51 57 54" fill="none" stroke="#3a1a1a" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Fangs -->
+    <path d="M44 54 L43 58" stroke="#f0e8e0" stroke-width="1.2" stroke-linecap="round"/>
+    <path d="M56 54 L57 58" stroke="#f0e8e0" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Mouth open (hidden, animation target) -->
+    <ellipse id="mouth-open" cx="50" cy="55" rx="5" ry="3" fill="#3a1010" opacity="0"/>
+    <!-- Chin -->
+    <path d="M46 58 Q50 62 54 58" fill="none" stroke="#9a9098" stroke-width="0.4"/>
+  </g>
+</svg>

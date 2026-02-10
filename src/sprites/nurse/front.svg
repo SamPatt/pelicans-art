@@ -1,0 +1,87 @@
+<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Body: uniform, clipboard, legs -->
+  <g id="body">
+    <!-- White nurse uniform -->
+    <path d="M32 62 L28 130 L72 130 L68 62 Z" fill="#f0ece8" stroke="#d8d4d0" stroke-width="0.5"/>
+    <!-- Collar -->
+    <path d="M38 62 L44 56 L50 60 L56 56 L62 62 Z" fill="#fff" stroke="#d8d4d0" stroke-width="0.5"/>
+    <!-- Uniform details -->
+    <line x1="50" y1="62" x2="50" y2="120" stroke="#e0dcd8" stroke-width="0.5"/>
+    <!-- Pocket -->
+    <rect x="36" y="85" width="10" height="8" rx="1" fill="none" stroke="#d0ccc8" stroke-width="0.5"/>
+    <!-- Pen in pocket -->
+    <line x1="40" y1="85" x2="40" y2="80" stroke="#2a5a8a" stroke-width="1" stroke-linecap="round"/>
+    <!-- Name tag -->
+    <rect x="54" y="68" width="12" height="6" rx="1" fill="#fff" stroke="#d0ccc8" stroke-width="0.5"/>
+    <line x1="56" y1="71" x2="64" y2="71" stroke="#aaa" stroke-width="0.4"/>
+    <!-- Belt -->
+    <rect x="30" y="100" width="40" height="2.5" rx="1" fill="#e0dcd8"/>
+    <!-- Skirt portion -->
+    <path d="M30 102 L26 132 L74 132 L70 102 Z" fill="#f0ece8" stroke="#d8d4d0" stroke-width="0.5"/>
+    <!-- Legs -->
+    <rect x="38" y="130" width="8" height="12" rx="1" fill="#e8c8a0"/>
+    <rect x="54" y="130" width="8" height="12" rx="1" fill="#e8c8a0"/>
+    <!-- White shoes -->
+    <path d="M36 140 Q38 146 47 145 L46 140 Z" fill="#fff" stroke="#d8d4d0" stroke-width="0.5"/>
+    <path d="M54 140 L53 145 Q62 146 64 140 Z" fill="#fff" stroke="#d8d4d0" stroke-width="0.5"/>
+    <!-- Left arm -->
+    <path d="M34 65 Q26 80 28 95" fill="none" stroke="#f0ece8" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="28" cy="95" r="3" fill="#e8c8a0"/>
+    <!-- Right arm holding clipboard -->
+    <path d="M66 65 Q74 78 72 88" fill="none" stroke="#f0ece8" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="72" cy="88" r="3" fill="#e8c8a0"/>
+    <!-- Clipboard -->
+    <rect x="68" y="82" width="14" height="18" rx="1" fill="#c8a868" stroke="#a88848" stroke-width="0.5"/>
+    <rect x="70" y="80" width="10" height="3" rx="1" fill="#888" stroke="#666" stroke-width="0.5"/>
+    <!-- Paper on clipboard -->
+    <rect x="69" y="84" width="12" height="14" rx="0.5" fill="#fff"/>
+    <line x1="71" y1="87" x2="79" y2="87" stroke="#ccc" stroke-width="0.3"/>
+    <line x1="71" y1="90" x2="79" y2="90" stroke="#ccc" stroke-width="0.3"/>
+    <line x1="71" y1="93" x2="76" y2="93" stroke="#ccc" stroke-width="0.3"/>
+  </g>
+
+  <!-- Head top: cap, hair, glasses, eyes, brows -->
+  <g id="head-top">
+    <!-- Head shape -->
+    <path d="M35 40 Q35 16 50 16 Q65 16 65 40 Z" fill="#e8c8a0"/>
+    <!-- Hair (neat, pulled back) -->
+    <path d="M35 28 Q35 16 50 16 Q65 16 65 28 L62 28 Q50 24 38 28 Z" fill="#8a5a2a"/>
+    <!-- Side hair -->
+    <path d="M35 28 Q33 32 34 38" fill="none" stroke="#8a5a2a" stroke-width="2"/>
+    <path d="M65 28 Q67 32 66 38" fill="none" stroke="#8a5a2a" stroke-width="2"/>
+    <!-- Nurse cap -->
+    <rect x="38" y="12" width="24" height="14" rx="2" fill="#fff" stroke="#d8d4d0" stroke-width="0.5"/>
+    <!-- Red cross on cap -->
+    <rect x="48" y="15" width="4" height="10" rx="0.5" fill="#c83030"/>
+    <rect x="44" y="18" width="12" height="4" rx="0.5" fill="#c83030"/>
+    <!-- Glasses -->
+    <rect x="36" y="33" width="11" height="8" rx="2" fill="none" stroke="#5a4a3a" stroke-width="1"/>
+    <rect x="53" y="33" width="11" height="8" rx="2" fill="none" stroke="#5a4a3a" stroke-width="1"/>
+    <line x1="47" y1="37" x2="53" y2="37" stroke="#5a4a3a" stroke-width="1"/>
+    <line x1="36" y1="36" x2="33" y2="34" stroke="#5a4a3a" stroke-width="0.8"/>
+    <line x1="64" y1="36" x2="67" y2="34" stroke="#5a4a3a" stroke-width="0.8"/>
+    <!-- Eye whites -->
+    <ellipse id="eye-left-white" cx="42" cy="37" rx="4" ry="2.5" fill="#fff"/>
+    <ellipse id="eye-right-white" cx="58" cy="37" rx="4" ry="2.5" fill="#fff"/>
+    <!-- Pupils -->
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="37" r="1.5" fill="#4a3a2a"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="37" r="1.5" fill="#4a3a2a"/>
+    <!-- Brows (slightly raised, oblivious/cheerful) -->
+    <path id="brow-left" d="M37 31 Q42 29 47 31" fill="none" stroke="#6a4a2a" stroke-width="1" stroke-linecap="round"/>
+    <path id="brow-right" d="M53 31 Q58 29 63 31" fill="none" stroke="#6a4a2a" stroke-width="1" stroke-linecap="round"/>
+  </g>
+
+  <!-- Head bottom: jaw, mouth, chin -->
+  <g id="head-bottom">
+    <!-- Lower face -->
+    <path d="M35 40 Q35 58 50 58 Q65 58 65 40 Z" fill="#e8c8a0"/>
+    <!-- Nose -->
+    <path d="M49 40 L48 46 Q50 48 52 46" fill="none" stroke="#c8a880" stroke-width="0.8"/>
+    <!-- Mouth closed (slight smile) -->
+    <path id="mouth-closed" d="M43 50 Q50 54 57 50" fill="none" stroke="#a06050" stroke-width="1.2" stroke-linecap="round"/>
+    <!-- Mouth open (hidden) -->
+    <ellipse id="mouth-open" cx="50" cy="51" rx="5" ry="3" fill="#8a4040" opacity="0"/>
+    <!-- Chin -->
+    <path d="M47 54 Q50 57 53 54" fill="none" stroke="#c8a880" stroke-width="0.3"/>
+  </g>
+</svg>

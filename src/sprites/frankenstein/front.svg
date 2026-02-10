@@ -1,0 +1,97 @@
+<svg viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg" width="100" height="150" style="cursor: default;">
+  <!-- Body: jacket, bench, legs -->
+  <g id="body">
+    <!-- Bench -->
+    
+    <!-- Bench legs -->
+    
+    
+    <!-- Bench slats -->
+    
+    
+    <!-- Bench back support -->
+    
+    
+    <!-- Black jacket -->
+    <path d="M28 62 L26 105 L74 105 L72 62 Z" fill="#1a1a1a" stroke="#111" stroke-width="0.5" style="cursor: pointer;"></path>
+    <!-- Jacket lapels -->
+    <path d="M40 62 L44 75 L50 62" fill="#2a2a2a" style="cursor: pointer;"></path>
+    <path d="M60 62 L56 75 L50 62" fill="#2a2a2a" style="cursor: pointer;"></path>
+    <!-- Shirt underneath (dark grey) -->
+    <path d="M43 62 L43 100 L57 100 L57 62 Z" fill="#3a3a3a" style="cursor: pointer;"></path>
+    <!-- Jacket buttons -->
+    <circle cx="50" cy="78" r="1.5" fill="#333" style="cursor: pointer;"></circle>
+    <circle cx="50" cy="88" r="1.5" fill="#333" style="cursor: pointer;"></circle>
+    <!-- Trousers -->
+    <rect x="32" y="105" width="14" height="28" rx="2" fill="#2a2a2a" style="cursor: pointer;"></rect>
+    <rect x="54" y="105" width="14" height="28" rx="2" fill="#2a2a2a" style="cursor: pointer;"></rect>
+    <!-- Big boots -->
+    <path d="M28 131 Q32 140 47 139 L46 131 Z" fill="#1a1a1a" stroke="#111" stroke-width="0.5" style="cursor: pointer;"></path>
+    <path d="M54 131 L53 139 Q68 140 72 131 Z" fill="#1a1a1a" stroke="#111" stroke-width="0.5" style="cursor: pointer;"></path>
+    <!-- Boot soles -->
+    <rect x="28" y="138" width="19" height="3" rx="1" fill="#111" style="cursor: pointer;"></rect>
+    <rect x="53" y="138" width="19" height="3" rx="1" fill="#111" style="cursor: pointer;"></rect>
+    <!-- Arms (heavy, hanging) -->
+    <path d="M30 66 Q20 82 22 100" fill="none" stroke="#1a1a1a" stroke-width="7" stroke-linecap="round" style="cursor: pointer;"></path>
+    <path d="M70 66 Q80 82 78 100" fill="none" stroke="#1a1a1a" stroke-width="7" stroke-linecap="round" style="cursor: pointer;"></path>
+    <!-- Big hands (green) -->
+    <path d="M18 97 Q16 100 18 104 Q22 108 26 104 Q28 100 26 97 Z" fill="#6a8a58" style="cursor: pointer;"></path>
+    <path d="M74 97 Q72 100 74 104 Q78 108 82 104 Q84 100 82 97 Z" fill="#6a8a58" style="cursor: pointer;"></path>
+    <!-- Stitches on hands -->
+    <path d="M20 99 L24 99" stroke="#3a4a2a" stroke-width="0.5" style="cursor: pointer;"></path>
+    <path d="M76 99 L80 99" stroke="#3a4a2a" stroke-width="0.5" style="cursor: pointer;"></path>
+  </g>
+
+  <!-- Head top: flat top, bolts, eyes, brows -->
+  <g id="head-top">
+    <!-- Head shape (flat top, square-ish) -->
+    <path d="M32 42 L32 14 L68 14 L68 42 Z" fill="#6a8a58" style="cursor: pointer;"></path>
+    <!-- Flat top hair -->
+    <rect x="30" y="10" width="40" height="6" rx="1" fill="#1a1a1a" style="cursor: pointer;"></rect>
+    <!-- Bolts on sides -->
+    <rect x="24" y="34" width="8" height="4" rx="2" fill="#888" stroke="#666" stroke-width="0.5" style="cursor: pointer;"></rect>
+    <rect x="68" y="34" width="8" height="4" rx="2" fill="#888" stroke="#666" stroke-width="0.5" style="cursor: pointer;"></rect>
+    <!-- Bolt caps -->
+    <circle cx="26" cy="36" r="2.5" fill="#999" stroke="#666" stroke-width="0.5" style="cursor: pointer;"></circle>
+    <circle cx="74" cy="36" r="2.5" fill="#999" stroke="#666" stroke-width="0.5" style="cursor: pointer;"></circle>
+    <!-- Stitches across forehead -->
+    <path d="M38 22 L62 22" stroke="#3a4a2a" stroke-width="1" stroke-linecap="round" style="cursor: pointer;"></path>
+    <path d="M40 20 L40 24" stroke="#3a4a2a" stroke-width="0.8" style="cursor: pointer;"></path>
+    <path d="M45 20 L45 24" stroke="#3a4a2a" stroke-width="0.8" style="cursor: pointer;"></path>
+    <path d="M50 20 L50 24" stroke="#3a4a2a" stroke-width="0.8" style="cursor: pointer;"></path>
+    <path d="M55 20 L55 24" stroke="#3a4a2a" stroke-width="0.8" style="cursor: pointer;"></path>
+    <path d="M60 20 L60 24" stroke="#3a4a2a" stroke-width="0.8" style="cursor: pointer;"></path>
+    <!-- Heavy brow ridge -->
+    <path d="M34 30 L66 30" fill="none" stroke="#5a7a48" stroke-width="2" style="cursor: pointer;"></path>
+    <!-- Eye sockets (deep set) -->
+    <ellipse cx="42" cy="35" rx="6" ry="5" fill="#4a6a38" style="cursor: pointer;"></ellipse>
+    <ellipse cx="58" cy="35" rx="6" ry="5" fill="#4a6a38" style="cursor: pointer;"></ellipse>
+    <!-- Eye whites -->
+    <ellipse id="eye-left-white" cx="42" cy="36" rx="4.5" ry="3" fill="#e8e0c8" style="cursor: pointer;"></ellipse>
+    <ellipse id="eye-right-white" cx="58" cy="36" rx="4.5" ry="3" fill="#e8e0c8" style="cursor: pointer;"></ellipse>
+    <!-- Pupils (dark, sad) -->
+    <circle id="eye-left-pupil" class="pupil" cx="42" cy="36" r="2" fill="#2a2a1a" style="cursor: pointer;"></circle>
+    <circle id="eye-right-pupil" class="pupil" cx="58" cy="36" r="2" fill="#2a2a1a" style="cursor: pointer;"></circle>
+    <!-- Brows (heavy, sad) -->
+    <path id="brow-left" d="M35 28 Q42 26 48 30" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" style="cursor: pointer;"></path>
+    <path id="brow-right" d="M52 30 Q58 26 65 28" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" style="cursor: pointer;"></path>
+  </g>
+
+  <!-- Head bottom: jaw, mouth, chin -->
+  <g id="head-bottom">
+    <!-- Lower face (squarish jaw) -->
+    <path d="M32 42 L32 58 Q32 62 40 62 L60 62 Q68 62 68 58 L68 42 Z" fill="#6a8a58" style="cursor: pointer;"></path>
+    <!-- Stitch on cheek -->
+    <path d="M36 48 L36 56" stroke="#3a4a2a" stroke-width="0.8" style="cursor: pointer;"></path>
+    <path d="M34 50 L38 50" stroke="#3a4a2a" stroke-width="0.5" style="cursor: pointer;"></path>
+    <path d="M34 54 L38 54" stroke="#3a4a2a" stroke-width="0.5" style="cursor: pointer;"></path>
+    <!-- Nose (broad) -->
+    <path d="M47 42 L45 48 Q50 50 55 48 L53 42" fill="#5a7a48" stroke="#4a6a38" stroke-width="0.5" style="cursor: pointer;"></path>
+    <!-- Mouth closed (sad downturn) -->
+    <path id="mouth-closed" d="M42 54 Q50 50 58 54" fill="none" stroke="#3a3a2a" stroke-width="1.5" stroke-linecap="round" style="cursor: pointer;"></path>
+    <!-- Mouth open (hidden) -->
+    <ellipse id="mouth-open" cx="50" cy="54" rx="6" ry="3.5" fill="#3a2a1a" opacity="0" style="cursor: pointer;"></ellipse>
+    <!-- Heavy jaw line -->
+    <path d="M34 58 Q50 64 66 58" fill="none" stroke="#4a6a38" stroke-width="0.5" style="cursor: pointer;"></path>
+  </g>
+</svg>

@@ -292,8 +292,8 @@
         createMouthGroup(svg);
       }
 
-      // Use meta.json voice settings exclusively (voice is per-character, not per-skit)
-      const voiceId = metaVoice?.id || DEFAULT_VOICE;
+      // Cast voice (from skit JSON) takes priority, then meta.json, then default
+      const voiceId = config.voice || metaVoice?.id || DEFAULT_VOICE;
       const voiceVolume = metaVoice?.volume !== undefined ? metaVoice.volume : 1.0;
       const voiceSpeed = metaVoice?.speed !== undefined ? metaVoice.speed : 1.0;
       const voicePitch = metaVoice?.pitch !== undefined ? metaVoice.pitch : 0;
@@ -1421,7 +1421,7 @@
       return settings?.ttsMode || 'none';
     }
 
-    async function generateAudio(text, voice) {
+    async function generateAudio(text, voice, cloudVoiceId) {
       // Check browser TTS settings
       const settings = getTtsSettings();
       const mode = settings?.ttsMode || 'none';
@@ -1432,7 +1432,7 @@
       // cloud or custom mode - use AITTtsProvider
       if ((mode === 'cloud' || mode === 'custom') && typeof AITTtsProvider !== 'undefined') {
         const voiceConfig = {
-          id: settings.ttsVoice || 'alloy',
+          id: cloudVoiceId || settings.ttsVoice || 'alloy',
           speed: settings.ttsRate || 1,
           pitch: settings.ttsPitch || 1,
           volume: settings.ttsVolume || 1
@@ -1760,6 +1760,20 @@
           });
         }
       } else if (ttsModeSkit !== 'none') {
+        // For ElevenLabs, assign different voices to each character
+        const cloudVoiceMapSkit = {};
+        const ttsSettingsSkit = getTtsSettings();
+        if (ttsModeSkit === 'cloud' && ttsSettingsSkit?.ttsProvider === 'elevenlabs' && typeof AITTtsProvider !== 'undefined') {
+          const voices = await AITTtsProvider.fetchElevenLabsVoices(ttsSettingsSkit.ttsKey);
+          if (voices.length) {
+            const castNames = Object.keys(skit.cast || {});
+            castNames.forEach((name, idx) => {
+              cloudVoiceMapSkit[name] = voices[idx % voices.length].id;
+              console.log(`[Player] Assigned ElevenLabs voice "${voices[idx % voices.length].name}" to ${name}`);
+            });
+          }
+        }
+
         for (let i = 0; i < sayActions.length; i++) {
           const beat = sayActions[i];
           const char = characters[beat.who];
@@ -1771,7 +1785,7 @@
           }
 
           try {
-            const blob = await generateAudio(beat.line, char.voice);
+            const blob = await generateAudio(beat.line, char.voice, cloudVoiceMapSkit[beat.who]);
             if (!blob) continue;
             const audio = new Audio(URL.createObjectURL(blob));
             const source = audioContext.createMediaElementSource(audio);
@@ -2931,6 +2945,20 @@
             });
           }
         } else if (ttsMode !== 'none') {
+          // For ElevenLabs, assign different voices to each character
+          const cloudVoiceMap = {};
+          const ttsSettings = getTtsSettings();
+          if (ttsMode === 'cloud' && ttsSettings?.ttsProvider === 'elevenlabs' && typeof AITTtsProvider !== 'undefined') {
+            const voices = await AITTtsProvider.fetchElevenLabsVoices(ttsSettings.ttsKey);
+            if (voices.length) {
+              const castNames = Object.keys(skit.cast || {});
+              castNames.forEach((name, idx) => {
+                cloudVoiceMap[name] = voices[idx % voices.length].id;
+                console.log(`[Player] Assigned ElevenLabs voice "${voices[idx % voices.length].name}" to ${name}`);
+              });
+            }
+          }
+
           for (let i = 0; i < sayActions.length; i++) {
             const beat = sayActions[i];
             document.getElementById('status').textContent = `Generating audio ${i + 1}/${totalLines}...`;
@@ -2942,8 +2970,6 @@
             }
 
             // Use character's voice from meta.json (with fallback validation)
-            // In cloud/custom TTS mode, the per-character voice is ignored (settings.ttsVoice is used),
-            // so skip validation to avoid misleading warnings.
             let voice = char.voice || DEFAULT_VOICE;
             if (ttsMode !== 'cloud' && ttsMode !== 'custom') {
               if (!VALID_VOICES.includes(voice) && !voice.startsWith('http') && !voice.startsWith('custom:')) {
@@ -2953,7 +2979,7 @@
             }
 
             try {
-              const blob = await generateAudio(beat.line, voice);
+              const blob = await generateAudio(beat.line, voice, cloudVoiceMap[beat.who]);
               if (!blob) continue;
               const audio = new Audio(URL.createObjectURL(blob));
               const source = audioContext.createMediaElementSource(audio);

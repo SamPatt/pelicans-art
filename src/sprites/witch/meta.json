@@ -1,0 +1,33 @@
+{
+  "name": "Witch",
+  "type": "creature",
+  "description": "An elderly witch with a pointy hat and cane, retired from hexing but still sharp-tongued",
+  "tags": [
+    "monster",
+    "witch",
+    "magic",
+    "elderly",
+    "monster-manor"
+  ],
+  "voice": {
+    "id": "custom:witch",
+    "pitch": 0,
+    "speed": 1,
+    "volume": 1.3
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#8a9a78",
+    "hair": "#555555",
+    "primary": "#1a1a1a"
+  },
+  "animation": {
+    "blinkInterval": 4,
+    "blinkDuration": 120,
+    "idleMovement": true,
+    "eyeTracking": true
+  },
+  "variants": [
+    "front"
+  ]
+}

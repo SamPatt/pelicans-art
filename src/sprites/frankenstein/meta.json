@@ -1,0 +1,33 @@
+{
+  "name": "Frankenstein",
+  "type": "creature",
+  "description": "Frankenstein's monster, elderly and melancholic, sitting on a bench, keeps losing body parts that staff reattaches wrong",
+  "tags": [
+    "monster",
+    "frankenstein",
+    "undead",
+    "elderly",
+    "monster-manor"
+  ],
+  "voice": {
+    "id": "custom:monster",
+    "pitch": -0.2,
+    "speed": 1,
+    "volume": 1.4
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#6a8a58",
+    "hair": "#1a1a1a",
+    "primary": "#1a1a1a"
+  },
+  "animation": {
+    "blinkInterval": 6,
+    "blinkDuration": 200,
+    "idleMovement": true,
+    "eyeTracking": true
+  },
+  "variants": [
+    "front"
+  ]
+}

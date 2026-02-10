@@ -259,14 +259,11 @@ router.post('/process', async (req, res, next) => {
       await runFfmpeg([
         '-i', tempInputPath,
         '-ss', String(trimStart),
-        '-t', String(Math.min(duration, 10)), // Max 30 seconds
+        '-t', String(Math.min(duration, 10)), // Max 10 seconds
         '-af', [
           'aformat=channel_layouts=mono',
           'aresample=24000',
-          'highpass=f=80',
-          'lowpass=f=8000',
-          'loudnorm=I=-16:TP=-1.5:LRA=11',
-          'alimiter=limit=0.95'
+          'loudnorm=I=-16:TP=-1.5:LRA=11'
         ].join(','),
         '-ar', '24000',
         '-ac', '1',
@@ -275,12 +272,12 @@ router.post('/process', async (req, res, next) => {
         tempTrimmedPath
       ]);
 
-      // Keep the cleaned WAV for direct TTS comparison
+      // Run spectral noise reduction (highpass + noisereduce + normalize)
       const cleanWavPath = path.join(voicesDir, `${safeName}.wav`);
-      await fs.copyFile(tempTrimmedPath, cleanWavPath);
+      await runNoiseReduce(tempTrimmedPath, cleanWavPath);
 
-      // Run pocket-tts export-voice to create safetensors
-      await runPocketTtsExport(tempTrimmedPath, outputPath);
+      // Run pocket-tts export-voice to create safetensors (use cleaned WAV)
+      await runPocketTtsExport(cleanWavPath, outputPath);
 
       // Save voice metadata
       await saveVoice(safeName, {
@@ -867,6 +864,35 @@ function runFfprobe(filePath) {
 
     proc.on('error', (err) => {
       reject(new Error(`Failed to run ffprobe: ${err.message}`));
+    });
+  });
+}
+
+/**
+ * Run Python noisereduce script for spectral noise removal + normalization
+ */
+function runNoiseReduce(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const scriptPath = path.resolve(import.meta.dirname, '..', '..', 'scripts', 'noisereduce-wav.py');
+    const proc = spawn('python3', [scriptPath, inputPath, outputPath], { stdio: ['pipe', 'pipe', 'pipe'] });
+
+    let stderr = '';
+    proc.stderr.on('data', (data) => { stderr += data.toString(); });
+
+    proc.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        console.warn(`noisereduce-wav.py exited with code ${code}: ${stderr}`);
+        // Fall back to copying the input as-is if noisereduce fails
+        fs.copyFile(inputPath, outputPath).then(resolve).catch(reject);
+      }
+    });
+
+    proc.on('error', (err) => {
+      console.warn(`Failed to run noisereduce-wav.py: ${err.message}`);
+      // Fall back to copying the input as-is
+      fs.copyFile(inputPath, outputPath).then(resolve).catch(reject);
     });
   });
 }

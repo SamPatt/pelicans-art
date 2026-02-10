@@ -1,0 +1,238 @@
+<svg viewBox="0 0 400 225" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark stone walls -->
+  <rect x="0" y="0" width="400" height="225" fill="#28201a"/>
+
+  <!-- Stone wall texture -->
+  <g opacity="0.15">
+    <rect x="0" y="10" width="60" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+    <rect x="60" y="10" width="50" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+    <rect x="30" y="35" width="55" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+    <rect x="85" y="35" width="45" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+    <rect x="290" y="10" width="55" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+    <rect x="345" y="10" width="55" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+    <rect x="310" y="35" width="45" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+    <rect x="355" y="35" width="45" height="25" stroke="#3a3028" stroke-width="0.5" fill="none"/>
+  </g>
+
+  <!-- Back wall (perspective) -->
+  <rect x="100" y="30" width="200" height="95" fill="#221a15"/>
+
+  <!-- Gothic arched windows - back wall -->
+  <!-- Window left -->
+  <g transform="translate(140, 40)">
+    <rect x="0" y="10" width="30" height="45" fill="#1a2a3a"/>
+    <path d="M0 10 Q15 -8 30 10" fill="#1a2a3a"/>
+    <!-- Stained glass effect -->
+    <rect x="3" y="13" width="11" height="18" fill="#2a3a5a" opacity="0.6"/>
+    <rect x="16" y="13" width="11" height="18" fill="#3a2a4a" opacity="0.6"/>
+    <rect x="3" y="33" width="11" height="18" fill="#3a4a3a" opacity="0.6"/>
+    <rect x="16" y="33" width="11" height="18" fill="#2a3a5a" opacity="0.6"/>
+    <!-- Mullions -->
+    <line x1="15" y1="5" x2="15" y2="55" stroke="#3a3028" stroke-width="1.5"/>
+    <line x1="0" y1="31" x2="30" y2="31" stroke="#3a3028" stroke-width="1.5"/>
+    <!-- Moonlight glow -->
+    <rect x="1" y="8" width="28" height="46" fill="#8888cc" opacity="0.06"/>
+  </g>
+
+  <!-- Window center -->
+  <g transform="translate(185, 35)">
+    <rect x="0" y="10" width="30" height="50" fill="#1a2a3a"/>
+    <path d="M0 10 Q15 -8 30 10" fill="#1a2a3a"/>
+    <rect x="3" y="13" width="11" height="20" fill="#3a2a4a" opacity="0.6"/>
+    <rect x="16" y="13" width="11" height="20" fill="#2a4a3a" opacity="0.6"/>
+    <rect x="3" y="35" width="11" height="20" fill="#2a3a5a" opacity="0.6"/>
+    <rect x="16" y="35" width="11" height="20" fill="#4a2a3a" opacity="0.6"/>
+    <line x1="15" y1="5" x2="15" y2="60" stroke="#3a3028" stroke-width="1.5"/>
+    <line x1="0" y1="33" x2="30" y2="33" stroke="#3a3028" stroke-width="1.5"/>
+    <rect x="1" y="8" width="28" height="50" fill="#8888cc" opacity="0.08"/>
+  </g>
+
+  <!-- Window right -->
+  <g transform="translate(230, 40)">
+    <rect x="0" y="10" width="30" height="45" fill="#1a2a3a"/>
+    <path d="M0 10 Q15 -8 30 10" fill="#1a2a3a"/>
+    <rect x="3" y="13" width="11" height="18" fill="#2a4a3a" opacity="0.6"/>
+    <rect x="16" y="13" width="11" height="18" fill="#3a2a4a" opacity="0.6"/>
+    <rect x="3" y="33" width="11" height="18" fill="#4a2a3a" opacity="0.6"/>
+    <rect x="16" y="33" width="11" height="18" fill="#2a3a5a" opacity="0.6"/>
+    <line x1="15" y1="5" x2="15" y2="55" stroke="#3a3028" stroke-width="1.5"/>
+    <line x1="0" y1="31" x2="30" y2="31" stroke="#3a3028" stroke-width="1.5"/>
+    <rect x="1" y="8" width="28" height="46" fill="#8888cc" opacity="0.06"/>
+  </g>
+
+  <!-- Moonlight beams from windows -->
+  <radialGradient id="moonbeam" cx="200" cy="50" r="150" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#8888cc" stop-opacity="0.04"/>
+    <stop offset="100%" stop-color="#8888cc" stop-opacity="0"/>
+  </radialGradient>
+  <rect x="0" y="0" width="400" height="225" fill="url(#moonbeam)"/>
+
+  <!-- Side walls perspective lines -->
+  <!-- Left wall -->
+  <polygon points="0,0 100,30 100,125 0,160" fill="#2e241e"/>
+  <!-- Right wall -->
+  <polygon points="400,0 300,30 300,125 400,160" fill="#2e241e"/>
+
+  <!-- Wall sconce left -->
+  <g transform="translate(45, 60)">
+    <rect x="-2" y="0" width="4" height="12" fill="#6a5a3a"/>
+    <rect x="-1" y="-5" width="2" height="5" fill="#d8c8a0"/>
+    <ellipse cx="0" cy="-6" rx="1.5" ry="2.5" fill="#FFD700" opacity="0.7"/>
+    <circle cx="0" cy="-6" r="8" fill="#FFD700" opacity="0.04"/>
+  </g>
+
+  <!-- Wall sconce right -->
+  <g transform="translate(355, 60)">
+    <rect x="-2" y="0" width="4" height="12" fill="#6a5a3a"/>
+    <rect x="-1" y="-5" width="2" height="5" fill="#d8c8a0"/>
+    <ellipse cx="0" cy="-6" rx="1.5" ry="2.5" fill="#FFD700" opacity="0.7"/>
+    <circle cx="0" cy="-6" r="8" fill="#FFD700" opacity="0.04"/>
+  </g>
+
+  <!-- Floor - dark stone -->
+  <polygon points="0,160 100,125 300,125 400,160 400,225 0,225" fill="#1e1610"/>
+  <!-- Floor tiles perspective -->
+  <g opacity="0.12">
+    <line x1="50" y1="160" x2="150" y2="125" stroke="#2a2018" stroke-width="0.5"/>
+    <line x1="133" y1="160" x2="175" y2="125" stroke="#2a2018" stroke-width="0.5"/>
+    <line x1="200" y1="160" x2="200" y2="125" stroke="#2a2018" stroke-width="0.5"/>
+    <line x1="267" y1="160" x2="225" y2="125" stroke="#2a2018" stroke-width="0.5"/>
+    <line x1="350" y1="160" x2="250" y2="125" stroke="#2a2018" stroke-width="0.5"/>
+    <line x1="0" y1="175" x2="400" y2="175" stroke="#2a2018" stroke-width="0.5"/>
+    <line x1="0" y1="195" x2="400" y2="195" stroke="#2a2018" stroke-width="0.5"/>
+  </g>
+
+  <!-- Long dining table -->
+  <g transform="translate(200, 135)">
+    <!-- Table top (perspective) -->
+    <polygon points="-90,-5 -60,-15 60,-15 90,-5 60,5 -60,5" fill="#3a2818"/>
+    <polygon points="-90,-5 -60,-15 60,-15 90,-5 60,5 -60,5" fill="none" stroke="#4a3828" stroke-width="0.8"/>
+    <!-- Table front edge -->
+    <polygon points="-90,-5 90,-5 90,2 -90,2" fill="#2a1a10"/>
+    <!-- Table legs -->
+    <rect x="-80" y="2" width="4" height="18" fill="#2a1a10"/>
+    <rect x="76" y="2" width="4" height="18" fill="#2a1a10"/>
+
+    <!-- Candelabra center -->
+    <g transform="translate(0, -15)">
+      <rect x="-1" y="-12" width="2" height="8" fill="#8a7a4a"/>
+      <line x1="-8" y1="-8" x2="-8" y2="-14" stroke="#8a7a4a" stroke-width="1"/>
+      <line x1="8" y1="-8" x2="8" y2="-14" stroke="#8a7a4a" stroke-width="1"/>
+      <line x1="-8" y1="-8" x2="0" y2="-4" stroke="#8a7a4a" stroke-width="1"/>
+      <line x1="8" y1="-8" x2="0" y2="-4" stroke="#8a7a4a" stroke-width="1"/>
+      <!-- Flames -->
+      <ellipse cx="-8" cy="-15" rx="1.2" ry="2" fill="#FFD700" opacity="0.8"/>
+      <ellipse cx="0" cy="-13" rx="1.2" ry="2" fill="#FFD700" opacity="0.8"/>
+      <ellipse cx="8" cy="-15" rx="1.2" ry="2" fill="#FFD700" opacity="0.8"/>
+      <circle cx="0" cy="-14" r="12" fill="#FFD700" opacity="0.04"/>
+    </g>
+
+    <!-- Candelabra left -->
+    <g transform="translate(-50, -13)">
+      <rect x="-1" y="-10" width="2" height="7" fill="#8a7a4a"/>
+      <ellipse cx="0" cy="-11" rx="1" ry="1.8" fill="#FFD700" opacity="0.7"/>
+      <circle cx="0" cy="-11" r="6" fill="#FFD700" opacity="0.03"/>
+    </g>
+
+    <!-- Candelabra right -->
+    <g transform="translate(50, -13)">
+      <rect x="-1" y="-10" width="2" height="7" fill="#8a7a4a"/>
+      <ellipse cx="0" cy="-11" rx="1" ry="1.8" fill="#FFD700" opacity="0.7"/>
+      <circle cx="0" cy="-11" r="6" fill="#FFD700" opacity="0.03"/>
+    </g>
+
+    <!-- Plates -->
+    <ellipse cx="-30" cy="-8" rx="7" ry="3" fill="#3a3a3a" stroke="#4a4a4a" stroke-width="0.5"/>
+    <ellipse cx="30" cy="-8" rx="7" ry="3" fill="#3a3a3a" stroke="#4a4a4a" stroke-width="0.5"/>
+    <ellipse cx="-65" cy="-6" rx="6" ry="2.5" fill="#3a3a3a" stroke="#4a4a4a" stroke-width="0.5"/>
+    <ellipse cx="65" cy="-6" rx="6" ry="2.5" fill="#3a3a3a" stroke="#4a4a4a" stroke-width="0.5"/>
+
+    <!-- Goblets -->
+    <g transform="translate(-40, -12)">
+      <ellipse cx="0" cy="0" rx="2.5" ry="1.2" fill="#6a5a3a"/>
+      <rect x="-0.5" y="0" width="1" height="4" fill="#6a5a3a"/>
+      <ellipse cx="0" cy="4" rx="2" ry="0.8" fill="#6a5a3a"/>
+    </g>
+    <g transform="translate(40, -12)">
+      <ellipse cx="0" cy="0" rx="2.5" ry="1.2" fill="#6a5a3a"/>
+      <rect x="-0.5" y="0" width="1" height="4" fill="#6a5a3a"/>
+      <ellipse cx="0" cy="4" rx="2" ry="0.8" fill="#6a5a3a"/>
+    </g>
+  </g>
+
+  <!-- Chairs along table - left side -->
+  <g transform="translate(125, 140)">
+    <rect x="0" y="0" width="14" height="16" rx="1" fill="#2a1a10"/>
+    <rect x="1" y="-12" width="12" height="14" rx="1" fill="#3a2a18"/>
+  </g>
+  <g transform="translate(165, 138)">
+    <rect x="0" y="0" width="14" height="16" rx="1" fill="#2a1a10"/>
+    <rect x="1" y="-12" width="12" height="14" rx="1" fill="#3a2a18"/>
+  </g>
+
+  <!-- Chairs along table - right side -->
+  <g transform="translate(255, 138)">
+    <rect x="0" y="0" width="14" height="16" rx="1" fill="#2a1a10"/>
+    <rect x="1" y="-12" width="12" height="14" rx="1" fill="#3a2a18"/>
+  </g>
+  <g transform="translate(220, 140)">
+    <rect x="0" y="0" width="14" height="16" rx="1" fill="#2a1a10"/>
+    <rect x="1" y="-12" width="12" height="14" rx="1" fill="#3a2a18"/>
+  </g>
+
+  <!-- Head chair (back of table) -->
+  <g transform="translate(193, 118)">
+    <rect x="0" y="5" width="14" height="10" rx="1" fill="#2a1a10"/>
+    <rect x="0" y="-10" width="14" height="17" rx="2" fill="#4a2028"/>
+    <!-- Crown detail on head chair -->
+    <path d="M2 -10 L4 -14 L7 -10 L10 -14 L12 -10" fill="#4a2028" stroke="#5a2830" stroke-width="0.5"/>
+  </g>
+
+  <!-- Hanging chandelier -->
+  <g transform="translate(200, 0)">
+    <line x1="0" y1="0" x2="0" y2="15" stroke="#5a4a30" stroke-width="1.5"/>
+    <!-- Chain links -->
+    <ellipse cx="0" cy="5" rx="2" ry="3" fill="none" stroke="#5a4a30" stroke-width="0.8"/>
+    <ellipse cx="0" cy="10" rx="2" ry="3" fill="none" stroke="#5a4a30" stroke-width="0.8"/>
+    <!-- Ring -->
+    <ellipse cx="0" cy="18" rx="15" ry="5" fill="none" stroke="#5a4a30" stroke-width="1.5"/>
+    <!-- Candles on ring -->
+    <rect x="-14" y="13" width="2" height="5" fill="#d8c8a0"/>
+    <ellipse cx="-13" cy="12" rx="1.2" ry="2" fill="#FFD700" opacity="0.8"/>
+    <rect x="-1" y="12" width="2" height="5" fill="#d8c8a0"/>
+    <ellipse cx="0" cy="11" rx="1.2" ry="2" fill="#FFD700" opacity="0.8"/>
+    <rect x="12" y="13" width="2" height="5" fill="#d8c8a0"/>
+    <ellipse cx="13" cy="12" rx="1.2" ry="2" fill="#FFD700" opacity="0.8"/>
+    <!-- Chandelier glow -->
+    <ellipse cx="0" cy="16" rx="40" ry="20" fill="#FFD700" opacity="0.03"/>
+  </g>
+
+  <!-- Mounted deer skull on back wall -->
+  <g transform="translate(200, 42)">
+    <ellipse cx="0" cy="5" rx="6" ry="8" fill="#c8c0b0"/>
+    <circle cx="-2" cy="3" r="1.5" fill="#221a15"/>
+    <circle cx="2" cy="3" r="1.5" fill="#221a15"/>
+    <!-- Antlers -->
+    <path d="M-5 -2 Q-12 -10 -15 -5 Q-12 -8 -8 -12 Q-10 -6 -5 -2" fill="#a09080" opacity="0.8"/>
+    <path d="M5 -2 Q12 -10 15 -5 Q12 -8 8 -12 Q10 -6 5 -2" fill="#a09080" opacity="0.8"/>
+  </g>
+
+  <!-- Cobwebs in upper corners -->
+  <g opacity="0.2">
+    <path d="M0 0 Q8 12 20 8" fill="none" stroke="#aaa" stroke-width="0.3"/>
+    <path d="M0 0 Q5 15 3 25" fill="none" stroke="#aaa" stroke-width="0.3"/>
+    <path d="M0 0 Q12 8 18 18" fill="none" stroke="#aaa" stroke-width="0.3"/>
+  </g>
+  <g opacity="0.2" transform="translate(400, 0) scale(-1, 1)">
+    <path d="M0 0 Q8 12 20 8" fill="none" stroke="#aaa" stroke-width="0.3"/>
+    <path d="M0 0 Q5 15 3 25" fill="none" stroke="#aaa" stroke-width="0.3"/>
+    <path d="M0 0 Q12 8 18 18" fill="none" stroke="#aaa" stroke-width="0.3"/>
+  </g>
+
+  <!-- Warm ambient glow from candles -->
+  <radialGradient id="table-glow" cx="200" cy="130" r="100" gradientUnits="userSpaceOnUse">
+    <stop offset="0%" stop-color="#FFD700" stop-opacity="0.04"/>
+    <stop offset="100%" stop-color="#FFD700" stop-opacity="0"/>
+  </radialGradient>
+  <rect x="0" y="0" width="400" height="225" fill="url(#table-glow)"/>
+</svg>

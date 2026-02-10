@@ -1,0 +1,34 @@
+{
+  "name": "Mummy",
+  "type": "creature",
+  "description": "An ancient mummy in a wheelchair with unraveling bandages, curses now only cause mild inconvenience",
+  "tags": [
+    "monster",
+    "mummy",
+    "undead",
+    "elderly",
+    "wheelchair",
+    "monster-manor"
+  ],
+  "voice": {
+    "id": "custom:mummy",
+    "pitch": 0.1,
+    "speed": 0.9,
+    "volume": 1
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#8a7a5a",
+    "hair": "#d8cdb8",
+    "primary": "#d8cdb8"
+  },
+  "animation": {
+    "blinkInterval": 6,
+    "blinkDuration": 200,
+    "idleMovement": true,
+    "eyeTracking": true
+  },
+  "variants": [
+    "front"
+  ]
+}

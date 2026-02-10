@@ -1,0 +1,33 @@
+{
+  "name": "Nurse",
+  "type": "human",
+  "description": "A cheerfully oblivious nurse who thinks Monster Manor is a perfectly normal retirement home",
+  "tags": [
+    "human",
+    "nurse",
+    "staff",
+    "glasses",
+    "monster-manor"
+  ],
+  "voice": {
+    "id": "custom:nurse",
+    "pitch": 0.1,
+    "speed": 1,
+    "volume": 1.2
+  },
+  "defaultVariant": "front",
+  "colors": {
+    "skin": "#e8c8a0",
+    "hair": "#8a5a2a",
+    "primary": "#ffffff"
+  },
+  "animation": {
+    "blinkInterval": 3,
+    "blinkDuration": 120,
+    "idleMovement": true,
+    "eyeTracking": true
+  },
+  "variants": [
+    "front"
+  ]
+}

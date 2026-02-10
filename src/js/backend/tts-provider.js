@@ -64,10 +64,15 @@
     return response.blob();
   }
 
-  let _elevenLabsDefaultVoice = null;
+  let _elevenLabsVoicesCache = null;
 
-  async function getElevenLabsDefaultVoice(key, fetchImpl = fetch) {
-    if (_elevenLabsDefaultVoice) return _elevenLabsDefaultVoice;
+  // ElevenLabs voice IDs are 20-char alphanumeric strings
+  function isElevenLabsVoiceId(v) {
+    return typeof v === 'string' && /^[a-zA-Z0-9]{15,}$/.test(v);
+  }
+
+  async function fetchElevenLabsVoices(key, fetchImpl = fetch) {
+    if (_elevenLabsVoicesCache) return _elevenLabsVoicesCache;
     try {
       const r = await fetchImpl('https://api.elevenlabs.io/v1/voices', {
         headers: { 'xi-api-key': key }
@@ -75,33 +80,30 @@
       if (r.ok) {
         const data = await r.json();
         if (data.voices?.length) {
-          _elevenLabsDefaultVoice = data.voices[0].voice_id;
-          return _elevenLabsDefaultVoice;
+          _elevenLabsVoicesCache = data.voices.map(v => ({ id: v.voice_id, name: v.name }));
+          return _elevenLabsVoicesCache;
         }
       }
     } catch (e) {}
-    return null;
-  }
-
-  // ElevenLabs voice IDs are 20-char alphanumeric strings
-  function isElevenLabsVoiceId(v) {
-    return typeof v === 'string' && /^[a-zA-Z0-9]{15,}$/.test(v);
+    return [];
   }
 
   async function callElevenLabsTts(text, voiceConfig, settings, fetchImpl = fetch) {
     const key = settings?.ttsKey;
-    let voice = settings?.ttsVoice || normalizeVoiceConfig(voiceConfig).id;
-    console.log('[TTS] ElevenLabs call — key present:', !!key, 'key length:', key?.length || 0, 'voice:', voice);
+    const cfg = normalizeVoiceConfig(voiceConfig);
+    // Prefer per-character voice (voiceConfig.id) if it's a valid ElevenLabs ID,
+    // otherwise fall back to settings.ttsVoice
+    let voice = isElevenLabsVoiceId(cfg.id) ? cfg.id : (settings?.ttsVoice || cfg.id);
     if (!key) {
       throw new Error('ElevenLabs requires a TTS API key. Add it in Settings > Cloud TTS API Key, then Save.');
     }
 
-    // If voice doesn't look like an ElevenLabs ID (e.g. "alloy"), auto-fetch a valid one
+    // If voice still doesn't look like an ElevenLabs ID, auto-fetch first available
     if (!isElevenLabsVoiceId(voice)) {
-      const defaultVoice = await getElevenLabsDefaultVoice(key, fetchImpl);
-      if (defaultVoice) {
-        console.log(`[TTS] Voice "${voice}" is not a valid ElevenLabs ID, using "${defaultVoice}" from your account`);
-        voice = defaultVoice;
+      const voices = await fetchElevenLabsVoices(key, fetchImpl);
+      if (voices.length) {
+        console.log(`[TTS] Voice "${voice}" is not a valid ElevenLabs ID, using "${voices[0].name}" from your account`);
+        voice = voices[0].id;
       }
     }
 
@@ -210,6 +212,8 @@
   global.AITTtsProvider = {
     generateSpeech,
     validateKey,
-    playWebSpeech
+    playWebSpeech,
+    fetchElevenLabsVoices,
+    isElevenLabsVoiceId
   };
 })(window);
