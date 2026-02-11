@@ -289,6 +289,7 @@
       // Create mouth group for unified mouth positioning
       const svg = el.querySelector('svg');
       if (svg) {
+        svg.style.animationDelay = `${-(Math.random() * 7).toFixed(1)}s`;
         createMouthGroup(svg);
       }
 
@@ -372,22 +373,13 @@
     }
     
     // Blinking system
-    const blinkTimers = new Map();
     const blinkOriginalValues = new Map();
+    let globalBlinkTimer = null;
 
     // Helper: <circle> elements use 'r', <ellipse> elements use 'ry'
     // Some sprites have spurious 'ry' attributes on circles, so check tagName
     function isCircleElement(el) {
       return el && el.tagName.toLowerCase() === 'circle';
-    }
-
-    function setPupilRy(el, value) {
-      if (!el) return;
-      if (isCircleElement(el)) {
-        el.setAttribute('r', value);
-      } else {
-        el.setAttribute('ry', value);
-      }
     }
 
     function getPupilRy(el) {
@@ -396,6 +388,23 @@
         return el.getAttribute('r') || '5';
       }
       return el.getAttribute('ry') || el.getAttribute('r') || '5';
+    }
+
+    function getPupilUsesR(el, fallback) {
+      if (!el) return !!fallback;
+      if (typeof fallback === 'boolean') return fallback;
+      return isCircleElement(el);
+    }
+
+    function setPupilBlinkTransition(el, usesR, duration, easing) {
+      if (!el) return;
+      const attr = usesR ? 'r' : 'ry';
+      el.style.transition = `${attr} ${duration}ms ${easing}`;
+    }
+
+    function setPupilBlinkValue(el, usesR, value) {
+      if (!el) return;
+      el.setAttribute(usesR ? 'r' : 'ry', value);
     }
 
     function blink(charName) {
@@ -410,58 +419,112 @@
 
       // Store original values if not stored
       if (!blinkOriginalValues.has(charName)) {
+        const leftUsesR = getPupilUsesR(eyeLeftPupil);
+        const rightUsesR = getPupilUsesR(eyeRightPupil);
         blinkOriginalValues.set(charName, {
           leftWhiteRy: eyeLeftWhite?.getAttribute('ry') || '7',
           rightWhiteRy: eyeRightWhite?.getAttribute('ry') || '7',
           leftPupilRy: getPupilRy(eyeLeftPupil),
-          rightPupilRy: getPupilRy(eyeRightPupil)
+          rightPupilRy: getPupilRy(eyeRightPupil),
+          pupilLUsesR: leftUsesR,
+          pupilRUsesR: rightUsesR
         });
       }
 
-      // Close eyes (squish ry)
-      if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', '0.5');
-      if (eyeRightWhite) eyeRightWhite.setAttribute('ry', '0.5');
-      setPupilRy(eyeLeftPupil, '0.3');
-      setPupilRy(eyeRightPupil, '0.3');
+      const closeDuration = 60;
+      const openDuration = 180;
+      const orig = blinkOriginalValues.get(charName) || {};
+      const leftUsesR = getPupilUsesR(eyeLeftPupil, orig.pupilLUsesR);
+      const rightUsesR = getPupilUsesR(eyeRightPupil, orig.pupilRUsesR);
 
-      // Open eyes after blink duration
+      // Phase 1: close fast
+      [eyeLeftWhite, eyeRightWhite].forEach((el) => {
+        if (el) el.style.transition = `ry ${closeDuration}ms ease-in`;
+      });
+      setPupilBlinkTransition(eyeLeftPupil, leftUsesR, closeDuration, 'ease-in');
+      setPupilBlinkTransition(eyeRightPupil, rightUsesR, closeDuration, 'ease-in');
+
+      if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', '0.3');
+      if (eyeRightWhite) eyeRightWhite.setAttribute('ry', '0.3');
+      setPupilBlinkValue(eyeLeftPupil, leftUsesR, '0.1');
+      setPupilBlinkValue(eyeRightPupil, rightUsesR, '0.1');
+
+      // Phase 2: open slower and restore current emotion-adjusted values
       setTimeout(() => {
-        const orig = blinkOriginalValues.get(charName);
-        if (!orig) return;
-        if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', orig.leftWhiteRy);
-        if (eyeRightWhite) eyeRightWhite.setAttribute('ry', orig.rightWhiteRy);
-        setPupilRy(eyeLeftPupil, orig.leftPupilRy);
-        setPupilRy(eyeRightPupil, orig.rightPupilRy);
-      }, 100);
+        const latest = blinkOriginalValues.get(charName);
+        if (!latest) return;
+        const latestLeftUsesR = getPupilUsesR(eyeLeftPupil, latest.pupilLUsesR);
+        const latestRightUsesR = getPupilUsesR(eyeRightPupil, latest.pupilRUsesR);
+
+        [eyeLeftWhite, eyeRightWhite].forEach((el) => {
+          if (el) el.style.transition = `ry ${openDuration}ms ease-out`;
+        });
+        setPupilBlinkTransition(eyeLeftPupil, latestLeftUsesR, openDuration, 'ease-out');
+        setPupilBlinkTransition(eyeRightPupil, latestRightUsesR, openDuration, 'ease-out');
+
+        if (eyeLeftWhite) eyeLeftWhite.setAttribute('ry', latest.leftWhiteRy);
+        if (eyeRightWhite) eyeRightWhite.setAttribute('ry', latest.rightWhiteRy);
+        setPupilBlinkValue(eyeLeftPupil, latestLeftUsesR, latest.leftPupilRy);
+        setPupilBlinkValue(eyeRightPupil, latestRightUsesR, latest.rightPupilRy);
+
+        setTimeout(() => {
+          [eyeLeftWhite, eyeRightWhite, eyeLeftPupil, eyeRightPupil].forEach((el) => {
+            if (el) el.style.transition = '';
+          });
+        }, openDuration + 10);
+      }, closeDuration);
     }
-    
-    function startBlinking(charName) {
-      stopBlinking(charName);
-      const scheduleNext = () => {
-        const delay = 6000 + Math.random() * 3000; // 6-9 seconds
-        const timer = setTimeout(() => {
-          if (characters[charName]) {
-            blink(charName);
+
+    function startGlobalBlinking() {
+      stopGlobalBlinking();
+
+      function scheduleNext() {
+        const delay = 3000 + Math.random() * 4000; // 3-7 seconds
+        globalBlinkTimer = setTimeout(() => {
+          const charNames = Object.keys(characters);
+          if (!charNames.length) {
             scheduleNext();
+            return;
           }
+
+          if (Math.random() < 0.4) {
+            charNames.forEach(name => blink(name));
+          } else {
+            blink(charNames[Math.floor(Math.random() * charNames.length)]);
+          }
+          scheduleNext();
         }, delay);
-        blinkTimers.set(charName, timer);
-      };
-      // Start with a random initial delay
-      setTimeout(scheduleNext, Math.random() * 3000);
+      }
+
+      scheduleNext();
     }
-    
-    function stopBlinking(charName) {
-      const timer = blinkTimers.get(charName);
-      if (timer) {
-        clearTimeout(timer);
-        blinkTimers.delete(charName);
+
+    function stopGlobalBlinking() {
+      if (globalBlinkTimer) {
+        clearTimeout(globalBlinkTimer);
+        globalBlinkTimer = null;
       }
     }
-    
-    function stopAllBlinking() {
-      blinkTimers.forEach((timer) => clearTimeout(timer));
-      blinkTimers.clear();
+
+    function resetHeadTransforms(charEl) {
+      if (!charEl) return;
+      const svg = charEl.querySelector('svg');
+      if (!svg || svg.dataset.photoSprite === 'true') return;
+      const headTop = svg.querySelector('#head-top');
+      const headBottom = svg.querySelector('#head-bottom');
+      if (headTop) headTop.style.transform = '';
+      if (headBottom) headBottom.style.transform = '';
+    }
+
+    function applyHeadBobAndRotation(charEl, svg, normalizedAmp) {
+      if (!charEl || !svg || svg.dataset.photoSprite === 'true') return;
+      const t = performance.now();
+      const bob = Math.sin(t * 0.008) * normalizedAmp * 1.2;
+      const rotDeg = charEl.classList.contains('pos-left') ? -8 : 8;
+      const headTop = svg.querySelector('#head-top');
+      const headBottom = svg.querySelector('#head-bottom');
+      if (headTop) headTop.style.transform = `translateY(${bob}px) rotate(${rotDeg}deg)`;
+      if (headBottom) headBottom.style.transform = `translateY(${bob}px) rotate(${rotDeg}deg)`;
     }
 
     // === PROP SYSTEM ===
@@ -837,7 +900,7 @@
       char.el.offsetHeight; // reflow
 
       // Animate in
-      char.el.style.transition = 'left 1s ease-out, opacity 0.3s';
+      char.el.style.transition = 'left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease-out';
       char.el.style.opacity = '1';
       char.x = targetX;
       char.el.style.left = `${targetX}%`;
@@ -881,60 +944,71 @@
       neutral: {
         eyeRyRatio: 1.0, eyeCyDelta: 0, pupilRyRatio: 1.0, pupilCyDelta: 0,
         browY: 0, browRotateL: 0, browRotateR: 0,
-        mouthY: 0, mouthScaleY: 0.3, mouthScaleX: 1.0
+        mouthY: 0, mouthScaleY: 0.3, mouthScaleX: 1.0,
+        pupilScale: 1.0
       },
       happy: {
         eyeRyRatio: 0.7, eyeCyDelta: -1, pupilRyRatio: 0.8, pupilCyDelta: -1,
         browY: -2, browRotateL: -8, browRotateR: 8,
-        mouthY: 1, mouthScaleY: 1.3, mouthScaleX: 1.1
+        mouthY: 1, mouthScaleY: 1.3, mouthScaleX: 1.1,
+        pupilScale: 1.1
       },
       sad: {
         eyeRyRatio: 0.85, eyeCyDelta: 2, pupilRyRatio: 0.9, pupilCyDelta: 2,
         browY: 3, browRotateL: -12, browRotateR: 12,
-        mouthY: 2, mouthScaleY: -0.9, mouthScaleX: 0.9
+        mouthY: 2, mouthScaleY: -0.9, mouthScaleX: 0.9,
+        pupilScale: 1.0
       },
       angry: {
         eyeRyRatio: 0.85, eyeCyDelta: 2, pupilRyRatio: 0.9, pupilCyDelta: 2,
         browY: 3, browRotateL: 8, browRotateR: -8,
-        mouthY: 2, mouthScaleY: -0.6, mouthScaleX: 0.9
+        mouthY: 2, mouthScaleY: -0.6, mouthScaleX: 0.9,
+        pupilScale: 0.75
       },
       surprised: {
         eyeRyRatio: 1.4, eyeCyDelta: 0, pupilRyRatio: 1.3, pupilCyDelta: 0,
         browY: -5, browRotateL: -5, browRotateR: 5,
         mouthY: 3, mouthScaleY: 1.2, mouthScaleX: 0.8,
-        useMouthOpen: true, highlight: 1
+        useMouthOpen: true, highlight: 1,
+        pupilScale: 1.35
       },
       excited: {
         eyeRyRatio: 1.3, eyeCyDelta: -1, pupilRyRatio: 1.2, pupilCyDelta: -1,
         browY: -4, browRotateL: -6, browRotateR: 6,
         mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 1.1,
-        highlight: 1
+        highlight: 1,
+        pupilScale: 1.3
       },
       worried: {
         eyeRyRatio: 0.9, eyeCyDelta: 1, pupilRyRatio: 0.9, pupilCyDelta: 1,
         browY: -1, browRotateL: -8, browRotateR: 8,
-        mouthY: 1, mouthScaleY: -0.4, mouthScaleX: 0.85
+        mouthY: 1, mouthScaleY: -0.4, mouthScaleX: 0.85,
+        pupilScale: 1.1
       },
       smug: {
         eyeRyRatio: 0.75, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
         browY: 0, browRotateL: 6, browRotateR: -6,
-        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -15
+        mouthX: 4, mouthY: 0, mouthScaleY: 0.8, mouthScaleX: 1.1, mouthRotate: -15,
+        pupilScale: 0.9
       },
       tired: {
         eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
         browY: 4, browRotateL: 3, browRotateR: -3,
-        mouthY: 1, mouthScaleY: 0.2, mouthScaleX: 1.0
+        mouthY: 1, mouthScaleY: 0.2, mouthScaleX: 1.0,
+        pupilScale: 0.85
       },
       skeptical: {
         eyeRyRatio: 0.35, eyeCyDelta: 2, pupilRyRatio: 0.5, pupilCyDelta: 2,
         browY: 1, browRotateL: -25, browRotateR: 8,
-        mouthY: 0, mouthScaleY: 0.2, mouthScaleX: 1.0
+        mouthY: 0, mouthScaleY: 0.2, mouthScaleX: 1.0,
+        pupilScale: 0.8
       },
       dead: {
         eyeRyRatio: 0.7, eyeCyDelta: 0, pupilRyRatio: 0.8, pupilCyDelta: 0,
         browY: 0, browRotateL: 0, browRotateR: 0,
         mouthY: 2, mouthScaleY: 1.2, mouthScaleX: 0.7,
-        xEyes: true, useMouthOpen: true
+        xEyes: true, useMouthOpen: true,
+        pupilScale: 0.7
       }
     };
 
@@ -1162,6 +1236,8 @@
       const pupilRUsesR = pupilR && isCircleElement(pupilR);
       const pupilLRy = parseFloat(pupilLUsesR ? (pupilL?.getAttribute('r') || 5) : (pupilL?.getAttribute('ry') || pupilL?.getAttribute('r') || 5));
       const pupilRRy = parseFloat(pupilRUsesR ? (pupilR?.getAttribute('r') || 5) : (pupilR?.getAttribute('ry') || pupilR?.getAttribute('r') || 5));
+      const pupilLRx = parseFloat(pupilLUsesR ? (pupilL?.getAttribute('r') || 5) : (pupilL?.getAttribute('rx') || pupilLRy));
+      const pupilRRx = parseFloat(pupilRUsesR ? (pupilR?.getAttribute('r') || 5) : (pupilR?.getAttribute('rx') || pupilRRy));
       const pupilCy = parseFloat(pupilL?.getAttribute('cy') || eyeCy);
 
       // Get brow path data and centers
@@ -1181,7 +1257,7 @@
 
       return {
         eyeRy, eyeCy, eyeRx, eyeCx, eyeRCx,
-        pupilLRy, pupilRRy, pupilCy, pupilLUsesR, pupilRUsesR,
+        pupilLRy, pupilRRy, pupilLRx, pupilRRx, pupilCy, pupilLUsesR, pupilRUsesR,
         browLeftD, browRightD, browLeftCenter, browRightCenter,
         mouthD, mouthCenter, mouthStroke, mouthOpenRy, mouthOpenRx
       };
@@ -1282,9 +1358,12 @@
         eyeRightWhite.setAttribute('cy', newEyeCy);
       }
 
-      // Apply pupils - use ratio for ry/r, delta for cy (check each eye independently)
-      const newPupilLRy = orig.pupilLRy * cfg.pupilRyRatio;
-      const newPupilRRy = orig.pupilRRy * cfg.pupilRyRatio;
+      // Apply pupils - scale both axes for true dilation on ellipse pupils
+      const dilationScale = cfg.pupilScale || 1.0;
+      const newPupilLRy = orig.pupilLRy * cfg.pupilRyRatio * dilationScale;
+      const newPupilRRy = orig.pupilRRy * cfg.pupilRyRatio * dilationScale;
+      const newPupilLRx = orig.pupilLRx * dilationScale;
+      const newPupilRRx = orig.pupilRRx * dilationScale;
       const newPupilCy = orig.pupilCy + cfg.pupilCyDelta;
 
       if (eyeLeftPupil) {
@@ -1292,6 +1371,7 @@
           eyeLeftPupil.setAttribute('r', newPupilLRy);
         } else {
           eyeLeftPupil.setAttribute('ry', newPupilLRy);
+          eyeLeftPupil.setAttribute('rx', newPupilLRx);
         }
         eyeLeftPupil.setAttribute('cy', newPupilCy);
       }
@@ -1300,6 +1380,7 @@
           eyeRightPupil.setAttribute('r', newPupilRRy);
         } else {
           eyeRightPupil.setAttribute('ry', newPupilRRy);
+          eyeRightPupil.setAttribute('rx', newPupilRRx);
         }
         eyeRightPupil.setAttribute('cy', newPupilCy);
       }
@@ -1688,6 +1769,8 @@
       const skit = skits[name];
       if (!skit) return;
       window.publishedAssets = null;
+      stopGlobalBlinking();
+      blinkOriginalValues.clear();
       
       currentSkit = skit;
       currentSkitName = name;
@@ -1962,6 +2045,8 @@
     async function loadFromUrl(url) {
       document.getElementById('status').textContent = 'Loading from URL...';
       document.getElementById('playBtn').disabled = true;
+      stopGlobalBlinking();
+      blinkOriginalValues.clear();
       
       try {
         const resp = await fetch(url);
@@ -2150,6 +2235,7 @@
 
       // Create mouth group for unified mouth positioning
       createMouthGroup(svg);
+      svg.style.animationDelay = `${-(Math.random() * 7).toFixed(1)}s`;
 
       // Get voice from sprite meta (preferred) or cast config
       const spriteMeta = assets?.spriteMeta?.[config.sprite];
@@ -2278,8 +2364,8 @@
       // Check if skit uses sequential mode (first beat has no 't' property)
       sequentialMode = currentSkit.script.length > 0 && currentSkit.script[0].t === undefined;
       
-      // Start blinking for all characters
-      Object.keys(characters).forEach(name => startBlinking(name));
+      // Start global blink scheduler
+      startGlobalBlinking();
       
       document.getElementById('playBtn').textContent = '⏸';
       
@@ -2294,7 +2380,7 @@
       currentSpeaker = null;
       peakAmp = 50;
       openDuration = 0;
-      stopAllBlinking();
+      stopGlobalBlinking();
       if (animationId) cancelAnimationFrame(animationId);
       document.getElementById('playBtn').textContent = '▶';
       document.getElementById('caption').classList.remove('visible');
@@ -2306,6 +2392,7 @@
           resetMouthAfterSpeaking(svg, 'neutral');
           c.currentEmotion = 'neutral';
         }
+        resetHeadTransforms(c.el);
       });
       audioCache.forEach((cached) => { 
         if (cached.audio) {
@@ -2475,7 +2562,6 @@
           }
         } else {
           // Regular sprite: use mouth group system
-          const svg = charEl.querySelector('svg');
           const mouthGroup = svg?.querySelector('#mouth-group');
 
           if (mouthGroup) {
@@ -2487,6 +2573,7 @@
               const amplitude = Math.min(4, Math.max(1, mouthScale));
 
               animateMouthForSpeaking(svg, amplitude);
+              applyHeadBobAndRotation(charEl, svg, normalizedAmp);
               charEl.classList.add('speaking');
             } else {
               openDuration = 0;
@@ -2495,6 +2582,7 @@
               const emotion = char?.currentEmotion || 'neutral';
               resetMouthAfterSpeaking(svg, emotion);
               charEl.classList.remove('speaking');
+              resetHeadTransforms(charEl);
             }
           } else {
             // Fallback for sprites without mouth group (legacy)
@@ -2512,6 +2600,7 @@
                 mouthOpen.setAttribute('rx', mouthRx.toFixed(1));
                 mouthOpen.setAttribute('opacity', '1');
                 mouthClosed.setAttribute('opacity', '0');
+                applyHeadBobAndRotation(charEl, svg, normalizedAmp);
                 charEl.classList.add('speaking');
               } else {
                 openDuration = 0;
@@ -2520,6 +2609,7 @@
                 mouthOpen.setAttribute('opacity', '0');
                 mouthClosed.setAttribute('opacity', '1');
                 charEl.classList.remove('speaking');
+                resetHeadTransforms(charEl);
               }
             }
           }
@@ -2551,6 +2641,7 @@
             // Stop previous speaker animation and audio
             if (currentSpeaker && characters[currentSpeaker]) {
               characters[currentSpeaker].el.classList.remove('speaking');
+              resetHeadTransforms(characters[currentSpeaker].el);
               // Stop any currently playing audio (only for entries with Audio elements, not AudioBuffers)
               audioCache.forEach(({ audio }) => {
                 if (audio && !audio.paused) {
@@ -2575,6 +2666,7 @@
               const char = characters[beat.who];
               if (charEl && shouldClear) {
                 charEl.classList.remove('speaking');
+                resetHeadTransforms(charEl);
                 const svg = charEl.querySelector('svg');
                 if (svg) {
                   // Reset mouth to character's current emotion

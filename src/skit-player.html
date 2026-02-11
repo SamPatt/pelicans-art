@@ -87,6 +87,8 @@
     .character svg {
       height: 100%;
       width: auto;
+      animation: sway 7s ease-in-out infinite;
+      transform-origin: 50% 100%;
     }
     
     .character.flipped {
@@ -95,23 +97,28 @@
     
     .character.offscreen { opacity: 0; pointer-events: none; }
     
-    /* Head rotation when speaking - transform from chin area (regular sprites) */
+    /* Head transform settings for speaking animation (regular sprites) */
     .character svg:not([data-photo-sprite]) #head-top,
     .character svg:not([data-photo-sprite]) #head-bottom {
       transition: transform 0.05s ease-out;
       transform-origin: 50% 55px;
     }
     
-    /* Left-side character tilts head left when speaking (regular sprites) */
-    .character.pos-left.speaking svg:not([data-photo-sprite]) #head-top,
-    .character.pos-left.speaking svg:not([data-photo-sprite]) #head-bottom {
-      transform: rotate(-8deg);
+    /* Breathing animation on body group */
+    .character svg #body {
+      animation: breathe 4s ease-in-out infinite;
+      transform-origin: 50% 100%;
     }
-    
-    /* Right-side character tilts head right when speaking (regular sprites) */
-    .character.pos-right.speaking svg:not([data-photo-sprite]) #head-top,
-    .character.pos-right.speaking svg:not([data-photo-sprite]) #head-bottom {
-      transform: rotate(8deg);
+
+    @keyframes breathe {
+      0%, 100% { transform: scaleY(1) translateY(0); }
+      50% { transform: scaleY(1.008) translateY(-0.4px); }
+    }
+
+    @keyframes sway {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(0.4deg); }
+      70% { transform: rotate(-0.3deg); }
     }
     
     /* Photo sprite animations */
@@ -374,6 +381,13 @@
     }
     body.embed-mode #status { display: none; }
     body.embed-mode h1 { display: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .character svg #body,
+      .character svg {
+        animation: none !important;
+      }
+    }
   </style>
 </head>
 <body class="captions-off">
