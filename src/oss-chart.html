@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Source Activity Trends: Late 2025 - Early 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+            background: linear-gradient(90deg, #00d9ff, #00ff88);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 0.95em;
+        }
+        .chart-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .chart-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #00d9ff;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00ff88, #00d9ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        .stat-change {
+            font-size: 0.9em;
+            color: #00ff88;
+            margin-top: 5px;
+        }
+        .source {
+            text-align: center;
+            color: #666;
+            font-size: 0.8em;
+            margin-top: 20px;
+        }
+        .source a {
+            color: #00d9ff;
+            text-decoration: none;
+        }
+        .insights {
+            background: rgba(0, 217, 255, 0.1);
+            border-left: 4px solid #00d9ff;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .insights h3 {
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+        .insights ul {
+            margin-left: 20px;
+            color: #ccc;
+        }
+        .insights li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📈 Open Source Activity Trends</h1>
+        <p class="subtitle">Data from GitHub Octoverse 2025 & Industry Reports | Sep 2024 - Jan 2026</p>
+
+        <!-- Key Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value">986M</div>
+                <div class="stat-label">Total Commits (2025)</div>
+                <div class="stat-change">↑ 25.1% YoY</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">518.7M</div>
+                <div class="stat-label">PRs Merged (2025)</div>
+                <div class="stat-change">↑ 29% YoY</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">180M+</div>
+                <div class="stat-label">GitHub Developers</div>
+                <div class="stat-change">↑ 36M new in 2025</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">4%</div>
+                <div class="stat-label">AI-Generated Commits</div>
+                <div class="stat-change">Claude Code (Feb 2026)</div>
+            </div>
+        </div>
+
+        <!-- Monthly Commits Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title">📊 Monthly GitHub Commits (Millions)</h2>
+            <canvas id="commitsChart"></canvas>
+        </div>
+
+        <!-- YoY Comparison Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title">📈 Year-over-Year Growth Comparison</h2>
+            <canvas id="yoyChart"></canvas>
+        </div>
+
+        <!-- AI Activity Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title">🤖 AI-Related Development Growth</h2>
+            <canvas id="aiChart"></canvas>
+        </div>
+
+        <!-- Package Registry Chart -->
+        <div class="chart-container">
+            <h2 class="chart-title">📦 Package Registry Growth (Cumulative Downloads - Billions)</h2>
+            <canvas id="registryChart"></canvas>
+        </div>
+
+        <div class="insights">
+            <h3>🔑 Key Insights</h3>
+            <ul>
+                <li><strong>Record Activity:</strong> August 2025 saw ~100M commits - the highest single month in GitHub history</li>
+                <li><strong>AI Acceleration:</strong> 178% YoY growth in repositories using LLM SDKs (400K → 1.1M+)</li>
+                <li><strong>TypeScript #1:</strong> Overtook Python/JavaScript in August 2025 - biggest language shift in a decade</li>
+                <li><strong>AI-Generated Code:</strong> 4% of public commits now from Claude Code; projected 20% by end of 2026</li>
+                <li><strong>Global Growth:</strong> India added 5.2M developers, representing 14% of all new GitHub users</li>
+            </ul>
+        </div>
+
+        <p class="source">
+            Sources: <a href="https://github.blog/news-insights/octoverse/">GitHub Octoverse 2025</a> | 
+            <a href="https://pypistats.org/">pypistats.org</a> | 
+            SemiAnalysis Report (Feb 2026) |
+            Last updated: February 10, 2026
+        </p>
+    </div>
+
+    <script>
+        // Color palette
+        const colors = {
+            primary: '#00d9ff',
+            secondary: '#00ff88',
+            accent: '#ff6b6b',
+            purple: '#a855f7',
+            orange: '#f97316',
+            grid: 'rgba(255,255,255,0.1)'
+        };
+
+        // Chart defaults
+        Chart.defaults.color = '#888';
+        Chart.defaults.borderColor = colors.grid;
+
+        // 1. Monthly Commits Chart
+        const commitsCtx = document.getElementById('commitsChart').getContext('2d');
+        new Chart(commitsCtx, {
+            type: 'line',
+            data: {
+                labels: ['Sep 24', 'Oct 24', 'Nov 24', 'Dec 24', 'Jan 25', 'Feb 25', 'Mar 25', 'Apr 25', 'May 25', 'Jun 25', 'Jul 25', 'Aug 25', 'Sep 25', 'Oct 25', 'Nov 25', 'Dec 25', 'Jan 26'],
+                datasets: [{
+                    label: 'Monthly Commits (Millions)',
+                    data: [65, 68, 70, 75, 78, 80, 82, 85, 90, 92, 95, 100, 95, 92, 90, 88, 92],
+                    borderColor: colors.primary,
+                    backgroundColor: 'rgba(0, 217, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: colors.primary
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `${ctx.parsed.y}M commits`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 60,
+                        max: 105,
+                        title: { display: true, text: 'Commits (Millions)' }
+                    }
+                },
+                annotations: {
+                    box1: {
+                        type: 'box',
+                        xMin: 'Aug 25',
+                        xMax: 'Aug 25',
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        borderColor: colors.accent
+                    }
+                }
+            }
+        });
+
+        // 2. YoY Growth Chart
+        const yoyCtx = document.getElementById('yoyChart').getContext('2d');
+        new Chart(yoyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Commits', 'PRs Merged', 'New Developers', 'PRs Created', 'Issues Created', 'Private Repos', 'Public Repos'],
+                datasets: [{
+                    label: 'YoY Growth %',
+                    data: [25.1, 29, 23, 20.4, 11.3, 33, 19],
+                    backgroundColor: [
+                        colors.primary,
+                        colors.secondary,
+                        colors.purple,
+                        colors.orange,
+                        colors.accent,
+                        'rgba(0, 217, 255, 0.7)',
+                        'rgba(0, 255, 136, 0.7)'
+                    ],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `+${ctx.parsed.y}% YoY`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Growth Percentage (%)' }
+                    }
+                }
+            }
+        });
+
+        // 3. AI Activity Chart
+        const aiCtx = document.getElementById('aiChart').getContext('2d');
+        new Chart(aiCtx, {
+            type: 'bar',
+            data: {
+                labels: ['LLM SDK Repos', 'Dockerfile Repos', 'Jupyter Notebooks', 'AI Commits (Claude Code)'],
+                datasets: [
+                    {
+                        label: '2024',
+                        data: [400, 875, 1400, 0],
+                        backgroundColor: 'rgba(136, 136, 136, 0.5)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: '2025/2026',
+                        data: [1100, 1900, 2420, 135],
+                        backgroundColor: colors.secondary,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                if (ctx.dataIndex === 3) {
+                                    return `${ctx.dataset.label}: ${ctx.parsed.y}K daily`;
+                                }
+                                return `${ctx.dataset.label}: ${ctx.parsed.y}K repos`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Thousands' }
+                    }
+                }
+            }
+        });
+
+        // 4. Package Registry Chart
+        const registryCtx = document.getElementById('registryChart').getContext('2d');
+        new Chart(registryCtx, {
+            type: 'line',
+            data: {
+                labels: ['2020', '2021', '2022', '2023', '2024', '2025'],
+                datasets: [
+                    {
+                        label: 'PyPI Annual Downloads',
+                        data: [120, 160, 200, 250, 280, 300],
+                        borderColor: colors.secondary,
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    },
+                    {
+                        label: 'npm Monthly Downloads',
+                        data: [100, 130, 160, 184, 195, 210],
+                        borderColor: colors.accent,
+                        backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}B`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Downloads (Billions)' }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
