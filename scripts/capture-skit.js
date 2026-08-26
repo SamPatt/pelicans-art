@@ -167,7 +167,7 @@ function createMp4({ rawVideo, output, trimStart, duration, audioFiles }) {
     });
     const inputs = audioFiles.map((_, i) => `[a${i}]`).join('');
     args.push(
-      '-filter_complex', `[0:v]setpts=PTS-STARTPTS,drawbox=x=0:y=0:w=3:h=3:color=black:t=fill[vout];${delayed.join(';')};${inputs}amix=inputs=${audioFiles.length}:normalize=0:dropout_transition=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad=pad_dur=2[aout]`,
+      '-filter_complex', `[0:v]setpts=PTS-STARTPTS,drawbox=x=0:y=0:w=3:h=3:color=black:t=fill[vout];${delayed.join(';')};${inputs}amix=inputs=${audioFiles.length}:normalize=0:dropout_transition=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad=whole_dur=${duration.toFixed(3)}[aout]`,
       '-map', '[vout]', '-map', '[aout]'
     );
   } else {
