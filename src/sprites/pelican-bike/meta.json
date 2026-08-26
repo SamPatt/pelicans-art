@@ -4,9 +4,9 @@
   "description": "A road-weary pelican trapped on an endless succession of bicycles",
   "tags": ["animal", "bird", "pelican", "bicycle", "comedy"],
   "voice": {
-    "id": "javert",
-    "pitch": -0.08,
-    "speed": 0.96,
+    "id": "jean",
+    "pitch": -0.03,
+    "speed": 0.98,
     "volume": 1
   },
   "defaultVariant": "front",

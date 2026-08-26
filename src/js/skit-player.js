@@ -1051,9 +1051,15 @@
 
       // Get position from mouth-open (preferred) or mouth-closed
       let cx = 50, cy = 70;
-      if (mouthOpen) {
-        cx = parseFloat(mouthOpen.getAttribute('cx') || 50);
-        cy = parseFloat(mouthOpen.getAttribute('cy') || 70);
+      if (mouthOpen?.hasAttribute('cx') && mouthOpen?.hasAttribute('cy')) {
+        cx = parseFloat(mouthOpen.getAttribute('cx'));
+        cy = parseFloat(mouthOpen.getAttribute('cy'));
+      } else if (mouthOpen?.getAttribute('d')) {
+        // Path-based mouths do not have cx/cy. Derive their real position
+        // instead of dropping the generated mouth at the legacy (50, 70).
+        const center = getPathCenter(mouthOpen.getAttribute('d'));
+        cx = center.cx;
+        cy = center.cy;
       } else if (mouthClosed) {
         const d = mouthClosed.getAttribute('d');
         if (d) {
