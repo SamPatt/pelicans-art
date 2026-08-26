@@ -1,12 +1,12 @@
 {
   "name": "Pelican on a Bicycle",
   "type": "creature",
-  "description": "A model-generated pelican riding a red bicycle",
-  "tags": ["animal", "bird", "pelican", "bicycle", "benchmark"],
+  "description": "A road-weary pelican trapped on an endless succession of bicycles",
+  "tags": ["animal", "bird", "pelican", "bicycle", "comedy"],
   "voice": {
-    "id": "alba",
-    "pitch": 0.05,
-    "speed": 1,
+    "id": "javert",
+    "pitch": -0.08,
+    "speed": 0.96,
     "volume": 1
   },
   "defaultVariant": "front",

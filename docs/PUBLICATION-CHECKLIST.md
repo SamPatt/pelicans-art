@@ -11,7 +11,7 @@ The GitHub repository is intentionally still private. Complete this list immedia
 - Added MIT source licensing, separate creative-asset terms, third-party notices, a security policy, and contributor instructions.
 - Added CI for browser, server, and community Worker tests; the rewritten `main` run passes.
 - Sanitized inline SVG, escaped community metadata, and strengthened Worker-side SVG rejection.
-- Added a technical tour, a captioned Pelican Benchmark video, a second original example, and direct stable video URLs.
+- Added a technical tour, a captioned pelican bicycle skit, a second original example, and direct stable video URLs.
 - Verified the public Pages deployment and HTTPS media responses.
 
 ## Decisions still required

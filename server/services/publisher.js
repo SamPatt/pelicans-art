@@ -17,6 +17,10 @@ import {
 const TTS_URL = process.env.TTS_URL || 'http://127.0.0.1:8001';
 const PORT = process.env.PORT || 3000;
 
+export function resolveVoice(character, spriteMeta) {
+  return character?.voice || spriteMeta?.voice?.id || 'alba';
+}
+
 /**
  * Generate TTS audio for a line of dialogue
  * @param {string} text - The text to speak
@@ -232,7 +236,8 @@ export async function publishSkit(skitId, skit, onProgress) {
     }
 
     const spriteMeta = assets.spriteMeta[char.sprite];
-    const voice = spriteMeta?.voice?.id || char.voice || 'alba';
+    // A skit's casting choice should override the sprite's default voice.
+    const voice = resolveVoice(char, spriteMeta);
 
     currentStep++;
     onProgress?.({
