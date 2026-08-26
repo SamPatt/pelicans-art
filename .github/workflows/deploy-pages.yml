@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Build static site
         run: |
@@ -31,7 +31,7 @@ jobs:
           cp -R src/. _site/
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
 
   deploy:
     environment:
@@ -42,4 +42,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
