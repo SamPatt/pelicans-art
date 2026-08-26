@@ -1,5 +1,5 @@
 // Must be first import to ensure env vars are loaded
-import { TTS_URL, PORT, DATA_DIR, CORS_ORIGIN, OPENCLAW_URL, OPENCLAW_TOKEN } from './config.js';
+import { TTS_URL, PORT, HOST, DATA_DIR, CORS_ORIGIN, OPENCLAW_URL, OPENCLAW_TOKEN } from './config.js';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -33,6 +33,9 @@ app.use(cors({ origin: CORS_ORIGIN }));
 app.use(express.json({ limit: '100mb' })); // Large audio files for voice cloning
 
 // API routes
+app.get('/api/health', (req, res) => {
+  res.json({ ok: true, service: 'ai-improv-theater' });
+});
 app.use('/api/sprites', spritesRouter);
 app.use('/api/skits', skitsRouter);
 app.use('/api/publish', publishRouter);
@@ -114,8 +117,8 @@ async function start() {
   // Ensure data directories exist
   await ensureDataDirs(DATA_DIR);
 
-  server.listen(PORT, () => {
-    console.log(`SkitKit server running on :${PORT}`);
+  server.listen(PORT, HOST, () => {
+    console.log(`SkitKit server running on ${HOST}:${PORT}`);
     console.log(`  Player: http://localhost:${PORT}/player`);
     console.log(`  Editor: http://localhost:${PORT}/editor`);
     console.log(`  API:    http://localhost:${PORT}/api`);

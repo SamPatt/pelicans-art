@@ -5,6 +5,8 @@ const MAX_PAYLOAD = 3 * 1024 * 1024; // 3MB
 const USERNAME_RE = /^[a-zA-Z0-9_-]{1,30}$/;
 const SVG_DANGEROUS = /<\s*(script|foreignObject|iframe|embed|object)\b/i;
 const SVG_EVENT_HANDLER = /\bon\w+\s*=/i;
+const SVG_URL_ATTRIBUTE = /\b(?:href|xlink:href|src)\s*=\s*(['"])(.*?)\1/gi;
+const SVG_CSS_URL = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
 const VARIANT_NAME_RE = /^[a-z0-9-]{1,30}$/;
 const RESERVED_VARIANT_NAMES = new Set(['meta', 'index']);
 const MAX_VARIANTS_PER_CHARACTER = 10;
@@ -35,11 +37,24 @@ function generateSlug(name) {
   return `${sanitized}-${hex}`;
 }
 
-function validateSvg(svg) {
+export function validateSvg(svg) {
   if (typeof svg !== 'string' || !svg.includes('<svg')) return 'Invalid SVG: must contain <svg tag';
   if (SVG_DANGEROUS.test(svg)) return 'Invalid SVG: dangerous tags not allowed';
   if (SVG_EVENT_HANDLER.test(svg)) return 'Invalid SVG: inline event handlers not allowed';
+  if (/@import\b/i.test(svg)) return 'Invalid SVG: CSS imports not allowed';
+
+  for (const match of svg.matchAll(SVG_URL_ATTRIBUTE)) {
+    if (!isSafeSvgReference(match[2])) return 'Invalid SVG: external references not allowed';
+  }
+  for (const match of svg.matchAll(SVG_CSS_URL)) {
+    if (!isSafeSvgReference(match[2])) return 'Invalid SVG: external CSS references not allowed';
+  }
   return null;
+}
+
+function isSafeSvgReference(value) {
+  const reference = String(value || '').trim();
+  return reference.startsWith('#') || /^data:image\/(?:png|jpe?g|gif|webp);base64,/i.test(reference);
 }
 
 // Handles both single and double quoted attributes (DOM serialization uses double quotes)

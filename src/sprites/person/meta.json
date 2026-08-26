@@ -11,7 +11,7 @@
     "id": "jean",
     "pitch": 0,
     "speed": 1,
-    "volume": 1
+    "volume": 1.5
   },
   "defaultVariant": "front",
   "colors": {
@@ -24,5 +24,10 @@
     "blinkDuration": 150,
     "idleMovement": true,
     "eyeTracking": true
-  }
+  },
+  "variants": [
+    "front",
+    "back",
+    "legacy"
+  ]
 }

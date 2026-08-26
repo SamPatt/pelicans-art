@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data: blob:; font-src 'self'; connect-src *; media-src * blob: data:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src *; media-src * blob: data:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>The Pouch &#8212; pelicans.art</title>
   <link rel="stylesheet" href="pelicans-theme.css">
   <style>
@@ -566,6 +566,8 @@
   <div class="pelicans-footer-tagline">Stuff it in the pouch.</div>
 </footer>
 
+<script src="vendor/dompurify/purify.min.js"></script>
+<script src="js/svg-sanitizer.js"></script>
 <script src="js/community.js"></script>
 
 </body>

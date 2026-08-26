@@ -255,7 +255,7 @@
 
       // Load sprite as inline SVG
       const svgText = await loadSprite(config.sprite, 'front');
-      el.innerHTML = svgText;
+      window.AITSvgSanitizer.setSvg(el, svgText);
 
       // Voice metadata now comes from bundled spriteMeta/meta.json (not data-meta in SVG).
       let metaVoice = window.publishedAssets?.spriteMeta?.[config.sprite]?.voice || null;
@@ -329,7 +329,7 @@
       const char = characters[name];
       if (!char) return;
       const svgText = await loadSprite(char.sprite, view);
-      char.el.innerHTML = svgText;
+      window.AITSvgSanitizer.setSvg(char.el, svgText);
     }
     
     function setEyeDirection(charName, direction) {
@@ -627,7 +627,7 @@
         loadPropSvg(config.prop),
         loadPropMeta(config.prop)
       ]);
-      el.innerHTML = svgText;
+      window.AITSvgSanitizer.setSvg(el, svgText);
 
       // Set initial position
       const x = config.x ?? 50;
@@ -2288,8 +2288,15 @@
     }
     
     function togglePlay() {
-      if (isPlaying) stop();
+      if (isPlaying) stop(false);
       else play();
+    }
+
+    function setPlaybackState(state) {
+      document.body.dataset.playbackState = state;
+      window.dispatchEvent(new CustomEvent('ai-improv:playback-state', {
+        detail: { state }
+      }));
     }
     
     function toggleCaptions() {
@@ -2354,6 +2361,7 @@
     function play() {
       if (audioContext.state === 'suspended') audioContext.resume();
       isPlaying = true;
+      setPlaybackState('playing');
       startTime = performance.now();
       triggeredBeats = new Set();
       sequentialIndex = 0;
@@ -2368,6 +2376,7 @@
       startGlobalBlinking();
       
       document.getElementById('playBtn').textContent = '⏸';
+      document.getElementById('playBtn').setAttribute('aria-label', 'Pause skit');
       
       if (sequentialMode) {
         processNextSequentialBeat();
@@ -2375,14 +2384,16 @@
       animate();
     }
     
-    function stop() {
+    function stop(completed = false) {
       isPlaying = false;
+      setPlaybackState(completed ? 'complete' : 'idle');
       currentSpeaker = null;
       peakAmp = 50;
       openDuration = 0;
       stopGlobalBlinking();
       if (animationId) cancelAnimationFrame(animationId);
       document.getElementById('playBtn').textContent = '▶';
+      document.getElementById('playBtn').setAttribute('aria-label', 'Play skit');
       document.getElementById('caption').classList.remove('visible');
       Object.values(characters).forEach(c => {
         c.el.classList.remove('speaking', 'look-left', 'look-right', 'look-up', 'look-down', 'blinking');
@@ -2424,7 +2435,7 @@
       
       if (!isPlaying || sequentialIndex >= currentSkit.script.length) {
         if (sequentialIndex >= currentSkit.script.length) {
-          stop();
+          stop(true);
         }
         return;
       }
@@ -2501,7 +2512,7 @@
       
       // Only check duration limit for timed mode
       if (!sequentialMode && elapsed > currentSkit.meta.duration) {
-        stop();
+        stop(true);
         return;
       }
       
@@ -2634,6 +2645,18 @@
           const cacheKey = beat.t !== undefined ? `${beat.t}-${beat.who}` : `seq-${sayIdx}-${beat.who}`;
           const cached = audioCache.get(cacheKey);
           if (cached) {
+            const announceAudioStart = (effectivePlaybackRate = 1) => {
+              window.dispatchEvent(new CustomEvent('ai-improv:audio-start', {
+                detail: {
+                  lineIndex: sayIdx,
+                  text: beat.line,
+                  who: beat.who,
+                  effectivePlaybackRate,
+                  volume: cached.volume ?? 1
+                }
+              }));
+            };
+
             // Show caption
             document.getElementById('caption').textContent = beat.line;
             document.getElementById('caption').classList.add('visible');
@@ -2725,6 +2748,7 @@
                 volume: settings.ttsVolume || 1
               };
               if (typeof AITTtsProvider !== 'undefined') {
+                announceAudioStart(wsVoiceConfig.speed || 1);
                 AITTtsProvider.playWebSpeech(beat.line, wsVoiceConfig, settings)
                   .then(onAudioEnd)
                   .catch(() => onAudioEnd());
@@ -2733,6 +2757,7 @@
                 const utterance = new SpeechSynthesisUtterance(beat.line);
                 utterance.onend = onAudioEnd;
                 utterance.onerror = () => onAudioEnd();
+                announceAudioStart(wsVoiceConfig.speed || 1);
                 speechSynthesis.speak(utterance);
               }
             } else if (cached.buffer) {
@@ -2769,6 +2794,9 @@
               }
 
               sourceNode.onended = onAudioEnd;
+              announceAudioStart(
+                sourceNode.playbackRate.value * Math.pow(2, sourceNode.detune.value / 1200)
+              );
               sourceNode.start(0);
               currentSourceNode = sourceNode;
               currentGainNode = gainNode;
@@ -2795,6 +2823,7 @@
               cached.audio.playbackRate = cached.speed || 1.0;
               cached.audio.onended = onAudioEnd;
               cached.audio.currentTime = 0;
+              announceAudioStart(cached.audio.playbackRate);
               cached.audio.play().catch(e => {
                 console.warn('Audio play failed:', e);
                 onAudioEnd();
@@ -3114,6 +3143,7 @@
 
     // === INIT ===
     async function init() {
+      setPlaybackState('loading');
       console.log('[Player] Init starting...');
       console.log('[Player] URL:', window.location.href);
 
@@ -3123,6 +3153,10 @@
       // Embed mode - hide UI chrome for iframe embedding
       if (params.get('embed') === '1') {
         document.body.classList.add('embed-mode');
+      }
+      if (params.get('captions') === '1') {
+        document.body.classList.remove('captions-off');
+        document.getElementById('captionBtn').classList.add('active');
       }
 
       audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -3176,6 +3210,9 @@
         console.log('[Player] No skit param, loading default luckyCharms');
         // No skit param - show default demo skit
         await loadSkit('luckyCharms');
+      }
+      if (document.body.dataset.playbackState === 'loading') {
+        setPlaybackState('ready');
       }
       console.log('[Player] Init complete');
     }

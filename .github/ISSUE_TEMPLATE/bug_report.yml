@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible problem in the studio, player, or capture tool
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include provider keys, access tokens, private voice samples, or other secrets.
+  - type: textarea
+    id: behavior
+    attributes:
+      label: What happened?
+      description: Include the page or command, expected behavior, and actual behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction steps
+      placeholder: "1. Open…\n2. Select…\n3. Observe…"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, operating system, and Node.js version if relevant.
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Safe diagnostics
+      description: Paste relevant errors after removing tokens, keys, and private data.

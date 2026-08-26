@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; base-uri 'self'; object-src 'none';">
+  <title>How pelicans.art works</title>
+  <link rel="stylesheet" href="pelicans-theme.css">
+  <style>
+    body { margin: 0; background: var(--plumage-white); color: var(--wing-gray); font-family: var(--font-body); }
+    main { max-width: 780px; margin: 0 auto; padding: 64px 24px 96px; }
+    .eyebrow { color: var(--pouch-orange); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    h1, h2 { color: var(--wing-dark); font-family: var(--font-display); }
+    h1 { margin: 8px 0 16px; font-size: clamp(2.4rem, 7vw, 4.8rem); line-height: 1; }
+    h2 { margin-top: 48px; }
+    p, li { font-size: 1.08rem; line-height: 1.7; }
+    a { color: var(--water-deep); }
+    .lede { font-size: 1.3rem; color: var(--wing-dark); }
+    .pipeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 28px 0; }
+    .step { padding: 18px 14px; border-radius: var(--radius-md); background: var(--plumage-cream); border: 1px solid var(--sand-warm); text-align: center; font-weight: 700; color: var(--wing-dark); }
+    pre { overflow-x: auto; padding: 20px; background: var(--wing-dark); color: var(--plumage-cream); border-radius: var(--radius-md); }
+    .note { border-left: 4px solid var(--pouch-orange); padding: 4px 0 4px 18px; }
+    @media (max-width: 650px) { .pipeline { grid-template-columns: 1fr 1fr; } main { padding-top: 36px; } }
+  </style>
+</head>
+<body>
+  <nav class="pelicans-nav">
+    <a href="./" class="pelicans-nav-logo">pelicans<span>.art</span></a>
+    <ul class="pelicans-nav-links">
+      <li><a href="./">Watch</a></li>
+      <li><a href="community.html">The <span style="color:var(--pouch-orange)">Pouch</span></a></li>
+      <li><a href="how-it-works.html" class="active">How it works</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="eyebrow">Behind the pouch</div>
+    <h1>How it works</h1>
+    <p class="lede">pelicans.art turns model-generated SVG into reusable actors, then directs those actors with a small, inspectable action language.</p>
+
+    <h2>The pelican that started it</h2>
+    <p>The project was inspired by <a href="https://simonwillison.net/2024/Oct/25/pelicans-on-a-bicycle/">Simon Willison's pelican-on-a-bicycle test</a>. That experiment asked language models to draw one surprisingly difficult SVG scene. This project asks a follow-up: if a model can draw a character, can we give that character a face, a voice, stage directions, and comic timing?</p>
+
+    <div class="pipeline" aria-label="Creation pipeline">
+      <div class="step">1. Generate SVG</div>
+      <div class="step">2. Add animation hooks</div>
+      <div class="step">3. Direct in JSON</div>
+      <div class="step">4. Perform &amp; capture</div>
+    </div>
+
+    <h2>A deliberately constrained stage</h2>
+    <p>Characters are ordinary SVG files with stable IDs for parts such as eyes, pupils, and mouths. A skit is a JSON sequence of actions—not generated JavaScript—so dialogue, movement, expressions, camera shots, and props can be inspected and replayed deterministically.</p>
+    <pre><code>{ "do": "say",   "who": "pelican", "line": "Places, everyone." }
+{ "do": "emote", "who": "pelican", "emotion": "nervous" }
+{ "do": "shot",   "type": "closeup", "target": "pelican" }</code></pre>
+
+    <h2>Voices and mouth timing</h2>
+    <p>Published skits bundle their audio alongside the script. During playback, the player measures the active audio clock and drives mouth shapes against that same timeline. The capture tool waits for an explicit audio-start signal, records the browser performance, and normalizes both audio and video to the same zero point before producing H.264/AAC MP4.</p>
+
+    <h2>Local-first authoring</h2>
+    <p>The browser studio keeps projects and provider settings in local IndexedDB and local storage. Requests go directly to the provider the user selects. A separate Express server supports local publishing, voice processing, and live updates, but it is an authoring tool for a trusted machine or private network—not a public backend.</p>
+
+    <h2>Untrusted SVG stays untrusted</h2>
+    <p>Community and generated SVG is sanitized before it is inserted into the page. Executable tags, event handlers, CSS imports, and external URL references are stripped; the internal IDs and fragment references required for animation are retained.</p>
+
+    <p class="note">The source is being prepared for release under MIT. Creative assets have separate terms. Until the repository is public, the working demo and the <a href="media/pelican-benchmark.mp4">captioned Pelican Benchmark MP4</a> are the best ways to explore it. A second original example, <a href="media/the-box.mp4">The Box</a>, shows a longer character exchange.</p>
+  </main>
+</body>
+</html>

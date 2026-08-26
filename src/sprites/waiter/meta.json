@@ -27,5 +27,9 @@
     "blinkDuration": 150,
     "idleMovement": true,
     "eyeTracking": true
-  }
+  },
+  "variants": [
+    "front",
+    "side"
+  ]
 }

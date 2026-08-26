@@ -1,127 +1,118 @@
-# AI Improv Theater 🎭
+# pelicans.art
 
-AIs perform absurdist comedy skits with crude 2D graphics and generated voices.
+An AI-assisted SVG animation studio for making odd little voiced comedy skits.
 
-## Concept
+**Live site:** [pelicans.art](https://pelicans.art/)
 
-"Scenes from a Hat" style comedy — AIs collaborate to write skit scripts, then a browser-based renderer plays them back with synchronized TTS audio. The janky aesthetic is intentional (early Flash/Newgrounds energy meets AI slop).
+The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https://simonwillison.net/2024/Oct/25/pelicans-on-a-bicycle/): if a model can draw a recognizable SVG pelican riding a bicycle, what happens when generated SVG characters become reusable, expressive actors?
 
-## How It Works
+## What works
 
-1. **Script Format:** JSON describes characters, props, backgrounds, and a timeline of actions (move, say, emote, spawn, etc.)
-2. **Renderer:** Canvas-based playback with placeholder graphics and speech bubbles
-3. **TTS:** Pocket TTS (Kyutai Labs) generates voices server-side, synced to the timeline
-4. **Security:** AI outputs JSON data, not code. Renderer interprets a constrained vocabulary.
+- Generate and edit SVG characters, props, and backgrounds.
+- Animate faces, eye direction, movement, camera shots, and prop interactions.
+- Build sequential skits from a constrained JSON action format.
+- Generate or attach voices and synchronize them with captions and mouth movement.
+- Run entirely in the browser with local IndexedDB storage and your own provider key.
+- Run a local server for custom voice processing, publishing, and live updates.
+- Export published skits as self-contained JSON bundles.
+- Capture complete skits as shareable H.264/AAC MP4 videos with PNG artwork.
 
-## Quick Start
+The deliberately simple visual style is part early web animation, part AI artifact. The goal is not photorealism; it is to make model-generated characters directable and funny.
 
-### Requirements
-- Python 3.10+
-- Node.js (optional, for development)
+## Try it
 
-### Install TTS
+Open [pelicans.art](https://pelicans.art/) and choose **Try in Browser**. Provider keys are stored in that browser's local storage and sent directly to the selected provider; the static site does not receive them.
+
+Supported browser-mode providers currently include OpenRouter, OpenAI, and Anthropic for generation, plus OpenAI, ElevenLabs, or browser speech for voices.
+
+## Develop locally
+
+Requirements:
+
+- Node.js 22+
+- npm
+- Chromium installed through Playwright for tests and captures
+- FFmpeg for MP4 capture
+
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install pocket-tts
+npm ci
+npm --prefix server ci
+npm --prefix worker ci
+npx playwright install chromium
+npm --prefix server start
 ```
 
-### Run TTS Server
+The local authoring server listens on `127.0.0.1:3000` by default:
+
+- Studio: `http://127.0.0.1:3000/editor`
+- Player: `http://127.0.0.1:3000/player`
+- Health: `http://127.0.0.1:3000/api/health`
+
+Copy `.env.example` to `.env` to configure Pocket TTS or the optional agent integration. Keep the authoring server private: its write APIs are intended for a trusted local environment, not direct exposure to the public internet.
+
+## Test
+
 ```bash
-pocket-tts serve --port 8001
+npm test
 ```
 
-### Serve Frontend
+This runs server validation/security unit tests and Playwright coverage for the editor, every bundled skit, and the playback-completion contract used by capture tools.
+
+## Capture a skit
+
+With the local server running:
+
 ```bash
-cd src
-python3 -m http.server 8080
+npm run capture -- --skit theBox
+npm run capture -- --all
 ```
 
-Visit `http://localhost:8080`
+Each skit is written to `artifacts/captures/<skit>/` with:
 
-## Script Format
+- `<skit>.mp4` — H.264 video with synchronized AAC dialogue audio
+- `cover.png` — clean opening frame
+- `still.png` — captioned in-scene frame
+- `manifest.json` — duration, codec, dialogue completeness, and browser diagnostics
+
+Use `npm run capture -- --help` for server, output, timeout, and caption options.
+
+## Skit format
 
 ```json
 {
-  "meta": { "title": "Skit Name", "duration": 16 },
-  "stage": { "background": "office", "width": 800, "height": 450 },
+  "meta": { "title": "The Interview" },
+  "stage": { "background": "office", "orientation": "landscape" },
   "cast": {
-    "bob": { "sprite": "man_suit", "startPos": [100, 320] }
+    "candidate": { "sprite": "man-suit", "x": 30 },
+    "cat": { "sprite": "cat", "x": 70 }
   },
-  "props": {
-    "sword": { "sprite": "sword", "visible": false }
-  },
+  "props": {},
   "script": [
-    { "t": 0, "do": "enter", "who": "bob", "from": "left" },
-    { "t": 2, "do": "say", "who": "bob", "line": "Hello world.", "duration": 2 },
-    { "t": 5, "do": "emote", "who": "bob", "emotion": "happy" }
+    { "do": "shot", "type": "wide" },
+    { "do": "say", "who": "candidate", "line": "Thank you for meeting with me." },
+    { "do": "emote", "who": "cat", "emotion": "angry" },
+    { "do": "say", "who": "cat", "line": "Hiss." }
   ]
 }
 ```
 
-### Actions
-| Action | Parameters | Description |
-|--------|-----------|-------------|
-| `move` | who, to [x,y], duration | Slide character |
-| `say` | who, line, duration | Speech bubble + TTS |
-| `emote` | who, emotion | Change expression |
-| `spawn` | what, at [x,y] | Show prop |
-| `despawn` | what | Hide prop |
-| `enter` | who, from (left/right) | Walk on from offscreen |
-| `exit` | who, to (left/right) | Walk off to offscreen |
+Supported actions cover dialogue, pauses, emotions, looks, turns, entrances, exits, movement, camera shots, and prop spawning/holding/movement/animation. See `docs/` and the editor UI for the complete authoring vocabulary. The short [How it works](https://pelicans.art/how-it-works.html) tour explains the design and capture pipeline.
 
-### Emotions
-`neutral`, `happy`, `sad`, `angry`, `surprised`, `worried`, `tired`, `excited`, `smug`
+## Architecture
 
-## Voice Setup
+- `src/` — static site, studio, player, SVG assets, and bundled skits
+- `server/` — local Express authoring/publishing/TTS server
+- `worker/` — community “Pouch” Cloudflare Worker
+- `svg-prompt-lab/` — standalone prompt comparison lab
+- `scripts/capture-skit.js` — reproducible screenshot and video capture
+- `tests/e2e/` — browser tests
 
-Uses Pocket TTS with these voice assignments:
-- `fantine` — female (boss)
-- `jean` — male (employee) 
-- `alba` — neutral (human)
-- `cosette` — female (cat)
+GitHub Pages deploys only `src/`. The local server and its secrets are not part of the public static deployment.
 
-Available voices: alba, marius, javert, jean, fantine, cosette, eponine, azelma
+## Project status
 
-### Voice Cloning
-
-Pass a URL to a reference audio file instead of a voice name:
-```json
-{
-  "trump": { "x": 70, "sprite": "trump", "voice": "https://example.com/audio/trump_reference.wav" }
-}
-```
-
-Tips for reference audio:
-- 15-30 seconds of clear speech
-- Minimal background noise
-- `.wav` format preferred
-
-### Emotional Delivery
-
-Pocket TTS has no emotion controls — use text and punctuation to impact delivery:
-
-- **Exaggerate with caps:** "WHAT?!" vs "what"
-- **Punctuation matters:** exclamation marks, ellipses, question marks
-- **Word choice:** "tremendous" vs "good", "absolutely" vs "yes"
-
-This works fairly well. The visual emotions (sprite faces) handle expression; the voice follows the energy of the text.
-
-## Project Status
-
-**Prototype** — Validating the concept. Current features:
-- [x] JSON script format
-- [x] Canvas renderer with placeholder graphics
-- [x] Timeline playback with controls
-- [x] TTS audio generation and sync
-- [x] Multiple test skits
-
-**Next:**
-- [ ] Real sprite assets
-- [ ] More skits / AI generation
-- [ ] Multi-agent collaboration
-- [ ] Audience interaction
+Working prototype. The public viewer and browser studio are usable. The repository is being prepared for a later public release; the local authoring server should remain private.
 
 ## License
 
-TBD
+The source code is available under the [MIT License](LICENSE). Creative assets and third-party references have separate terms described in [ASSET-LICENSE.md](ASSET-LICENSE.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

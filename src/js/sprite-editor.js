@@ -15,6 +15,12 @@
     let isGenerating = false;
     let referenceImageDataUrl = null;
 
+    function escapeHtml(value) {
+      const element = document.createElement('span');
+      element.textContent = String(value ?? '');
+      return element.innerHTML;
+    }
+
     // Edit mode state: 'sprite' | 'background' | 'skit'
     let currentEditMode = 'sprite';
     let currentBackgroundName = null;
@@ -495,7 +501,7 @@
         currentVariants = ['prop'];
 
         const canvas = document.getElementById('svg-canvas');
-        canvas.innerHTML = prop.svg;
+        window.AITSvgSanitizer.setSvg(canvas, prop.svg);
 
         // Set up for editing
         renderSpriteFromCurrent();
@@ -539,7 +545,7 @@
         currentVariants = ['prop'];
 
         const canvas = document.getElementById('svg-canvas');
-        canvas.innerHTML = templateSvg;
+        window.AITSvgSanitizer.setSvg(canvas, templateSvg);
 
         renderSpriteFromCurrent();
         buildElementTree();
@@ -684,7 +690,7 @@
         currentSprite = svg;
 
         const canvas = document.getElementById('svg-canvas');
-        canvas.innerHTML = svg;
+        window.AITSvgSanitizer.setSvg(canvas, svg);
 
         // Setup interactions
         const svgEl = canvas.querySelector('svg');
@@ -761,7 +767,7 @@
         const viewBox = `0 0 ${dims.width} ${dims.height}`;
         currentSprite = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="${dims.width}" height="${dims.height}"></svg>`;
         const canvas = document.getElementById('svg-canvas');
-        canvas.innerHTML = currentSprite;
+        window.AITSvgSanitizer.setSvg(canvas, currentSprite);
       }
 
       renderBackgroundOrientationTabs();
@@ -2492,13 +2498,13 @@
       try {
         const backend = await requireBackend();
         const svg = await backend.getBackground(backgroundName, orient);
-        preview.innerHTML = svg;
+        window.AITSvgSanitizer.setSvg(preview, svg);
       } catch (e) {
         if (orient !== 'landscape') {
           try {
             const backend = await requireBackend();
             const fallbackSvg = await backend.getBackground(backgroundName, 'landscape');
-            preview.innerHTML = fallbackSvg;
+            window.AITSvgSanitizer.setSvg(preview, fallbackSvg);
             return;
           } catch (_) {}
         }
@@ -2853,7 +2859,8 @@
           if (generation !== communityPreviewGeneration) return;
           let gridHtml = '<div class="community-variant-grid">';
           Object.entries(payload.variants || {}).forEach(([variantName, svgText]) => {
-            gridHtml += `<div class="community-variant-item">${svgText}<div class="community-variant-label">${variantName}</div></div>`;
+            const safeSvg = window.AITSvgSanitizer.sanitize(svgText);
+            gridHtml += `<div class="community-variant-item">${safeSvg}<div class="community-variant-label">${escapeHtml(variantName)}</div></div>`;
           });
           gridHtml += '</div>';
           preview.innerHTML = gridHtml;
@@ -2867,7 +2874,7 @@
       } else if (type === 'props' && currentEditMode === 'prop' && currentSpriteName) {
         nameInput.value = currentMeta?.name || currentSpriteName;
         if (currentSprite) {
-          preview.innerHTML = currentSprite;
+          window.AITSvgSanitizer.setSvg(preview, currentSprite);
         }
         estimateCommunitySize(buildPropPayload());
       } else if (type === 'backgrounds' && currentEditMode === 'background' && currentBackgroundName) {
@@ -2878,9 +2885,9 @@
           const payload = await buildBackgroundPayload();
           if (generation !== communityPreviewGeneration) return;
           let gridHtml = '<div class="community-variant-grid">';
-          gridHtml += `<div class="community-variant-item">${payload.landscape_svg}<div class="community-variant-label">landscape</div></div>`;
+          gridHtml += `<div class="community-variant-item">${window.AITSvgSanitizer.sanitize(payload.landscape_svg)}<div class="community-variant-label">landscape</div></div>`;
           if (payload.portrait_svg) {
-            gridHtml += `<div class="community-variant-item">${payload.portrait_svg}<div class="community-variant-label">portrait</div></div>`;
+            gridHtml += `<div class="community-variant-item">${window.AITSvgSanitizer.sanitize(payload.portrait_svg)}<div class="community-variant-label">portrait</div></div>`;
           }
           gridHtml += '</div>';
           preview.innerHTML = gridHtml;
@@ -4485,7 +4492,7 @@
           // Apply new SVG
           currentSprite = msg.sprite.svg;
           const canvas = document.getElementById('svg-canvas');
-          canvas.innerHTML = msg.sprite.svg;
+          window.AITSvgSanitizer.setSvg(canvas, msg.sprite.svg);
 
           // Set up click handlers on elements
           renderSpriteFromCurrent();
@@ -5048,7 +5055,7 @@
       currentVariants = ['front'];
 
       const canvas = document.getElementById('svg-canvas');
-      canvas.innerHTML = svg;
+      window.AITSvgSanitizer.setSvg(canvas, svg);
 
       // Set up click handlers and UI
       renderSpriteFromCurrent();
@@ -5302,7 +5309,7 @@
     
     function renderSprite() {
       const canvas = document.getElementById('svg-canvas');
-      canvas.innerHTML = currentSprite;
+      window.AITSvgSanitizer.setSvg(canvas, currentSprite);
       
       // Scale up for editing
       const svg = canvas.querySelector('svg');
@@ -6007,7 +6014,7 @@
       redoStack.push(svg.outerHTML);
       
       const previousState = undoStack.pop();
-      document.getElementById('svg-canvas').innerHTML = previousState;
+      window.AITSvgSanitizer.setSvg(document.getElementById('svg-canvas'), previousState);
       
       // Re-setup event listeners
       renderSpriteFromCurrent();
@@ -6025,7 +6032,7 @@
       undoStack.push(svg.outerHTML);
       
       const nextState = redoStack.pop();
-      document.getElementById('svg-canvas').innerHTML = nextState;
+      window.AITSvgSanitizer.setSvg(document.getElementById('svg-canvas'), nextState);
       
       renderSpriteFromCurrent();
       buildElementTree();

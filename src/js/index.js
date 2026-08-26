@@ -14,7 +14,7 @@
       btn.classList.add('active');
 
       // Reload iframe with new skit
-      skitFrame.src = `skit-player.html?embed=1&skit=${skitName}`;
+      skitFrame.src = `skit-player.html?embed=1&captions=1&skit=${skitName}`;
     });
 
     // Listen for orientation changes from embedded skit player
@@ -113,9 +113,15 @@
 
           const meta = document.createElement('div');
           meta.className = 'carousel-card-meta';
-          meta.innerHTML = `<span class="tag tag-${item._category === 'characters' ? 'character' : item._category === 'backgrounds' ? 'background' : 'prop'}" style="padding:2px 6px;font-size:11px">${CATEGORY_LABELS[item._category]}</span>`;
+          const category = document.createElement('span');
+          category.className = `tag tag-${item._category === 'characters' ? 'character' : item._category === 'backgrounds' ? 'background' : 'prop'}`;
+          category.style.cssText = 'padding:2px 6px;font-size:11px';
+          category.textContent = CATEGORY_LABELS[item._category];
+          meta.appendChild(category);
           if (item.username) {
-            meta.innerHTML += ` <span>by ${item.username}</span>`;
+            const byline = document.createElement('span');
+            byline.textContent = `by ${item.username}`;
+            meta.append(' ', byline);
           }
 
           info.appendChild(name);

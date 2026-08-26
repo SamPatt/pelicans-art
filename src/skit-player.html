@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data: blob:; font-src 'self'; connect-src *; media-src * blob: data:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src *; media-src * blob: data:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>pelicans.art — Watch</title>
   <link rel="stylesheet" href="pelicans-theme.css">
   <style>
@@ -410,12 +410,12 @@
     <div id="stage">
       <img id="background" src="backgrounds/restaurant.svg" alt="">
     </div>
-    <div id="caption"></div>
+    <div id="caption" role="status" aria-live="polite"></div>
   </div>
   
   <div id="controls">
-    <button id="playBtn" disabled>▶</button>
-    <button id="captionBtn">CC</button>
+    <button id="playBtn" aria-label="Play skit" disabled>▶</button>
+    <button id="captionBtn" aria-label="Toggle captions">CC</button>
     <button type="button" class="demo-skit-btn active" data-skit="luckyCharms">Lucky Charms</button>
     <button type="button" class="demo-skit-btn" data-skit="trumpAlien">Trump/Alien</button>
     <button type="button" class="demo-skit-btn" data-skit="theInterview">The Interview</button>
@@ -429,6 +429,8 @@
   <div id="status">Loading...</div>
   </div><!-- end player-body -->
 
+  <script src="vendor/dompurify/purify.min.js"></script>
+  <script src="js/svg-sanitizer.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/backend/storage-idb.js"></script>
   <script src="js/backend/tts-provider.js"></script>

@@ -16,6 +16,12 @@
 
   const VISUAL_CATEGORIES = ['characters', 'props', 'backgrounds'];
 
+  function escapeHtml(value) {
+    const element = document.createElement('span');
+    element.textContent = String(value ?? '');
+    return element.innerHTML;
+  }
+
   function previewFile(category, slug) {
     switch (category) {
       case 'characters': return `${API_URL}/characters/${slug}/front.svg`;
@@ -293,7 +299,7 @@
         case 'voices': await renderVoiceDetail(content, slug, meta); break;
       }
     } catch (e) {
-      content.innerHTML = `<div class="empty-state">Error: ${e.message}</div>`;
+      content.innerHTML = `<div class="empty-state">Error: ${escapeHtml(e.message)}</div>`;
     }
   }
 
@@ -357,13 +363,13 @@
     window._charVariants = {};
     variants.forEach(v => { window._charVariants[v.name] = v.svg; });
     if (variants.length > 0) {
-      document.getElementById('char-preview').innerHTML = variants[0].svg;
+      window.AITSvgSanitizer.setSvg(document.getElementById('char-preview'), variants[0].svg);
     }
   }
 
   function switchCharVariant(name) {
     const svg = window._charVariants?.[name];
-    if (svg) document.getElementById('char-preview').innerHTML = svg;
+    if (svg) window.AITSvgSanitizer.setSvg(document.getElementById('char-preview'), svg);
     document.querySelectorAll('#char-variant-tabs .variant-tab').forEach(t => {
       t.classList.toggle('active', t.dataset.charVariant === name);
     });
@@ -382,7 +388,7 @@
     try {
       const resp = await fetch(`${API_URL}/props/${slug}/prop.svg`);
       if (resp.ok) {
-        document.getElementById('prop-preview').innerHTML = await resp.text();
+        window.AITSvgSanitizer.setSvg(document.getElementById('prop-preview'), await resp.text());
       }
     } catch (e) {}
   }
@@ -417,13 +423,13 @@
     window._bgVariants = {};
     orientations.forEach(o => { window._bgVariants[o.name] = o.svg; });
     if (orientations.length > 0) {
-      document.getElementById('bg-preview').innerHTML = orientations[0].svg;
+      window.AITSvgSanitizer.setSvg(document.getElementById('bg-preview'), orientations[0].svg);
     }
   }
 
   function switchBgVariant(name) {
     const svg = window._bgVariants?.[name];
-    if (svg) document.getElementById('bg-preview').innerHTML = svg;
+    if (svg) window.AITSvgSanitizer.setSvg(document.getElementById('bg-preview'), svg);
     document.querySelectorAll('#bg-variant-tabs .variant-tab').forEach(t => {
       t.classList.toggle('active', t.textContent.toLowerCase() === name);
     });
@@ -440,10 +446,10 @@
         const dialogueCount = skit.script ? skit.script.filter(a => a.do === 'say').length : 0;
 
         html += `<div class="skit-summary">
-          <strong>Title:</strong> ${skit.meta?.title || 'Untitled'}<br>
-          ${skit.meta?.description ? `<strong>Description:</strong> ${skit.meta.description}<br>` : ''}
-          <strong>Background:</strong> ${skit.stage?.background || 'none'}<br>
-          <strong>Cast:</strong> ${castNames}<br>
+          <strong>Title:</strong> ${escapeHtml(skit.meta?.title || 'Untitled')}<br>
+          ${skit.meta?.description ? `<strong>Description:</strong> ${escapeHtml(skit.meta.description)}<br>` : ''}
+          <strong>Background:</strong> ${escapeHtml(skit.stage?.background || 'none')}<br>
+          <strong>Cast:</strong> ${escapeHtml(castNames)}<br>
           <strong>Script:</strong> ${scriptLen} actions (${dialogueCount} lines of dialogue)
         </div>`;
         html += renderScriptActions(skit.script);
@@ -471,17 +477,18 @@
         const spriteCount = pub.assets?.sprites ? Object.keys(pub.assets.sprites).length : 0;
 
         html += `<div class="skit-summary">
-          <strong>Title:</strong> ${pub.meta?.title || 'Untitled'}<br>
-          ${pub.meta?.description ? `<strong>Description:</strong> ${pub.meta.description}<br>` : ''}
-          <strong>Background:</strong> ${pub.stage?.background || 'none'}<br>
-          <strong>Cast:</strong> ${castNames}<br>
+          <strong>Title:</strong> ${escapeHtml(pub.meta?.title || 'Untitled')}<br>
+          ${pub.meta?.description ? `<strong>Description:</strong> ${escapeHtml(pub.meta.description)}<br>` : ''}
+          <strong>Background:</strong> ${escapeHtml(pub.stage?.background || 'none')}<br>
+          <strong>Cast:</strong> ${escapeHtml(castNames)}<br>
           <strong>Script:</strong> ${scriptLen} actions (${dialogueCount} lines)<br>
           <strong>Assets:</strong> ${spriteCount} sprites, ${audioCount} audio clips
         </div>`;
 
         const bgName = pub.stage?.background;
         if (bgName && pub.assets?.backgrounds?.[bgName]) {
-          html += `<div class="detail-preview"><img src="${pub.assets.backgrounds[bgName]}" alt="Background"></div>`;
+          const safeBackground = escapeHtml(pub.assets.backgrounds[bgName]);
+          html += `<div class="detail-preview"><img src="${safeBackground}" alt="Background"></div>`;
         }
 
         html += renderScriptActions(pub.script);
@@ -526,10 +533,10 @@
     const date = meta.uploadedAt ? new Date(meta.uploadedAt).toLocaleDateString() : 'unknown';
     const sizeKB = meta.size ? (meta.size / 1024).toFixed(1) + ' KB' : 'unknown';
     return `<div class="detail-info">
-      <span class="detail-label">Uploaded by</span><span class="detail-value">${meta.username || 'unknown'}</span>
-      <span class="detail-label">Date</span><span class="detail-value">${date}</span>
-      <span class="detail-label">Size</span><span class="detail-value">${sizeKB}</span>
-      <span class="detail-label">Category</span><span class="detail-value">${meta.category || currentCategory}</span>
+      <span class="detail-label">Uploaded by</span><span class="detail-value">${escapeHtml(meta.username || 'unknown')}</span>
+      <span class="detail-label">Date</span><span class="detail-value">${escapeHtml(date)}</span>
+      <span class="detail-label">Size</span><span class="detail-value">${escapeHtml(sizeKB)}</span>
+      <span class="detail-label">Category</span><span class="detail-value">${escapeHtml(meta.category || currentCategory)}</span>
     </div>`;
   }
 
@@ -541,74 +548,74 @@
       let cssClass = '';
       switch (action.do) {
         case 'say':
-          content = `<strong>${action.who}:</strong> "${action.line}"`;
+          content = `<strong>${escapeHtml(action.who)}:</strong> "${escapeHtml(action.line)}"`;
           cssClass = 'say';
           break;
         case 'emote':
-          content = `${action.who} \u2192 ${action.emotion}`;
+          content = `${escapeHtml(action.who)} \u2192 ${escapeHtml(action.emotion)}`;
           cssClass = 'emote';
           break;
         case 'shot':
-          content = `\u{1F4F7} ${action.type}${action.who ? ` (${action.who})` : ''}`;
+          content = `\u{1F4F7} ${escapeHtml(action.type)}${action.who ? ` (${escapeHtml(action.who)})` : ''}`;
           cssClass = 'shot';
           break;
         case 'enter':
-          content = `\u2197 ${action.who} enters from ${action.from}`;
+          content = `\u2197 ${escapeHtml(action.who)} enters from ${escapeHtml(action.from)}`;
           cssClass = 'stage';
           break;
         case 'exit':
-          content = `\u2198 ${action.who} exits to ${action.to}`;
+          content = `\u2198 ${escapeHtml(action.who)} exits to ${escapeHtml(action.to)}`;
           cssClass = 'stage';
           break;
         case 'move':
-          content = `\u2192 ${action.who} moves to ${action.to}`;
+          content = `\u2192 ${escapeHtml(action.who)} moves to ${escapeHtml(action.to)}`;
           cssClass = 'stage';
           break;
         case 'pause':
-          content = `\u23F8 pause ${action.duration}s`;
+          content = `\u23F8 pause ${escapeHtml(action.duration)}s`;
           cssClass = 'stage';
           break;
         case 'look':
-          content = `\u{1F441} ${action.who} looks ${action.at}`;
+          content = `\u{1F441} ${escapeHtml(action.who)} looks ${escapeHtml(action.at)}`;
           cssClass = 'stage';
           break;
         case 'spawn':
-          content = `\u{1F381} spawn ${action.what}${action.who ? ` held by ${action.who}` : (action.at ? ` at (${action.at[0]}, ${action.at[1]})` : '')}`;
+          content = `\u{1F381} spawn ${escapeHtml(action.what)}${action.who ? ` held by ${escapeHtml(action.who)}` : (action.at ? ` at (${escapeHtml(action.at[0])}, ${escapeHtml(action.at[1])})` : '')}`;
           cssClass = 'prop';
           break;
         case 'despawn':
-          content = `\u{1F381} despawn ${action.what}`;
+          content = `\u{1F381} despawn ${escapeHtml(action.what)}`;
           cssClass = 'prop';
           break;
         case 'prop-move':
-          content = `\u{1F381} ${action.what} moves to (${action.to?.[0] || '?'}, ${action.to?.[1] || '?'})`;
+          content = `\u{1F381} ${escapeHtml(action.what)} moves to (${escapeHtml(action.to?.[0] || '?')}, ${escapeHtml(action.to?.[1] || '?')})`;
           cssClass = 'prop';
           break;
         case 'prop-hold':
-          content = `\u{1F381} ${action.who} holds ${action.what}`;
+          content = `\u{1F381} ${escapeHtml(action.who)} holds ${escapeHtml(action.what)}`;
           cssClass = 'prop';
           break;
         case 'prop-drop':
-          content = `\u{1F381} ${action.who || 'drop'} ${action.what}${action.at ? ` at (${action.at[0]}, ${action.at[1]})` : ''}`;
+          content = `\u{1F381} ${escapeHtml(action.who || 'drop')} ${escapeHtml(action.what)}${action.at ? ` at (${escapeHtml(action.at[0])}, ${escapeHtml(action.at[1])})` : ''}`;
           cssClass = 'prop';
           break;
         case 'prop-rotate':
-          content = `\u{1F381} rotate ${action.what} to ${action.angle}\u00B0`;
+          content = `\u{1F381} rotate ${escapeHtml(action.what)} to ${escapeHtml(action.angle)}\u00B0`;
           cssClass = 'prop';
           break;
         case 'prop-scale':
-          content = `\u{1F381} scale ${action.what} to ${action.scale}x`;
+          content = `\u{1F381} scale ${escapeHtml(action.what)} to ${escapeHtml(action.scale)}x`;
           cssClass = 'prop';
           break;
         case 'prop-animate':
-          content = `\u{1F381} animate ${action.what}: ${action.animation}`;
+          content = `\u{1F381} animate ${escapeHtml(action.what)}: ${escapeHtml(action.animation)}`;
           cssClass = 'prop';
           break;
         default:
-          content = JSON.stringify(action);
+          content = escapeHtml(JSON.stringify(action));
       }
       if (action.offset < 0) {
-        content += ` <span class="offset-badge">[${action.offset}s]</span>`;
+        content += ` <span class="offset-badge">[${escapeHtml(action.offset)}s]</span>`;
       }
       html += `<div class="script-line ${cssClass}">${content}</div>`;
     });

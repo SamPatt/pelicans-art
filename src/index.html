@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src * data: blob:; font-src 'self'; connect-src *; media-src * blob: data:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src * data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src *; media-src * blob: data:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
   <title>pelicans.art — AI Improv Theater</title>
   <link rel="stylesheet" href="pelicans-theme.css">
   <style>
@@ -322,6 +322,24 @@
       text-align: center;
     }
 
+    .featured-render {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(220px, 1fr);
+      gap: var(--space-5);
+      align-items: center;
+      margin-bottom: var(--space-8);
+      padding: var(--space-4);
+      background: var(--wing-dark);
+      border-radius: var(--radius-lg);
+      color: var(--plumage-cream);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .featured-render video { width: 100%; display: block; border-radius: var(--radius-md); background: #000; }
+    .featured-render h2 { color: #fff; font-family: var(--font-display); margin-bottom: var(--space-2); }
+    .featured-render p { line-height: 1.55; margin-bottom: var(--space-4); }
+    .featured-links { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
     /* === RESPONSIVE === */
     @media (max-width: 768px) {
       .nav-studio-link {
@@ -354,6 +372,7 @@
       .main-content { padding: var(--space-5) var(--space-4); }
 
       .script-selector { justify-content: center; }
+      .featured-render { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -365,6 +384,7 @@
       <li class="nav-studio-link"><a href="sprite-editor.html?mode=browser">Studio</a></li>
       <li><a href="./" class="active">Watch</a></li>
       <li><a href="community.html">The <span style="color:var(--pouch-orange)">Pouch</span></a></li>
+      <li><a href="how-it-works.html">How it works</a></li>
       <li><button class="theme-toggle" id="themeToggle"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>
     </ul>
   </nav>
@@ -420,6 +440,21 @@
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
+    <section class="featured-render" aria-labelledby="featured-title">
+      <video controls preload="metadata" poster="media/pelican-benchmark-cover.png">
+        <source src="media/pelican-benchmark.mp4" type="video/mp4">
+        Your browser does not support HTML video. <a href="media/pelican-benchmark.mp4">Download the MP4</a>.
+      </video>
+      <div>
+        <h2 id="featured-title">The Pelican Benchmark</h2>
+        <p>A 16-second answer to the pelican-on-a-bicycle test, performed by reusable SVG actors. The captioned H.264/AAC capture uses one shared start time for picture, dialogue, and mouth animation.</p>
+        <div class="featured-links">
+          <a class="btn btn-pouch" href="skit-player.html?captions=1&amp;skit=pelicanBenchmark">Play interactively</a>
+          <a class="btn btn-ocean" href="media/pelican-benchmark.mp4">Open MP4</a>
+        </div>
+      </div>
+    </section>
+
     <div class="modes-section">
       <div class="mode-card">
         <h3>Try It In Your Browser</h3>
@@ -457,13 +492,13 @@
       <h2 class="section-title">Now Playing</h2>
 
       <div class="stage-container">
-        <iframe id="skitFrame" src="skit-player.html?embed=1&skit=batsDontEatLettuce" allow="autoplay"></iframe>
+        <iframe id="skitFrame" title="AI comedy skit player" src="skit-player.html?embed=1&captions=1&skit=pelicanBenchmark" allow="autoplay"></iframe>
       </div>
 
       <div class="script-selector" id="skitSelector">
-        <button class="script-tab active" data-skit="batsDontEatLettuce">Bats Don't Eat Lettuce</button>
-        <button class="script-tab" data-skit="luckyCharms">Lucky Charms</button>
+        <button class="script-tab active" data-skit="pelicanBenchmark">The Pelican Benchmark</button>
         <button class="script-tab" data-skit="theBox">The Box</button>
+        <button class="script-tab" data-skit="theInterview">The Interview</button>
         <button class="script-tab" data-skit="theNegotiation">The Negotiation</button>
       </div>
     </div>

@@ -7,26 +7,28 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "npm run test:e2e && npm --prefix server test && npm --prefix worker test",
     "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed"
+    "test:e2e:headed": "playwright test --headed",
+    "capture": "node scripts/capture-skit.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://x-access-token:REMOVED_REVOKED_GITHUB_TOKEN@github.com/HistorAI/ai-improv-theater.git"
+    "url": "git+https://github.com/SamPatt/pelicans-art.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Sam Patt",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/HistorAI/ai-improv-theater/issues"
+    "url": "https://github.com/SamPatt/pelicans-art/issues"
   },
-  "homepage": "https://github.com/HistorAI/ai-improv-theater#readme",
+  "homepage": "https://pelicans.art/",
   "dependencies": {
     "form-data": "^4.0.5",
     "node-fetch": "^3.3.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2"
+    "@playwright/test": "^1.58.2",
+    "dompurify": "^3.4.14"
   }
 }

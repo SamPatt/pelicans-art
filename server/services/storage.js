@@ -6,6 +6,29 @@ let SPRITES_DIR = './src/sprites';
 let BACKGROUNDS_DIR = './src/backgrounds';
 let PROPS_DIR = './src/props';
 
+const ASSET_NAME_PATTERN = /^[a-z0-9][a-z0-9-]{0,127}$/;
+const VARIANT_NAME_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const DOCUMENT_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,127}$/;
+
+function assertSafeSegment(value, pattern, label) {
+  if (typeof value !== 'string' || !pattern.test(value)) {
+    throw Object.assign(new Error(`Invalid ${label}`), { status: 400 });
+  }
+  return value;
+}
+
+function assertAssetName(name) {
+  return assertSafeSegment(name, ASSET_NAME_PATTERN, 'asset name');
+}
+
+function assertVariantName(name) {
+  return assertSafeSegment(name, VARIANT_NAME_PATTERN, 'variant name');
+}
+
+function assertDocumentId(id) {
+  return assertSafeSegment(id, DOCUMENT_ID_PATTERN, 'document id');
+}
+
 // --- Helper Functions ---
 
 /**
@@ -135,6 +158,7 @@ export async function listSprites() {
 }
 
 export async function getSprite(name) {
+  assertAssetName(name);
   const spritePath = path.join(SPRITES_DIR, name);
 
   if (!await exists(spritePath)) {
@@ -159,6 +183,7 @@ export async function getSprite(name) {
 }
 
 export async function saveSprite(name, svg, meta) {
+  assertAssetName(name);
   const spritePath = path.join(SPRITES_DIR, name);
   await ensureDir(spritePath);
 
@@ -174,6 +199,7 @@ export async function saveSprite(name, svg, meta) {
 }
 
 export async function listSpriteVariants(name) {
+  assertAssetName(name);
   const spritePath = path.join(SPRITES_DIR, name);
   if (!await exists(spritePath)) {
     throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
@@ -191,6 +217,8 @@ export async function listSpriteVariants(name) {
 }
 
 export async function getSpriteVariant(name, variant = 'front') {
+  assertAssetName(name);
+  assertVariantName(variant);
   const spritePath = path.join(SPRITES_DIR, name);
   if (!await exists(spritePath)) {
     throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
@@ -206,6 +234,8 @@ export async function getSpriteVariant(name, variant = 'front') {
  * Save a specific variant of a sprite
  */
 export async function saveSpriteVariant(name, variant, svg) {
+  assertAssetName(name);
+  assertVariantName(variant);
   const spritePath = path.join(SPRITES_DIR, name);
 
   // Check if sprite directory exists
@@ -226,6 +256,7 @@ export async function saveSpriteVariant(name, variant, svg) {
 }
 
 export async function deleteSprite(name) {
+  assertAssetName(name);
   const spritePath = path.join(SPRITES_DIR, name);
   if (!await exists(spritePath)) {
     throw Object.assign(new Error(`Sprite not found: ${name}`), { status: 404 });
@@ -275,6 +306,8 @@ export async function listBackgrounds() {
 }
 
 export async function getBackground(name, orientation = 'landscape') {
+  assertAssetName(name);
+  assertVariantName(orientation);
   // First try new directory structure
   const dirPath = path.join(BACKGROUNDS_DIR, name, `${orientation}.svg`);
   if (await exists(dirPath)) {
@@ -293,6 +326,8 @@ export async function getBackground(name, orientation = 'landscape') {
 }
 
 export async function saveBackground(name, svg, orientation = 'landscape') {
+  assertAssetName(name);
+  assertVariantName(orientation);
   const bgDir = path.join(BACKGROUNDS_DIR, name);
   await ensureDir(bgDir);
   await fs.writeFile(path.join(bgDir, `${orientation}.svg`), svg);
@@ -303,6 +338,8 @@ export async function saveBackground(name, svg, orientation = 'landscape') {
  * Save a specific orientation variant of a background
  */
 export async function saveBackgroundVariant(name, orientation, svg) {
+  assertAssetName(name);
+  assertVariantName(orientation);
   const bgDir = path.join(BACKGROUNDS_DIR, name);
 
   // Check if background directory exists (either new style or we need to create it)
@@ -325,6 +362,7 @@ export async function saveBackgroundVariant(name, orientation, svg) {
 }
 
 export async function deleteBackground(name) {
+  assertAssetName(name);
   const bgDir = path.join(BACKGROUNDS_DIR, name);
 
   // Check for new directory structure
@@ -383,6 +421,7 @@ export async function listProps() {
 }
 
 export async function getProp(name) {
+  assertAssetName(name);
   const propPath = path.join(PROPS_DIR, name);
 
   if (!await exists(propPath)) {
@@ -407,6 +446,7 @@ export async function getProp(name) {
 }
 
 export async function saveProp(name, svg, meta) {
+  assertAssetName(name);
   const propPath = path.join(PROPS_DIR, name);
   await ensureDir(propPath);
 
@@ -417,6 +457,7 @@ export async function saveProp(name, svg, meta) {
 }
 
 export async function deleteProp(name) {
+  assertAssetName(name);
   const propPath = path.join(PROPS_DIR, name);
   if (!await exists(propPath)) {
     throw Object.assign(new Error(`Prop not found: ${name}`), { status: 404 });
@@ -461,6 +502,7 @@ export async function listSkits() {
 }
 
 export async function getSkit(id) {
+  assertDocumentId(id);
   const filePath = path.join(DATA_DIR, 'skits', `${id}.json`);
   if (!await exists(filePath)) {
     throw Object.assign(new Error(`Skit not found: ${id}`), { status: 404 });
@@ -471,6 +513,7 @@ export async function getSkit(id) {
 }
 
 export async function saveSkit(id, skit) {
+  assertDocumentId(id);
   await ensureDir(path.join(DATA_DIR, 'skits'));
 
   // Don't include id in the stored JSON
@@ -485,6 +528,7 @@ export async function saveSkit(id, skit) {
 }
 
 export async function deleteSkit(id) {
+  assertDocumentId(id);
   const filePath = path.join(DATA_DIR, 'skits', `${id}.json`);
   if (!await exists(filePath)) {
     throw Object.assign(new Error(`Skit not found: ${id}`), { status: 404 });
@@ -527,6 +571,7 @@ export async function listPublished() {
 }
 
 export async function getPublished(id) {
+  assertDocumentId(id);
   const filePath = path.join(DATA_DIR, 'published', `${id}.json`);
   if (!await exists(filePath)) {
     throw Object.assign(new Error(`Published skit not found: ${id}`), { status: 404 });
@@ -537,6 +582,7 @@ export async function getPublished(id) {
 }
 
 export async function savePublished(id, data) {
+  assertDocumentId(id);
   await ensureDir(path.join(DATA_DIR, 'published'));
   const filePath = path.join(DATA_DIR, 'published', `${id}.json`);
   await fs.writeFile(filePath, JSON.stringify(data));
@@ -545,6 +591,7 @@ export async function savePublished(id, data) {
 }
 
 export async function deletePublished(id) {
+  assertDocumentId(id);
   const filePath = path.join(DATA_DIR, 'published', `${id}.json`);
   if (!await exists(filePath)) {
     throw Object.assign(new Error(`Published skit not found: ${id}`), { status: 404 });
