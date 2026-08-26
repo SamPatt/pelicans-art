@@ -4,7 +4,7 @@ Reviewed: 2026-08-25
 
 ## Verdict
 
-The live viewer, browser studio, bundled skits, and reproducible capture pipeline are functional. The project is ready for a private demo and for sharing a direct video with Simon Willison. Keep the repository private until the final history rewrite and post-rewrite secret scan are complete.
+The live viewer, browser studio, bundled skits, and reproducible capture pipeline are functional. The project is ready for a private demo and for sharing a direct video with Simon Willison. The Git history rewrite and post-rewrite verification are complete; keep the repository private until the remaining content and community-data decisions below are made.
 
 ## Verified
 
@@ -18,6 +18,8 @@ The live viewer, browser studio, bundled skits, and reproducible capture pipelin
 - Desktop and 390×844 homepage layouts pass automated checks.
 - Current root and server production dependency audits report zero vulnerabilities.
 - The exposed GitHub token has been revoked by the account owner.
+- All remote branches were rewritten with `git-filter-repo` 2.47.0. The token and every historical `node_modules/` path now produce zero matches, and the private GitHub remote points at the verified rewritten commits.
+- A complete pre-rewrite bundle is retained outside the repository at `/home/nondescript/code_repos/sampatt/pelicans-art-pre-rewrite-2026-08-25.bundle`. It contains the revoked credential and must remain private.
 - DOMPurify now sanitizes generated, imported, and community SVG before inline rendering; metadata and dialogue shown by the community gallery are HTML-escaped.
 - The source code has an MIT license, with separate asset terms and third-party notices.
 - A stable 32-second H.264/AAC render of The Box is linked directly from the homepage.
@@ -25,9 +27,10 @@ The live viewer, browser studio, bundled skits, and reproducible capture pipelin
 
 ## Release blockers
 
-1. **Purge the revoked GitHub token from history.** Rewrite every affected ref, remove historical `node_modules`, force-push the private remote, and verify the rewritten object database with a history-aware scan. Make a full Git bundle first and retain it privately.
+1. **Decide what to do with third-party character demos.** Batman, Superman, Lucky Charms, Voldemort, Trump, and similar experiments are excluded from the MIT asset grant and no longer featured, but some remain in history or demo data. Remove them from the public release if you want the cleanest licensing story, or explicitly accept the parody/fair-use uncertainty.
 2. **Audit already-stored community data.** New uploads receive stronger SVG URL checks and all browser rendering is sanitized, but existing R2 objects should still be scanned or re-uploaded before inviting broad community submissions.
-3. **Keep the authoring server private.** It has powerful asset, voice, publishing, and deletion APIs without user authentication. The static GitHub Pages deployment is appropriate for public traffic; do not expose the Express server directly.
+3. **Ask GitHub Support to clear cached sensitive-data views if required.** There are no pull requests in this repository and the token is revoked, which limits exposure, but GitHub may retain cached commit/blob views outside ordinary refs. Provide the first changed commit `a75ff2b2864383421fd16030ba687334e1bb29cd` without including the token.
+4. **Keep the authoring server private.** It has powerful asset, voice, publishing, and deletion APIs without user authentication. The static GitHub Pages deployment is appropriate for public traffic; do not expose the Express server directly.
 
 ## High-priority improvements
 
