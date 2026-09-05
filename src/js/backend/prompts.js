@@ -234,6 +234,7 @@ OUTPUT FORMAT - Valid JSON with this structure:
     }
   },
   "script": [
+    { "do": "background", "name": "another-background", "orientation": "landscape" },
     { "do": "shot", "type": "wide" },
     { "do": "say", "who": "character-id", "line": "Dialogue here" },
     { "do": "say", "who": "other-char", "line": "Interrupting!", "offset": -1.5 },
@@ -258,6 +259,8 @@ PROPS NOTES:
 - Props start invisible unless "visible": true
 
 AVAILABLE ACTIONS:
+- background: hard cut to another available background (name + optional orientation + optional show array of cast IDs)
+  - Use "show" to control which characters are visible in that shot: { "do": "background", "name": "closeup-set", "show": ["character-id"] }
 - shot: camera shot type (type + optional who)
   - type: "wide", "medium", "closeup", "extreme-closeup", "two-shot"
   - For closeup/extreme-closeup, add "who" to focus on a character: { "do": "shot", "type": "closeup", "who": "character-id" }

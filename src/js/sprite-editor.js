@@ -133,6 +133,84 @@
       updateAiBanner();
     }
 
+    function fetchBundledJson(path) {
+      return new Promise((resolve, reject) => {
+        const request = new XMLHttpRequest();
+        request.open('GET', path, true);
+        request.responseType = 'json';
+        request.onload = () => {
+          if (request.status >= 200 && request.status < 300) resolve(request.response);
+          else reject(new Error(`Could not load the bundled sample (${request.status}).`));
+        };
+        request.onerror = () => reject(new Error('Could not load the bundled sample.'));
+        request.send();
+      });
+    }
+
+    function decodeSvgDataUrl(dataUrl) {
+      if (typeof dataUrl !== 'string') throw new Error('The sample contains an invalid SVG asset.');
+      const comma = dataUrl.indexOf(',');
+      if (comma < 0) throw new Error('The sample contains an invalid SVG data URL.');
+      const header = dataUrl.slice(0, comma);
+      const payload = dataUrl.slice(comma + 1);
+      const raw = header.includes(';base64')
+        ? new TextDecoder().decode(Uint8Array.from(atob(payload), (character) => character.charCodeAt(0)))
+        : decodeURIComponent(payload);
+      return window.AITSvgSanitizer?.sanitize?.(raw) || raw;
+    }
+
+    async function importBundledSample() {
+      const backend = await requireBackend();
+      if (backend.mode !== 'browser') throw new Error('The sample remix is intended for Browser Studio.');
+      const published = await fetchBundledJson('published/pelicanBenchmark.json');
+      if (!published?.assets) throw new Error('The bundled sample is incomplete.');
+
+      const spriteNames = new Set(Object.values(published.cast || {}).map((character) => character.sprite).filter(Boolean));
+      for (const spriteName of spriteNames) {
+        const prefix = `${spriteName}-`;
+        const variants = Object.entries(published.assets.sprites || {})
+          .filter(([key]) => key.startsWith(prefix))
+          .map(([key, dataUrl]) => [key.slice(prefix.length), decodeSvgDataUrl(dataUrl)]);
+        const front = variants.find(([variant]) => variant === 'front') || variants[0];
+        if (!front) continue;
+        await backend.saveSprite(spriteName, front[1], published.assets.spriteMeta?.[spriteName] || {});
+        for (const [variant, svg] of variants) {
+          if (variant !== 'front') await backend.saveSpriteVariant(spriteName, variant, svg);
+        }
+      }
+
+      const backgroundOrientations = new Map();
+      if (published.stage?.background) {
+        backgroundOrientations.set(published.stage.background, published.stage.orientation || 'landscape');
+      }
+      for (const beat of published.script || []) {
+        if (beat.do === 'background' && beat.name) {
+          backgroundOrientations.set(beat.name, beat.orientation || 'landscape');
+        }
+      }
+      for (const [backgroundName, orientation] of backgroundOrientations) {
+        const dataUrl = published.assets.backgrounds?.[backgroundName];
+        if (dataUrl) await backend.saveBackground(backgroundName, orientation, decodeSvgDataUrl(dataUrl));
+      }
+
+      const propNames = new Set(Object.values(published.props || {}).map((prop) => prop.prop).filter(Boolean));
+      for (const propName of propNames) {
+        const dataUrl = published.assets.props?.[propName];
+        if (dataUrl) await backend.saveProp(propName, decodeSvgDataUrl(dataUrl), published.assets.propMeta?.[propName] || {});
+      }
+
+      const skitId = await backend.saveSkit(null, {
+        meta: { ...(published.meta || {}), title: `${published.meta?.title || 'Pelican sample'} — Remix` },
+        stage: published.stage,
+        cast: published.cast,
+        props: published.props || {},
+        script: published.script || []
+      });
+      await Promise.all([loadSpriteList(), loadBackgrounds(), loadProps(), loadSkits()]);
+      await selectSkit(skitId);
+      updateStatus('Sample imported. Change the dialogue, actors, or staging to make it yours.');
+    }
+
     async function maybeShowBrowserWelcome() {
       const backend = getCurrentBackend();
       if (!backend || backend.mode !== 'browser') return;
@@ -142,48 +220,19 @@
       const hasExistingData =
         (characterList && characterList.length > 0) ||
         (backgroundList && backgroundList.length > 0) ||
-        (propList && propList.length > 0);
+        (propList && propList.length > 0) ||
+        (skitList && skitList.length > 0);
       if (hasExistingData) {
         window.AITSettings?.set?.({ welcomeDismissed: true });
         return;
       }
 
-      const welcome = document.createElement('div');
-      welcome.id = 'browser-welcome-modal';
-      welcome.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:3500;display:flex;align-items:center;justify-content:center;padding:18px;';
-      welcome.innerHTML = `
-        <div style="width:min(760px,95vw);background:var(--plumage-white);border:1px solid var(--sand-warm);border-radius:10px;padding:18px;">
-          <h3 style="margin:0 0 8px 0;">Welcome to AI Improv Theater</h3>
-          <p style="margin:0 0 14px 0;color:var(--wing-gray);font-size:14px;">
-            You can create characters and skits right here in your browser.
-          </p>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
-            <button type="button" data-welcome="ai" style="padding:12px;border:1px solid var(--sand-warm);background:var(--plumage-cream);border-radius:8px;cursor:pointer;">Start with AI</button>
-            <button type="button" data-welcome="import" style="padding:12px;border:1px solid var(--sand-warm);background:var(--plumage-cream);border-radius:8px;cursor:pointer;">Import from Community</button>
-            <button type="button" data-welcome="scratch" style="padding:12px;border:1px solid var(--sand-warm);background:var(--plumage-cream);border-radius:8px;cursor:pointer;">Start from scratch</button>
-          </div>
-        </div>
-      `;
-
-      const close = () => {
-        welcome.remove();
-        window.AITSettings?.set?.({ welcomeDismissed: true });
-      };
-
-      welcome.addEventListener('click', (event) => {
-        if (event.target === welcome) close();
+      window.AITSettingsUI?.openOnboarding?.({
+        onRemix: importBundledSample,
+        onImport: async () => openImportModal(),
+        onScratch: async () => updateStatus('Empty studio ready. Draw a character or write a skit to begin.'),
+        onReady: async () => updateAiBanner()
       });
-      welcome.querySelector('[data-welcome="ai"]').addEventListener('click', () => {
-        close();
-        window.AITSettingsUI?.open?.();
-      });
-      welcome.querySelector('[data-welcome="import"]').addEventListener('click', () => {
-        close();
-        openImportModal();
-      });
-      welcome.querySelector('[data-welcome="scratch"]').addEventListener('click', close);
-
-      document.body.appendChild(welcome);
     }
 
     // === INLINE HANDLER MIGRATION ===
@@ -801,6 +850,9 @@
     }
 
     async function selectSkit(id) {
+      // Clicking the already-open skit should not start a second asynchronous
+      // load that can replace edits made while it is in flight.
+      if (currentEditMode === 'skit' && currentSkitId === id && currentSkitData) return;
       // Clear other selections
       clearAllSelections();
 
@@ -862,28 +914,38 @@
         const isManual = pos === 'manual';
         return `
         <div class="cast-member" data-char-id="${id}">
-          <div class="cast-header">
-            <span class="cast-id">${id}</span>
-            <span class="cast-sprite">→ ${char.sprite}</span>
-          </div>
-          <div class="cast-fields">
-            <label>Start:
-              <select class="cast-position" data-ait-onchange="updateCastPosition('${id}', this.value, this)">
-                <option value="center" ${pos === 'center' ? 'selected' : ''}>Center</option>
-                <option value="left" ${pos === 'left' ? 'selected' : ''}>Left</option>
-                <option value="right" ${pos === 'right' ? 'selected' : ''}>Right</option>
-                <option value="offscreen-left" ${pos === 'offscreen-left' ? 'selected' : ''}>Offscreen Left</option>
-                <option value="offscreen-right" ${pos === 'offscreen-right' ? 'selected' : ''}>Offscreen Right</option>
-                <option value="manual" ${isManual ? 'selected' : ''}>Manual</option>
-              </select>
-            </label>
-            <span class="cast-manual-input" style="display: ${isManual ? 'inline' : 'none'}">
-              <input type="number" class="cast-manual-x" value="${char.startX ?? char.x ?? 50}" min="-50" max="150" data-ait-onchange="updateCastManualPosition('${id}', this.value)">
-            </span>
+          <img class="cast-portrait" alt="${escapeHtml(id)} character" data-cast-sprite="${escapeHtml(char.sprite)}">
+          <div class="cast-details">
+            <div class="cast-header">
+              <span class="cast-id">${escapeHtml(id)}</span>
+              <span class="cast-sprite">→ ${escapeHtml(char.sprite)}</span>
+            </div>
+            <div class="cast-fields">
+              <label>Start:
+                <select class="cast-position" data-ait-onchange="updateCastPosition('${id}', this.value, this)">
+                  <option value="center" ${pos === 'center' ? 'selected' : ''}>Center</option>
+                  <option value="left" ${pos === 'left' ? 'selected' : ''}>Left</option>
+                  <option value="right" ${pos === 'right' ? 'selected' : ''}>Right</option>
+                  <option value="offscreen-left" ${pos === 'offscreen-left' ? 'selected' : ''}>Offscreen Left</option>
+                  <option value="offscreen-right" ${pos === 'offscreen-right' ? 'selected' : ''}>Offscreen Right</option>
+                  <option value="manual" ${isManual ? 'selected' : ''}>Manual</option>
+                </select>
+              </label>
+              <span class="cast-manual-input" style="display: ${isManual ? 'inline' : 'none'}">
+                <input type="number" class="cast-manual-x" value="${char.startX ?? char.x ?? 50}" min="-50" max="150" data-ait-onchange="updateCastManualPosition('${id}', this.value)">
+              </span>
+            </div>
+            <div class="cast-voice-row">
+              <select class="cast-voice-select" aria-label="Voice for ${escapeHtml(id)}" data-ait-onchange="updateSkitCastVoice('${id}', this)" disabled><option value="">Loading voices…</option></select>
+              <button class="cast-voice-test" type="button" data-ait-onclick="previewSkitCastVoice('${id}', this)" disabled>▶ Test</button>
+              <input class="cast-voice-custom" aria-label="Custom voice ID for ${escapeHtml(id)}" autocomplete="off" placeholder="Voice ID or reference" data-ait-oninput="updateSkitCastVoice('${id}', this)">
+              <span class="cast-voice-note"></span>
+            </div>
           </div>
         </div>
       `}).join('') || '<p style="color:var(--sand-warm);font-size:0.85em;">No cast defined</p>';
       document.getElementById('skit-cast-list').innerHTML = castHtml;
+      hydrateSkitCastVoices().catch((error) => console.warn('Could not load skit cast voices:', error));
 
       // Props
       const propsHtml = Object.entries(skit.props || {}).map(([id, prop]) => `
@@ -919,6 +981,10 @@
             break;
           case 'shot':
             content = `📷 ${action.type}${action.who ? ` (${action.who})` : ''}`;
+            cssClass = 'shot';
+            break;
+          case 'background':
+            content = `🎞 cut to ${action.name}${action.orientation ? ` (${action.orientation})` : ''}`;
             cssClass = 'shot';
             break;
           case 'enter':
@@ -1148,6 +1214,16 @@
       ).join('');
     }
 
+    function getBackgroundOptions() {
+      const names = (availableBackgrounds || []).map((background) => background.name || background).filter(Boolean);
+      if (currentSkitData?.stage?.background && !names.includes(currentSkitData.stage.background)) {
+        names.unshift(currentSkitData.stage.background);
+      }
+      return names.length
+        ? names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('')
+        : '<option value="">No backgrounds available</option>';
+    }
+
     function updateModalFields() {
       const actionType = document.getElementById('action-type').value;
       const fieldsDiv = document.getElementById('modal-fields');
@@ -1155,6 +1231,29 @@
 
       let html = '';
       switch (actionType) {
+        case 'background':
+          const visibilityOptions = Object.keys(currentSkitData?.cast || {}).map((id) => `
+            <label class="checkbox-label">
+              <input type="checkbox" class="action-background-character" value="${escapeHtml(id)}" checked>
+              ${escapeHtml(id)}
+            </label>`).join('');
+          html = `
+            <div class="form-group">
+              <label>Background</label>
+              <select id="action-background">${getBackgroundOptions()}</select>
+            </div>
+            <div class="form-group">
+              <label>Orientation</label>
+              <select id="action-orientation">
+                <option value="landscape">landscape</option>
+                <option value="portrait">portrait</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Characters visible after cut</label>
+              ${visibilityOptions || '<small>No cast members</small>'}
+            </div>`;
+          break;
         case 'say':
           html = `
             <div class="form-group">
@@ -1491,6 +1590,15 @@
       // Populate fields with existing values
       setTimeout(() => {
         switch (action.do) {
+          case 'background':
+            if (document.getElementById('action-background')) document.getElementById('action-background').value = action.name || '';
+            if (document.getElementById('action-orientation')) document.getElementById('action-orientation').value = action.orientation || 'landscape';
+            if (Array.isArray(action.show)) {
+              document.querySelectorAll('.action-background-character').forEach((checkbox) => {
+                checkbox.checked = action.show.includes(checkbox.value);
+              });
+            }
+            break;
           case 'say':
             if (document.getElementById('action-who')) document.getElementById('action-who').value = action.who || '';
             if (document.getElementById('action-line')) document.getElementById('action-line').value = action.line || '';
@@ -1692,6 +1800,15 @@
       let action = { do: actionType };
 
       switch (actionType) {
+        case 'background':
+          action.name = document.getElementById('action-background')?.value;
+          action.orientation = document.getElementById('action-orientation')?.value || 'landscape';
+          action.show = Array.from(document.querySelectorAll('.action-background-character:checked')).map((checkbox) => checkbox.value);
+          if (!action.name) {
+            alert('Background is required');
+            return;
+          }
+          break;
         case 'say':
           action.who = document.getElementById('action-who')?.value;
           action.line = document.getElementById('action-line')?.value;
@@ -3566,51 +3683,137 @@
       }
     }
 
-    async function populateVoiceSelector() {
+    function selectedVoiceId() {
       const select = document.getElementById('voice-select');
+      if (select?.value === '__custom__') return document.getElementById('voice-custom-id')?.value.trim() || '';
+      return select?.value || '';
+    }
 
-      // Start with default option
-      let html = '<option value="">-- Select Voice --</option>';
+    function editorVoiceSource(settings = window.AITSettings?.get?.() || {}) {
+      return getCurrentBackend()?.mode === 'browser'
+        ? (window.AITTtsProvider?.getVoiceSourceKey?.(settings) || settings.ttsMode || 'none')
+        : 'server:pocket';
+    }
 
-      // Add built-in voices
-      html += '<optgroup label="Built-in Voices">';
-      html += AVAILABLE_VOICES.map(v =>
-        `<option value="${v.id}">${v.name} - ${v.description}</option>`
-      ).join('');
-      html += '</optgroup>';
+    function editorVoiceAssignment(metaVoice, settings = window.AITSettings?.get?.() || {}) {
+      const source = editorVoiceSource(settings);
+      if (source === 'server:pocket') {
+        const scoped = metaVoice?.assignments?.[source];
+        if (scoped?.id) return scoped;
+        if ((!metaVoice?.source || metaVoice.source === source) && metaVoice?.id) return metaVoice;
+        return null;
+      }
+      return window.AITTtsProvider?.getAssignedVoiceConfig?.(metaVoice, settings) || null;
+    }
 
-      // Fetch custom voices
+    function setVoiceSelectorValue(voiceId) {
+      const select = document.getElementById('voice-select');
+      const customInput = document.getElementById('voice-custom-id');
+      if (!select || !customInput) return;
+      const hasOption = Array.from(select.options).some((option) => option.value === voiceId);
+      if (voiceId && hasOption) {
+        select.value = voiceId;
+        customInput.value = '';
+      } else if (voiceId && Array.from(select.options).some((option) => option.value === '__custom__')) {
+        select.value = '__custom__';
+        customInput.value = voiceId;
+      } else {
+        select.value = '';
+        customInput.value = '';
+      }
+      customInput.style.display = select.value === '__custom__' ? 'block' : 'none';
+    }
+
+    async function populateVoiceSelector(force = false) {
+      const select = document.getElementById('voice-select');
+      const note = document.getElementById('voice-source-note');
+      const refresh = document.getElementById('voice-refresh-btn');
+      const settings = window.AITSettings?.get?.() || {};
+      const provider = window.AITTtsProvider;
+      const previousVoice = editorVoiceAssignment(currentMeta?.voice, settings)?.id || selectedVoiceId();
+      select.innerHTML = '';
+      select.add(new Option('-- Use voice source default --', ''));
+      select.disabled = true;
+      if (refresh) refresh.disabled = true;
+
       try {
         const backend = await requireBackend();
-        const customVoices = await backend.listVoices();
-        if (customVoices.length > 0) {
-          html += '<optgroup label="Custom Voices">';
-          html += customVoices.map(v =>
-            `<option value="custom:${v.name}">${v.displayName || v.name}</option>`
-          ).join('');
-          html += '</optgroup>';
+        if (backend.mode !== 'browser') {
+          const builtInGroup = document.createElement('optgroup');
+          builtInGroup.label = 'Built-in server voices';
+          AVAILABLE_VOICES.forEach((voice) => builtInGroup.appendChild(new Option(`${voice.name} — ${voice.description}`, voice.id)));
+          select.appendChild(builtInGroup);
+
+          const customVoices = await backend.listVoices();
+          if (customVoices.length) {
+            const customGroup = document.createElement('optgroup');
+            customGroup.label = 'Custom voices';
+            customVoices.forEach((voice) => customGroup.appendChild(new Option(voice.displayName || voice.name, `custom:${voice.name}`)));
+            select.appendChild(customGroup);
+          }
+          note.textContent = 'Voices supplied by the full local theater server.';
+          select.disabled = false;
+          if (refresh) refresh.disabled = false;
+        } else if (settings.ttsMode === 'none') {
+          note.textContent = 'Captions only. Open Settings → Voices to connect a voice source.';
+        } else {
+          const voices = await provider?.listAvailableVoices?.(settings, backend.fetchImpl || fetch, force) || [];
+          const source = provider?.getVoiceSourceKey?.(settings) || settings.ttsMode;
+          const labels = {
+            'cloud:openai': 'OpenAI voices',
+            'cloud:elevenlabs': 'Voices in your ElevenLabs account',
+            'custom:hermes-piper': 'Voices exposed by Hermes / Piper'
+          };
+          if (voices.length) {
+            const group = document.createElement('optgroup');
+            group.label = labels[source] || 'Server voices';
+            voices.forEach((voice) => {
+              const detail = voice.description ? ` — ${voice.description}` : '';
+              group.appendChild(new Option(`${voice.name || voice.id}${detail}`, voice.id));
+            });
+            select.appendChild(group);
+          }
+          if (source.startsWith('custom:') && source !== 'custom:hermes-piper') {
+            select.add(new Option('Other voice ID or reference…', '__custom__'));
+          }
+          if (source === 'cloud:elevenlabs' && !settings.ttsKey) {
+            note.textContent = 'Add your ElevenLabs key in Settings → Voices to load your account voices.';
+          } else if (!voices.length && source === 'cloud:elevenlabs') {
+            note.textContent = 'No ElevenLabs voices were returned. Check the key, then refresh.';
+          } else if (source === 'custom:hermes-piper') {
+            note.textContent = 'Hermes currently exposes Alba. Only voices its API makes selectable appear here.';
+          } else {
+            note.textContent = `${voices.length} ${voices.length === 1 ? 'voice' : 'voices'} available from the active source.`;
+          }
+          select.disabled = false;
+          if (refresh) refresh.disabled = false;
         }
       } catch (err) {
         console.warn('Failed to fetch custom voices:', err);
+        note.textContent = `Could not load voices: ${err.message}`;
       }
-
-      select.innerHTML = html;
+      setVoiceSelectorValue(previousVoice);
+      updateVoiceSelection();
     }
 
     function loadSpriteVoiceSettings(meta) {
       const voice = meta?.voice || {};
+      const settings = window.AITSettings?.get?.() || {};
+      const selected = editorVoiceAssignment(voice, settings);
 
-      document.getElementById('voice-select').value = voice.id || '';
-      document.getElementById('voice-pitch').value = voice.pitch ?? 0;
-      document.getElementById('voice-speed').value = voice.speed ?? 1;
-      document.getElementById('voice-volume').value = voice.volume ?? 1;
+      setVoiceSelectorValue(selected?.id || '');
+      document.getElementById('voice-pitch').value = selected?.pitch ?? 0;
+      document.getElementById('voice-speed').value = selected?.speed ?? 1;
+      document.getElementById('voice-volume').value = selected?.volume ?? 1;
 
       updateVoiceParamDisplays();
-      document.getElementById('voice-preview-btn').disabled = !voice.id;
+      document.getElementById('voice-preview-btn').disabled = !selectedVoiceId();
     }
 
     function updateVoiceSelection() {
-      const voiceId = document.getElementById('voice-select').value;
+      const customInput = document.getElementById('voice-custom-id');
+      customInput.style.display = document.getElementById('voice-select').value === '__custom__' ? 'block' : 'none';
+      const voiceId = selectedVoiceId();
       document.getElementById('voice-preview-btn').disabled = !voiceId;
     }
 
@@ -3624,7 +3827,7 @@
     }
 
     async function previewVoice() {
-      const voiceId = document.getElementById('voice-select').value;
+      const voiceId = selectedVoiceId();
       if (!voiceId) return;
 
       const btn = document.getElementById('voice-preview-btn');
@@ -3665,7 +3868,6 @@
           }
         }
 
-        // Web Speech mode plays directly and returns no blob.
         if (!audioBlob) return;
         if (!audioBlob || audioBlob.size === 0) return;
 
@@ -3722,8 +3924,10 @@
         return;
       }
 
+      const settings = window.AITSettings?.get?.() || {};
+      const source = editorVoiceSource(settings);
       const voiceSettings = {
-        id: document.getElementById('voice-select').value || undefined,
+        id: selectedVoiceId() || undefined,
         pitch: parseFloat(document.getElementById('voice-pitch').value),
         speed: parseFloat(document.getElementById('voice-speed').value),
         volume: parseFloat(document.getElementById('voice-volume').value)
@@ -3734,9 +3938,17 @@
 
       try {
         // Update meta with voice settings, preserving current in-memory state
+        const previousVoice = currentMeta?.voice || {};
+        const assignments = { ...(previousVoice.assignments || {}) };
+        if (voiceSettings.id) assignments[source] = { ...voiceSettings };
+        else delete assignments[source];
         const updatedMeta = {
           ...(currentMeta || {}),
-          voice: voiceSettings
+          voice: {
+            ...voiceSettings,
+            source,
+            assignments
+          }
         };
 
         const backend = await requireBackend();
@@ -3754,6 +3966,163 @@
       } catch (err) {
         console.error('Failed to save voice settings:', err);
         updateStatus('Failed to save voice settings');
+      }
+    }
+
+    async function getEditorVoiceCatalog(force = false) {
+      const backend = await requireBackend();
+      const settings = window.AITSettings?.get?.() || {};
+      if (backend.mode !== 'browser') {
+        const imported = await backend.listVoices().catch(() => []);
+        return {
+          source: 'server:pocket',
+          mode: 'server',
+          voices: [
+            ...AVAILABLE_VOICES,
+            ...imported.map((voice) => ({ id: `custom:${voice.name}`, name: voice.displayName || voice.name, description: 'Imported voice' }))
+          ],
+          allowManual: false,
+          label: 'Local theater server'
+        };
+      }
+
+      const source = window.AITTtsProvider?.getVoiceSourceKey?.(settings) || settings.ttsMode || 'none';
+      const voices = await window.AITTtsProvider?.listAvailableVoices?.(settings, backend.fetchImpl || fetch, force) || [];
+      const labels = {
+        'cloud:openai': 'OpenAI',
+        'cloud:elevenlabs': 'ElevenLabs',
+        'custom:openai-compatible': settings.ttsCustomLocation === 'hosted' ? 'Hosted OpenAI-compatible server' : 'Local OpenAI-compatible server',
+        'custom:hermes-piper': 'Hermes / Piper'
+      };
+      return {
+        source,
+        mode: settings.ttsMode,
+        voices,
+        allowManual: source.startsWith('custom:') && source !== 'custom:hermes-piper',
+        label: labels[source] || 'Custom TTS server'
+      };
+    }
+
+    function addVoiceOptions(select, catalog) {
+      select.innerHTML = '';
+      select.add(new Option('Use character default', ''));
+      catalog.voices.forEach((voice) => {
+        const detail = voice.description ? ` — ${voice.description}` : '';
+        select.add(new Option(`${voice.name || voice.id}${detail}`, voice.id));
+      });
+      if (catalog.allowManual) select.add(new Option('Other voice ID or reference…', '__custom__'));
+    }
+
+    let skitVoiceHydrationVersion = 0;
+
+    async function hydrateSkitCastVoices(force = false) {
+      if (!currentSkitData?.cast) return;
+      const hydrationVersion = ++skitVoiceHydrationVersion;
+      document.querySelectorAll('.cast-member').forEach((card) => {
+        delete card.dataset.voiceReady;
+        card.querySelector('.cast-voice-select')?.setAttribute('disabled', '');
+      });
+      const catalog = await getEditorVoiceCatalog(force);
+      const backend = await requireBackend();
+      if (hydrationVersion !== skitVoiceHydrationVersion || currentEditMode !== 'skit') return;
+      for (const [charId, character] of Object.entries(currentSkitData.cast)) {
+        const card = document.querySelector(`.cast-member[data-char-id="${CSS.escape(charId)}"]`);
+        if (!card) continue;
+        const portrait = card.querySelector('.cast-portrait');
+        const select = card.querySelector('.cast-voice-select');
+        const customInput = card.querySelector('.cast-voice-custom');
+        const testButton = card.querySelector('.cast-voice-test');
+        const note = card.querySelector('.cast-voice-note');
+        getBackendAssetUrl('sprite', character.sprite, 'front').then((url) => { if (url) portrait.src = url; }).catch(() => {});
+
+        if (catalog.source === 'none') {
+          select.innerHTML = '<option>Captions only</option>';
+          select.disabled = true;
+          testButton.disabled = true;
+          note.textContent = 'Connect a cloud provider or custom TTS in Settings to cast voices.';
+          card.dataset.voiceReady = '1';
+          continue;
+        }
+
+        addVoiceOptions(select, catalog);
+        select.disabled = false;
+        const assignedId = character.voiceAssignments?.[catalog.source]?.id || (catalog.source === 'server:pocket' ? character.voice : '') || '';
+        const hasOption = Array.from(select.options).some((option) => option.value === assignedId);
+        if (assignedId && hasOption) {
+          select.value = assignedId;
+        } else if (assignedId && catalog.allowManual) {
+          select.value = '__custom__';
+          customInput.value = assignedId;
+          customInput.style.display = 'block';
+        } else {
+          select.value = '';
+        }
+        testButton.disabled = !catalog.voices.length && !assignedId && !catalog.allowManual;
+        note.textContent = `${catalog.label}. This choice overrides the character default only in this skit.`;
+        card.dataset.voiceReady = '1';
+      }
+    }
+
+    function skitCastVoiceId(card) {
+      const select = card.querySelector('.cast-voice-select');
+      return select.value === '__custom__' ? card.querySelector('.cast-voice-custom').value.trim() : select.value;
+    }
+
+    function updateSkitCastVoice(charId, control) {
+      const character = currentSkitData?.cast?.[charId];
+      const card = control.closest('.cast-member');
+      if (!character || !card) return;
+      const settings = window.AITSettings?.get?.() || {};
+      const source = editorVoiceSource(settings);
+      const select = card.querySelector('.cast-voice-select');
+      const customInput = card.querySelector('.cast-voice-custom');
+      customInput.style.display = select.value === '__custom__' ? 'block' : 'none';
+      const id = skitCastVoiceId(card);
+      character.voiceAssignments = { ...(character.voiceAssignments || {}) };
+      if (id) character.voiceAssignments[source] = { id, pitch: 0, speed: 1, volume: 1 };
+      else delete character.voiceAssignments[source];
+      if (source === 'server:pocket') character.voice = id || undefined;
+      card.querySelector('.cast-voice-test').disabled = !id && select.options.length <= 1;
+      markSkitDirty();
+    }
+
+    async function previewSkitCastVoice(charId, button) {
+      const character = currentSkitData?.cast?.[charId];
+      const card = button.closest('.cast-member');
+      if (!character || !card) return;
+      const original = button.textContent;
+      button.disabled = true;
+      button.textContent = '…';
+      try {
+        const backend = await requireBackend();
+        const settings = window.AITSettings?.get?.() || {};
+        let voiceId = skitCastVoiceId(card);
+        let spriteVoice = null;
+        try { spriteVoice = (await backend.getSpriteMeta(character.sprite))?.voice || null; } catch (_) {}
+        const castVoice = { assignments: character.voiceAssignments || {} };
+        const assigned = editorVoiceAssignment(castVoice, settings) || editorVoiceAssignment(spriteVoice, settings);
+        voiceId = voiceId || assigned?.id || window.AITTtsProvider?.resolveVoiceConfig?.(spriteVoice, settings, character.voice)?.id;
+        if (!voiceId) throw new Error('Choose a voice first.');
+        const sample = currentSkitData.script?.find((action) => action.do === 'say' && action.who === charId)?.line || `Hello, I am ${charId}. This is my voice in this skit.`;
+        let blob;
+        if (voiceId.startsWith('custom:') && backend.supportsVoiceCreation) blob = await backend.previewCustomVoice(voiceId.slice(7), sample);
+        else blob = await backend.previewTts(sample, { id: voiceId, pitch: assigned?.pitch ?? 0, speed: assigned?.speed ?? 1, volume: assigned?.volume ?? 1 });
+        if (!blob?.size) throw new Error('The voice source returned no audio.');
+        if (currentAudioPreview) {
+          currentAudioPreview.pause();
+          if (currentAudioPreview.dataset.objectUrl) URL.revokeObjectURL(currentAudioPreview.dataset.objectUrl);
+        }
+        const objectUrl = URL.createObjectURL(blob);
+        currentAudioPreview = new Audio(objectUrl);
+        currentAudioPreview.dataset.objectUrl = objectUrl;
+        await currentAudioPreview.play();
+        updateStatus(`Playing ${charId}'s voice`);
+      } catch (error) {
+        console.error('Skit voice preview failed:', error);
+        updateStatus(`Voice test failed: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = original;
       }
     }
 
@@ -8331,7 +8700,16 @@
       }
 
       window.AITSettingsUI?.attachButton?.('#btn-settings');
-      window.addEventListener('ait:settings-updated', updateAiBanner);
+      window.addEventListener('ait:settings-updated', async () => {
+        updateAiBanner();
+        const refreshes = [populateVoiceSelector(true)];
+        // Start skit hydration immediately so a subsequent skit selection can
+        // supersede it. Waiting for the sidebar first allowed a stale refresh
+        // to overwrite a voice the user had just chosen.
+        if (currentEditMode === 'skit') refreshes.push(hydrateSkitCastVoices(true));
+        await Promise.all(refreshes);
+        loadSpriteVoiceSettings(currentMeta);
+      });
       window.addEventListener('ait:data-updated', async () => {
         await Promise.all([loadSpriteList(), loadBackgrounds(), loadProps(), loadSkits()]);
         if (currentSpriteName && !characterList.includes(currentSpriteName) && currentEditMode === 'sprite') {

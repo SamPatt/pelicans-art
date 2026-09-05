@@ -34,3 +34,11 @@ artifacts/
 
 # Admin pages (contain secrets)
 src/admin-*.html
+
+# Private experiments and local diagnostics
+private-archive/
+debug-artifacts/
+
+# Environment variants must never be published
+.env.*
+!.env.example

@@ -6,7 +6,7 @@ Scope: homepage redesign, watch/share pages, current bundled/Pouch skits, Model 
 
 The Description is the homepage's featured MP4 and default interactive selection. The Astra disguise pose replaces the old mascot. Dedicated share pages supply titles and thumbnails without JavaScript. Existing skits remain available. All 11 reusable assets are already in Pouch and the finished skit retains its original URL and eight audio clips.
 
-The remaining release step is pushing the two local feature commits to main and waiting for GitHub Pages. The earlier push was rejected by automatic approval review, so it has not been retried without explicit approval. After deployment, verify the homepage, a Pouch play link, and a freshly pasted Signal link. Signal itself has not been tested through a signed-in client; HTML metadata and image availability are the automated checks, not a guarantee of the exact card layout.
+The homepage and share-page changes were subsequently published, through commit `8d5c320`. Before a broader announcement, verify a freshly pasted Signal link. Signal itself has not been tested through a signed-in client; HTML metadata and image availability are the automated checks, not a guarantee of the exact card layout.
 
 For a personal share with Simon, use the dedicated skit page after deployment. The creative work and playback are ready for that review; the broader service concerns below are separate.
 
@@ -24,6 +24,6 @@ For a personal share with Simon, use the dedicated skit page after deployment. T
 - Mascot animation respects reduced motion; asset carousel has no automatic scrolling. Keyboard focus and a skip link are provided; selected skits expose their pressed state.
 - Current release test suite covers skit loading, playback, phone captions, share-page metadata, model defaults, SVG sanitation, and upload-model persistence.
 - All 12 Description records (finished skit plus 11 reusable assets) report GPT-6 Astra through the live API.
-- The homepage no longer references the uncommitted local setup guide; it links to the repository instead. Unrelated experimental skits and editor/provider drafts remain outside the release.
+- See `REPOSITORY-READINESS.md` for the subsequent studio checkpoint, local experiment archive, and remaining repository publication decisions.
 
 The configured tailnet preview hostname currently fails DNS. Local preview at `http://127.0.0.1:4173/` works. No Tailscale configuration was changed.

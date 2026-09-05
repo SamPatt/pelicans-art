@@ -1,4 +1,5 @@
 import { WebSocketServer } from 'ws';
+import { isAllowedOrigin } from '../middleware/origin.js';
 
 /**
  * Set up WebSocket server for real-time updates
@@ -12,8 +13,8 @@ import { WebSocketServer } from 'ws';
  * - sprite:created, sprite:updated, sprite:deleted
  * - publish:progress, publish:complete, publish:error
  */
-export function setupWebSocket(server) {
-  const wss = new WebSocketServer({ server, path: '/ws' });
+export function setupWebSocket(server, allowedOrigins = '') {
+  const wss = new WebSocketServer({ server, path: '/ws', verifyClient: ({ req }) => isAllowedOrigin(req, allowedOrigins) });
 
   // Track subscriptions: Map<skitId, Set<WebSocket>>
   const subscriptions = new Map();

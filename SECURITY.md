@@ -1,11 +1,11 @@
 # Security
 
-## Supported surface
+The Node.js authoring server is for a single trusted operator. It can write and delete local assets, relay speech requests, and use configured integration credentials. It binds to loopback by default. Use an SSH tunnel or an authenticated private reverse proxy for VPS access; it is not an authenticated multi-user public service.
 
-The static site and current default branch receive security fixes. The local Express authoring server is designed for a trusted machine or private network and must not be exposed directly to the public internet.
+Browser requests must come from the server's own origin or an exact origin configured in `CORS_ORIGIN`. For a private HTTPS reverse proxy, configure its external origin explicitly. Origin checks are not user authentication and do not replace network access controls.
 
-Browser-mode provider keys are stored in that browser's local storage and sent directly to the selected provider. They are not sent to pelicans.art. Treat community SVG and imported project files as untrusted input; the application sanitizes SVG before inline rendering.
+Never commit `.env` files, API keys, systemd credentials, private voice recordings, or diagnostic captures that may contain them. The browser can optionally remember provider keys in local storage; use that option only on a trusted device.
 
-## Reporting a vulnerability
+The community Pouch Worker is a separate service. Its current unauthenticated upload endpoint still needs abuse controls and ownership/moderation work before unrestricted promotion.
 
-Please report vulnerabilities privately through GitHub's **Report a vulnerability** feature in the repository Security tab. Do not include live credentials in an issue, commit, screenshot, or sample file. Revoke an exposed credential before doing anything else.
+Report suspected vulnerabilities through GitHub's private vulnerability reporting if enabled, or contact the repository owner privately. Do not post credentials or exploit details in a public issue.

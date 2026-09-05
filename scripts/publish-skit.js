@@ -175,12 +175,21 @@ async function publishSkit(name) {
     }
   }
   
-  // Load background
+  // Load every background used by the editable shot list.
   const backgrounds = {};
-  const bgPath = path.join(SRC_DIR, 'backgrounds', `${skit.stage.background}.svg`);
-  if (fs.existsSync(bgPath)) {
-    backgrounds[skit.stage.background] = loadAsset(bgPath);
-    console.log(`  Loaded background: ${skit.stage.background}`);
+  const backgroundRequests = new Map();
+  if (skit.stage?.background) backgroundRequests.set(skit.stage.background, skit.stage.orientation || 'landscape');
+  for (const beat of skit.script || []) {
+    if (beat.do === 'background' && beat.name) backgroundRequests.set(beat.name, beat.orientation || 'landscape');
+  }
+  for (const [backgroundName, orientation] of backgroundRequests) {
+    const nestedPath = path.join(SRC_DIR, 'backgrounds', backgroundName, `${orientation}.svg`);
+    const legacyPath = path.join(SRC_DIR, 'backgrounds', `${backgroundName}.svg`);
+    const bgPath = fs.existsSync(nestedPath) ? nestedPath : legacyPath;
+    if (fs.existsSync(bgPath)) {
+      backgrounds[backgroundName] = loadAsset(bgPath);
+      console.log(`  Loaded background: ${backgroundName}`);
+    }
   }
   
   // Generate audio

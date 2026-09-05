@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import express from 'express';
 import cors from 'cors';
+import { originGuard } from './middleware/origin.js';
 import { createServer } from 'http';
 import fetch from 'node-fetch';
 
@@ -29,7 +30,8 @@ const server = createServer(app);
 app.set('trust proxy', true);
 
 // Middleware
-app.use(cors({ origin: CORS_ORIGIN }));
+app.use(originGuard(CORS_ORIGIN));
+app.use(cors({ origin: true }));
 app.use(express.json({ limit: '100mb' })); // Large audio files for voice cloning
 
 // API routes
@@ -98,7 +100,7 @@ app.use('/props', express.static(path.join(SRC_DIR, 'props')));
 app.use('/', express.static(SRC_DIR));
 
 // WebSocket setup
-const wss = setupWebSocket(server);
+const wss = setupWebSocket(server, CORS_ORIGIN);
 
 // Make wss available to routes for broadcasting
 app.set('wss', wss);

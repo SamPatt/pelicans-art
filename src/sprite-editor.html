@@ -1385,15 +1385,29 @@
     }
 
     .cast-member {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      padding: 8px 10px;
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr);
+      gap: 10px;
+      padding: 10px;
       background: var(--plumage-white);
-      border-radius: 4px;
-      margin-bottom: 5px;
+      border: 1px solid var(--plumage-cream);
+      border-radius: 7px;
+      margin-bottom: 8px;
       font-size: 0.85em;
     }
+
+    .cast-portrait {
+      width: 54px;
+      height: 70px;
+      object-fit: contain;
+      align-self: start;
+      padding: 4px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      background: var(--plumage-cream);
+    }
+
+    .cast-details { min-width: 0; }
 
     .cast-header {
       display: flex;
@@ -1415,6 +1429,39 @@
       font-size: 0.9em;
       align-items: center;
     }
+
+    .cast-voice-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) auto;
+      gap: 6px;
+      margin-top: 7px;
+      align-items: center;
+    }
+
+    .cast-voice-row select,
+    .cast-voice-custom {
+      min-width: 0;
+      padding: 5px 6px;
+      background: var(--plumage-white);
+      border: 1px solid var(--sand-warm);
+      color: var(--wing-dark);
+      border-radius: 4px;
+    }
+
+    .cast-voice-test {
+      padding: 5px 8px;
+      border: 1px solid var(--sand-warm);
+      border-radius: 4px;
+      background: var(--plumage-cream);
+      color: var(--wing-dark);
+      cursor: pointer;
+    }
+
+    .cast-voice-test:disabled { opacity: .5; cursor: not-allowed; }
+
+    .cast-voice-custom { display:none; grid-column:1/-1; width:100%; box-sizing:border-box; }
+
+    .cast-voice-note { grid-column:1/-1; color:var(--wing-gray); font-size:.82em; line-height:1.35; }
 
     .cast-fields label {
       color: var(--wing-gray);
@@ -2632,6 +2679,37 @@
       font-size: 0.85em;
     }
 
+    .voice-selector-refresh {
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--sand-warm);
+      border-radius: 4px;
+      background: var(--plumage-cream);
+      color: var(--wing-dark);
+      cursor: pointer;
+    }
+
+    .voice-source-note {
+      margin: -4px 0 10px;
+      color: var(--wing-gray);
+      font-size: 0.75em;
+      line-height: 1.4;
+    }
+
+    .voice-custom-id {
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      margin: -4px 0 10px;
+      padding: 7px 8px;
+      border: 1px solid var(--sand-warm);
+      border-radius: 4px;
+      background: var(--plumage-white);
+      color: var(--wing-dark);
+    }
+
     .voice-preview-btn {
       padding: 6px 12px;
       background: var(--plumage-cream);
@@ -3554,6 +3632,7 @@
                 <option value="look">Look</option>
               </optgroup>
               <optgroup label="Camera">
+                <option value="background">Background cut</option>
                 <option value="shot">Shot (camera)</option>
                 <option value="pause">Pause</option>
               </optgroup>
@@ -3853,7 +3932,10 @@
             <select id="voice-select" data-ait-onchange="updateVoiceSelection()">
               <option value="">-- Select Voice --</option>
             </select>
+            <button class="voice-selector-refresh" id="voice-refresh-btn" type="button" title="Refresh voices" aria-label="Refresh voices" data-ait-onclick="populateVoiceSelector(true)">↻</button>
           </div>
+          <div id="voice-source-note" class="voice-source-note">Choose a voice source in Settings.</div>
+          <input id="voice-custom-id" class="voice-custom-id" autocomplete="off" placeholder="Enter the voice ID or reference" data-ait-oninput="updateVoiceSelection()">
           <button class="voice-preview-btn" id="voice-preview-btn" data-ait-onclick="previewVoice()" disabled style="width:100%;margin-bottom:10px;">
             ▶ Preview Voice
           </button>
@@ -3922,6 +4004,7 @@
   <script src="js/svg-sanitizer.js"></script>
   <script src="js/backend/interface.js"></script>
   <script src="js/settings.js"></script>
+  <script src="js/model-catalog.js"></script>
   <script src="js/settings-ui.js"></script>
   <script src="js/backend/prompts.js"></script>
   <script src="js/backend/ai-provider.js"></script>

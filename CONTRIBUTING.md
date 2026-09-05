@@ -1,29 +1,49 @@
-# Contributing
+# Contributing to pelicans.art
 
-pelicans.art is still an experimental studio, but focused bug reports and small changes are welcome once the repository opens publicly.
+Thanks for helping with the strange little theater.
 
-## Local setup
+## Start here
 
-Use Node.js 22 or newer, FFmpeg, and npm:
+Follow [Local setup](docs/LOCAL-SETUP.md), then run:
 
 ```bash
-npm ci
-npm --prefix server ci
-npm --prefix worker ci
-npx playwright install chromium
 npm test
-npm --prefix server start
 ```
 
-The authoring server binds to `127.0.0.1` by default. Do not expose it directly to the public internet.
+Keep the local authoring server private. Do not commit API keys, provider tokens, voice recordings without permission, generated caches, or local `.env` files.
 
-## Pull requests
+## Repository map
 
-- Keep each change focused and explain the user-visible effect.
-- Add or update tests for behavior changes.
-- Run `npm test` before submitting.
-- Never commit credentials, `.env` files, generated `node_modules`, or private voice samples.
-- Sanitize any SVG before inserting it into the DOM; do not add a raw `innerHTML` path for generated, imported, or community content.
-- Only contribute scripts and media you have the right to share. See `ASSET-LICENSE.md`.
+- `src/` contains the public static site, editor, player, and bundled creative assets.
+- `server/` contains the trusted local authoring, publishing, and voice server.
+- `worker/` contains the community Pouch Worker.
+- `scripts/` contains capture and repository utilities.
+- `tests/e2e/` contains Playwright coverage.
 
-Large new features are easier to review after a short design issue describing the proposed workflow.
+## Making a change
+
+1. Preserve unrelated working-tree changes.
+2. Add or update tests for behavior changes.
+3. Run the smallest relevant tests while iterating.
+4. Run `npm test` before proposing a release.
+5. For visual changes, inspect desktop and phone layouts and check keyboard focus.
+6. For skit or player changes, capture the affected skit and review the MP4 plus manifest.
+
+## Creative assets
+
+Characters must follow the SVG structure described in [Sprite guide](docs/SPRITE-GUIDE.md). Review [ASSET-LICENSE.md](ASSET-LICENSE.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) before adding reference-derived artwork, voices, dialogue, or scenery.
+
+Do not add an asset unless its provenance and permitted use are documented.
+
+## Browser and server behavior
+
+The same editor supports two backends. Changes to shared UI should be tested in both:
+
+- Browser Studio: `/editor?mode=browser`
+- Local server: `/editor?mode=server`
+
+Browser Studio stores projects in IndexedDB. Server mode stores project data on disk and exposes additional custom voice capabilities.
+
+## Publishing and capture
+
+Published skits are self-contained JSON bundles. Capture output belongs under `artifacts/captures/` and should be reviewed for complete dialogue, correct final action timing, audio/video codecs, and clean opening/still frames.

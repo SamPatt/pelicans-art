@@ -143,13 +143,14 @@ function detectSyncMarker(rawVideo) {
   const frameRate = numerator / denominator;
   const pixels = runBuffer('ffmpeg', [
     '-v', 'error', '-i', rawVideo,
-    '-vf', 'format=rgb24,crop=1:1:1:1',
+    '-vf', 'format=rgb24,crop=1:1:16:16',
     '-f', 'rawvideo', 'pipe:1'
   ]);
 
   for (let offset = 0; offset + 2 < pixels.length; offset += 3) {
     const [red, green, blue] = [pixels[offset], pixels[offset + 1], pixels[offset + 2]];
-    if (red > 220 && green < 40 && blue > 220) {
+    // Leave tolerance for the chroma loss introduced by Playwright's WebM encoder.
+    if (red > 150 && green < 120 && blue > 150) {
       return { frame: offset / 3, frameRate, trimStart: (offset / 3) / frameRate };
     }
   }
@@ -215,7 +216,7 @@ async function captureSkit(browser, skitId, options) {
     window.__captureStart = 0;
     const marker = document.createElement('div');
     marker.id = 'capture-sync-marker';
-    marker.style.cssText = 'position:fixed;left:0;top:0;width:3px;height:3px;background:transparent;z-index:2147483647;pointer-events:none';
+    marker.style.cssText = 'position:fixed;left:0;top:0;width:32px;height:32px;background:transparent;z-index:2147483647;pointer-events:none';
     document.body.appendChild(marker);
     window.addEventListener('ai-improv:audio-start', event => {
       window.__captureTimeline.push({ ...event.detail, at: performance.now() });

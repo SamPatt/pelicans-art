@@ -302,11 +302,19 @@
         createMouthGroup(svg);
       }
 
-      // Cast voice (from skit JSON) takes priority, then meta.json, then default
-      const voiceId = config.voice || metaVoice?.id || DEFAULT_VOICE;
-      const voiceVolume = metaVoice?.volume !== undefined ? metaVoice.volume : 1.0;
-      const voiceSpeed = metaVoice?.speed !== undefined ? metaVoice.speed : 1.0;
-      const voicePitch = metaVoice?.pitch !== undefined ? metaVoice.pitch : 0;
+      // Resolve this sprite's casting for the active browser voice provider.
+      // Legacy unscoped IDs are used only if that provider understands them.
+      const ttsSettings = getTtsSettings() || {};
+      const castMetaVoice = { assignments: config.voiceAssignments || {} };
+      const castAssignedVoice = window.AITTtsProvider?.getAssignedVoiceConfig?.(castMetaVoice, ttsSettings) || null;
+      const spriteAssignedVoice = window.AITTtsProvider?.getAssignedVoiceConfig?.(metaVoice, ttsSettings) || null;
+      const assignedVoice = castAssignedVoice || spriteAssignedVoice;
+      const resolvedVoice = castAssignedVoice || window.AITTtsProvider?.resolveVoiceConfig?.(metaVoice, ttsSettings, config.voice) || metaVoice || {};
+      const castVoiceIsCompatible = window.AITTtsProvider?.isVoiceCompatible?.(config.voice, ttsSettings) || false;
+      const voiceId = resolvedVoice.id || config.voice || DEFAULT_VOICE;
+      const voiceVolume = resolvedVoice.volume !== undefined ? resolvedVoice.volume : 1.0;
+      const voiceSpeed = resolvedVoice.speed !== undefined ? resolvedVoice.speed : 1.0;
+      const voicePitch = resolvedVoice.pitch !== undefined ? resolvedVoice.pitch : 0;
 
       // Capture original face values for transform-based emotion system
       const originalFaceValues = captureOriginalFaceValues(el);
@@ -317,6 +325,7 @@
         baseY: config.startY ?? config.y ?? 88, // character feet position from top
         sprite: config.sprite,
         voice: voiceId,
+        voiceAssigned: Boolean(assignedVoice || castVoiceIsCompatible),
         volume: voiceVolume,
         speed: voiceSpeed,
         pitch: voicePitch,
@@ -1563,18 +1572,17 @@
       return settings?.ttsMode || 'none';
     }
 
-    async function generateAudio(text, voice, cloudVoiceId) {
+    async function generateAudio(text, voice) {
       // Check browser TTS settings
       const settings = getTtsSettings();
       const mode = settings?.ttsMode || 'none';
 
-      // webspeech is handled live during playback, not pre-generated
-      if (mode === 'webspeech' || mode === 'none') return null;
+      if (mode === 'none') return null;
 
       // cloud or custom mode - use AITTtsProvider
       if ((mode === 'cloud' || mode === 'custom') && typeof AITTtsProvider !== 'undefined') {
         const voiceConfig = {
-          id: cloudVoiceId || settings.ttsVoice || 'alloy',
+          id: voice || settings.ttsVoice || 'alloy',
           speed: settings.ttsRate || 1,
           pitch: settings.ttsPitch || 1,
           volume: settings.ttsVolume || 1
@@ -1887,23 +1895,7 @@
 
       const ttsModeSkit = getTtsMode();
 
-      if (ttsModeSkit === 'webspeech') {
-        // Web Speech plays live during playback - store markers
-        for (let i = 0; i < sayActions.length; i++) {
-          const beat = sayActions[i];
-          const cacheKey = beat.t !== undefined
-            ? `${beat.t}-${beat.who}`
-            : `seq-${beatIndexMap.get(beat)}-${beat.who}`;
-          audioCache.set(cacheKey, {
-            webspeech: true,
-            beat,
-            charName: beat.who,
-            volume: 1.0,
-            speed: 1.0,
-            pitch: 0
-          });
-        }
-      } else if (ttsModeSkit !== 'none') {
+      if (ttsModeSkit !== 'none') {
         // For ElevenLabs, assign different voices to each character
         const cloudVoiceMapSkit = {};
         const ttsSettingsSkit = getTtsSettings();
@@ -1929,7 +1921,8 @@
           }
 
           try {
-            const blob = await generateAudio(beat.line, char.voice, cloudVoiceMapSkit[beat.who]);
+            const voice = char.voiceAssigned ? char.voice : (cloudVoiceMapSkit[beat.who] || char.voice);
+            const blob = await generateAudio(beat.line, voice);
             if (!blob) continue;
             const audio = new Audio(URL.createObjectURL(blob));
             const source = audioContext.createMediaElementSource(audio);
@@ -1958,6 +1951,8 @@
           }
         }
       }
+
+      if (sayActions.length && audioCache.size === 0) setCaptionsEnabled(true);
       
       document.getElementById('status').textContent = 'Ready!';
       document.getElementById('playBtn').disabled = false;
@@ -2219,22 +2214,7 @@
         // If no embedded audio, fall back to browser TTS settings
         if (!hasEmbeddedAudio) {
           const ttsUrlMode = getTtsMode();
-          if (ttsUrlMode === 'webspeech') {
-            for (let i = 0; i < sayActions.length; i++) {
-              const beat = sayActions[i];
-              const cacheKey = beat.t !== undefined
-                ? `${beat.t}-${beat.who}`
-                : `seq-${i}-${beat.who}`;
-              audioCache.set(cacheKey, {
-                webspeech: true,
-                beat,
-                charName: beat.who,
-                volume: 1.0,
-                speed: 1.0,
-                pitch: 0
-              });
-            }
-          } else if (ttsUrlMode === 'cloud' || ttsUrlMode === 'custom') {
+          if (ttsUrlMode === 'cloud' || ttsUrlMode === 'custom') {
             for (let i = 0; i < sayActions.length; i++) {
               const beat = sayActions[i];
               document.getElementById('status').textContent = `Generating audio ${i + 1}/${sayActions.length}...`;
@@ -2266,6 +2246,8 @@
             }
           }
         }
+
+        if (sayActions.length && audioCache.size === 0) setCaptionsEnabled(true);
         
         currentSkit = skit;
         triggeredBeats = new Set();
@@ -2307,9 +2289,16 @@
       createMouthGroup(svg);
       svg.style.animationDelay = `${-(Math.random() * 7).toFixed(1)}s`;
 
-      // Get voice from sprite meta (preferred) or cast config
+      // Get the provider-scoped voice from sprite meta (preferred) or cast config.
       const spriteMeta = assets?.spriteMeta?.[config.sprite];
-      const voice = spriteMeta?.voice?.id || config.voice;
+      const ttsSettings = getTtsSettings() || {};
+      const castMetaVoice = { assignments: config.voiceAssignments || {} };
+      const castAssignedVoice = window.AITTtsProvider?.getAssignedVoiceConfig?.(castMetaVoice, ttsSettings) || null;
+      const spriteAssignedVoice = window.AITTtsProvider?.getAssignedVoiceConfig?.(spriteMeta?.voice, ttsSettings) || null;
+      const assignedVoice = castAssignedVoice || spriteAssignedVoice;
+      const resolvedVoice = castAssignedVoice || window.AITTtsProvider?.resolveVoiceConfig?.(spriteMeta?.voice, ttsSettings, config.voice) || spriteMeta?.voice || {};
+      const castVoiceIsCompatible = window.AITTtsProvider?.isVoiceCompatible?.(config.voice, ttsSettings) || false;
+      const voice = resolvedVoice.id || config.voice;
 
       // Capture original face values for transform-based emotion system
       const originalFaceValues = captureOriginalFaceValues(div);
@@ -2329,7 +2318,10 @@
         currentEmotion: 'neutral',
         sprite: config.sprite,
         voice: voice,
-        volume: config.volume,
+        voiceAssigned: Boolean(assignedVoice || castVoiceIsCompatible),
+        volume: resolvedVoice.volume ?? config.volume,
+        speed: resolvedVoice.speed ?? config.speed,
+        pitch: resolvedVoice.pitch ?? config.pitch,
         originalFaceValues: originalFaceValues
       };
 
@@ -2369,10 +2361,15 @@
       }));
     }
     
-    function toggleCaptions() {
-      document.body.classList.toggle('captions-off');
+    function setCaptionsEnabled(enabled) {
+      document.body.classList.toggle('captions-off', !enabled);
       const btn = document.getElementById('captionBtn');
-      btn.classList.toggle('active');
+      btn.classList.toggle('active', enabled);
+      btn.setAttribute('aria-pressed', String(enabled));
+    }
+
+    function toggleCaptions() {
+      setCaptionsEnabled(document.body.classList.contains('captions-off'));
     }
     
     // Sequential playback state
@@ -2400,11 +2397,6 @@
           }
           if (cached?.audio && Number.isFinite(cached.audio.duration)) {
             return cached.audio.duration / speed;
-          }
-          if (cached?.webspeech && beat.line) {
-            // Estimate web speech duration: ~150 words per minute
-            const words = beat.line.split(/\s+/).length;
-            return Math.max(1, (words / 150) * 60 / speed);
           }
           return 2;
         }
@@ -2485,10 +2477,6 @@
       if (currentSourceNode) {
         try { currentSourceNode.stop(); } catch(e) {}
         currentSourceNode = null;
-      }
-      // Cancel any in-progress web speech
-      if ('speechSynthesis' in window) {
-        speechSynthesis.cancel();
       }
       scheduledAdvanceIndices.clear();
     }
@@ -2797,53 +2785,7 @@
             if (currentSourceNode) {
               try { currentSourceNode.stop(); } catch(e) {}
             }
-            // Cancel any in-progress web speech
-            if ('speechSynthesis' in window) {
-              speechSynthesis.cancel();
-            }
-
-            if (cached.webspeech) {
-              // Web Speech API - play live
-              const charEl = characters[beat.who]?.el;
-              if (charEl) charEl.classList.add('speaking');
-
-              // Handle sequential mode offset timing (estimate duration from text length)
-              if (sequentialMode) {
-                const nextBeat = currentSkit.script[sequentialIndex];
-                if (nextBeat?.offset < 0) {
-                  const estimatedDuration = getActionDuration(beat);
-                  const triggerTime = Math.max(0, estimatedDuration + nextBeat.offset) * 1000;
-                  const currentBeatIndex = sequentialIndex - 1;
-                  const sessionId = playSessionId;
-                  scheduledAdvanceIndices.add(currentBeatIndex);
-                  setTimeout(() => {
-                    if (sessionId !== playSessionId) return;
-                    processNextSequentialBeat();
-                  }, triggerTime);
-                }
-              }
-
-              const settings = getTtsSettings() || {};
-              const wsVoiceConfig = {
-                id: settings.ttsWebSpeechVoice || settings.ttsVoice || 'default',
-                speed: settings.ttsRate || 1,
-                pitch: settings.ttsPitch || 1,
-                volume: settings.ttsVolume || 1
-              };
-              if (typeof AITTtsProvider !== 'undefined') {
-                announceAudioStart(wsVoiceConfig.speed || 1);
-                AITTtsProvider.playWebSpeech(beat.line, wsVoiceConfig, settings)
-                  .then(onAudioEnd)
-                  .catch(() => onAudioEnd());
-              } else {
-                // Fallback: basic speechSynthesis
-                const utterance = new SpeechSynthesisUtterance(beat.line);
-                utterance.onend = onAudioEnd;
-                utterance.onerror = () => onAudioEnd();
-                announceAudioStart(wsVoiceConfig.speed || 1);
-                speechSynthesis.speak(utterance);
-              }
-            } else if (cached.buffer) {
+            if (cached.buffer) {
               // New-style: AudioBuffer (mobile-friendly)
               const sourceNode = audioContext.createBufferSource();
               sourceNode.buffer = cached.buffer;
@@ -2917,6 +2859,7 @@
             }
           } else {
             // No audio cached - show caption briefly and continue
+            setCaptionsEnabled(true);
             document.getElementById('caption').textContent = beat.line;
             document.getElementById('caption').classList.add('visible');
             console.warn(`No audio for: ${cacheKey}`);
@@ -3135,21 +3078,7 @@
         const totalLines = sayActions.length;
         const ttsMode = getTtsMode();
 
-        if (ttsMode === 'webspeech') {
-          // Web Speech plays live during playback - store markers so the player knows
-          for (let i = 0; i < sayActions.length; i++) {
-            const beat = sayActions[i];
-            const cacheKey = `seq-${i}-${beat.who}`;
-            audioCache.set(cacheKey, {
-              webspeech: true,
-              beat,
-              charName: beat.who,
-              volume: 1.0,
-              speed: 1.0,
-              pitch: 0
-            });
-          }
-        } else if (ttsMode !== 'none') {
+        if (ttsMode !== 'none') {
           // For ElevenLabs, assign different voices to each character
           const cloudVoiceMap = {};
           const ttsSettings = getTtsSettings();
@@ -3184,7 +3113,8 @@
             }
 
             try {
-              const blob = await generateAudio(beat.line, voice, cloudVoiceMap[beat.who]);
+              const selectedVoice = char.voiceAssigned ? voice : (cloudVoiceMap[beat.who] || voice);
+              const blob = await generateAudio(beat.line, selectedVoice);
               if (!blob) continue;
               const audio = new Audio(URL.createObjectURL(blob));
               const source = audioContext.createMediaElementSource(audio);
@@ -3217,6 +3147,8 @@
           }
         }
 
+        if (sayActions.length && audioCache.size === 0) setCaptionsEnabled(true);
+
         document.getElementById('status').textContent = `Loaded: ${skit.meta?.title || id}`;
         document.getElementById('playBtn').disabled = false;
       } catch (err) {
@@ -3239,8 +3171,7 @@
         document.body.classList.add('embed-mode');
       }
       if (params.get('captions') === '1') {
-        document.body.classList.remove('captions-off');
-        document.getElementById('captionBtn').classList.add('active');
+        setCaptionsEnabled(true);
       }
 
       audioContext = new (window.AudioContext || window.webkitAudioContext)();

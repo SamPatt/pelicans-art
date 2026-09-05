@@ -155,7 +155,16 @@ export async function publishSkit(skitId, skit, onProgress) {
     Object.values(skit.props || {}).map(p => p.prop).filter(Boolean)
   );
   const sayActions = skit.script.filter(b => b.do === 'say');
-  const totalSteps = spriteNames.size + 1 + propNames.size + sayActions.length;
+  const backgroundRequests = new Map();
+  if (skit.stage?.background) {
+    backgroundRequests.set(skit.stage.background, skit.stage.orientation || 'landscape');
+  }
+  for (const beat of skit.script || []) {
+    if (beat.do === 'background' && beat.name) {
+      backgroundRequests.set(beat.name, beat.orientation || 'landscape');
+    }
+  }
+  const totalSteps = spriteNames.size + backgroundRequests.size + propNames.size + sayActions.length;
   let currentStep = 0;
 
   // 1. Bundle sprites
@@ -186,22 +195,23 @@ export async function publishSkit(skitId, skit, onProgress) {
     }
   }
 
-  // 2. Bundle background
-  currentStep++;
-  onProgress?.({
-    step: 'background',
-    current: currentStep,
-    total: totalSteps,
-    detail: `Loading background: ${skit.stage.background}`
-  });
+  // 2. Bundle every background referenced by the shot list.
+  for (const [backgroundName, bgOrientation] of backgroundRequests) {
+    currentStep++;
+    onProgress?.({
+      step: 'background',
+      current: currentStep,
+      total: totalSteps,
+      detail: `Loading background: ${backgroundName}`
+    });
 
-  try {
-    const bgOrientation = skit.stage.orientation || 'landscape';
-    const bgSvg = await getBackground(skit.stage.background, bgOrientation);
-    assets.backgrounds[skit.stage.background] = svgToDataUrl(bgSvg);
-  } catch (err) {
-    console.warn(`Failed to load background ${skit.stage.background}:`, err.message);
-    failures.push({ type: 'background', name: skit.stage.background, error: err.message });
+    try {
+      const bgSvg = await getBackground(backgroundName, bgOrientation);
+      assets.backgrounds[backgroundName] = svgToDataUrl(bgSvg);
+    } catch (err) {
+      console.warn(`Failed to load background ${backgroundName}:`, err.message);
+      failures.push({ type: 'background', name: backgroundName, error: err.message });
+    }
   }
 
   // 3. Bundle props

@@ -12,6 +12,16 @@
     const userContent = imageDataUrl
       ? [{ type: 'text', text: userPrompt }, { type: 'image_url', image_url: { url: imageDataUrl } }]
       : userPrompt;
+    const requestBody = {
+      model,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userContent }
+      ]
+    };
+    // GPT-6 Astra rejects sampling controls such as temperature.
+    if (!String(model).includes('gpt-6-astra')) requestBody.temperature = 0.6;
+
     const response = await fetchImpl(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
@@ -19,14 +29,7 @@
         Authorization: `Bearer ${apiKey}`,
         ...extraHeaders
       },
-      body: JSON.stringify({
-        model,
-        temperature: 0.6,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userContent }
-        ]
-      })
+      body: JSON.stringify(requestBody)
     });
 
     if (!response.ok) {
@@ -35,6 +38,37 @@
 
     const json = await response.json();
     return json?.choices?.[0]?.message?.content || '';
+  }
+
+  async function callOpenAIResponses({ apiKey, model, systemPrompt, userPrompt, imageDataUrl, fetchImpl = fetch }) {
+    const userContent = [{ type: 'input_text', text: userPrompt }];
+    if (imageDataUrl) userContent.push({ type: 'input_image', image_url: imageDataUrl });
+
+    const response = await fetchImpl('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model,
+        instructions: systemPrompt,
+        input: [{ role: 'user', content: userContent }],
+        max_output_tokens: 16384
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`AI request failed (${response.status}): ${await parseError(response)}`);
+    }
+
+    const json = await response.json();
+    if (json.output_text) return json.output_text;
+    return (json.output || [])
+      .flatMap((item) => item.content || [])
+      .filter((item) => item.type === 'output_text' || item.type === 'text')
+      .map((item) => item.text || '')
+      .join('');
   }
 
   async function callAnthropic({ apiKey, model, systemPrompt, userPrompt, imageDataUrl, fetchImpl = fetch }) {
@@ -100,8 +134,7 @@
     }
 
     if (provider === 'openai') {
-      return callOpenAICompatible({
-        baseUrl: 'https://api.openai.com/v1',
+      return callOpenAIResponses({
         apiKey,
         model,
         systemPrompt,
@@ -118,7 +151,7 @@
     throw new Error(`Unsupported AI provider: ${provider}`);
   }
 
-  async function validateKey(provider, key, fetchImpl = fetch) {
+  async function validateKey(provider, key, fetchImpl = fetch, model = '') {
     if (!key) return { ok: false, message: 'Missing key' };
     try {
       if (provider === 'openrouter') {
@@ -139,7 +172,7 @@
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: model || global.AITModelCatalog?.getDefaultModel?.('anthropic') || 'claude-sonnet-5',
             max_tokens: 4,
             messages: [{ role: 'user', content: 'ping' }]
           })

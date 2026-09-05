@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animation Test - AI Improv Theater</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+
+  .stage {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: 400px;
+    margin: 20px auto;
+    background: #2a1f1a;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 20px;
+    padding: 0 40px 10px;
+  }
+
+  .character {
+    position: relative;
+    height: 340px;
+    flex-shrink: 0;
+  }
+  .character svg {
+    height: 100%;
+    width: auto;
+    display: block;
+  }
+
+  /* === ANIMATION CLASSES (toggleable) === */
+
+  /* 1. Breathing */
+  .anim-breathe .character svg #body {
+    animation: breathe 4s ease-in-out infinite;
+    transform-origin: 50% 100%;
+  }
+  @keyframes breathe {
+    0%, 100% { transform: scaleY(1) translateY(0); }
+    50% { transform: scaleY(1.008) translateY(-0.4px); }
+  }
+
+  /* 2. Smooth emotion transitions */
+  .anim-smooth-emotions .character svg #eye-left-white,
+  .anim-smooth-emotions .character svg #eye-right-white {
+    transition: ry 300ms ease-out, cy 300ms ease-out, opacity 200ms;
+  }
+  .anim-smooth-emotions .character svg #eye-left-pupil,
+  .anim-smooth-emotions .character svg #eye-right-pupil {
+    transition: ry 300ms ease-out, r 300ms ease-out, cy 300ms ease-out, opacity 200ms;
+  }
+  .anim-smooth-emotions .character svg #brow-left,
+  .anim-smooth-emotions .character svg #brow-right {
+    transition: transform 300ms ease-out;
+  }
+  .anim-smooth-emotions .character svg #mouth-group path,
+  .anim-smooth-emotions .character svg #mouth-group ellipse {
+    transition: opacity 150ms;
+  }
+
+  /* 3. Idle sway */
+  .anim-sway .character svg {
+    animation: sway 7s ease-in-out infinite;
+    transform-origin: 50% 100%;
+  }
+  .anim-sway .character:nth-child(2) svg { animation-delay: -2.3s; }
+  .anim-sway .character:nth-child(3) svg { animation-delay: -4.7s; }
+  @keyframes sway {
+    0%, 100% { transform: rotate(0deg); }
+    30% { transform: rotate(0.4deg); }
+    70% { transform: rotate(-0.3deg); }
+  }
+
+  /* 4. Head bob (applied via JS during "speaking") */
+  .anim-headbob .character.speaking svg #head-top,
+  .anim-headbob .character.speaking svg #head-bottom {
+    transition: transform 80ms ease-out;
+  }
+
+  /* 5. Entrance overshoot */
+  .anim-entrance .character {
+    transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s;
+  }
+  .anim-entrance .character.offstage {
+    transform: translateX(120px) scale(0.9);
+    opacity: 0;
+  }
+
+  /* 6. Pupil dilation */
+  .anim-pupils .character svg #eye-left-pupil,
+  .anim-pupils .character svg #eye-right-pupil {
+    transition: r 300ms ease-out, ry 300ms ease-out, transform 300ms ease-out;
+  }
+
+  /* Controls panel */
+  .controls {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .controls h2 { margin-bottom: 12px; font-size: 18px; }
+
+  .toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: #16213e;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle:hover { background: #1a2744; }
+  .toggle input { display: none; }
+  .toggle .check {
+    width: 18px; height: 18px;
+    border: 2px solid #555;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .toggle input:checked + .check {
+    background: #4a8a4a;
+    border-color: #4a8a4a;
+  }
+  .toggle input:checked + .check::after {
+    content: '\2713';
+    color: white;
+    font-size: 12px;
+  }
+  .toggle .label { font-size: 14px; }
+  .toggle .desc { font-size: 11px; color: #888; }
+
+  .action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .action-row button {
+    padding: 8px 16px;
+    background: #16213e;
+    color: #e0e0e0;
+    border: 1px solid #333;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .action-row button:hover { background: #1a2744; border-color: #4a8a4a; }
+  .action-row button.active { background: #2a4a2a; border-color: #4a8a4a; }
+
+  .section-label {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .character svg #body,
+    .character svg,
+    .character {
+      animation: none !important;
+      transition-duration: 0s !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+  <div class="character" id="char-vampire"></div>
+  <div class="character" id="char-witch"></div>
+  <div class="character" id="char-nurse"></div>
+</div>
+
+<div class="controls">
+  <h2>Animation Techniques</h2>
+  <div class="toggle-grid" id="toggles">
+    <label class="toggle">
+      <input type="checkbox" data-class="anim-breathe">
+      <span class="check"></span>
+      <span><span class="label">Breathing</span><br><span class="desc">Subtle body scale on #body group</span></span>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" data-class="anim-smooth-emotions">
+      <span class="check"></span>
+      <span><span class="label">Smooth Emotion Transitions</span><br><span class="desc">CSS transitions on eyes, brows, mouth</span></span>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" data-class="anim-sway">
+      <span class="check"></span>
+      <span><span class="label">Idle Sway</span><br><span class="desc">Slow rotation on entire SVG</span></span>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" data-class="anim-headbob" data-js="headbob">
+      <span class="check"></span>
+      <span><span class="label">Head Bob (Speaking)</span><br><span class="desc">Sinusoidal translateY on head groups</span></span>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" data-class="anim-entrance" data-js="entrance">
+      <span class="check"></span>
+      <span><span class="label">Entrance Overshoot</span><br><span class="desc">Cubic-bezier bounce on enter/exit</span></span>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" data-class="anim-pupils" data-js="pupils">
+      <span class="check"></span>
+      <span><span class="label">Pupil Dilation</span><br><span class="desc">Scale pupils per emotion</span></span>
+    </label>
+  </div>
+
+  <div class="section-label">Emotions</div>
+  <div class="action-row" id="emotion-buttons"></div>
+
+  <div class="section-label">Actions</div>
+  <div class="action-row">
+    <button id="btn-speak">Simulate Speaking</button>
+    <button id="btn-blink">Trigger Blink</button>
+    <button id="btn-entrance">Replay Entrance</button>
+    <button id="btn-all-on">All Effects On</button>
+    <button id="btn-all-off">All Effects Off</button>
+  </div>
+</div>
+
+<script type="module">
+  // === Import emotions system ===
+  import {
+    MOUTH_SHAPES, EMOTION_MOUTH_MAP, TRANSFORM_EMOTIONS,
+    createMouthGroup, applyMouthEmotion, animateMouthForSpeaking,
+    resetMouthAfterSpeaking, captureOriginalFaceValues, applyEmotion,
+    EMOTION_LIST
+  } from './js/emotions.js';
+
+  // === State ===
+  const characters = {};
+  let currentEmotion = 'neutral';
+  let speakingInterval = null;
+  let headbobEnabled = false;
+  let pupilsEnabled = false;
+
+  const PUPIL_SCALE = {
+    neutral: 1.0, happy: 1.1, sad: 1.0, angry: 0.75,
+    worried: 1.1, skeptical: 0.8, tired: 0.85, smug: 0.9,
+    dead: 0.7, surprised: 1.35, excited: 1.3
+  };
+
+  // === Load sprites ===
+  async function loadCharacter(id, spriteName) {
+    const el = document.getElementById(id);
+    const resp = await fetch(`sprites/${spriteName}/front.svg`);
+    const svgText = await resp.text();
+    el.innerHTML = svgText;
+
+    const svg = el.querySelector('svg');
+    const origValues = captureOriginalFaceValues(el);
+    createMouthGroup(svg, origValues);
+
+    characters[id] = { el, svg, origValues, spriteName };
+    applyEmotion(el, 'neutral', origValues);
+  }
+
+  await Promise.all([
+    loadCharacter('char-vampire', 'vampire'),
+    loadCharacter('char-witch', 'witch'),
+    loadCharacter('char-nurse', 'nurse')
+  ]);
+
+  // === Toggle handling ===
+  const stage = document.getElementById('stage');
+
+  document.querySelectorAll('#toggles input').forEach(input => {
+    input.addEventListener('change', () => {
+      const cls = input.dataset.class;
+      if (input.checked) {
+        stage.classList.add(cls);
+      } else {
+        stage.classList.remove(cls);
+      }
+      if (input.dataset.js === 'headbob') headbobEnabled = input.checked;
+      if (input.dataset.js === 'pupils') {
+        pupilsEnabled = input.checked;
+        setEmotion(currentEmotion);
+      }
+    });
+  });
+
+  // === Emotion buttons ===
+  const emotionRow = document.getElementById('emotion-buttons');
+  EMOTION_LIST.forEach(emo => {
+    const btn = document.createElement('button');
+    btn.textContent = emo;
+    btn.addEventListener('click', () => setEmotion(emo));
+    emotionRow.appendChild(btn);
+  });
+
+  function setEmotion(emotion) {
+    currentEmotion = emotion;
+    for (const char of Object.values(characters)) {
+      applyEmotion(char.el, emotion, char.origValues);
+      if (pupilsEnabled) {
+        applyPupilDilation(char.svg, emotion, char.origValues);
+      }
+    }
+    // Highlight active button
+    emotionRow.querySelectorAll('button').forEach(b => {
+      b.classList.toggle('active', b.textContent === emotion);
+    });
+  }
+
+  // === Pupil dilation ===
+  function applyPupilDilation(svg, emotion, origValues) {
+    const scale = PUPIL_SCALE[emotion] || 1.0;
+    const pupilL = svg.querySelector('#eye-left-pupil');
+    const pupilR = svg.querySelector('#eye-right-pupil');
+    if (pupilL) {
+      const baseLR = origValues.pupilLRy * (TRANSFORM_EMOTIONS[emotion]?.pupilRyRatio || 1);
+      const attr = origValues.pupilLUsesR ? 'r' : 'ry';
+      pupilL.setAttribute(attr, (baseLR * scale).toFixed(2));
+    }
+    if (pupilR) {
+      const baseRR = origValues.pupilRRy * (TRANSFORM_EMOTIONS[emotion]?.pupilRyRatio || 1);
+      const attr = origValues.pupilRUsesR ? 'r' : 'ry';
+      pupilR.setAttribute(attr, (baseRR * scale).toFixed(2));
+    }
+  }
+
+  // === Speaking simulation ===
+  let speakingActive = false;
+  let speakingRaf = null;
+
+  document.getElementById('btn-speak').addEventListener('click', () => {
+    if (speakingActive) {
+      stopSpeaking();
+    } else {
+      startSpeaking();
+    }
+  });
+
+  function startSpeaking() {
+    speakingActive = true;
+    document.getElementById('btn-speak').classList.add('active');
+    document.getElementById('btn-speak').textContent = 'Stop Speaking';
+
+    for (const char of Object.values(characters)) {
+      char.el.classList.add('speaking');
+    }
+
+    const startTime = performance.now();
+
+    function animateFrame() {
+      if (!speakingActive) return;
+
+      const t = performance.now() - startTime;
+      // Simulated amplitude: mix of sine waves for natural-ish speech pattern
+      const amplitude = Math.max(0,
+        0.3 + 0.3 * Math.sin(t * 0.012) + 0.2 * Math.sin(t * 0.029) + 0.15 * Math.sin(t * 0.007)
+      );
+
+      for (const char of Object.values(characters)) {
+        // Mouth animation
+        animateMouthForSpeaking(char.svg, amplitude, char.origValues);
+
+        // Head bob (if enabled)
+        if (headbobEnabled) {
+          const bob = Math.sin(t * 0.008) * amplitude * 1.2;
+          const headTop = char.svg.querySelector('#head-top');
+          const headBottom = char.svg.querySelector('#head-bottom');
+          if (headTop) headTop.style.transform = `translateY(${bob}px)`;
+          if (headBottom) headBottom.style.transform = `translateY(${bob}px)`;
+        }
+      }
+
+      speakingRaf = requestAnimationFrame(animateFrame);
+    }
+    speakingRaf = requestAnimationFrame(animateFrame);
+  }
+
+  function stopSpeaking() {
+    speakingActive = false;
+    if (speakingRaf) cancelAnimationFrame(speakingRaf);
+    document.getElementById('btn-speak').classList.remove('active');
+    document.getElementById('btn-speak').textContent = 'Simulate Speaking';
+
+    for (const char of Object.values(characters)) {
+      char.el.classList.remove('speaking');
+      resetMouthAfterSpeaking(char.svg, currentEmotion, char.origValues);
+
+      // Reset head position
+      const headTop = char.svg.querySelector('#head-top');
+      const headBottom = char.svg.querySelector('#head-bottom');
+      if (headTop) headTop.style.transform = '';
+      if (headBottom) headBottom.style.transform = '';
+    }
+  }
+
+  // === Two-phase blink ===
+  document.getElementById('btn-blink').addEventListener('click', () => {
+    for (const char of Object.values(characters)) {
+      twoPhaseBlinkChar(char);
+    }
+  });
+
+  function twoPhaseBlinkChar(char) {
+    const svg = char.svg;
+    const eyeLW = svg.querySelector('#eye-left-white');
+    const eyeRW = svg.querySelector('#eye-right-white');
+    const pupilL = svg.querySelector('#eye-left-pupil');
+    const pupilR = svg.querySelector('#eye-right-pupil');
+
+    if (!eyeLW) return;
+
+    // Store current values
+    const currentLRy = parseFloat(eyeLW.getAttribute('ry'));
+    const currentRRy = parseFloat(eyeRW?.getAttribute('ry') || currentLRy);
+    const currentPLR = parseFloat(pupilL?.getAttribute(char.origValues.pupilLUsesR ? 'r' : 'ry') || 2);
+    const currentPRR = parseFloat(pupilR?.getAttribute(char.origValues.pupilRUsesR ? 'r' : 'ry') || 2);
+
+    // Phase 1: Close fast (60ms)
+    const closeDuration = 60;
+    const openDuration = 180;
+
+    // Apply inline transitions for blink (overrides CSS class transitions)
+    [eyeLW, eyeRW].forEach(el => {
+      if (el) el.style.transition = `ry ${closeDuration}ms ease-in`;
+    });
+    [pupilL, pupilR].forEach(el => {
+      if (el) {
+        const attr = el === pupilL && char.origValues.pupilLUsesR ? 'r' : 'ry';
+        el.style.transition = `${attr} ${closeDuration}ms ease-in, r ${closeDuration}ms ease-in`;
+      }
+    });
+
+    // Close eyes
+    if (eyeLW) eyeLW.setAttribute('ry', '0.3');
+    if (eyeRW) eyeRW.setAttribute('ry', '0.3');
+    if (pupilL) pupilL.setAttribute(char.origValues.pupilLUsesR ? 'r' : 'ry', '0.1');
+    if (pupilR) pupilR.setAttribute(char.origValues.pupilRUsesR ? 'r' : 'ry', '0.1');
+
+    // Phase 2: Open slow (180ms)
+    setTimeout(() => {
+      [eyeLW, eyeRW].forEach(el => {
+        if (el) el.style.transition = `ry ${openDuration}ms ease-out`;
+      });
+      [pupilL, pupilR].forEach(el => {
+        if (el) {
+          const attr = el === pupilL && char.origValues.pupilLUsesR ? 'r' : 'ry';
+          el.style.transition = `${attr} ${openDuration}ms ease-out, r ${openDuration}ms ease-out`;
+        }
+      });
+
+      if (eyeLW) eyeLW.setAttribute('ry', currentLRy);
+      if (eyeRW) eyeRW.setAttribute('ry', currentRRy);
+      if (pupilL) pupilL.setAttribute(char.origValues.pupilLUsesR ? 'r' : 'ry', currentPLR);
+      if (pupilR) pupilR.setAttribute(char.origValues.pupilRUsesR ? 'r' : 'ry', currentPRR);
+
+      // Clean up inline transitions after animation
+      setTimeout(() => {
+        [eyeLW, eyeRW, pupilL, pupilR].forEach(el => {
+          if (el) el.style.transition = '';
+        });
+      }, openDuration + 10);
+    }, closeDuration);
+  }
+
+  // Auto-blink loop
+  function startAutoBlinking() {
+    function scheduleNext() {
+      const delay = 2500 + Math.random() * 4000;
+      setTimeout(() => {
+        // Pick a random character to blink (or all)
+        const chars = Object.values(characters);
+        if (chars.length) {
+          // 40% chance all blink together, otherwise random one
+          if (Math.random() < 0.4) {
+            chars.forEach(c => twoPhaseBlinkChar(c));
+          } else {
+            twoPhaseBlinkChar(chars[Math.floor(Math.random() * chars.length)]);
+          }
+        }
+        scheduleNext();
+      }, delay);
+    }
+    scheduleNext();
+  }
+  startAutoBlinking();
+
+  // === Entrance replay ===
+  document.getElementById('btn-entrance').addEventListener('click', () => {
+    const charEls = document.querySelectorAll('.character');
+    charEls.forEach(el => el.classList.add('offstage'));
+
+    // Stagger entrance
+    charEls.forEach((el, i) => {
+      setTimeout(() => el.classList.remove('offstage'), 200 + i * 300);
+    });
+  });
+
+  // === All on / all off ===
+  document.getElementById('btn-all-on').addEventListener('click', () => {
+    document.querySelectorAll('#toggles input').forEach(input => {
+      input.checked = true;
+      input.dispatchEvent(new Event('change'));
+    });
+  });
+  document.getElementById('btn-all-off').addEventListener('click', () => {
+    document.querySelectorAll('#toggles input').forEach(input => {
+      input.checked = false;
+      input.dispatchEvent(new Event('change'));
+    });
+  });
+
+  // === Eye tracking ===
+  document.addEventListener('mousemove', (e) => {
+    for (const char of Object.values(characters)) {
+      const rect = char.el.getBoundingClientRect();
+      const charCenterX = rect.left + rect.width / 2;
+      const charCenterY = rect.top + rect.height * 0.25;
+
+      const dx = (e.clientX - charCenterX) / (window.innerWidth / 2);
+      const dy = (e.clientY - charCenterY) / (window.innerHeight / 2);
+
+      const maxShift = 1.5;
+      const shiftX = Math.max(-maxShift, Math.min(maxShift, dx * maxShift));
+      const shiftY = Math.max(-maxShift, Math.min(maxShift, dy * maxShift));
+
+      const pupilL = char.svg.querySelector('#eye-left-pupil');
+      const pupilR = char.svg.querySelector('#eye-right-pupil');
+
+      if (pupilL) {
+        const baseCx = parseFloat(char.svg.querySelector('#eye-left-white')?.getAttribute('cx') || 42);
+        const baseCy = parseFloat(pupilL.getAttribute('cy') || 37);
+        pupilL.setAttribute('cx', baseCx + shiftX);
+      }
+      if (pupilR) {
+        const baseCx = parseFloat(char.svg.querySelector('#eye-right-white')?.getAttribute('cx') || 58);
+        const baseCy = parseFloat(pupilR.getAttribute('cy') || 37);
+        pupilR.setAttribute('cx', baseCx + shiftX);
+      }
+    }
+  });
+</script>
+</body>
+</html>

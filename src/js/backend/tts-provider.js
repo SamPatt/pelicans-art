@@ -1,4 +1,75 @@
 (function initTtsProvider(global) {
+  const OPENAI_VOICES = [
+    { id: 'alloy', name: 'Alloy' },
+    { id: 'ash', name: 'Ash' },
+    { id: 'ballad', name: 'Ballad' },
+    { id: 'coral', name: 'Coral' },
+    { id: 'echo', name: 'Echo' },
+    { id: 'fable', name: 'Fable' },
+    { id: 'nova', name: 'Nova' },
+    { id: 'onyx', name: 'Onyx' },
+    { id: 'sage', name: 'Sage' },
+    { id: 'shimmer', name: 'Shimmer' },
+    { id: 'verse', name: 'Verse' }
+  ];
+
+  function getVoiceSourceKey(settings = {}) {
+    const mode = settings.ttsMode || 'none';
+    if (mode === 'none') return 'none';
+    if (mode === 'cloud') return `cloud:${settings.ttsProvider || 'openai'}`;
+    if (mode === 'custom') return `custom:${settings.ttsCustomPreset || 'generic-form'}`;
+    return mode;
+  }
+
+  function isVoiceCompatible(voiceId, settings = {}) {
+    if (!voiceId) return false;
+    const source = getVoiceSourceKey(settings);
+    if (source === 'cloud:openai') return OPENAI_VOICES.some((voice) => voice.id === voiceId);
+    if (source === 'cloud:elevenlabs') return isElevenLabsVoiceId(voiceId);
+    if (source === 'custom:hermes-piper') return voiceId === 'alba';
+    return source.startsWith('custom:');
+  }
+
+  function getAssignedVoiceConfig(metaVoice, settings = {}) {
+    if (!metaVoice) return null;
+    if (typeof metaVoice === 'string') {
+      return isVoiceCompatible(metaVoice, settings) ? normalizeVoiceConfig(metaVoice) : null;
+    }
+
+    const source = getVoiceSourceKey(settings);
+    const scoped = metaVoice.assignments?.[source];
+    if (scoped?.id) return normalizeVoiceConfig(scoped);
+    if (metaVoice.source === source && metaVoice.id) return normalizeVoiceConfig(metaVoice);
+
+    // Older sprites stored one unscoped voice. Reuse it only when that ID is
+    // meaningful to the active provider, avoiding e.g. Pocket's "marius"
+    // being sent to OpenAI or ElevenLabs.
+    if (!metaVoice.source && isVoiceCompatible(metaVoice.id, settings)) {
+      return normalizeVoiceConfig(metaVoice);
+    }
+    return null;
+  }
+
+  function defaultVoiceId(settings = {}) {
+    const source = getVoiceSourceKey(settings);
+    if (source === 'custom:hermes-piper') return 'alba';
+    if (isVoiceCompatible(settings.ttsVoice, settings)) return settings.ttsVoice;
+    if (source === 'cloud:openai') return 'alloy';
+    return settings.ttsVoice || '';
+  }
+
+  function resolveVoiceConfig(metaVoice, settings = {}, fallbackId = '') {
+    const assigned = getAssignedVoiceConfig(metaVoice, settings);
+    if (assigned) return assigned;
+    const compatibleFallback = isVoiceCompatible(fallbackId, settings) ? fallbackId : '';
+    return normalizeVoiceConfig({
+      id: compatibleFallback || defaultVoiceId(settings),
+      pitch: settings.ttsPitch ?? 0,
+      speed: settings.ttsRate ?? 1,
+      volume: settings.ttsVolume ?? 1
+    });
+  }
+
   function normalizeVoiceConfig(voiceConfig) {
     if (!voiceConfig) return { id: 'alloy', pitch: 1, speed: 1, volume: 1 };
     if (typeof voiceConfig === 'string') return { id: voiceConfig, pitch: 1, speed: 1, volume: 1 };
@@ -8,28 +79,6 @@
       speed: Number(voiceConfig.speed ?? voiceConfig.rate ?? 1),
       volume: Number(voiceConfig.volume ?? 1)
     };
-  }
-
-  function playWebSpeech(text, voiceConfig, settings) {
-    return new Promise((resolve, reject) => {
-      if (!('speechSynthesis' in window)) {
-        reject(new Error('Web Speech API not available in this browser'));
-        return;
-      }
-      const cfg = normalizeVoiceConfig(voiceConfig);
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.pitch = Math.max(0, Math.min(2, Number(cfg.pitch) || 1));
-      utterance.rate = Math.max(0.1, Math.min(10, Number(cfg.speed) || 1));
-      utterance.volume = Math.max(0, Math.min(1, Number(cfg.volume) || 1));
-      const preferredName = settings?.ttsWebSpeechVoice || cfg.id;
-      const voices = speechSynthesis.getVoices();
-      const match = voices.find((v) => v.name === preferredName || v.voiceURI === preferredName);
-      if (match) utterance.voice = match;
-      utterance.onend = () => resolve();
-      utterance.onerror = (event) => reject(new Error(event.error || 'speech synthesis failed'));
-      speechSynthesis.cancel();
-      speechSynthesis.speak(utterance);
-    });
   }
 
   async function callOpenAiTts(text, voiceConfig, settings, fetchImpl = fetch) {
@@ -45,10 +94,13 @@
         Authorization: `Bearer ${key}`
       },
       body: JSON.stringify({
-        model: 'tts-1',
-        voice: settings?.ttsVoice || cfg.id || 'alloy',
+        model: settings?.ttsModel || 'gpt-4o-mini-tts',
+        voice: cfg.id || settings?.ttsVoice || 'alloy',
         input: text,
-        format: 'mp3'
+        response_format: 'mp3',
+        ...((settings?.ttsModel || 'gpt-4o-mini-tts').startsWith('gpt-4o-mini-tts') && settings?.ttsInstructions
+          ? { instructions: settings.ttsInstructions }
+          : {})
       })
     });
 
@@ -71,8 +123,8 @@
     return typeof v === 'string' && /^[a-zA-Z0-9]{15,}$/.test(v);
   }
 
-  async function fetchElevenLabsVoices(key, fetchImpl = fetch) {
-    if (_elevenLabsVoicesCache) return _elevenLabsVoicesCache;
+  async function fetchElevenLabsVoices(key, fetchImpl = fetch, force = false) {
+    if (_elevenLabsVoicesCache && !force) return _elevenLabsVoicesCache;
     try {
       const r = await fetchImpl('https://api.elevenlabs.io/v1/voices', {
         headers: { 'xi-api-key': key }
@@ -86,6 +138,63 @@
       }
     } catch (e) {}
     return [];
+  }
+
+  async function listAvailableVoices(settings = {}, fetchImpl = fetch, force = false) {
+    const source = getVoiceSourceKey(settings);
+    if (source === 'none') return [];
+    if (source === 'cloud:openai') {
+      return OPENAI_VOICES.map((voice) => ({ ...voice, description: 'OpenAI voice' }));
+    }
+    if (source === 'cloud:elevenlabs') {
+      if (!settings.ttsKey) return [];
+      return fetchElevenLabsVoices(settings.ttsKey, fetchImpl, force);
+    }
+    if (source === 'custom:hermes-piper') {
+      // The current Hermes API has one loaded synthesizer. A second model may
+      // be installed on its host, but it is not selectable until the API
+      // exposes a voice parameter.
+      return [{ id: 'alba', name: 'Alba', description: 'Hermes / Piper server voice' }];
+    }
+    if (source.startsWith('custom:') && settings.ttsVoicesEndpoint) {
+      return fetchCustomVoices(settings, fetchImpl);
+    }
+    return [];
+  }
+
+  function normalizeCustomVoiceList(payload) {
+    const list = Array.isArray(payload) ? payload : (payload?.voices || payload?.data || []);
+    return list.map((voice) => {
+      if (typeof voice === 'string') return { id: voice, name: voice };
+      const id = voice.id || voice.voice_id || voice.name;
+      return id ? { id, name: voice.name || voice.display_name || id, description: voice.description || '' } : null;
+    }).filter(Boolean);
+  }
+
+  async function fetchCustomVoices(settings, fetchImpl = fetch) {
+    const payload = {
+      endpoint: settings.ttsVoicesEndpoint,
+      authHeader: settings.ttsAuthHeader || '',
+      authToken: settings.ttsAuthToken || ''
+    };
+    try {
+      const proxied = await fetchImpl('/api/tts/proxy/voices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (proxied.ok) return normalizeCustomVoiceList(await proxied.json());
+      if (![404, 405].includes(proxied.status)) return [];
+    } catch (_) {}
+
+    try {
+      const headers = {};
+      if (payload.authHeader && payload.authToken) headers[payload.authHeader] = payload.authToken;
+      const response = await fetchImpl(payload.endpoint, { headers });
+      return response.ok ? normalizeCustomVoiceList(await response.json()) : [];
+    } catch (_) {
+      return [];
+    }
   }
 
   async function callElevenLabsTts(text, voiceConfig, settings, fetchImpl = fetch) {
@@ -114,7 +223,17 @@
         'xi-api-key': key,
         Accept: 'audio/mpeg'
       },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({
+        text,
+        model_id: settings?.ttsModel || 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: Number(settings?.ttsStability ?? 0.5),
+          similarity_boost: Number(settings?.ttsSimilarity ?? 0.75),
+          style: Number(settings?.ttsStyle ?? 0),
+          use_speaker_boost: settings?.ttsSpeakerBoost !== false,
+          speed: Math.max(0.7, Math.min(1.2, Number(cfg.speed) || 1))
+        }
+      })
     });
     if (!response.ok) {
       let detail = '';
@@ -127,40 +246,127 @@
     return response.blob();
   }
 
-  async function callCustomTts(text, voiceConfig, settings, fetchImpl = fetch) {
+  function customEndpoint(settings) {
     const endpoint = settings?.ttsEndpoint;
     if (!endpoint) {
       throw new Error('Missing custom TTS endpoint URL');
     }
-    const cfg = normalizeVoiceConfig(voiceConfig);
+    let parsed;
+    try {
+      parsed = new URL(endpoint, global.location?.href);
+    } catch (_) {
+      throw new Error('Custom TTS endpoint must be a valid URL');
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      throw new Error('Custom TTS endpoint must use HTTP or HTTPS');
+    }
+    if (settings?.ttsCustomPreset === 'hermes-piper') {
+      if (!parsed.pathname || parsed.pathname === '/') parsed.pathname = '/tts';
+      parsed.searchParams.set('wav', '1');
+    }
+    return parsed.toString();
+  }
 
-    // Use FormData to avoid CORS preflight (multipart/form-data is a "simple" content type).
-    // Many TTS servers (pocket-tts, etc.) also accept form data natively.
+  function customProxyPayload(text, voiceConfig, settings) {
+    const cfg = normalizeVoiceConfig(voiceConfig);
+    return {
+      endpoint: customEndpoint(settings),
+      preset: settings?.ttsCustomPreset || 'generic-form',
+      text,
+      voice: cfg.id,
+      pitch: cfg.pitch,
+      rate: cfg.speed,
+      volume: cfg.volume,
+      authHeader: settings?.ttsAuthHeader || '',
+      authToken: settings?.ttsAuthToken || '',
+      model: settings?.ttsCustomModel || ''
+    };
+  }
+
+  function buildDirectCustomRequest(payload) {
+    const headers = {};
+    if (payload.authHeader && payload.authToken) headers[payload.authHeader] = payload.authToken;
+
+    if (payload.preset === 'hermes-piper') {
+      headers['Content-Type'] = 'application/json';
+      return {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ text: payload.text, voice: payload.voice, rate: 16000, depth: 16, format: 'linear' })
+      };
+    }
+
+    if (payload.preset === 'openai-compatible') {
+      headers['Content-Type'] = 'application/json';
+      return {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: payload.model || 'tts-1',
+          input: payload.text,
+          voice: payload.voice || 'alloy',
+          response_format: 'mp3',
+          speed: payload.rate
+        })
+      };
+    }
+
+    if (payload.preset === 'generic-json') {
+      headers['Content-Type'] = 'application/json';
+      return {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          text: payload.text,
+          voice: payload.voice,
+          pitch: payload.pitch,
+          rate: payload.rate,
+          volume: payload.volume
+        })
+      };
+    }
+
     const formData = new FormData();
-    formData.append('text', text);
-    formData.append('voice', cfg.id);
-    formData.append('pitch', String(cfg.pitch));
-    formData.append('rate', String(cfg.speed));
-    formData.append('volume', String(cfg.volume));
+    formData.append('text', payload.text);
+    formData.append('voice', payload.voice);
+    formData.append('voice_url', payload.voice);
+    formData.append('pitch', String(payload.pitch));
+    formData.append('rate', String(payload.rate));
+    formData.append('volume', String(payload.volume));
+    return { method: 'POST', headers, body: formData };
+  }
+
+  async function callCustomTts(text, voiceConfig, settings, fetchImpl = fetch) {
+    const payload = customProxyPayload(text, voiceConfig, settings);
+
+    // A local/private studio can relay tailnet and non-CORS endpoints. On a
+    // static deployment this route is absent, so compatible HTTPS endpoints
+    // fall back to a direct browser request.
+    let proxyResponse;
+    try {
+      proxyResponse = await fetchImpl('/api/tts/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (proxyResponse.ok) return proxyResponse.blob();
+      if (![404, 405].includes(proxyResponse.status)) {
+        const detail = await proxyResponse.text();
+        throw new Error(`Custom TTS proxy failed (${proxyResponse.status})${detail ? `: ${detail}` : ''}`);
+      }
+    } catch (error) {
+      if (!String(error?.message || '').includes('Failed to fetch')) throw error;
+    }
 
     let response;
     try {
-      response = await fetchImpl(endpoint, {
-        method: 'POST',
-        body: formData
-      });
-    } catch (err) {
-      if (err instanceof TypeError && err.message.includes('NetworkError')) {
-        throw new Error(
-          `Cannot reach TTS endpoint at ${endpoint}. ` +
-          'If the server is running on a different port, it must send CORS headers ' +
-          '(Access-Control-Allow-Origin: *). Alternatively, use "Browser Voices" TTS mode.'
-        );
-      }
-      throw err;
+      response = await fetchImpl(payload.endpoint, buildDirectCustomRequest(payload));
+    } catch (_) {
+      throw new Error('Cannot reach this TTS endpoint from the browser. Use an HTTPS endpoint with CORS, or open the studio through its private local server so it can relay the request.');
     }
     if (!response.ok) {
-      throw new Error(`Custom TTS failed (${response.status})`);
+      const detail = await response.text();
+      throw new Error(`Custom TTS failed (${response.status})${detail ? `: ${detail}` : ''}`);
     }
     return response.blob();
   }
@@ -169,12 +375,6 @@
     const mode = settings?.ttsMode || 'none';
 
     if (mode === 'none') {
-      return null;
-    }
-
-    if (mode === 'webspeech') {
-      if (options.forPublishing) return null;
-      await playWebSpeech(text, voiceConfig, settings);
       return null;
     }
 
@@ -212,8 +412,16 @@
   global.AITTtsProvider = {
     generateSpeech,
     validateKey,
-    playWebSpeech,
     fetchElevenLabsVoices,
-    isElevenLabsVoiceId
+    fetchCustomVoices,
+    isElevenLabsVoiceId,
+    listAvailableVoices,
+    getVoiceSourceKey,
+    getAssignedVoiceConfig,
+    resolveVoiceConfig,
+    isVoiceCompatible,
+    OPENAI_VOICES,
+    customEndpoint,
+    customProxyPayload
   };
 })(window);

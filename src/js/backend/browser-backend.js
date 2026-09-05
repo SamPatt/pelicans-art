@@ -279,12 +279,22 @@
         }
       }
 
+      const backgroundRequests = new Map();
       if (skit.stage?.background) {
+        backgroundRequests.set(skit.stage.background, skit.stage.orientation || 'landscape');
+      }
+      for (const beat of skit.script || []) {
+        if (beat.do === 'background' && beat.name) {
+          backgroundRequests.set(beat.name, beat.orientation || 'landscape');
+        }
+      }
+
+      for (const [backgroundName, orientation] of backgroundRequests) {
         try {
-          const bgSvg = await this.getBackground(skit.stage.background, skit.stage.orientation || 'landscape');
-          assets.backgrounds[skit.stage.background] = await this._svgToDataUrl(bgSvg);
+          const bgSvg = await this.getBackground(backgroundName, orientation);
+          assets.backgrounds[backgroundName] = await this._svgToDataUrl(bgSvg);
         } catch (err) {
-          failures.push({ type: 'background', name: skit.stage.background, error: err.message });
+          failures.push({ type: 'background', name: backgroundName, error: err.message });
         }
       }
 
@@ -320,7 +330,12 @@
         try {
           const char = skit.cast?.[beat.who];
           if (!char) continue;
-          const explicitVoice = assets.spriteMeta?.[char.sprite]?.voice?.id || char.voice || null;
+          const metaVoice = assets.spriteMeta?.[char.sprite]?.voice;
+          const castMetaVoice = { assignments: char.voiceAssignments || {} };
+          const assignedVoice = global.AITTtsProvider?.getAssignedVoiceConfig?.(castMetaVoice, settings)
+            || global.AITTtsProvider?.getAssignedVoiceConfig?.(metaVoice, settings);
+          const compatibleCastVoice = global.AITTtsProvider?.isVoiceCompatible?.(char.voice, settings) ? char.voice : null;
+          const explicitVoice = assignedVoice?.id || compatibleCastVoice || null;
           // When using ElevenLabs, only honor explicit voice if it's a valid ElevenLabs ID;
           // internal IDs like "alba" are meaningless to ElevenLabs and would fail or default.
           const useExplicit = explicitVoice && (!cloudVoiceIds.size || cloudVoiceIds.has(explicitVoice));
