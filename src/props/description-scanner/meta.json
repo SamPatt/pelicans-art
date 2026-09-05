@@ -1,0 +1,13 @@
+{
+  "name": "description scanner",
+  "defaultScale": 1,
+  "holdOffset": [
+    0,
+    0
+  ],
+  "provenance": {
+    "creator": "Sam Patt with Codex (direct SVG and script authorship)",
+    "license": "Original creative asset; see ASSET-LICENSE.md",
+    "generation": "No OpenRouter, OpenAI API, or image generation service used."
+  }
+}

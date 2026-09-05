@@ -174,6 +174,15 @@
         window.parent.postMessage({ type: 'skit-orientation', orientation }, '*');
       }
 
+      // Published skits may carry every background used by their shot list.
+      // Prefer those self-contained assets before consulting browser storage or disk.
+      const publishedBackground = window.publishedAssets?.backgrounds?.[bgName];
+      if (publishedBackground) {
+        bgEl.onerror = null;
+        bgEl.src = publishedBackground;
+        return;
+      }
+
       // Try IndexedDB first (browser mode)
       const idb = await getIDBStorage();
       if (idb) {
@@ -710,6 +719,8 @@
       const prop = props[id];
       if (!prop) return;
 
+      unmountProp(prop);
+
       if (at) {
         prop.x = at[0];
         prop.y = at[1];
@@ -732,11 +743,14 @@
 
       prop.visible = false;
       prop.el.classList.add('hidden');
+      if (prop.mountEl) prop.mountEl.style.display = 'none';
     }
 
     function moveProp(id, to, duration = 1) {
       const prop = props[id];
       if (!prop) return;
+
+      unmountProp(prop);
 
       prop.el.style.transition = `left ${duration}s ease-in-out, bottom ${duration}s ease-in-out`;
       prop.x = to[0];
@@ -749,9 +763,46 @@
       }, duration * 1000);
     }
 
+    function unmountProp(prop) {
+      prop.mountEl?.remove();
+      prop.mountEl = null;
+      prop.el.style.removeProperty('display');
+    }
+
+    // SVG-space mounting lets a prop inherit the actor's sway and body animation.
+    function mountProp(id, who, mount) {
+      const prop = props[id];
+      const body = characters[who]?.el.querySelector('svg #body');
+      if (!prop || !body || !Array.isArray(mount) || mount.length !== 3 ||
+          !mount.every(Number.isFinite) || mount[2] <= 0) return;
+      unmountProp(prop);
+      const source = prop.el.querySelector('svg');
+      if (!source) return;
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      group.dataset.mountedProp = id;
+      group.setAttribute('transform', `translate(${mount[0]} ${mount[1]}) scale(${mount[2]})`);
+      const art = source.cloneNode(true);
+      const box = source.viewBox.baseVal;
+      art.setAttribute('width', box.width || 100);
+      art.setAttribute('height', box.height || 100);
+      // Nested SVG must not acquire the actor's full-size/sway CSS a second time.
+      art.style.width = `${box.width || 100}px`;
+      art.style.height = `${box.height || 100}px`;
+      art.style.animation = 'none';
+      group.appendChild(art);
+      body.appendChild(group);
+      prop.heldBy = null;
+      prop.mountEl = group;
+      prop.el.style.display = 'none';
+      if (!prop.visible) group.style.display = 'none';
+      if (prop.animation) group.classList.add(`animate-${prop.animation}`);
+    }
+
     function holdProp(id, who, holdOffset) {
       const prop = props[id];
       if (!prop || !characters[who]) return;
+
+      unmountProp(prop);
 
       prop.heldBy = who;
       // Allow beat to override holdOffset
@@ -765,6 +816,8 @@
     function dropProp(id, at) {
       const prop = props[id];
       if (!prop) return;
+
+      unmountProp(prop);
 
       prop.heldBy = null;
       prop.el.classList.remove('held');
@@ -806,17 +859,17 @@
       const prop = props[id];
       if (!prop) return;
 
-      // Remove any existing animation
-      prop.el.classList.remove('animate-bounce', 'animate-spin', 'animate-shake', 'animate-pulse', 'animate-float');
+      clearTimeout(prop.animationTimeout);
+      const targets = [prop.el, prop.mountEl].filter(Boolean);
+      targets.forEach(el => el.classList.remove('animate-bounce', 'animate-spin', 'animate-shake', 'animate-pulse', 'animate-float', 'animate-radio'));
+      prop.animation = animation || null;
 
       // Add new animation
       if (animation) {
-        prop.el.classList.add(`animate-${animation}`);
+        targets.forEach(el => el.classList.add(`animate-${animation}`));
 
         // Remove after duration
-        setTimeout(() => {
-          prop.el.classList.remove(`animate-${animation}`);
-        }, duration * 1000);
+        prop.animationTimeout = setTimeout(() => animateProp(id, null), duration * 1000);
       }
     }
 
@@ -835,6 +888,8 @@
 
     function clearAllProps() {
       Object.keys(props).forEach(id => {
+        clearTimeout(props[id].animationTimeout);
+        props[id].mountEl?.remove();
         if (props[id].el) {
           props[id].el.remove();
         }
@@ -1961,7 +2016,15 @@
       
       // Collect unique sprites and backgrounds needed
       const spriteNames = new Set();
-      const backgroundName = skit.stage.background;
+      const backgroundRequests = new Map();
+      if (skit.stage.background) {
+        backgroundRequests.set(skit.stage.background, skit.stage.orientation || 'landscape');
+      }
+      for (const beat of skit.script || []) {
+        if (beat.do === 'background' && beat.name) {
+          backgroundRequests.set(beat.name, beat.orientation || 'landscape');
+        }
+      }
       
       for (const [charName, config] of Object.entries(skit.cast)) {
         spriteNames.add(config.sprite);
@@ -1985,19 +2048,20 @@
       
       // Load and encode background (with orientation support and legacy fallback)
       const backgrounds = {};
-      const bgOrientation = skit.stage.orientation || 'landscape';
-      try {
-        let bgResp = await fetch(`backgrounds/${backgroundName}/${bgOrientation}.svg?v=${CACHE_BUSTER}`);
-        if (!bgResp.ok) {
-          // Try legacy flat file structure
-          bgResp = await fetch(`backgrounds/${backgroundName}.svg?v=${CACHE_BUSTER}`);
+      for (const [backgroundName, bgOrientation] of backgroundRequests) {
+        try {
+          let bgResp = await fetch(`backgrounds/${backgroundName}/${bgOrientation}.svg?v=${CACHE_BUSTER}`);
+          if (!bgResp.ok) {
+            // Try legacy flat file structure
+            bgResp = await fetch(`backgrounds/${backgroundName}.svg?v=${CACHE_BUSTER}`);
+          }
+          if (bgResp.ok) {
+            const bgSvg = await bgResp.text();
+            backgrounds[backgroundName] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(bgSvg)));
+          }
+        } catch (e) {
+          console.warn(`Failed to load background ${backgroundName}:`, e);
         }
-        if (bgResp.ok) {
-          const bgSvg = await bgResp.text();
-          backgrounds[backgroundName] = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(bgSvg)));
-        }
-      } catch (e) {
-        console.warn(`Failed to load background ${backgroundName}:`, e);
       }
       
       // Generate and encode audio for each line
@@ -2397,6 +2461,7 @@
       peakAmp = 50;
       openDuration = 0;
       stopGlobalBlinking();
+      Object.keys(props).forEach(id => animateProp(id, null));
       if (animationId) cancelAnimationFrame(animationId);
       document.getElementById('playBtn').textContent = '▶';
       document.getElementById('playBtn').setAttribute('aria-label', 'Play skit');
@@ -2638,6 +2703,18 @@
     
     function processBeat(beat, onComplete) {
       switch (beat.do) {
+        case 'background':
+          void setBackground(beat.name, beat.orientation || currentSkit?.stage?.orientation || 'landscape');
+          if (Array.isArray(beat.show)) {
+            const visibleCharacters = new Set(beat.show);
+            for (const [name, character] of Object.entries(characters)) {
+              const visible = visibleCharacters.has(name);
+              character.el.classList.toggle('offscreen', !visible);
+              character.el.style.opacity = visible ? '1' : '0';
+            }
+          }
+          break;
+
         case 'shot':
           shot(beat.type, beat.who);
           break;
@@ -2938,7 +3015,8 @@
           break;
 
         case 'prop-hold':
-          holdProp(beat.what, beat.who, beat.holdOffset);
+          if (beat.svgMount) mountProp(beat.what, beat.who, beat.svgMount);
+          else holdProp(beat.what, beat.who, beat.holdOffset);
           break;
 
         case 'prop-drop':

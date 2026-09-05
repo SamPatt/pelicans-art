@@ -1,0 +1,17 @@
+{
+  "name": "description officer",
+  "type": "human",
+  "variants": [
+    "front"
+  ],
+  "voice": {
+    "id": "javert",
+    "speed": 1,
+    "pitch": 0
+  },
+  "provenance": {
+    "creator": "Sam Patt with Codex (direct SVG and script authorship)",
+    "license": "Original creative asset; see ASSET-LICENSE.md",
+    "generation": "No OpenRouter, OpenAI API, or image generation service used."
+  }
+}

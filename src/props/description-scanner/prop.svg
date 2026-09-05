@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 42 60" fill="none" stroke="#203449" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20L8 2" stroke-width="3"/><path d="M9 8L7 2" stroke="#718089" stroke-width=".8"/>
+ <rect x="5" y="18" width="23" height="36" rx="4" fill="#344a59"/>
+ <path d="M8 23H25V34H8Z" fill="#acd4a1" stroke-width=".9"/>
+ <path d="M10 27H23M10 30H19M10 38H23M10 41H23M10 44H23M10 47H20" stroke-width=".9"/>
+ <circle class="radio-led" cx="24" cy="21" r="1.7" fill="#e97057" stroke="none"/>
+ <path d="M9 51H20" stroke="#b8c8c4" stroke-width=".7"/><g class="radio-signal" stroke="#f19b42" stroke-width="2.2"><path d="M31 22Q36 28 31 34"/><path d="M36 18Q43 28 36 38"/></g></svg>

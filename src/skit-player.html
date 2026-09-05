@@ -217,6 +217,17 @@
     #caption.visible { opacity: 1; }
     body.captions-off #caption { display: none; }
 
+    @media (max-width: 500px) {
+      #viewport.landscape #caption {
+        font-size: clamp(10px, 3.2vw, 16px);
+        line-height: 1.25;
+        letter-spacing: 0.2px;
+        padding: 3px 5px;
+        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000,
+                     -1px 1px 0 #000, 1px 1px 0 #000;
+      }
+    }
+
     /* Props */
     .prop {
       position: absolute;
@@ -238,6 +249,22 @@
       height: 12%;
     }
     .prop.hidden { opacity: 0; pointer-events: none; }
+
+    .radio-signal { opacity: 0; }
+    .animate-radio .radio-signal {
+      animation: radio-signal 0.65s ease-in-out infinite;
+    }
+    .animate-radio .radio-led {
+      animation: radio-led 0.32s steps(2, end) infinite;
+    }
+    @keyframes radio-signal {
+      0%, 100% { opacity: 0.15; }
+      45% { opacity: 1; }
+    }
+    @keyframes radio-led {
+      from { fill: #ffe896; }
+      to { fill: #f16b46; }
+    }
 
     /* Prop animations */
     @keyframes prop-bounce {

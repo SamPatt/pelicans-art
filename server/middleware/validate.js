@@ -32,7 +32,7 @@ const VALID_ACTIONS = [
 ];
 
 // Valid animation presets for prop-animate
-const VALID_PROP_ANIMATIONS = ['bounce', 'spin', 'shake', 'pulse', 'float'];
+const VALID_PROP_ANIMATIONS = ['bounce', 'spin', 'shake', 'pulse', 'float', 'radio'];
 
 /**
  * Check if SVG has an element with given ID (supports single and double quotes)
@@ -238,6 +238,9 @@ export function validateSkit(skit) {
           }
           if (!beat.who) {
             errors.push(`Script beat ${index}: "prop-hold" action missing "who" (character id)`);
+          }
+          if (beat.svgMount !== undefined && (!Array.isArray(beat.svgMount) || beat.svgMount.length !== 3 || !beat.svgMount.every(Number.isFinite) || beat.svgMount[2] <= 0)) {
+            errors.push(`Script beat ${index}: "svgMount" must be [x, y, positive scale]`);
           }
           break;
 
