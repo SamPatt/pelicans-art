@@ -413,6 +413,28 @@
     body.embed-mode #status { display: none; }
     body.embed-mode h1 { display: none; }
 
+    body.embed-mode.controls-below #viewport,
+    body.embed-mode.controls-below #viewport.landscape {
+      height: calc(100vh - 56px);
+    }
+    body.embed-mode.controls-below .player-body { height: 100vh; }
+    body.embed-mode.controls-below #controls {
+      position: static;
+      transform: none;
+      margin: 0;
+      width: 100%;
+      height: 56px;
+      flex: 0 0 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--player-bg);
+    }
+    body.embed-mode.controls-below #controls button {
+      min-width: 44px;
+      height: 44px;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .character svg #body,
       .character svg {
@@ -465,6 +487,7 @@
   <script src="js/settings.js"></script>
   <script src="js/backend/storage-idb.js"></script>
   <script src="js/backend/tts-provider.js"></script>
+  <script src="js/player-layout.js"></script>
   <script src="js/skit-player.js"></script>
 <script src="js/share-catalog.js"></script>
 <script src="js/player-share.js"></script>
