@@ -20,7 +20,8 @@ function parseArgs(argv) {
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === '--skit') options.skits.push(argv[++i]);
+    if (arg === '--allow-silent') options.allowSilent = true;
+    else if (arg === '--skit') options.skits.push(argv[++i]);
     else if (arg === '--all') options.all = true;
     else if (arg === '--base-url') options.baseUrl = argv[++i].replace(/\/$/, '');
     else if (arg === '--output') options.output = path.resolve(argv[++i]);
@@ -289,7 +290,8 @@ async function captureSkit(browser, skitId, options) {
       markerFrame: syncMarker.frame,
       frameRate: syncMarker.frameRate
     },
-    diagnostics: [...new Set(diagnostics)],
+    captionOnly: Boolean(options.allowSilent),
+    diagnostics: [...new Set(diagnostics)].filter(message => !options.allowSilent || !message.startsWith('warning: No audio for:')),
     media: {
       video: path.basename(mp4Path),
       cover: path.basename(coverPath),
@@ -320,7 +322,7 @@ async function main() {
   try {
     const manifests = [];
     for (const skit of options.skits) manifests.push(await captureSkit(browser, skit, options));
-    const failures = manifests.filter(item => item.diagnostics.length || item.capturedDialogueLines !== item.expectedDialogueLines || item.audioLinesMuxed !== item.expectedDialogueLines);
+    const failures = manifests.filter(item => item.diagnostics.length || (!options.allowSilent && (item.capturedDialogueLines !== item.expectedDialogueLines || item.audioLinesMuxed !== item.expectedDialogueLines)));
     if (failures.length) {
       console.error(`Capture completed with review warnings in ${failures.length} skit(s).`);
       process.exitCode = 2;

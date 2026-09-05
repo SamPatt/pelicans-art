@@ -159,10 +159,27 @@
       return window.AITSvgSanitizer?.sanitize?.(raw) || raw;
     }
 
-    async function importBundledSample() {
+    async function importBundledSample(projectBundle = null) {
       const backend = await requireBackend();
       if (backend.mode !== 'browser') throw new Error('The sample remix is intended for Browser Studio.');
-      const published = await fetchBundledJson('published/pelicanBenchmark.json');
+      let published = projectBundle ? structuredClone(projectBundle) : await fetchBundledJson('published/pelicanBenchmark.json');
+      if (projectBundle) {
+        // Give every imported asset its own namespace so existing artwork is preserved.
+        const prefix = `import-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,6)}-`;
+        const sprites = new Set(Object.values(published.cast || {}).map(c => c.sprite));
+        const remapped = {};
+        for (const name of [...sprites].sort((a,b)=>b.length-a.length)) {
+          for (const [key,value] of Object.entries(published.assets?.sprites || {})) {
+            if(key.startsWith(name+'-') && !Object.hasOwn(remapped,prefix+key)) remapped[prefix+key]=value;
+          }
+        }
+        published.assets.sprites = remapped;
+        for (const group of ['spriteMeta','backgrounds','props','propMeta']) published.assets[group]=Object.fromEntries(Object.entries(published.assets[group] || {}).map(([k,v])=>[prefix+k,v]));
+        for (const cast of Object.values(published.cast || {})) cast.sprite=prefix+cast.sprite;
+        for (const prop of Object.values(published.props || {})) prop.prop=prefix+prop.prop;
+        if(published.stage?.background)published.stage.background=prefix+published.stage.background;
+        for(const beat of published.script || [])if(beat.do==='background')beat.name=prefix+beat.name;
+      }
       if (!published?.assets) throw new Error('The bundled sample is incomplete.');
 
       const spriteNames = new Set(Object.values(published.cast || {}).map((character) => character.sprite).filter(Boolean));
@@ -200,16 +217,38 @@
       }
 
       const skitId = await backend.saveSkit(null, {
-        meta: { ...(published.meta || {}), title: `${published.meta?.title || 'Pelican sample'} — Remix` },
+        meta: { ...(published.meta || {}), title: projectBundle ? published.meta?.title || 'Agent project' : `${published.meta?.title || 'Pelican sample'} — Remix` },
         stage: published.stage,
         cast: published.cast,
         props: published.props || {},
-        script: published.script || []
+        script: published.script || [],
+        importedAudio: projectBundle ? (published.script || []).filter(b => b.do === 'say').map((beat, i) => ({
+          line: beat.line, who: beat.who, voice: published.cast?.[beat.who]?.voice,
+          voiceAssignments: published.cast?.[beat.who]?.voiceAssignments || {},
+          audio: published.assets?.audio?.[`line-${i}`]
+        })) : []
       });
       await Promise.all([loadSpriteList(), loadBackgrounds(), loadProps(), loadSkits()]);
       await selectSkit(skitId);
       updateStatus('Sample imported. Change the dialogue, actors, or staging to make it yours.');
     }
+
+    window.importAgentProject = async function () {
+      const input = document.createElement('input'); input.type = 'file'; input.accept = '.json,application/json';
+      input.onchange = async () => {
+        try {
+          const file = input.files[0]; if (!file) return;
+          if (file.size > 100 * 1024 * 1024) throw new Error('Project exceeds 100 MB.');
+          const bundle = JSON.parse(await file.text());
+          if (!bundle.assets || !Array.isArray(bundle.script) || !bundle.cast) throw new Error('Choose the built output/project.json bundle.');
+          await importBundledSample(bundle);
+          window.AITSettings?.set?.({ welcomeDismissed: true, ttsMode: 'none' });
+          document.getElementById('ait-onboarding')?.classList.remove('visible');
+          updateStatus('Agent project imported with recorded dialogue. Render, then Download to export it.');
+        } catch (error) { alert(error.message); }
+      };
+      input.click();
+    };
 
     async function maybeShowBrowserWelcome() {
       const backend = getCurrentBackend();

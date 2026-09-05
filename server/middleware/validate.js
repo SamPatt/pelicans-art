@@ -27,7 +27,7 @@ const VALID_SHOT_TYPES = ['wide', 'two-shot', 'closeup', 'extreme-closeup', 'med
 
 // Valid script actions
 const VALID_ACTIONS = [
-  'shot', 'say', 'emote', 'pause', 'enter', 'exit', 'move', 'look', 'turn', 'face',
+  'background', 'shot', 'say', 'emote', 'pause', 'enter', 'exit', 'move', 'look', 'turn', 'face',
   'spawn', 'despawn', 'prop-move', 'prop-hold', 'prop-drop', 'prop-rotate', 'prop-scale', 'prop-animate'
 ];
 

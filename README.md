@@ -11,6 +11,7 @@ The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https:/
 | You want to… | Start here | Setup |
 | --- | --- | --- |
 | Watch a finished skit | [The Description](https://pelicans.art/watch/the-description/) | None |
+| Create through an agent chat | [Agent workflow](docs/AGENT-WORKFLOW.md) and [portable skill](skills/pelican-theater/SKILL.md) | Local rendering and speech; no additional LLM API key |
 | Remix or create | [Browser Studio](https://pelicans.art/sprite-editor.html?mode=browser) | None; an API key is optional |
 | Develop, capture, or use custom voices | [Run locally](docs/LOCAL-SETUP.md) | Node.js and optional media tools |
 

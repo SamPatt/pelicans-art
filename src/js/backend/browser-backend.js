@@ -327,6 +327,10 @@
 
       for (let i = 0; i < sayActions.length; i++) {
         const beat = sayActions[i];
+        const preserved = skit.importedAudio?.find(item => item.line === beat.line && item.who === beat.who
+          && item.voice === skit.cast?.[beat.who]?.voice
+          && JSON.stringify(item.voiceAssignments || {}) === JSON.stringify(skit.cast?.[beat.who]?.voiceAssignments || {}));
+        if (preserved?.audio) { assets.audio[`line-${i}`] = preserved.audio; continue; }
         try {
           const char = skit.cast?.[beat.who];
           if (!char) continue;

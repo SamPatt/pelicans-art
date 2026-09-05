@@ -11,10 +11,12 @@
     "setup:full": "npm run setup && npm --prefix worker ci && npx playwright install chromium",
     "start": "npm --prefix server start",
     "dev": "npm --prefix server run dev",
-    "test": "npm run test:e2e && npm --prefix server test && npm --prefix worker test",
+    "test": "npm run test:e2e && npm --prefix server test && npm --prefix worker test && npm run test:agent",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
-    "capture": "node scripts/capture-skit.js"
+    "capture": "node scripts/capture-skit.js",
+    "theater": "node scripts/theater.mjs",
+    "test:agent": "node --test tests/agent/*.test.mjs"
   },
   "repository": {
     "type": "git",

@@ -42,3 +42,6 @@ debug-artifacts/
 # Environment variants must never be published
 .env.*
 !.env.example
+
+# Isolated agent runtime
+.runtime/

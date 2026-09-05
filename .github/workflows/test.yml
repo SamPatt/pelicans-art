@@ -24,4 +24,5 @@ jobs:
       - run: npm --prefix server ci
       - run: npm --prefix worker ci
       - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: npm test

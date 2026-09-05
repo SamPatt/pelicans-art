@@ -1,6 +1,6 @@
 # Chat-driven skits and installation skill
 
-Proposed September 5, 2026. This document is a plan; the portable skill, generic CLI additions, GUI entry, and Hermes rehearsal have not been implemented. Existing renderer/capture and local TTS utilities are the foundation.
+Proposed September 5, 2026. The portable skill, CLI, GUI entry and local installation/render tests are now implemented; see AGENT-WORKFLOW.md. The Hermes fresh-session rehearsal remains the next stage. This document records the design rationale.
 
 ## Product outcome
 

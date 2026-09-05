@@ -1,6 +1,6 @@
 # Local setup
 
-Run pelicans.art locally when you want filesystem-backed assets, custom voice processing, automated video capture, or contributor tooling. Casual visitors should use Browser Studio instead.
+Run pelicans.art locally when you want filesystem-backed assets, custom voice processing, automated video capture, or contributor tooling. You can also create and render through an agent chat without using the GUI or OpenRouter. See [Agent workflow](AGENT-WORKFLOW.md).
 
 ## Minimal local studio
 

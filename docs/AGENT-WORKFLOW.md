@@ -1,0 +1,61 @@
+# Make skits through an agent
+
+Give a file-and-shell capable agent `skills/pelican-theater/SKILL.md` from this checkout. It writes SVGs and skit JSON directly, generates local voices, and renders with the same player as the GUI. No OpenRouter or other LLM API call is made by the CLI. Your agent's own model usage remains separate.
+
+The implementation currently lives on `codex/release-prep`; the repository remains private. Use authenticated Git access or a checkout supplied by the owner. Installing the skill alone does not grant access to the runtime.
+
+## Commands
+
+Run from the repository root. `node scripts/theater.mjs help` describes options. Commands write JSON to stdout and return nonzero for failure.
+
+```sh
+node scripts/theater.mjs setup
+node scripts/theater.mjs doctor --json
+# Optional fresh isolated Pocket TTS install:
+node scripts/theater.mjs setup --tts
+# Start the executable reported by setup, bound to localhost.
+# After the speech server is running:
+node scripts/theater.mjs doctor --endpoint http://127.0.0.1:8001/tts --json
+node scripts/theater.mjs init data/projects/my-skit
+node scripts/theater.mjs validate data/projects/my-skit
+node scripts/theater.mjs render data/projects/my-skit
+```
+
+Install FFmpeg using your OS package manager. `setup` installs npm dependencies and Chromium; Linux browser OS libraries may need `npx playwright install-deps chromium`. `setup --tts` adds an isolated pinned Pocket 1.0.3 environment under `.runtime/`, with CPU Torch 2.8.0 on Linux. It does not alter the agent's environment or start services. Linux/macOS are the initial supported paths; use WSL on Windows.
+
+Edit `skit.json` and `assets/` in the created project. Set `meta.model` and asset metadata to the actual model or Unknown. `project.json` controls speech: Pocket, an OpenAI-compatible endpoint, a specific Piper JSON relay, or explicit caption-only mode (`init --silent`). The complete speech URL belongs in `tts.endpoint`. Authentication uses `tts.tokenEnv` plus optional `authHeader`/`authPrefix`, not a stored token.
+
+`build` is available separately from `render`. Speech is cached by text, voice, engine/model and delivery configuration. Unchanged lines survive a camera/pause edit. Supplied audio files are accepted in `skit.json`'s `assets.audio`; the agent must replace/remove a supplied recording when editing its text.
+
+## Outputs and editing
+
+The render result identifies the MP4, thumbnail, capture manifest, and self-contained `output/project.json` bundle. The manifest checks complete voiced dialogue and H.264/AAC output. Caption-only mode is explicit. Keep the source directory and cache for future edits.
+
+Browser Studio has an **Import agent project** button. Choose the built bundle. Imported recordings are reused for unchanged text/casting when you Render and Download again. Changed lines need configured speech or will be unvoiced in captions-only mode. Browser backups also preserve the imported project.
+
+To resume a downloaded GUI bundle in the CLI:
+
+```sh
+node scripts/theater.mjs import data/projects/revised --bundle /path/to/download.json
+node scripts/theater.mjs render data/projects/revised
+```
+
+The importer requires an empty directory and records which text/casting each supplied recording matches. If an imported line changes, it is synthesized again.
+
+## Distribution and testing
+
+`python3 scripts/package-agent-skill.py` produces the deterministic versioned ZIP and SHA-256 receipt under `src/downloads/`. The source folder works with Hermes, OpenClaw, and generic agents; see its installation reference for host-specific registration.
+
+For local regression checks: `npm run test:agent` (FFmpeg required) and `npm test`. Tests use local mock speech endpoints; a real Pocket voice/render smoke test is separate. See `AGENT-WORKFLOW-PLAN.md` for the future fresh Hermes-session rehearsal. No VPS or gateway configuration is changed by installing this repository.
+
+Deliver the MP4 through the current chat's artifact/file tool. A localhost link on a VPS is not a phone-accessible deliverable. The CLI does not publish to the Pouch or expose public services.
+
+The installer prefers an existing `uv` for isolated Python installation, with standard `venv`/pip as fallback. On Debian/Ubuntu without uv, install the matching `python3-venv` package if ensurepip is missing. Select another compatible interpreter with `setup --tts --python python3.12`.
+
+## Implementation verification — September 5, 2026
+
+59 tests pass: 30 browser, 14 server, 11 Worker, and 4 CLI tests. CLI checks cover unsafe/missing assets, speech failure, one-line cache invalidation, import, and actual caption-only MP4 capture. GUI tests cover the phone entry page, downloadable skill, import and recorded-audio export.
+
+A fresh isolated Python runtime installed Pocket TTS 1.0.3 with Torch 2.8.0+cpu (CUDA disabled), started on a separate loopback port, passed actual speech synthesis, and rendered a three-line/two-voice skit. Repeating setup succeeded; repeating the real build generated zero lines and reused three. The host's existing model-download cache was available: this is not a clean-account model-download test. No LLM API was called.
+
+The versioned skill archive matches its four source files and SHA-256 receipt; skill frontmatter validation passed. Opening/reveal frames and phone/desktop entry-page layouts were inspected. These checks do not substitute for the pending fresh Hermes-session and phone-delivery rehearsal. The VPS and public site were not changed by this implementation.
