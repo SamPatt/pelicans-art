@@ -1,6 +1,8 @@
 # Local setup
 
-Run pelicans.art locally when you want filesystem-backed assets, custom voice processing, automated video capture, or contributor tooling. You can also create and render through an agent chat without using the GUI or OpenRouter. See [Agent workflow](AGENT-WORKFLOW.md).
+For the recommended agent/CLI creation path, start with [Agent workflow](AGENT-WORKFLOW.md): install the rendering tools and local speech, then create, validate, and render. No GUI, OpenRouter key, OpenClaw gateway, or running Express server is required.
+
+This guide covers the optional filesystem-backed Studio, custom voice processing, and contributor tooling. Its generation integrations are separate from direct authoring through an agent chat.
 
 ## Minimal local studio
 
@@ -47,7 +49,7 @@ Important settings:
 | `OPENCLAW_AGENT_ID` | `skitkit` | Agent used for server-side generation |
 | `TTS_URL` | `http://127.0.0.1:8001` | Optional Pocket TTS-compatible service |
 
-The browser and local server have different AI paths. Browser Studio connects directly to user-selected providers. Server-mode generation uses the configured OpenClaw agent.
+Direct agent/CLI authoring needs none of these provider integrations. The browser and local server have different optional AI paths. Browser Studio connects directly to user-selected providers. Server-mode generation uses the configured OpenClaw agent.
 
 ## Optional custom voices
 

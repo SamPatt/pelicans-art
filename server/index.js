@@ -129,7 +129,7 @@ async function start() {
     console.log(`  TTS:      ${TTS_URL}`);
     console.log(`  OpenClaw: ${OPENCLAW_URL}`);
     if (!OPENCLAW_TOKEN) {
-      console.log('  ⚠️  OPENCLAW_TOKEN not set - AI generation will be unavailable');
+      console.log('  ⚠️  OPENCLAW_TOKEN not set - Studio server-side generation is disabled; direct agent/CLI authoring needs no gateway token');
     }
   });
 }

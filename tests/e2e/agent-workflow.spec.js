@@ -25,3 +25,12 @@ test('agent bundle imports into editable browser assets and exports unchanged re
  });
  expect(result.status.complete).toBe(true);expect(result.audio).toEqual(source.assets.audio);expect(result.model).toBe(source.meta.model);expect(Object.keys(result.cast)).toEqual(Object.keys(source.cast));
 });
+
+for(const width of [360,390,768,1024,1440]) test(`homepage links remain clickable around the pelican at ${width}px`,async({page})=>{
+ await page.setViewportSize({width,height:900});await page.goto('/');
+ const tour=page.locator('.hero').getByRole('link',{name:'How it works',exact:true});
+ await tour.click();await expect(page).toHaveURL(/how-it-works.html$/);
+ await page.getByRole('link',{name:'pelican-theater skill to your agent'}).click();await expect(page).toHaveURL(/agent.html$/);
+ await page.goto('/');await page.locator('.hero').getByRole('link',{name:'Make a skit with your agent'}).click();await expect(page).toHaveURL(/agent.html$/);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

@@ -35,6 +35,10 @@ Characters must follow the SVG structure described in [Sprite guide](docs/SPRITE
 
 Do not add an asset unless its provenance and permitted use are documented.
 
+## Agent CLI
+
+The primary creation path is [agent chat and the CLI](docs/AGENT-WORKFLOW.md). Run `npm run test:agent` for speech caching, import revisions, failure recovery, and voiced/caption-only MP4 captures. These tests use loopback speech fixtures and require FFmpeg and Chromium; they do not call paid providers. Keep real speech smoke-test results separate from mock adapter checks.
+
 ## Browser and server behavior
 
 The same editor supports two backends. Changes to shared UI should be tested in both:

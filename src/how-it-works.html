@@ -36,34 +36,38 @@
   <main>
     <div class="eyebrow">Behind the pouch</div>
     <h1>How it works</h1>
-    <p class="lede">pelicans.art turns model-generated SVG into reusable actors, then directs those actors with a small, inspectable action language.</p>
-
-    <h2>The pelican that started it</h2>
-    <p>The project was inspired by <a href="https://simonwillison.net/2024/Oct/25/pelicans-on-a-bicycle/">Simon Willison's pelican-on-a-bicycle test</a>. That experiment asked language models to draw one surprisingly difficult SVG scene. This project asks a follow-up: if a model can draw a character, can we give that character a face, a voice, stage directions, and comic timing?</p>
-
+    <p class="lede">You supply the predicament. Your agent draws the cast, gives them voices, and sends you a finished video.</p>
     <div class="pipeline" aria-label="Creation pipeline">
-      <div class="step">1. Generate SVG</div>
-      <div class="step">2. Add animation hooks</div>
-      <div class="step">3. Direct in JSON</div>
-      <div class="step">4. Perform &amp; capture</div>
+      <div class="step">1. Work out the joke</div><div class="step">2. Draw the cast</div><div class="step">3. Voice &amp; render</div><div class="step">4. Watch &amp; revise</div>
     </div>
-
+    <h2>Start in your agent chat</h2>
+    <p>Give the <a href="agent.html">pelican-theater skill to your agent</a>, then describe your scene. Review the plot and dialogue together before making it. The agent writes SVG artwork and the skit directly with its own model; the theater does not make additional OpenRouter or other LLM API calls.</p>
+    <p>The agent needs permission to work with files and run commands on a computer or VPS. It checks Node.js, Chromium, FFmpeg, and a speech service. Local Pocket TTS provides voices; you can also use a compatible service or explicitly choose captions only. The current install path supports Linux and macOS, or WSL on Windows.</p>
+    <h2>Make it, watch it, change one thing</h2>
+    <p>The CLI validates the artwork and script, creates speech, and captures the performance as an MP4. Ask your agent to send that video in chat so you can watch on your phone. You also get an editable project bundle. A localhost link on a VPS will not open on your phone.</p>
+    <p>Ask for a quicker delivery, a new shirt, or a longer pause. The agent edits the project and renders again. Unchanged speech is cached, so a camera or timing edit does not regenerate the voices.</p>
+    <pre><code>node scripts/theater.mjs init data/projects/my-skit
+# Your agent edits skit.json and assets/ here.
+node scripts/theater.mjs validate data/projects/my-skit
+node scripts/theater.mjs render data/projects/my-skit</code></pre>
+    <p><a href="agent.html">Get the skill and installation instructions →</a></p>
+    <h2>Like moving things around yourself?</h2>
+    <p><a href="sprite-editor.html?mode=browser">Browser Studio</a> is an optional visual workspace. Choose <strong>Import agent project</strong> to edit your bundle, or remix an existing scene without a key. Generating inside Studio uses your chosen API provider. Browser projects stay on that device, so export a backup before switching devices.</p>
     <h2>A deliberately constrained stage</h2>
     <p>Characters are ordinary SVG files with stable IDs for parts such as eyes, pupils, and mouths. A skit is a JSON sequence of actions—not generated JavaScript—so dialogue, movement, expressions, camera shots, and props can be inspected and replayed deterministically.</p>
     <pre><code>{ "do": "say",   "who": "pelican", "line": "Places, everyone." }
-{ "do": "emote", "who": "pelican", "emotion": "nervous" }
-{ "do": "shot",   "type": "closeup", "target": "pelican" }</code></pre>
+{ "do": "emote", "who": "pelican", "emotion": "worried" }
+{ "do": "shot",   "type": "closeup", "who": "pelican" }</code></pre>
 
     <h2>Voices and mouth timing</h2>
     <p>Published skits bundle their audio alongside the script. During playback, the player measures the active audio clock and drives mouth shapes against that same timeline. The capture tool waits for an explicit audio-start signal, records the browser performance, and normalizes both audio and video to the same zero point before producing H.264/AAC MP4.</p>
 
-    <h2>Local-first authoring</h2>
-    <p>The browser studio keeps projects and provider settings in local IndexedDB and local storage. Requests go directly to the provider the user selects. A separate Express server supports local publishing, voice processing, and live updates, but it is an authoring tool for a trusted machine or private network—not a public backend.</p>
-
     <h2>Untrusted SVG stays untrusted</h2>
     <p>Community and generated SVG is sanitized before it is inserted into the page. Executable tags, event handlers, CSS imports, and external URL references are stripped; the internal IDs and fragment references required for animation are retained.</p>
 
-    <p class="note">The source is being prepared for release under MIT. Creative assets have separate terms. Until the repository is public, the working demo and the <a href="media/pelican-benchmark.mp4">captioned pelican bicycle skit</a> are the best ways to explore it. A second original example, <a href="media/the-box.mp4">The Box</a>, shows a longer character exchange.</p>
+    <h2>The pelican that started it</h2>
+    <p>Inspired by <a href="https://simonwillison.net/2024/Oct/25/pelicans-on-a-bicycle/">Simon Willison's pelican-on-a-bicycle test</a>: once a model can draw a character, can we give it stage fright?</p>
+    <p class="note">The repository is private while installation is tested. The skill requires existing Git access or an owner-supplied checkout. Meanwhile, watch <a href="watch/the-description/">The Description</a> or the <a href="previews/agent-workflow/">CLI sample video</a> with no setup.</p>
   </main>
 </body>
 </html>

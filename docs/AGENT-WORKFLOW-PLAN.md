@@ -55,7 +55,7 @@ For a request to brainstorm, stay in script/scene planning. For a request to mak
 
 ## GUI entry
 
-Add an equal first-run route, "Create with your agent", alongside Browser Studio/API setup. Suggested copy:
+Make "Create with your agent" the recommended first-run route, with Browser Studio/API setup available for visual editing and in-editor generation. Suggested copy:
 
 > Prefer working in chat? Your agent can write the artwork and dialogue, generate local voices, and render a finished video. Open the result here whenever you want to edit it visually.
 

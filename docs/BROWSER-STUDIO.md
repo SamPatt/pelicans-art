@@ -1,8 +1,12 @@
 # Browser Studio
 
-Browser Studio is the default way to try pelicans.art. It is the same editor used by the local server, backed by IndexedDB instead of repository files.
+The recommended creation path is [agent chat and the CLI](AGENT-WORKFLOW.md). Browser Studio is the optional visual editor for importing agent projects, remixing, or generating with a provider API. It is the same editor used by the local server, backed by IndexedDB instead of repository files.
 
 Open [pelicans.art/sprite-editor.html?mode=browser](https://pelicans.art/sprite-editor.html?mode=browser).
+
+## Edit an agent project
+
+Choose **Import agent project** and select the generated `output/project.json`. Unchanged dialogue keeps its recordings. Changed dialogue needs a configured voice source, or export the bundle and let your agent regenerate it with the CLI.
 
 ## Start without an API key
 

@@ -66,14 +66,21 @@ async function init() {
   report({ok:true,project:directory,next:'Edit skit.json and assets, then validate, build, render.'});
 }
 async function importBundle() {
-  const bundle = await json(path.resolve(flags.get('bundle') || ''));
+  if (!flags.get('bundle')) throw new Error('import requires --bundle /path/to/project.json');
+  const bundle = await json(path.resolve(flags.get('bundle')));
   if (!bundle.assets || !Array.isArray(bundle.script) || !bundle.cast) throw new Error('Expected a built skit bundle');
   await fs.mkdir(directory, {recursive:true});
   if ((await fs.readdir(directory)).length) throw new Error('Import requires an empty directory');
-  bundle.audioBindings = Object.fromEntries(bundle.script.filter(b=>b.do==='say').map((b,i)=>[`line-${i}`,{line:b.line,who:b.who,voice:bundle.cast[b.who]?.voice}]));
-  await writeJson(path.join(directory,'skit.json'),bundle);
-  await writeJson(path.join(directory,'project.json'),{version:1,tts:{engine:'pocket',endpoint:'http://127.0.0.1:8001/tts',model:'pocket-tts-1.0.3'}});
-  await loadProject(directory); report({ok:true,project:directory});
+  // Validate in a staging directory; failed imports leave the destination empty for retry.
+  const staging = await fs.mkdtemp(path.join(directory, '.import-'));
+  try {
+    bundle.audioBindings = Object.fromEntries(bundle.script.filter(b=>b?.do==='say').map((b,i)=>[`line-${i}`,{line:b.line,who:b.who,voice:bundle.cast[b.who]?.voice}]));
+    await writeJson(path.join(staging,'skit.json'),bundle);
+    await writeJson(path.join(staging,'project.json'),{version:1,tts:{engine:'pocket',endpoint:'http://127.0.0.1:8001/tts',model:'pocket-tts-1.0.3'}});
+    await loadProject(staging);
+    for (const file of ['skit.json','project.json']) await fs.rename(path.join(staging,file),path.join(directory,file));
+  } finally { await fs.rm(staging,{recursive:true,force:true}); }
+  report({ok:true,project:directory});
 }
 async function render() {
   const build=await buildProject(directory), bundle=await fs.readFile(build.bundle), staticRoot=path.join(ROOT,'src');

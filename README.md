@@ -12,10 +12,12 @@ The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https:/
 | --- | --- | --- |
 | Watch a finished skit | [The Description](https://pelicans.art/watch/the-description/) | None |
 | Create through an agent chat | [Agent workflow](docs/AGENT-WORKFLOW.md) and [portable skill](skills/pelican-theater/SKILL.md) | Local rendering and speech; no additional LLM API key |
-| Remix or create | [Browser Studio](https://pelicans.art/sprite-editor.html?mode=browser) | None; an API key is optional |
+| Edit visually or remix | [Browser Studio](https://pelicans.art/sprite-editor.html?mode=browser) | None; an API key is optional |
 | Develop, capture, or use custom voices | [Run locally](docs/LOCAL-SETUP.md) | Node.js and optional media tools |
 
-Most people should use the Browser Studio. Running the local server is intended for contributors and power users, not as a prerequisite for trying the project.
+Start with an agent that can edit files and run shell commands. It writes artwork and dialogue directly, then uses the CLI to synthesize local speech and render an MP4. No additional LLM API key is needed. Browser Studio is an optional visual editor; watching needs no setup.
+
+The repository is currently private. Testing requires authenticated Git access or an owner-supplied checkout; the downloadable skill alone does not provide the runtime.
 
 ## What works
 
@@ -30,9 +32,15 @@ Most people should use the Browser Studio. Running the local server is intended 
 
 The deliberately simple visual style is part early web animation, part AI artifact. The goal is not photorealism; it is to make model-generated characters directable and funny.
 
-## Browser Studio
+## Create with your agent (recommended)
 
-Open [pelicans.art](https://pelicans.art/) and choose **Open Studio**. The first-run guide offers four paths:
+Give your agent the [portable skill](skills/pelican-theater/SKILL.md). It handles dependency checks, SVG structure, skit validation, speech, rendering, and delivering the finished video in chat. You review the plot and ask for revisions in the same conversation.
+
+For shell users, follow the [CLI quickstart](docs/AGENT-WORKFLOW.md). Node.js 22+, FFmpeg, Chromium, and a speech service are needed for voiced MP4s. The CLI starts its own temporary player; running the Express authoring server is unnecessary. Linux/macOS are the initial paths; use WSL on Windows.
+
+## Browser Studio (optional)
+
+Open [Browser Studio](https://pelicans.art/sprite-editor.html?mode=browser). Use **Import agent project** to edit a generated bundle with its recorded dialogue. The first-run guide recommends the agent route and also offers these browser options:
 
 - Remix the bundled pelican scene with no credentials.
 - Create manually with no credentials.
@@ -43,7 +51,7 @@ OpenAI, OpenRouter, and Anthropic are supported for AI generation. Voice playbac
 
 See [Browser Studio guide](docs/BROWSER-STUDIO.md) for storage, keys, model choices, backups, and limitations.
 
-## Run locally
+## Run the optional local studio
 
 Requirements for the basic local studio:
 
@@ -72,7 +80,7 @@ npm run setup:full
 npm test
 ```
 
-This runs server validation/security unit tests, Worker tests, and Playwright coverage for the editor, onboarding, every bundled skit, and the playback-completion contract used by capture tools.
+This runs CLI creation, revision, recovery, and video tests, server validation/security unit tests, Worker tests, and Playwright coverage for the editor, onboarding, every bundled skit, and the playback-completion contract used by capture tools.
 
 ## Capture a skit
 
@@ -120,6 +128,9 @@ Supported actions cover dialogue, pauses, emotions, looks, turns, entrances, exi
 - `server/` — private local Express authoring, publishing, and TTS server.
 - `worker/` — community Pouch Cloudflare Worker.
 - `svg-prompt-lab/` — standalone prompt comparison lab.
+- `skills/pelican-theater/` — portable agent instructions.
+- `scripts/theater.mjs` — agent CLI: setup, doctor, init, import, validate, build, render.
+- `tests/agent/` — CLI integration tests.
 - `scripts/capture-skit.js` — reproducible screenshot and video capture.
 - `tests/e2e/` — browser tests.
 

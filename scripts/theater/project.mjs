@@ -37,6 +37,10 @@ const dataUrl = ({ data, mime }) => `data:${mime};base64,${data.toString('base64
 export async function loadProject(directory) {
   const root = path.resolve(directory), skit = await json(path.join(root, 'skit.json'));
   const config = await json(path.join(root, 'project.json'));
+  const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (!object(skit) || !Array.isArray(skit.script) || skit.script.some(beat => !object(beat))) throw new Error('skit.json: script must be an array of action objects');
+  for (const group of ['cast', 'props']) if (skit[group] !== undefined && (!object(skit[group]) || Object.values(skit[group]).some(value => !object(value)))) throw new Error(`skit.json: ${group} must map names to objects`);
+  if (!object(config)) throw new Error('project.json: expected a configuration object');
   if (config.version !== 1) throw new Error('project.json: expected version 1');
   const validation = validateSkit(skit);
   const errors = [...validation.errors, ...validation.warnings.filter(w => w.includes('unknown'))];
@@ -53,7 +57,7 @@ export async function loadProject(directory) {
     }
   }
   for (const [id, cast] of Object.entries(skit.cast || {})) {
-    if (!assets.sprites[`${cast.sprite}-front`]) errors.push(`cast.${id}: missing sprite ${cast.sprite}-${cast.variant || 'front'}`);
+    if (!assets.sprites[`${cast.sprite}-front`]) errors.push(`cast.${id}: missing sprite ${cast.sprite}-front`);
     if (config.tts?.engine !== 'none' && !cast.voice && (skit.script || []).some(b => b.do === 'say' && b.who === id && !assets.audio?.[`line-${skit.script.filter(b=>b.do==='say').indexOf(b)}`])) errors.push(`cast.${id}: assign voice or supply audio`);
   }
   const backgrounds = [skit.stage?.background, ...(skit.script || []).filter(b => b.do === 'background').map(b => b.name)];

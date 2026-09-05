@@ -171,6 +171,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
 }
 
 .hero-pelican {
+  pointer-events:none;
   position:relative;
   margin:0;
   flex:0 0 300px;
@@ -179,7 +180,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
 
 .mascot-pond {
   position:relative;
-  height:300px;
+  height:370px;
   width:300px;
   display:flex;
   align-items:center;
@@ -575,7 +576,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
   .hero-pelican {
     flex-basis:auto;
     align-self:flex-end;
-    margin-top:-10px
+    margin-top:24px
   }
 
   .mascot-pond {
