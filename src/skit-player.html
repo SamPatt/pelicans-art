@@ -386,6 +386,10 @@
     body.embed-mode #publishBtn { display: none !important; }
     body.embed-mode .player-body { padding: 0; }
     body.embed-mode #viewport {
+      /* Embedded frames already have the correct aspect ratio. The standalone
+         mobile 70vh cap would crop their scene and leave a blank controls band. */
+      max-height: none;
+      flex-shrink: 0;
       height: 100vh;
       width: 100vw;
       border-radius: 0;
