@@ -10,8 +10,9 @@
       if (!skitName) return;
 
       // Update active state
-      selector.querySelectorAll('.script-tab').forEach(b => b.classList.remove('active'));
+      selector.querySelectorAll('.script-tab').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
       btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
 
       // Reload iframe with new skit
       skitFrame.src = `skit-player.html?embed=1&captions=1&skit=${skitName}`;
@@ -90,6 +91,7 @@
           return;
         }
 
+        track.replaceChildren();
         items.forEach(item => {
           const url = previewUrl(item._category, item.slug);
           if (!url) return;
@@ -136,31 +138,13 @@
         const rightBtn = document.getElementById('carouselRight');
         const scrollAmt = 440;
 
-        leftBtn.addEventListener('click', () => { track.scrollBy({ left: -scrollAmt, behavior: 'smooth' }); });
-        rightBtn.addEventListener('click', () => { track.scrollBy({ left: scrollAmt, behavior: 'smooth' }); });
+        const scrollBehavior = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+        leftBtn.addEventListener('click', () => { track.scrollBy({ left: -scrollAmt, behavior: scrollBehavior() }); });
+        rightBtn.addEventListener('click', () => { track.scrollBy({ left: scrollAmt, behavior: scrollBehavior() }); });
 
-        // Auto-rotate
-        let autoScroll = setInterval(() => {
-          if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 10) {
-            track.scrollTo({ left: 0, behavior: 'smooth' });
-          } else {
-            track.scrollBy({ left: 220, behavior: 'smooth' });
-          }
-        }, 3000);
-
-        // Pause on hover
-        track.addEventListener('mouseenter', () => clearInterval(autoScroll));
-        track.addEventListener('mouseleave', () => {
-          autoScroll = setInterval(() => {
-            if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 10) {
-              track.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-              track.scrollBy({ left: 220, behavior: 'smooth' });
-            }
-          }, 3000);
-        });
 
       } catch (err) {
         console.warn('Failed to load community carousel:', err);
+        track.textContent = 'The prop cupboard is taking a break. Use Browse all assets to try again.';
       }
     })();
