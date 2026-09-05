@@ -4,11 +4,15 @@ Use a shell/file capable agent. First inspect OS, architecture, Node/npm, Python
 
 ## Checkout and skill registration
 
-Repository: `https://github.com/SamPatt/pelicans-art.git`. During private testing the implementation is on `codex/release-prep`; `main` may not contain this CLI. Use existing Git authentication or an owner-supplied checkout. Do not put tokens in command URLs, chat text, or the skill. Clone into a fresh user-writable directory and record `git rev-parse HEAD`. For subsequent runs reuse this checkout and revision; do not automatically pull or reset user changes.
+The user can begin with the public skill ZIP and release receipt linked by https://pelicans.art/agent.html. Download and extract the complete folder in a fresh temporary directory, verifying the ZIP's SHA-256 against the receipt before using it. Read this skill directly for the current conversation; persistent skill registration is optional. Do not require the user to clone the runtime or restart their chat first.
+
+Repository: `https://github.com/SamPatt/pelicans-art.git`. Fetch it yourself into a fresh user-writable directory if no suitable checkout exists. For a downloaded release, check out the exact tested commit in the receipt's `ref` field and verify `git rev-parse HEAD` matches. For a skill read directly from a repository checkout, keep that checkout's revision. Do not reset or pull over user changes.
+
+While the repository is private, use existing Git authentication. If an SSH alias named `github-pelicans` is already configured for github.com, use `git@github-pelicans:SamPatt/pelicans-art.git`; it can select a repository-specific read-only deploy key. Otherwise use existing authenticated HTTPS or standard GitHub SSH access. Check access with `git ls-remote` before cloning. If neither works, explain that read access must be granted; do not ask the user to do a manual clone as the default workflow. Never put tokens in URLs or chat, change visibility, generate replacement keys, or modify SSH authentication as an installation shortcut.
 
 The complete skill folder contains SKILL.md and references. Copy/install the folder, not just its entrypoint. Check the installed agent's help because versions differ:
 
-- Hermes: active profile's skills directory (usually `~/.hermes/skills/pelican-theater/`); verify with its skills listing, then use a new session. Respect a custom HERMES_HOME/profile.
+- Hermes: active profile's skills directory (usually `~/.hermes/skills/pelican-theater/`); verify with its skills listing. Reading the extracted skill directly is sufficient for this task; future sessions can discover the registered copy. Respect a custom HERMES_HOME/profile.
 - OpenClaw: `openclaw skills install ./skills/pelican-theater` from the checkout on versions supporting local installs, or copy the folder into the active workspace's `skills/pelican-theater/`. Do not change global gateway configuration. A binary requirement in skill metadata would hide an installer skill before dependencies exist, so this skill deliberately has none.
 - Other agents: read SKILL.md directly, or install the full directory using their native skill mechanism. No other agent framework is a runtime dependency.
 

@@ -7,9 +7,16 @@ test('agent instructions are discoverable, copyable, and phone-sized',async({pag
  await expect(page.getByRole('heading',{name:/You chat/})).toBeVisible();
  await page.context().grantPermissions(['clipboard-read','clipboard-write']);await page.getByRole('button',{name:'Copy agent instructions'}).click();
  await expect(page.getByRole('status')).toHaveText('Instructions copied.');
- expect(await page.evaluate(()=>navigator.clipboard.readText())).toContain('skills/pelican-theater/SKILL.md');
+ const prompt=await page.evaluate(()=>navigator.clipboard.readText());
+ const zipUrl=prompt.match(/https:\/\/pelicans\.art\/downloads\/[^\s]+\.zip/)[0];
+ const receiptUrl=prompt.match(/https:\/\/pelicans\.art\/downloads\/[^\s]+\.json/)[0];
+ const receipt=await (await page.request.get(new URL(receiptUrl).pathname)).json();
+ const zip=await (await page.request.get(new URL(zipUrl).pathname)).body();
+ expect(require('node:crypto').createHash('sha256').update(zip).digest('hex')).toBe(receipt.sha256);
+ expect(receipt.ref).toMatch(/^[a-f0-9]{40}$/);
+ expect(prompt).toContain('pelican-theater/SKILL.md');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
- const download=await page.request.get('/downloads/pelican-theater-1.0.0.zip');expect(download.ok()).toBe(true);expect((await download.body()).subarray(0,2).toString()).toBe('PK');
+ const download=await page.request.get('/downloads/pelican-theater-1.0.1.zip');expect(download.ok()).toBe(true);expect((await download.body()).subarray(0,2).toString()).toBe('PK');
 });
 test('agent bundle imports into editable browser assets and exports unchanged recorded audio',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('ait-welcome-dismissed','1'));

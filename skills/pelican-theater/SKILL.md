@@ -9,7 +9,7 @@ Turn a user's skit request into SVG artwork, a script, local dialogue audio, and
 
 ## Find or install the runtime
 
-Locate the user's existing `SamPatt/pelicans-art` checkout (`ai-improv-theater` may be its local directory name). It must contain `scripts/theater.mjs`. For a fresh installation, missing dependencies, or a different agent host, read [installation](references/installation.md). The runtime and skill must come from the same tested revision. Record the resolved Git commit in the output manifest. Never infer that installing this skill grants access to the private repository.
+Locate the user's existing `SamPatt/pelicans-art` checkout (`ai-improv-theater` may be its local directory name). It must contain `scripts/theater.mjs`. For a fresh installation, missing dependencies, or a different agent host, read [installation](references/installation.md). For a downloaded release, use the tested runtime commit in the accompanying receipt's `ref` field. Fetch the runtime yourself when it is missing; the user should not need to clone it first. Record the resolved Git commit in the output manifest. Never infer that installing this skill grants access to the private repository.
 
 Run `node scripts/theater.mjs doctor --json` from the checkout. If speech is needed, include `--endpoint` with the actual Pocket-compatible endpoint, or test the chosen speech adapter through a short build. Success without a speech probe does not establish voice readiness.
 
