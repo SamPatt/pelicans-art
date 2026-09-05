@@ -4,13 +4,26 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
+import { parseArgs } from 'node:util';
 import { json, writeJson, run, loadProject, buildProject, synthesize } from './theater/project.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), require = createRequire(import.meta.url);
 const args = process.argv.slice(2), command = args.shift();
-const flags = new Map(), positionals = [];
-for (let i=0;i<args.length;i++) { if(args[i].startsWith('--')) { const key=args[i].slice(2); flags.set(key,['json','tts','silent','help'].includes(key)?true:args[++i]); } else positionals.push(args[i]); }
-const directory = path.resolve(positionals[0] || 'data/projects/my-skit');
+let flags, directory;
+function parseOptions() {
+  const commands = {
+    setup: {tts:'boolean',python:'string'}, doctor: {json:'boolean',endpoint:'string'},
+    init: {silent:'boolean'}, import: {bundle:'string'}, validate: {}, build: {},
+    render: {port:'string',output:'string'}, help: {}, '--help': {}
+  };
+  if (command && !Object.hasOwn(commands,command)) throw new Error(`Unknown command ${command}`);
+  const options = Object.fromEntries(Object.entries({help:'boolean',...commands[command]}).map(([name,type])=>[name,{type}]));
+  const parsed = parseArgs({args,options,allowPositionals:true,strict:true});
+  flags = new Map(Object.entries(parsed.values));
+  const acceptsDirectory = ['init','import','validate','build','render'].includes(command);
+  if (parsed.positionals.length > (acceptsDirectory ? 1 : 0)) throw new Error('Unexpected positional arguments; provide one project directory for project commands');
+  directory = path.resolve(parsed.positionals[0] || 'data/projects/my-skit');
+  if (flags.has('port') && (!/^\d+$/.test(flags.get('port')) || Number(flags.get('port')) > 65535)) throw new Error('--port must be an integer from 0 to 65535');
+}
 const report = value => process.stdout.write(JSON.stringify(value,null,2)+'\n');
 async function doctor() {
   const checks = {};
@@ -76,7 +89,7 @@ async function importBundle() {
   try {
     bundle.audioBindings = Object.fromEntries(bundle.script.filter(b=>b?.do==='say').map((b,i)=>[`line-${i}`,{line:b.line,who:b.who,voice:bundle.cast[b.who]?.voice}]));
     await writeJson(path.join(staging,'skit.json'),bundle);
-    await writeJson(path.join(staging,'project.json'),{version:1,tts:{engine:'pocket',endpoint:'http://127.0.0.1:8001/tts',model:'pocket-tts-1.0.3'}});
+    await writeJson(path.join(staging,'project.json'),{version:1,tts:bundle.captionOnly === true ? {engine:'none'} : {engine:'pocket',endpoint:'http://127.0.0.1:8001/tts',model:'pocket-tts-1.0.3'}});
     await loadProject(staging);
     for (const file of ['skit.json','project.json']) await fs.rename(path.join(staging,file),path.join(directory,file));
   } finally { await fs.rm(staging,{recursive:true,force:true}); }
@@ -106,7 +119,8 @@ async function render() {
   } finally {server.closeAllConnections();await new Promise(resolve=>server.close(resolve));}
 }
 try {
-  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|init|import|validate|build|render> [project-directory]',setup:'setup [--tts] installs npm/Chromium, optionally isolated Pocket TTS (Linux/macOS; use WSL on Windows). Install FFmpeg with your OS package manager.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--json]',init:'init path [--silent]',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
+  parseOptions();
+  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|init|import|validate|build|render> [project-directory]',setup:'setup [--tts] installs npm/Chromium, optionally isolated Pocket TTS (Linux/macOS; use WSL on Windows). Install FFmpeg with your OS package manager.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--json]',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
   else if(command==='doctor')await doctor();
   else if(command==='setup')await setup();
   else if(command==='init')await init();

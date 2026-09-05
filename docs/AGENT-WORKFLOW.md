@@ -40,6 +40,8 @@ node scripts/theater.mjs import data/projects/revised --bundle /path/to/download
 node scripts/theater.mjs render data/projects/revised
 ```
 
+CLI bundles preserve explicit caption-only mode when reimported. Unknown or misplaced command options return JSON errors before work begins.
+
 The importer requires an empty directory and records which text/casting each supplied recording matches. If an imported line changes, it is synthesized again.
 
 ## Distribution and testing
@@ -53,6 +55,8 @@ Deliver the MP4 through the current chat's artifact/file tool. A localhost link 
 The installer prefers an existing `uv` for isolated Python installation, with standard `venv`/pip as fallback. On Debian/Ubuntu without uv, install the matching `python3-venv` package if ensurepip is missing. Select another compatible interpreter with `setup --tts --python python3.12`.
 
 ## Implementation verification — September 5, 2026
+
+The subsequent [full CLI verification](CLI-VERIFICATION.md) expands this to 79 passing tests, including 19 CLI tests, and verifies a fresh application installation with an empty speech-model cache. The earlier checks below record the initial implementation.
 
 70 tests pass: 35 browser, 14 server, 11 Worker, and 10 CLI tests. CLI checks cover unsafe/missing assets, actual outside-file and symlink containment, malformed actions, interrupted speech recovery, corrupt-cache repair, edited imported dialogue and recasting, speech adapter requests and redirect handling, retryable imports, and actual caption-only and voiced MP4 capture. The voiced capture imports The Description with its props and costume variants and muxes all eight recorded lines as H.264/AAC. Browser tests cover real homepage-to-tour-to-agent clicks at five widths, the phone entry page, downloadable skill, import and recorded-audio export.
 

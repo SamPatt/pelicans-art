@@ -34,6 +34,10 @@ export async function readAsset(root, source, kind) {
   return { data: await fs.readFile(file), mime };
 }
 const dataUrl = ({ data, mime }) => `data:${mime};base64,${data.toString('base64')}`;
+function recordingMatches(skit, id, beat, voice) {
+  const binding = skit.audioBindings?.[id];
+  return !binding || (binding.line === beat.line && binding.who === beat.who && binding.voice === voice);
+}
 export async function loadProject(directory) {
   const root = path.resolve(directory), skit = await json(path.join(root, 'skit.json'));
   const config = await json(path.join(root, 'project.json'));
@@ -58,7 +62,7 @@ export async function loadProject(directory) {
   }
   for (const [id, cast] of Object.entries(skit.cast || {})) {
     if (!assets.sprites[`${cast.sprite}-front`]) errors.push(`cast.${id}: missing sprite ${cast.sprite}-front`);
-    if (config.tts?.engine !== 'none' && !cast.voice && (skit.script || []).some(b => b.do === 'say' && b.who === id && !assets.audio?.[`line-${skit.script.filter(b=>b.do==='say').indexOf(b)}`])) errors.push(`cast.${id}: assign voice or supply audio`);
+    if (config.tts?.engine !== 'none' && !cast.voice && skit.script.filter(b => b.do === 'say').some((beat, i) => beat.who === id && (!assets.audio?.[`line-${i}`] || !recordingMatches(skit, `line-${i}`, beat, cast.voice)))) errors.push(`cast.${id}: assign voice or supply audio for the current dialogue`);
   }
   const backgrounds = [skit.stage?.background, ...(skit.script || []).filter(b => b.do === 'background').map(b => b.name)];
   for (const id of backgrounds) if (id && !assets.backgrounds[id]) errors.push(`Missing background: ${id}`);
@@ -105,9 +109,7 @@ export async function buildProject(directory) {
   const supplied = assets.audio || {}; assets.audio = {};
   for (const [i, beat] of skit.script.filter(b=>b.do==='say').entries()) {
     const id = `line-${i}`, voice = skit.cast[beat.who].voice;
-    const binding = skit.audioBindings?.[id];
-    const bindingMatches = !binding || (binding.line === beat.line && binding.who === beat.who && binding.voice === voice);
-    if (supplied[id] && bindingMatches) {
+    if (supplied[id] && recordingMatches(skit, id, beat, voice)) {
       const media = await readAsset(root,supplied[id],'audio'); await audioProbe(media.data); assets.audio[id] = dataUrl(media); lines.push({id,text:beat.line,voice,source:'supplied',hash:hash(media.data)}); continue;
     }
     if (config.tts.engine === 'none') { lines.push({id,text:beat.line,source:'captions'}); continue; }
@@ -117,7 +119,7 @@ export async function buildProject(directory) {
     catch { const raw = await synthesize(config.tts,beat.line,voice); audio = await run('ffmpeg',['-v','error','-i','pipe:0','-f','mp3','-ac','1','-b:a','96k','pipe:1'],{input:raw}); await fs.writeFile(file,audio); generated++; }
     assets.audio[id] = dataUrl({data:audio,mime:'audio/mpeg'}); lines.push({id,text:beat.line,voice,source:config.tts.engine,model:config.tts.model || 'Unknown',hash:hash(audio),cacheKey:key});
   }
-  const bundle = {...skit,meta:{...skit.meta,model:skit.meta?.model || 'Unknown'},assets,publishedAt:new Date().toISOString()};
+  const bundle = {...skit,captionOnly:config.tts.engine === 'none',meta:{...skit.meta,model:skit.meta?.model || 'Unknown'},assets,publishedAt:new Date().toISOString()};
   const bundlePath = path.join(out,'project.json');
   await writeJson(bundlePath,bundle);
   const revision = await run('git',['rev-parse','HEAD'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>b.toString().trim()).catch(()=> 'Unknown');

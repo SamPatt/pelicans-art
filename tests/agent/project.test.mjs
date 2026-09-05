@@ -106,3 +106,16 @@ test('voiced CLI render imports a full production with props and variants and mu
  assert.equal(result.ok,true);assert.equal(result.generated,0);assert.equal(manifest.audioLinesMuxed,8);assert.deepEqual(manifest.diagnostics,[]);
  assert.equal(manifest.media.streams.find(s=>s.type==='video').codec,'h264');assert.equal(manifest.media.streams.find(s=>s.type==='audio').codec,'aac');
 });
+
+test('supplied WAV works without a voice service; stale imported text requires a voice before synthesis',async t=>{
+ const root=await fixture(t),skit=await json(path.join(root,'skit.json'));skit.script=[{do:'say',who:'customer',line:'Recorded dialogue.'}];delete skit.cast.customer.voice;
+ await fs.writeFile(path.join(root,'assets/recording.wav'),wav());skit.assets.audio={'line-0':'assets/recording.wav'};skit.audioBindings={'line-0':{who:'customer',line:'Recorded dialogue.'}};await writeJson(path.join(root,'skit.json'),skit);
+ const result=await buildProject(root);assert.equal(result.generated,0);assert.equal(result.lines[0].source,'supplied');
+ skit.script[0].line='New unrecorded words.';await writeJson(path.join(root,'skit.json'),skit);await assert.rejects(loadProject(root),/assign voice or supply audio/);
+});
+
+test('changing the speech model invalidates the cache even when text and voices are unchanged',async t=>{
+ const root=await fixture(t);let count=0;const endpoint=await speechServer(t,(req,res)=>{count++;req.resume();res.end(wav());});await config(root,endpoint);
+ assert.equal((await buildProject(root)).generated,3);await config(root,endpoint,{model:'new-model'});assert.equal((await buildProject(root)).generated,3);assert.equal(count,6);
+ assert.equal((await buildProject(root)).reused,3);assert.equal(count,6);
+});
