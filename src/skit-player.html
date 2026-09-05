@@ -413,9 +413,11 @@
     body.embed-mode #status { display: none; }
     body.embed-mode h1 { display: none; }
 
+    body.embed-mode.controls-below { background: transparent; }
     body.embed-mode.controls-below #viewport,
     body.embed-mode.controls-below #viewport.landscape {
       height: calc(100vh - 56px);
+      border-radius: 12px;
     }
     body.embed-mode.controls-below .player-body { height: 100vh; }
     body.embed-mode.controls-below #controls {
@@ -428,7 +430,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--player-bg);
+      background: transparent;
     }
     body.embed-mode.controls-below #controls button {
       min-width: 44px;

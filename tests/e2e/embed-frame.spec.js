@@ -31,6 +31,8 @@ test('share-page controls stay below the complete scene in landscape and portrai
       const controls=document.querySelector('#controls').getBoundingClientRect();
       return {height:scene.height,bottom:scene.bottom,controlsTop:controls.top,controlsBottom:controls.bottom};
     });
+    expect(await page.locator('body').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
+    expect(await page.locator('#controls').evaluate(el=>getComputedStyle(el).backgroundColor)).toBe('rgba(0, 0, 0, 0)');
     expect(bounds.height).toBeCloseTo(sceneHeight,0);
     expect(bounds.controlsTop).toBeGreaterThanOrEqual(bounds.bottom);
     expect(bounds.controlsBottom).toBeLessThanOrEqual(sceneHeight+56);
