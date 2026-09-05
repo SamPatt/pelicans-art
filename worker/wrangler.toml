@@ -1,5 +1,6 @@
 name = "pelicans-community"
 main = "community-worker.js"
+workers_dev = true
 compatibility_date = "2024-01-01"
 
 [[r2_buckets]]

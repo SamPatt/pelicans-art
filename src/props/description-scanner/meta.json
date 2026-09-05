@@ -1,4 +1,5 @@
 {
+  "model": "GPT-6 Astra",
   "name": "description scanner",
   "defaultScale": 1,
   "holdOffset": [
@@ -6,6 +7,7 @@
     0
   ],
   "provenance": {
+    "model": "GPT-6 Astra",
     "creator": "Sam Patt with Codex (direct SVG and script authorship)",
     "license": "Original creative asset; see ASSET-LICENSE.md",
     "generation": "No OpenRouter, OpenAI API, or image generation service used."

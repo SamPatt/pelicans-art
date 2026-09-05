@@ -62,3 +62,7 @@ Revision 4 places the officer behind the right-facing cyclist (officer on the le
 - Captioned MP4: https://pelicans.art/media/the-description.mp4
 
 The release includes the scanner's SVG attachment and radio-animation support, timer cleanup, and smaller phone captions. It also includes the previously uncommitted background/visible-cast scene support that this skit depends on, plus support for preserving all scene backgrounds in portable exports. Unrelated editor and voice-provider changes are excluded. Audio filtering is performed by the local build script and embedded in the bundle, not generated during playback.
+
+The Model field is **GPT-6 Astra** for this skit and all six character poses, both props, and both backgrounds. Speech remains attributed to Pocket TTS in the production notes. The reusable assets and script are uploaded to Pouch; their permanent identifiers are recorded in `docs/description-pouch-assets.json`. The upload utility retains this receipt and skips previously uploaded assets.
+
+Preferred share link: https://pelicans.art/watch/the-description/

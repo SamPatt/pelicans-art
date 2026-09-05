@@ -182,18 +182,20 @@ const props = {
  'description-scanner':svg('0 0 42 60', `${radioArt}<g class="radio-signal" stroke="#f19b42" stroke-width="2.2"><path d="M31 22Q36 28 31 34"/><path d="M36 18Q43 28 36 38"/></g>`),
  'description-loot':svg('0 0 50 60', `<path d="M16 11L11 3Q19 0 25 5Q32 0 39 4L33 12L34 18Q48 33 44 48Q41 58 24 57Q5 58 5 46Q3 32 17 18Z" fill="#d3a064"/><path d="M17 13H33M16 17L34 18" stroke="#845c40" stroke-width="2"/><path d="M17 22Q10 34 11 44M35 23Q40 37 38 48" stroke="#edbd7e" stroke-width="1.2"/><path d="M32 15Q43 11 39 19L34 18M34 17L39 25" stroke="#8c6546" stroke-width="1"/><text x="25" y="40" text-anchor="middle" font-family="sans-serif" font-weight="900" font-size="11" fill="#483e35" stroke="none" transform="rotate(-5 25 36)">LOOT</text><path d="M15 47L34 46" stroke="#aa764a" stroke-width=".6"/>`)
 };
-const bg = background();
-const provenance={creator:'Sam Patt with Codex (direct SVG and script authorship)',license:'Original creative asset; see ASSET-LICENSE.md',generation:'No OpenRouter, OpenAI API, or image generation service used.'};
+const bg = background().replace('<svg ', '<svg data-model="GPT-6 Astra" ');
+const model='GPT-6 Astra';
+const provenance={model,creator:'Sam Patt with Codex (direct SVG and script authorship)',license:'Original creative asset; see ASSET-LICENSE.md',generation:'No OpenRouter, OpenAI API, or image generation service used.'};
 for(const [name,art] of Object.entries(sprites)) {
  await write(path.join(ROOT,'src/sprites',name,'front.svg'),art.replace(/[ \t]+$/gm, '')+'\n');
- await write(path.join(ROOT,'src/sprites',name,'meta.json'),json({name:name.replaceAll('-',' '),type:name.includes('officer')?'human':'creature',variants:['front'],voice:{id:name.includes('officer')?'javert':'marius',speed:1,pitch:0},provenance}));
+ await write(path.join(ROOT,'src/sprites',name,'meta.json'),json({model,name:name.replaceAll('-',' '),type:name.includes('officer')?'human':'creature',variants:['front'],voice:{id:name.includes('officer')?'javert':'marius',speed:1,pitch:0},provenance}));
 }
 for(const [name,art] of Object.entries(props)) {
  await write(path.join(ROOT,'src/props',name,'prop.svg'),art.replace(/[ \t]+$/gm, '')+'\n');
- await write(path.join(ROOT,'src/props',name,'meta.json'),json({name:name.replaceAll('-',' '),defaultScale:1,holdOffset:[0,0],provenance}));
+ await write(path.join(ROOT,'src/props',name,'meta.json'),json({model,name:name.replaceAll('-',' '),defaultScale:1,holdOffset:[0,0],provenance}));
 }
 await write(path.join(ROOT,'src/backgrounds/description-harbor/landscape.svg'), bg+'\n');
-await write(path.join(ROOT,'src/backgrounds/description-black/landscape.svg'),svg('0 0 400 225','<rect width="400" height="225" fill="#111c27" stroke="none"/>')+'\n');
+await write(path.join(ROOT,'src/backgrounds/description-black/landscape.svg'),svg('0 0 400 225','<rect width="400" height="225" fill="#111c27" stroke="none"/>').replace('<svg ', '<svg data-model="GPT-6 Astra" ')+'\n');
+for (const name of ['description-harbor','description-black']) await write(path.join(ROOT,'src/backgrounds',name,'meta.json'),json({name,model,provenance}));
 const castConfig=(sprite,x,voice,hidden=true)=>({sprite,x,y:79,scale:1.2,voice,speed:1,pitch:0,startOffscreen:hidden});
 const cast={
  burglar:castConfig('description-burglar',68,'marius',false),
@@ -252,7 +254,7 @@ for(let i=0;i<lines.length;i++) {
   }
  }
 }
-const skit={meta:{title:'The Description',description:'A burglar pelican keeps changing his disguise. The police scanner keeps up.',author:'Sam Patt',provenance},stage:{background:'description-harbor',orientation:'landscape'},cast,props:{scanner:{prop:'description-scanner',x:74.3,y:59.5,scale:.48,visible:true,layer:'foreground'},loot:{prop:'description-loot',x:62.5,y:63.8,scale:.91,visible:true}},script,assets};
+const skit={meta:{model,thumbnail:'https://pelicans.art/media/the-description-cover.png',title:'The Description',description:'A burglar pelican keeps changing his disguise. The police scanner keeps up.',author:'Sam Patt',provenance},stage:{background:'description-harbor',orientation:'landscape'},cast,props:{scanner:{prop:'description-scanner',x:74.3,y:59.5,scale:.48,visible:true,layer:'foreground'},loot:{prop:'description-loot',x:62.5,y:63.8,scale:.91,visible:true}},script,assets};
 await write(path.join(ROOT,'src/published',ID+'.json'),json(skit));
 await write(path.join(ROOT,'data/skits',ID+'.json'),json({...skit,assets:undefined}));
 await write(path.join(ROOT,'data/published',ID+'.json'),json(skit));

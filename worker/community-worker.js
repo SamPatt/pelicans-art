@@ -1,3 +1,5 @@
+import { assetMetadata } from './asset-metadata.js';
+import { renderSharePage } from './share-page.js';
 // Pelicans.art Community Worker — Cloudflare Worker with R2 storage
 
 const CATEGORIES = ['characters', 'props', 'backgrounds', 'skits', 'published', 'voices'];
@@ -10,6 +12,11 @@ const SVG_CSS_URL = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
 const VARIANT_NAME_RE = /^[a-z0-9-]{1,30}$/;
 const RESERVED_VARIANT_NAMES = new Set(['meta', 'index']);
 const MAX_VARIANTS_PER_CHARACTER = 10;
+
+export function assetModel(body) {
+  const value = body.model ?? body.meta?.model ?? body.skit?.meta?.model ?? body.published?.meta?.model;
+  return typeof value === 'string' && value.trim() ? value.trim().slice(0, 120) : 'Unknown';
+}
 
 function corsHeaders() {
   return {
@@ -237,7 +244,7 @@ async function storeCharacter(bucket, slug, body) {
     ...(body.meta || extractMetaFromSvg(variants.front) || {}),
     variants: variantNames
   };
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: charMeta.name, category: 'characters' };
+  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: charMeta.name, category: 'characters' };
 
   for (const [variantName, svg] of Object.entries(variants)) {
     await bucket.put(`characters/${slug}/${variantName}.svg`, svg, {
@@ -253,7 +260,7 @@ async function storeCharacter(bucket, slug, body) {
 async function storeProp(bucket, slug, body) {
   // Use provided meta or extract from SVG
   const propMeta = body.meta || extractMetaFromSvg(body.svg) || {};
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: propMeta.name, category: 'props' };
+  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: propMeta.name, category: 'props' };
   await bucket.put(`props/${slug}/prop.svg`, body.svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
   // Store meta.json for backwards compatibility
   await bucket.put(`props/${slug}/meta.json`, JSON.stringify(propMeta, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
@@ -261,7 +268,7 @@ async function storeProp(bucket, slug, body) {
 }
 
 async function storeBackground(bucket, slug, body) {
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: body.name, category: 'backgrounds' };
+  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.name, category: 'backgrounds' };
   await bucket.put(`backgrounds/${slug}/landscape.svg`, body.landscape_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
   if (body.portrait_svg) {
     await bucket.put(`backgrounds/${slug}/portrait.svg`, body.portrait_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
@@ -270,19 +277,19 @@ async function storeBackground(bucket, slug, body) {
 }
 
 async function storeSkit(bucket, slug, body) {
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: body.skit.meta.title, category: 'skits' };
+  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.skit.meta.title, category: 'skits' };
   await bucket.put(`skits/${slug}.json`, JSON.stringify(body.skit, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
   return { slug, files: [`${slug}.json`] };
 }
 
 async function storePublished(bucket, slug, body) {
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: body.published.meta.title, category: 'published' };
+  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.published.meta.title, category: 'published' };
   await bucket.put(`published/${slug}.json`, JSON.stringify(body.published), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
   return { slug, files: [`${slug}.json`] };
 }
 
 async function storeVoice(bucket, slug, body) {
-  const commonMeta = { username: body.username, uploadedAt: new Date().toISOString(), assetName: body.name || slug, category: 'voices' };
+  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.name || slug, category: 'voices' };
 
   // Support both WAV audio and processed safetensors
   if (body.safetensors_base64) {
@@ -365,6 +372,7 @@ async function listCategory(bucket, category, cursor, limit) {
         slug: extractSlug(category, obj.key),
         name: meta.assetName || obj.key,
         username: meta.username || 'unknown',
+        model: assetMetadata[obj.key]?.model || meta.model || 'Unknown',
         uploadedAt: meta.uploadedAt || obj.uploaded?.toISOString(),
         size: obj.size,
       });
@@ -409,6 +417,19 @@ function extractSlug(category, key) {
 async function handleRequest(request, env) {
   const url = new URL(request.url);
   const path = url.pathname;
+  const watch = path.match(/^\/watch\/([a-z0-9-]+)\/?$/);
+  if (watch && (request.method === 'GET' || request.method === 'HEAD')) {
+    const object = await env.BUCKET.get(`published/${watch[1]}.json`);
+    if (!object) return err('Skit not found', 404);
+    const skit = JSON.parse(await object.text());
+    skit.meta = { ...skit.meta, ...assetMetadata[`published/${watch[1]}.json`] };
+    const dataUrl = `https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/published/${watch[1]}/data.json`;
+    const thumbnail = skit.meta?.thumbnail;
+    const image = typeof thumbnail === 'string' && thumbnail.startsWith('https://pelicans.art/media/') ? thumbnail : undefined;
+    const html = renderSharePage({ title: skit.meta?.title || 'Untitled skit', description: skit.meta?.description || 'A short comedy skit on pelicans.art.', model: object.customMetadata?.model || assetModel(skit), url: `${url.origin}/watch/${watch[1]}`, playerUrl: `https://pelicans.art/skit-player.html?embed=1&captions=1&url=${encodeURIComponent(dataUrl)}`, image, portrait: skit.stage?.orientation === 'portrait' });
+    return new Response(request.method === 'HEAD' ? null : html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=60' } });
+  }
+
 
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders() });
@@ -523,6 +544,11 @@ async function handleUpload(request, env, category) {
   }
   if (validationErr) return err(validationErr);
 
+  body.model = assetModel(body);
+  for (const meta of [body.meta, body.skit?.meta, body.published?.meta]) {
+    if (meta && typeof meta === 'object') meta.model = body.model;
+  }
+
   const name = body.name || body.meta?.name || body.skit?.meta?.title || body.published?.meta?.title || category;
   const slug = generateSlug(name);
 
@@ -586,6 +612,7 @@ async function handleGetMeta(env, category, slug) {
     category,
     ...bodyMeta,
     name: bodyMeta.name || wrapperMeta.assetName || slug,
+    model: assetMetadata[key]?.model || wrapperMeta.model || bodyMeta.model || 'Unknown',
     username: wrapperMeta.username,
     uploadedAt: wrapperMeta.uploadedAt,
     size: obj.size,
@@ -621,6 +648,11 @@ async function handleGetFile(env, category, slug, filename) {
     'Cache-Control': 'public, max-age=86400',
   };
 
+  if ((category === 'published' || category === 'skits') && assetMetadata[key]) {
+    const value = JSON.parse(await obj.text());
+    value.meta = { ...value.meta, ...assetMetadata[key] };
+    return new Response(JSON.stringify(value), { headers: { ...headers, 'Cache-Control': 'public, max-age=60' } });
+  }
   return new Response(obj.body, { headers });
 }
 

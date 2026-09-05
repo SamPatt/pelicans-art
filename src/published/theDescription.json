@@ -1,9 +1,12 @@
 {
   "meta": {
+    "model": "GPT-6 Astra",
+    "thumbnail": "https://pelicans.art/media/the-description-cover.png",
     "title": "The Description",
     "description": "A burglar pelican keeps changing his disguise. The police scanner keeps up.",
     "author": "Sam Patt",
     "provenance": {
+      "model": "GPT-6 Astra",
       "creator": "Sam Patt with Codex (direct SVG and script authorship)",
       "license": "Original creative asset; see ASSET-LICENSE.md",
       "generation": "No OpenRouter, OpenAI API, or image generation service used."
@@ -539,6 +542,7 @@
     },
     "spriteMeta": {
       "description-burglar": {
+        "model": "GPT-6 Astra",
         "name": "description burglar",
         "type": "creature",
         "variants": [
@@ -550,12 +554,14 @@
           "pitch": 0
         },
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."
         }
       },
       "description-disguise": {
+        "model": "GPT-6 Astra",
         "name": "description disguise",
         "type": "creature",
         "variants": [
@@ -567,12 +573,14 @@
           "pitch": 0
         },
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."
         }
       },
       "description-hidden": {
+        "model": "GPT-6 Astra",
         "name": "description hidden",
         "type": "creature",
         "variants": [
@@ -584,12 +592,14 @@
           "pitch": 0
         },
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."
         }
       },
       "description-turned": {
+        "model": "GPT-6 Astra",
         "name": "description turned",
         "type": "creature",
         "variants": [
@@ -601,12 +611,14 @@
           "pitch": 0
         },
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."
         }
       },
       "description-officer": {
+        "model": "GPT-6 Astra",
         "name": "description officer",
         "type": "human",
         "variants": [
@@ -618,12 +630,14 @@
           "pitch": 0
         },
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."
         }
       },
       "description-officer-lowered": {
+        "model": "GPT-6 Astra",
         "name": "description officer lowered",
         "type": "human",
         "variants": [
@@ -635,6 +649,7 @@
           "pitch": 0
         },
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."
@@ -642,7 +657,7 @@
       }
     },
     "backgrounds": {
-      "description-harbor": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMjI1IiBmaWxsPSJub25lIiBzdHJva2U9IiMyMDM0NDkiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxkZWZzPjxsaW5lYXJHcmFkaWVudCBpZD0ic2t5IiB4Mj0iMCIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiNlY2Q3YjIiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNmYmVkZDAiLz48L2xpbmVhckdyYWRpZW50PjxsaW5lYXJHcmFkaWVudCBpZD0ic2VhIiB4Mj0iMCIgeTI9IjEiPjxzdG9wIHN0b3AtY29sb3I9IiM2MDlkYTEiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiM5ZWJjYjAiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz4KIDxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjI1IiBmaWxsPSJ1cmwoI3NreSkiIHN0cm9rZT0ibm9uZSIvPgogPGNpcmNsZSBjeD0iMjQxIiBjeT0iNDciIHI9IjIzIiBmaWxsPSIjZmZmMmM3IiBzdHJva2U9Im5vbmUiLz4KIDxwYXRoIGQ9Ik05MSA2OVExMjMgNTAgMTUwIDY3UTE2NyA1NyAxODcgNzFIOTFaTTI2NiAzMlEyODEgMjEgMjk1IDMxUTMwOCAyNSAzMTkgMzRIMjY2WiIgZmlsbD0iI2ZhZjBkOSIgc3Ryb2tlPSJub25lIi8+CiA8cGF0aCBkPSJNMCA5NUw4OSA5NEwxMzAgODRMMTczIDk0TDIxOSA4NUwyNTQgOTJMMzAyIDc4TDQwMCA5MFYxNDVIMFoiIGZpbGw9IiM5MWFlYTQiIHN0cm9rZT0ibm9uZSIvPgogPHBhdGggZD0iTTAgMTEwSDQwMFYxNTRIMFoiIGZpbGw9InVybCgjc2VhKSIgc3Ryb2tlPSJub25lIi8+CiA8cGF0aCBkPSJNODMgMTE5SDEzM00xNTQgMTI1SDE5MU0yNDEgMTE3SDI4ME0zMTEgMTMySDM0ME0xNzggMTM4SDIyMU0yNSAxMzZINjgiIHN0cm9rZT0iI2QyZGVkMCIgc3Ryb2tlLXdpZHRoPSIxIi8+CiA8ZyBzdHJva2U9IiNhZjkxNmYiIHN0cm9rZS13aWR0aD0iLjkiPjxwYXRoIGQ9Ik0tMTAgMjdMMzQgMTdMODYgMzBWMTIzSC0xMFoiIGZpbGw9IiNkOWI5OTIiLz48cGF0aCBkPSJNLTEwIDI3TDM0IDE0TDg4IDI4TDg3IDM0TDM0IDIyTC0xMCAzNFoiIGZpbGw9IiNiOTc2NWUiLz4KIDxwYXRoIGQ9Ik0yOTUgMzBMMzQ5IDE2TDQxMCAzNFYxMjVIMjk1WiIgZmlsbD0iI2RlYzU5ZSIvPjxwYXRoIGQ9Ik0yODkgMzBMMzQ5IDEyTDQxMyAzMUw0MTMgMzZMMzQ5IDIxTDI5NCAzNloiIGZpbGw9IiNiOTc2NWUiLz48cmVjdCB4PSI3IiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE5IiByeD0iNCIgZmlsbD0iIzcxOTY5MiIgc3Ryb2tlPSIjZTNjOTlmIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTIgNDZWNjNNNyA1NEgxNyIgc3Ryb2tlPSIjZGRkOWI5IiBzdHJva2Utd2lkdGg9Ii41Ii8+PHJlY3QgeD0iMjYiIHk9IjQ1IiB3aWR0aD0iMTAiIGhlaWdodD0iMTkiIHJ4PSI0IiBmaWxsPSIjNzE5NjkyIiBzdHJva2U9IiNlM2M5OWYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zMSA0NlY2M00yNiA1NEgzNiIgc3Ryb2tlPSIjZGRkOWI5IiBzdHJva2Utd2lkdGg9Ii41Ii8+PHJlY3QgeD0iNDkiIHk9IjQ1IiB3aWR0aD0iMTAiIGhlaWdodD0iMTkiIHJ4PSI0IiBmaWxsPSIjNzE5NjkyIiBzdHJva2U9IiNlM2M5OWYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik01NCA0NlY2M000OSA1NEg1OSIgc3Ryb2tlPSIjZGRkOWI5IiBzdHJva2Utd2lkdGg9Ii41Ii8+PHJlY3QgeD0iNzAiIHk9IjQ1IiB3aWR0aD0iMTAiIGhlaWdodD0iMTkiIHJ4PSI0IiBmaWxsPSIjNzE5NjkyIiBzdHJva2U9IiNlM2M5OWYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik03NSA0NlY2M003MCA1NEg4MCIgc3Ryb2tlPSIjZGRkOWI5IiBzdHJva2Utd2lkdGg9Ii41Ii8+PHJlY3QgeD0iMzAyIiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE5IiByeD0iNCIgZmlsbD0iIzcxOTY5MiIgc3Ryb2tlPSIjZTNjOTlmIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMzA3IDQ2VjYzTTMwMiA1NEgzMTIiIHN0cm9rZT0iI2RkZDliOSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxyZWN0IHg9IjMyMSIgeT0iNDUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxOSIgcng9IjQiIGZpbGw9IiM3MTk2OTIiIHN0cm9rZT0iI2UzYzk5ZiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTMyNiA0NlY2M00zMjEgNTRIMzMxIiBzdHJva2U9IiNkZGQ5YjkiIHN0cm9rZS13aWR0aD0iLjUiLz48cmVjdCB4PSIzNDciIHk9IjQ1IiB3aWR0aD0iMTAiIGhlaWdodD0iMTkiIHJ4PSI0IiBmaWxsPSIjNzE5NjkyIiBzdHJva2U9IiNlM2M5OWYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zNTIgNDZWNjNNMzQ3IDU0SDM1NyIgc3Ryb2tlPSIjZGRkOWI5IiBzdHJva2Utd2lkdGg9Ii41Ii8+PHJlY3QgeD0iMzcwIiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE5IiByeD0iNCIgZmlsbD0iIzcxOTY5MiIgc3Ryb2tlPSIjZTNjOTlmIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMzc1IDQ2VjYzTTM3MCA1NEgzODAiIHN0cm9rZT0iI2RkZDliOSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxyZWN0IHg9IjM5MiIgeT0iNDUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxOSIgcng9IjQiIGZpbGw9IiM3MTk2OTIiIHN0cm9rZT0iI2UzYzk5ZiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTM5NyA0NlY2M00zOTIgNTRINDAyIiBzdHJva2U9IiNkZGQ5YjkiIHN0cm9rZS13aWR0aD0iLjUiLz4KIDxwYXRoIGQ9Ik04IDEyM1Y4NlE4IDczIDE5IDczUTMwIDczIDMwIDg2VjEyM1pNNTEgMTIzVjg2UTUxIDczIDYyIDczUTczIDczIDczIDg2VjEyM1oiIGZpbGw9IiM3ZTlhOTUiLz4KIDxwYXRoIGQ9Ik0zMTkgMTI1Vjg5UTMxOSA3NCAzMzIgNzRRMzQ1IDc0IDM0NSA4OVYxMjVaIiBmaWxsPSIjN2U5YTk1Ii8+PHBhdGggZD0iTTM1OSA4MkgzOTVWMTEzSDM1OVoiIGZpbGw9IiM2ODg5ODMiLz48L2c+CiA8cGF0aCBkPSJNMCAxNDdINDAwVjE2MUgwWiIgZmlsbD0iI2U2ZDViNCIgc3Ryb2tlPSIjYTk5Yjg1IiBzdHJva2Utd2lkdGg9IjEiLz4KIDxwYXRoIGQ9Ik0wIDE1OUg0MDBWMjI1SDBaIiBmaWxsPSIjZThkN2I4IiBzdHJva2U9Im5vbmUiLz4KIDxwYXRoIGQ9Ik0wIDE3N0g0MDAiIHN0cm9rZT0iI2JmYWQ4ZSIgc3Ryb2tlLXdpZHRoPSIxLjIiLz48cGF0aCBkPSJNMCAxODRINDAwIiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjY1Ii8+PHBhdGggZD0iTTAgMTk3SDQwMCIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42NSIvPjxwYXRoIGQ9Ik0wIDIxMEg0MDAiIHN0cm9rZT0iI2NjYmNhMSIgc3Ryb2tlLXdpZHRoPSIuNjUiLz48cGF0aCBkPSJNMCAyMjNINDAwIiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjY1Ii8+PHBhdGggZD0iTTAgMTg0TC0xOCAyMjUiIHN0cm9rZT0iI2NjYmNhMSIgc3Ryb2tlLXdpZHRoPSIuNiIvPjxwYXRoIGQ9Ik0zNiAxODRMMTggMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNNzIgMTg0TDU0IDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTEwOCAxODRMOTAgMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMTQ0IDE4NEwxMjYgMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMTgwIDE4NEwxNjIgMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMjE2IDE4NEwxOTggMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMjUyIDE4NEwyMzQgMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMjg4IDE4NEwyNzAgMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMzI0IDE4NEwzMDYgMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMzYwIDE4NEwzNDIgMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMzk2IDE4NEwzNzggMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz4KIDxnIGZpbGw9IiNiOGJjYTUiIHN0cm9rZT0iIzcxOGU4NSIgc3Ryb2tlLXdpZHRoPSIuOCI+PHBhdGggZD0iTTUgMTUwVjEzMEg4VjE1MFoiLz48cGF0aCBkPSJNNSAxMzBINTEiLz48cGF0aCBkPSJNNTEgMTUwVjEzMEg1NFYxNTBaIi8+PHBhdGggZD0iTTUxIDEzMEg5NyIvPjxwYXRoIGQ9Ik05OCAxNTBWMTMwSDEwMVYxNTBaIi8+PHBhdGggZD0iTTk4IDEzMEgxNDQiLz48cGF0aCBkPSJNMTQ1IDE1MFYxMzBIMTQ4VjE1MFoiLz48cGF0aCBkPSJNMTQ1IDEzMEgxOTEiLz48cGF0aCBkPSJNMTkyIDE1MFYxMzBIMTk1VjE1MFoiLz48cGF0aCBkPSJNMTkyIDEzMEgyMzgiLz48cGF0aCBkPSJNMjM5IDE1MFYxMzBIMjQyVjE1MFoiLz48cGF0aCBkPSJNMjM5IDEzMEgyODUiLz48cGF0aCBkPSJNMjg2IDE1MFYxMzBIMjg5VjE1MFoiLz48cGF0aCBkPSJNMjg2IDEzMEgzMzIiLz48cGF0aCBkPSJNMzMzIDE1MFYxMzBIMzM2VjE1MFoiLz48cGF0aCBkPSJNMzMzIDEzMEgzNzkiLz48cGF0aCBkPSJNMzgwIDE1MFYxMzBIMzgzVjE1MFoiLz48cGF0aCBkPSJNMzgwIDEzMEg0MjYiLz48L2c+CiA8ZyBzdHJva2Utd2lkdGg9IjEuMyI+PHBhdGggZD0iTTIyMiAxNTBWNzVNMjE5IDE1MUgyMjUiLz48cGF0aCBkPSJNMjE3IDYySDIyN0wyMjUgNzdIMjE5WiIgZmlsbD0iI2Y4ZGRhMCIvPjxwYXRoIGQ9Ik0yMTYgNjJMMjIyIDU3TDIyOCA2Mk0yMjIgNTRWNTgiLz48cGF0aCBkPSJNMjIwIDY1VjczTTIyNCA2NVY3MyIgc3Ryb2tlLXdpZHRoPSIuNiIvPjwvZz4KIDxwYXRoIGQ9Ik05NyA0NVExMDIgNDAgMTA3IDQ1UTExMiA0MCAxMTcgNDVNMTY5IDI5UTE3NCAyNSAxNzkgMjlRMTg0IDI1IDE4OSAyOSIgc3Ryb2tlPSIjNzI4Yzg2IiBzdHJva2Utd2lkdGg9IjEiLz4KIDxwYXRoIGQ9Ik0yNjQgMTUwUTI1OSAxNDMgMjYzIDEzOFEyNjUgMTMyIDI2OSAxNDNRMjY3IDEzMCAyNzIgMTMwUTI3NyAxMzIgMjcyIDE0NlEyODIgMTM0IDI4NCAxNDFRMjgzIDE0OCAyNzcgMTUwIiBmaWxsPSIjN2Q5YjgzIiBzdHJva2U9IiM2Nzg2NzciIHN0cm9rZS13aWR0aD0iLjciLz48L3N2Zz4=",
+      "description-harbor": "data:image/svg+xml;base64,PHN2ZyBkYXRhLW1vZGVsPSJHUFQtNiBBc3RyYSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgNDAwIDIyNSIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMjAzNDQ5IiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9InNreSIgeDI9IjAiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjZWNkN2IyIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjZmJlZGQwIi8+PC9saW5lYXJHcmFkaWVudD48bGluZWFyR3JhZGllbnQgaWQ9InNlYSIgeDI9IjAiIHkyPSIxIj48c3RvcCBzdG9wLWNvbG9yPSIjNjA5ZGExIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjOWViY2IwIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+CiA8cmVjdCB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNSIgZmlsbD0idXJsKCNza3kpIiBzdHJva2U9Im5vbmUiLz4KIDxjaXJjbGUgY3g9IjI0MSIgY3k9IjQ3IiByPSIyMyIgZmlsbD0iI2ZmZjJjNyIgc3Ryb2tlPSJub25lIi8+CiA8cGF0aCBkPSJNOTEgNjlRMTIzIDUwIDE1MCA2N1ExNjcgNTcgMTg3IDcxSDkxWk0yNjYgMzJRMjgxIDIxIDI5NSAzMVEzMDggMjUgMzE5IDM0SDI2NloiIGZpbGw9IiNmYWYwZDkiIHN0cm9rZT0ibm9uZSIvPgogPHBhdGggZD0iTTAgOTVMODkgOTRMMTMwIDg0TDE3MyA5NEwyMTkgODVMMjU0IDkyTDMwMiA3OEw0MDAgOTBWMTQ1SDBaIiBmaWxsPSIjOTFhZWE0IiBzdHJva2U9Im5vbmUiLz4KIDxwYXRoIGQ9Ik0wIDExMEg0MDBWMTU0SDBaIiBmaWxsPSJ1cmwoI3NlYSkiIHN0cm9rZT0ibm9uZSIvPgogPHBhdGggZD0iTTgzIDExOUgxMzNNMTU0IDEyNUgxOTFNMjQxIDExN0gyODBNMzExIDEzMkgzNDBNMTc4IDEzOEgyMjFNMjUgMTM2SDY4IiBzdHJva2U9IiNkMmRlZDAiIHN0cm9rZS13aWR0aD0iMSIvPgogPGcgc3Ryb2tlPSIjYWY5MTZmIiBzdHJva2Utd2lkdGg9Ii45Ij48cGF0aCBkPSJNLTEwIDI3TDM0IDE3TDg2IDMwVjEyM0gtMTBaIiBmaWxsPSIjZDliOTkyIi8+PHBhdGggZD0iTS0xMCAyN0wzNCAxNEw4OCAyOEw4NyAzNEwzNCAyMkwtMTAgMzRaIiBmaWxsPSIjYjk3NjVlIi8+CiA8cGF0aCBkPSJNMjk1IDMwTDM0OSAxNkw0MTAgMzRWMTI1SDI5NVoiIGZpbGw9IiNkZWM1OWUiLz48cGF0aCBkPSJNMjg5IDMwTDM0OSAxMkw0MTMgMzFMNDEzIDM2TDM0OSAyMUwyOTQgMzZaIiBmaWxsPSIjYjk3NjVlIi8+PHJlY3QgeD0iNyIgeT0iNDUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxOSIgcng9IjQiIGZpbGw9IiM3MTk2OTIiIHN0cm9rZT0iI2UzYzk5ZiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTEyIDQ2VjYzTTcgNTRIMTciIHN0cm9rZT0iI2RkZDliOSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxyZWN0IHg9IjI2IiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE5IiByeD0iNCIgZmlsbD0iIzcxOTY5MiIgc3Ryb2tlPSIjZTNjOTlmIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMzEgNDZWNjNNMjYgNTRIMzYiIHN0cm9rZT0iI2RkZDliOSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxyZWN0IHg9IjQ5IiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE5IiByeD0iNCIgZmlsbD0iIzcxOTY5MiIgc3Ryb2tlPSIjZTNjOTlmIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNNTQgNDZWNjNNNDkgNTRINTkiIHN0cm9rZT0iI2RkZDliOSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxyZWN0IHg9IjcwIiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE5IiByeD0iNCIgZmlsbD0iIzcxOTY5MiIgc3Ryb2tlPSIjZTNjOTlmIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNNzUgNDZWNjNNNzAgNTRIODAiIHN0cm9rZT0iI2RkZDliOSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxyZWN0IHg9IjMwMiIgeT0iNDUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxOSIgcng9IjQiIGZpbGw9IiM3MTk2OTIiIHN0cm9rZT0iI2UzYzk5ZiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTMwNyA0NlY2M00zMDIgNTRIMzEyIiBzdHJva2U9IiNkZGQ5YjkiIHN0cm9rZS13aWR0aD0iLjUiLz48cmVjdCB4PSIzMjEiIHk9IjQ1IiB3aWR0aD0iMTAiIGhlaWdodD0iMTkiIHJ4PSI0IiBmaWxsPSIjNzE5NjkyIiBzdHJva2U9IiNlM2M5OWYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zMjYgNDZWNjNNMzIxIDU0SDMzMSIgc3Ryb2tlPSIjZGRkOWI5IiBzdHJva2Utd2lkdGg9Ii41Ii8+PHJlY3QgeD0iMzQ3IiB5PSI0NSIgd2lkdGg9IjEwIiBoZWlnaHQ9IjE5IiByeD0iNCIgZmlsbD0iIzcxOTY5MiIgc3Ryb2tlPSIjZTNjOTlmIiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMzUyIDQ2VjYzTTM0NyA1NEgzNTciIHN0cm9rZT0iI2RkZDliOSIgc3Ryb2tlLXdpZHRoPSIuNSIvPjxyZWN0IHg9IjM3MCIgeT0iNDUiIHdpZHRoPSIxMCIgaGVpZ2h0PSIxOSIgcng9IjQiIGZpbGw9IiM3MTk2OTIiIHN0cm9rZT0iI2UzYzk5ZiIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTM3NSA0NlY2M00zNzAgNTRIMzgwIiBzdHJva2U9IiNkZGQ5YjkiIHN0cm9rZS13aWR0aD0iLjUiLz48cmVjdCB4PSIzOTIiIHk9IjQ1IiB3aWR0aD0iMTAiIGhlaWdodD0iMTkiIHJ4PSI0IiBmaWxsPSIjNzE5NjkyIiBzdHJva2U9IiNlM2M5OWYiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0zOTcgNDZWNjNNMzkyIDU0SDQwMiIgc3Ryb2tlPSIjZGRkOWI5IiBzdHJva2Utd2lkdGg9Ii41Ii8+CiA8cGF0aCBkPSJNOCAxMjNWODZROCA3MyAxOSA3M1EzMCA3MyAzMCA4NlYxMjNaTTUxIDEyM1Y4NlE1MSA3MyA2MiA3M1E3MyA3MyA3MyA4NlYxMjNaIiBmaWxsPSIjN2U5YTk1Ii8+CiA8cGF0aCBkPSJNMzE5IDEyNVY4OVEzMTkgNzQgMzMyIDc0UTM0NSA3NCAzNDUgODlWMTI1WiIgZmlsbD0iIzdlOWE5NSIvPjxwYXRoIGQ9Ik0zNTkgODJIMzk1VjExM0gzNTlaIiBmaWxsPSIjNjg4OTgzIi8+PC9nPgogPHBhdGggZD0iTTAgMTQ3SDQwMFYxNjFIMFoiIGZpbGw9IiNlNmQ1YjQiIHN0cm9rZT0iI2E5OWI4NSIgc3Ryb2tlLXdpZHRoPSIxIi8+CiA8cGF0aCBkPSJNMCAxNTlINDAwVjIyNUgwWiIgZmlsbD0iI2U4ZDdiOCIgc3Ryb2tlPSJub25lIi8+CiA8cGF0aCBkPSJNMCAxNzdINDAwIiBzdHJva2U9IiNiZmFkOGUiIHN0cm9rZS13aWR0aD0iMS4yIi8+PHBhdGggZD0iTTAgMTg0SDQwMCIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42NSIvPjxwYXRoIGQ9Ik0wIDE5N0g0MDAiIHN0cm9rZT0iI2NjYmNhMSIgc3Ryb2tlLXdpZHRoPSIuNjUiLz48cGF0aCBkPSJNMCAyMTBINDAwIiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjY1Ii8+PHBhdGggZD0iTTAgMjIzSDQwMCIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42NSIvPjxwYXRoIGQ9Ik0wIDE4NEwtMTggMjI1IiBzdHJva2U9IiNjY2JjYTEiIHN0cm9rZS13aWR0aD0iLjYiLz48cGF0aCBkPSJNMzYgMTg0TDE4IDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTcyIDE4NEw1NCAyMjUiIHN0cm9rZT0iI2NjYmNhMSIgc3Ryb2tlLXdpZHRoPSIuNiIvPjxwYXRoIGQ9Ik0xMDggMTg0TDkwIDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTE0NCAxODRMMTI2IDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTE4MCAxODRMMTYyIDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTIxNiAxODRMMTk4IDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTI1MiAxODRMMjM0IDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTI4OCAxODRMMjcwIDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTMyNCAxODRMMzA2IDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTM2MCAxODRMMzQyIDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+PHBhdGggZD0iTTM5NiAxODRMMzc4IDIyNSIgc3Ryb2tlPSIjY2NiY2ExIiBzdHJva2Utd2lkdGg9Ii42Ii8+CiA8ZyBmaWxsPSIjYjhiY2E1IiBzdHJva2U9IiM3MThlODUiIHN0cm9rZS13aWR0aD0iLjgiPjxwYXRoIGQ9Ik01IDE1MFYxMzBIOFYxNTBaIi8+PHBhdGggZD0iTTUgMTMwSDUxIi8+PHBhdGggZD0iTTUxIDE1MFYxMzBINTRWMTUwWiIvPjxwYXRoIGQ9Ik01MSAxMzBIOTciLz48cGF0aCBkPSJNOTggMTUwVjEzMEgxMDFWMTUwWiIvPjxwYXRoIGQ9Ik05OCAxMzBIMTQ0Ii8+PHBhdGggZD0iTTE0NSAxNTBWMTMwSDE0OFYxNTBaIi8+PHBhdGggZD0iTTE0NSAxMzBIMTkxIi8+PHBhdGggZD0iTTE5MiAxNTBWMTMwSDE5NVYxNTBaIi8+PHBhdGggZD0iTTE5MiAxMzBIMjM4Ii8+PHBhdGggZD0iTTIzOSAxNTBWMTMwSDI0MlYxNTBaIi8+PHBhdGggZD0iTTIzOSAxMzBIMjg1Ii8+PHBhdGggZD0iTTI4NiAxNTBWMTMwSDI4OVYxNTBaIi8+PHBhdGggZD0iTTI4NiAxMzBIMzMyIi8+PHBhdGggZD0iTTMzMyAxNTBWMTMwSDMzNlYxNTBaIi8+PHBhdGggZD0iTTMzMyAxMzBIMzc5Ii8+PHBhdGggZD0iTTM4MCAxNTBWMTMwSDM4M1YxNTBaIi8+PHBhdGggZD0iTTM4MCAxMzBINDI2Ii8+PC9nPgogPGcgc3Ryb2tlLXdpZHRoPSIxLjMiPjxwYXRoIGQ9Ik0yMjIgMTUwVjc1TTIxOSAxNTFIMjI1Ii8+PHBhdGggZD0iTTIxNyA2MkgyMjdMMjI1IDc3SDIxOVoiIGZpbGw9IiNmOGRkYTAiLz48cGF0aCBkPSJNMjE2IDYyTDIyMiA1N0wyMjggNjJNMjIyIDU0VjU4Ii8+PHBhdGggZD0iTTIyMCA2NVY3M00yMjQgNjVWNzMiIHN0cm9rZS13aWR0aD0iLjYiLz48L2c+CiA8cGF0aCBkPSJNOTcgNDVRMTAyIDQwIDEwNyA0NVExMTIgNDAgMTE3IDQ1TTE2OSAyOVExNzQgMjUgMTc5IDI5UTE4NCAyNSAxODkgMjkiIHN0cm9rZT0iIzcyOGM4NiIgc3Ryb2tlLXdpZHRoPSIxIi8+CiA8cGF0aCBkPSJNMjY0IDE1MFEyNTkgMTQzIDI2MyAxMzhRMjY1IDEzMiAyNjkgMTQzUTI2NyAxMzAgMjcyIDEzMFEyNzcgMTMyIDI3MiAxNDZRMjgyIDEzNCAyODQgMTQxUTI4MyAxNDggMjc3IDE1MCIgZmlsbD0iIzdkOWI4MyIgc3Ryb2tlPSIjNjc4Njc3IiBzdHJva2Utd2lkdGg9Ii43Ii8+PC9zdmc+",
       "description-black": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MDAgMjI1IiBmaWxsPSJub25lIiBzdHJva2U9IiMyMDM0NDkiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjI1IiBmaWxsPSIjMTExYzI3IiBzdHJva2U9Im5vbmUiLz48L3N2Zz4="
     },
     "props": {
@@ -651,6 +666,7 @@
     },
     "propMeta": {
       "description-scanner": {
+        "model": "GPT-6 Astra",
         "name": "description scanner",
         "defaultScale": 1,
         "holdOffset": [
@@ -658,12 +674,14 @@
           0
         ],
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."
         }
       },
       "description-loot": {
+        "model": "GPT-6 Astra",
         "name": "description loot",
         "defaultScale": 1,
         "holdOffset": [
@@ -671,6 +689,7 @@
           0
         ],
         "provenance": {
+          "model": "GPT-6 Astra",
           "creator": "Sam Patt with Codex (direct SVG and script authorship)",
           "license": "Original creative asset; see ASSET-LICENSE.md",
           "generation": "No OpenRouter, OpenAI API, or image generation service used."

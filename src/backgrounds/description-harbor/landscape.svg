@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" fill="none" stroke="#203449" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#ecd7b2"/><stop offset="1" stop-color="#fbedd0"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#609da1"/><stop offset="1" stop-color="#9ebcb0"/></linearGradient></defs>
+<svg data-model="GPT-6 Astra" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" fill="none" stroke="#203449" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#ecd7b2"/><stop offset="1" stop-color="#fbedd0"/></linearGradient><linearGradient id="sea" x2="0" y2="1"><stop stop-color="#609da1"/><stop offset="1" stop-color="#9ebcb0"/></linearGradient></defs>
  <rect width="400" height="225" fill="url(#sky)" stroke="none"/>
  <circle cx="241" cy="47" r="23" fill="#fff2c7" stroke="none"/>
  <path d="M91 69Q123 50 150 67Q167 57 187 71H91ZM266 32Q281 21 295 31Q308 25 319 34H266Z" fill="#faf0d9" stroke="none"/>

@@ -238,6 +238,14 @@
         throw new Error(`Unsupported generation type: ${type}`);
       }
 
+      const model = settings.model || 'Unknown';
+      asset.meta = { ...asset.meta, model };
+      if (asset.skit) asset.skit.meta = { ...asset.skit.meta, model };
+      if (asset.svg) {
+        const document = new DOMParser().parseFromString(asset.svg, 'image/svg+xml');
+        document.documentElement.setAttribute('data-model', model);
+        asset.svg = new XMLSerializer().serializeToString(document.documentElement);
+      }
       return { success: true, saved: false, asset };
     }
 

@@ -1,0 +1,10 @@
+{
+  "name": "description-black",
+  "model": "GPT-6 Astra",
+  "provenance": {
+    "model": "GPT-6 Astra",
+    "creator": "Sam Patt with Codex (direct SVG and script authorship)",
+    "license": "Original creative asset; see ASSET-LICENSE.md",
+    "generation": "No OpenRouter, OpenAI API, or image generation service used."
+  }
+}

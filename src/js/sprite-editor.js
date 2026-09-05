@@ -2783,6 +2783,7 @@
 
       // Restore saved username
       document.getElementById('community-username').value = getCommunityUsername();
+      document.getElementById('community-model').value = '';
 
       // Reset state
       communityVoiceFile = null;
@@ -3008,6 +3009,7 @@
       const payload = {
         username,
         name: currentBackgroundName,
+        model: new DOMParser().parseFromString(landscape_svg, 'image/svg+xml').documentElement.getAttribute('data-model') || 'Unknown',
         landscape_svg,
       };
       if (portrait_svg) payload.portrait_svg = portrait_svg;
@@ -3130,6 +3132,8 @@
             throw new Error('Unknown asset type');
         }
 
+        payload.model = document.getElementById('community-model').value.trim() || payload.model || payload.meta?.model || payload.skit?.meta?.model || payload.published?.meta?.model || 'Unknown';
+
         // Check payload size
         const jsonStr = JSON.stringify(payload);
         const payloadSize = new Blob([jsonStr]).size;
@@ -3158,7 +3162,7 @@
 
         // Build viewer link and switch to copy-link state
         const base = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-        const viewerUrl = `${base}community.html?type=${type}&id=${result.slug}`;
+        const viewerUrl = type === 'published' ? `https://pelicans-community.sam-cloudflare-d20.workers.dev/watch/${result.slug}` : `${base}community.html?type=${type}&id=${result.slug}`;
         communityLastUploadUrl = viewerUrl;
         uploadBtn.style.display = 'none';
         const copyBtn = document.getElementById('community-copy-link-btn');
@@ -4959,6 +4963,7 @@
             const aiMeta = result.asset.meta || {};
             const meta = {
               name: aiMeta.name || assetName,
+              model: aiMeta.model || 'Unknown',
               description: aiMeta.description || command,
               tags: aiMeta.tags || [],
               voice: aiMeta.voice || { id: 'alba', pitch: 0, speed: 1, volume: 1 }
@@ -4971,6 +4976,7 @@
           } else if (assetType === 'prop') {
             // New prop - save with the name we got earlier
             const meta = {
+              model: result.asset.meta?.model || 'Unknown',
               name: assetName,
               description: command,
               defaultScale: 1.0,

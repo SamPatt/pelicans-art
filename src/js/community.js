@@ -1,3 +1,4 @@
+  const skitShareUrl = slug => window.PELICAN_SHARE_CATALOG?.pouch?.[slug] || `https://pelicans-community.sam-cloudflare-d20.workers.dev/watch/${slug}`;
   const API_URL = 'https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community';
 
   let currentCategory = 'all';
@@ -216,7 +217,7 @@
 
       const meta = document.createElement('div');
       meta.className = 'asset-card-meta';
-      meta.textContent = item.username;
+      meta.textContent = `${item.username} · Model: ${item.model || 'Unknown'}`;
 
       card.appendChild(preview);
       card.appendChild(name);
@@ -229,7 +230,7 @@
         playOverlay.addEventListener('click', (e) => {
           e.stopPropagation();
           const dataUrl = `${API_URL}/published/${item.slug}/data.json`;
-          window.open(`skit-player.html?url=${encodeURIComponent(dataUrl)}`, '_blank');
+          window.open(skitShareUrl(item.slug), '_blank');
         });
         card.appendChild(playOverlay);
       }
@@ -285,7 +286,7 @@
         playBtn.className = 'detail-header-play';
         playBtn.innerHTML = '&#9654; Play';
         const dataUrl = `${API_URL}/published/${slug}/data.json`;
-        const playerUrl = `skit-player.html?url=${encodeURIComponent(dataUrl)}`;
+        const playerUrl = skitShareUrl(slug);
         playBtn.addEventListener('click', () => window.open(playerUrl, '_blank'));
         header.insertBefore(playBtn, header.querySelector('.detail-close'));
       }
@@ -533,6 +534,7 @@
     const date = meta.uploadedAt ? new Date(meta.uploadedAt).toLocaleDateString() : 'unknown';
     const sizeKB = meta.size ? (meta.size / 1024).toFixed(1) + ' KB' : 'unknown';
     return `<div class="detail-info">
+      <span class="detail-label">Model</span><span class="detail-value">${escapeHtml(meta.model || 'Unknown')}</span>
       <span class="detail-label">Uploaded by</span><span class="detail-value">${escapeHtml(meta.username || 'unknown')}</span>
       <span class="detail-label">Date</span><span class="detail-value">${escapeHtml(date)}</span>
       <span class="detail-label">Size</span><span class="detail-value">${escapeHtml(sizeKB)}</span>
@@ -624,7 +626,7 @@
   }
 
   function copyAssetLink() {
-    const link = window.location.href;
+    const link = detailCategory === 'published' ? skitShareUrl(selectedSlug) : window.location.href;
     navigator.clipboard.writeText(link).then(() => {
       const btns = document.querySelectorAll('.btn-copy-link');
       btns.forEach(b => { b.textContent = 'Copied!'; });

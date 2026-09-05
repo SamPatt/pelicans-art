@@ -6,6 +6,9 @@ on:
       - main
     paths:
       - 'src/**'
+      - 'scripts/build-share-pages.mjs'
+      - 'worker/share-page.js'
+      - 'worker/asset-metadata.js'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -24,6 +27,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Generate skit share pages
+        run: node scripts/build-share-pages.mjs
 
       - name: Build static site
         run: |
