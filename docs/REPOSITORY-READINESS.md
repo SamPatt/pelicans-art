@@ -26,3 +26,14 @@ The installation skill is intentionally the next step, after this checkpoint, no
 ## Model defaults
 
 The OpenAI shortlist was checked against [official model documentation](https://developers.openai.com/api/docs/models) on September 5, 2026. A model ID is not a guarantee of account access or a measured quality claim for this application. Other provider choices remain configurable; no paid generation request was made during this audit.
+
+## Verification
+
+- `npm run setup` and Worker `npm ci` succeed in a fresh local clone without `.env`, ignored experiments, or the original runtime data.
+- Full suite: 28 browser tests, 14 server tests, and 11 Worker tests passed, including a fresh-checkout run on an isolated port.
+- Full npm audits (including development dependencies) report zero known vulnerabilities across the root, server, Worker, and optional SVG lab. Multer was also upgraded to maintained 2.x despite the audit's zero result for its deprecated predecessor; a generated WAV upload/analysis succeeds with the upgrade.
+- HTTP smoke checks: unrelated browser origin returns 403; missing audio returns 400; valid generated WAV returns 200. Credential destination/header tests pass.
+- Current tracked/untracked release file scan found no known credential-pattern matches. Reachable Git history scan covered 1,080 text blobs; its only match was random text inside base64 audio, not a credential.
+- Captured The Description from the clean checkout: 38.1 seconds of playback, all 8 dialogue lines and all 8 audio clips, no capture diagnostics; output H.264/AAC at 1280×720. Reviewed the reveal frame and manifest.
+- Inspected onboarding at 390 and 1280 pixels. Fixed the phone command bar wrapping; the editor now has 390-pixel document width at a 390-pixel viewport.
+- Live model generation, fresh TTS installation, physical Safari testing, and Signal's signed-in preview rendering were not performed in this audit.

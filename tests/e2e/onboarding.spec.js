@@ -385,4 +385,5 @@ test('the first wizard screen fits a phone viewport and closes with Escape', asy
   expect(box.x + box.width).toBeLessThanOrEqual(390);
   await page.keyboard.press('Escape');
   await expect(wizard).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
