@@ -4,7 +4,7 @@ An agent-first SVG theater and companion editor for making odd little voiced com
 
 [![The Description — animated preview of a burglar pelican changing his disguise](docs/media/the-description-preview.gif)](https://pelicans.art/watch/the-description-f8ccb1/)
 
-**[▶ Watch The Description with sound · 39 seconds](https://pelicans.art/watch/the-description-f8ccb1/)** · [Download the MP4](https://pelicans.art/media/the-description.mp4) · [Make your own](https://pelicans.art/agent.html)
+**[▶ Watch The Description with sound · 39 seconds](https://pelicans.art/watch/the-description-f8ccb1/)** · [Download the MP4](https://pelicans.art/media/the-description.mp4) · [Copy the agent prompt](#create-with-your-agent-recommended)
 
 *A burglar pelican keeps changing his disguise. The police scanner keeps up. The looping preview above is silent; open the full video for the dialogue.*
 
@@ -45,6 +45,18 @@ Actual GPT-6 Astra SVG outputs from our [prompting study](svg-prompt-lab/study/r
 The deliberately simple visual style is part early web animation, part AI artifact. The goal is not photorealism; it is to make model-generated characters directable and funny.
 
 ## Create with your agent (recommended)
+
+Copy the block below into an agent chat that can run shell commands. Your agent downloads the skill, installs the runtime, and returns a test video; you do not need to clone the repository first.
+
+```text
+Download https://pelicans.art/downloads/pelican-theater-1.0.12.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.12.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.
+
+Use the tested runtime commit in the receipt's ref field. Fetch the public runtime from https://github.com/SamPatt/pelicans-art.git over HTTPS; no GitHub login, token, SSH alias, or deploy key is needed. If fetching fails, explain the network or environment problem. Do not request tokens, change Git authentication, or change repository visibility.
+
+Create a short voiced pelican comedy by writing the SVG artwork and script directly with your current model, without OpenRouter. Use local Pocket TTS or verify an existing compatible speech service, keeping any new dependencies isolated. Validate and render the project, inspect the result, and send the playable MP4 here with the editable bundle. Tell me if this chat cannot deliver a playable file.
+
+After successfully delivering the test video, ask me what skit I would like to make next. Invite my own idea and offer two short, absurd skit suggestions to spark ideas. Wait for my choice before creating another skit.
+```
 
 Give your agent the [portable skill](skills/pelican-theater/SKILL.md). It handles dependency checks, SVG structure, skit validation, speech, rendering, and delivering the finished video in chat. You review the plot and ask for revisions in the same conversation.
 
