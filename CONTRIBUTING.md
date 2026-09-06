@@ -28,6 +28,7 @@ Keep the local authoring server private. Do not commit API keys, provider tokens
 4. Run `npm test` before proposing a release.
 5. For visual changes, inspect desktop and phone layouts and check keyboard focus.
 6. For skit or player changes, capture the affected skit and review the MP4 plus manifest.
+7. After pushing a release, verify the GitHub **Test** workflow on each pushed branch and the Pages deployment. Local test success and deployment success do not establish CI test success.
 
 ## Creative assets
 
