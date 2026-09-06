@@ -65,3 +65,19 @@ test('both architecture locks preserve the pinned package versions and hashes',a
     for(const entry of lock.trim().split(/\n(?=[a-zA-Z])/))assert.match(entry,/--hash=sha256:[a-f0-9]{64}/);
   }
 });
+
+test('installation progress can stream without mixing stderr into returned JSON',async()=>{
+  const progress=[];
+  const result=await run(process.execPath,['-e',`process.stdout.write(JSON.stringify({ok:true}));process.stderr.write('Downloading dependency');`],{onOutput:chunk=>progress.push(chunk.toString())});
+  assert.deepEqual(JSON.parse(result.toString()),{ok:true});
+  assert.ok(progress.join('').includes('Downloading dependency'));
+  await assert.rejects(run(process.execPath,['-e',`process.stderr.write('Installation failed');process.exit(1);`],{onOutput:chunk=>progress.push(chunk.toString())}),/Installation failed/);
+  assert.ok(progress.join('').includes('Installation failed'));
+});
+
+test('a missing optional executable never leaves a long timeout holding the CLI open',async()=>{
+  const moduleUrl=new URL('../../scripts/theater/project.mjs',import.meta.url).href;
+  const result=await run(process.execPath,['--input-type=module','-e',`import {run} from ${JSON.stringify(moduleUrl)}; await run('pelican-nonexistent-executable',[],{timeout:1200000}).catch(()=>{}); console.log('done');`],{timeout:3000});
+  assert.equal(result.toString().trim(),'done');
+  await assert.rejects(run(process.execPath,['-e','setInterval(()=>{},1000)'],{timeout:50}),/timed out/);
+});

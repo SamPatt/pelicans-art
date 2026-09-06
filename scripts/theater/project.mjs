@@ -10,9 +10,13 @@ export async function json(file) { return JSON.parse(await fs.readFile(file, 'ut
 export async function writeJson(file, value) { await fs.mkdir(path.dirname(file), { recursive: true }); await fs.writeFile(file, JSON.stringify(value, null, 2) + '\n'); }
 export function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { ...options, stdio: ['pipe', 'pipe', 'pipe'] });
-    const out = [], err = []; child.stdout.on('data', x => out.push(x)); child.stderr.on('data', x => err.push(x));
-    child.on('error', reject); child.on('close', code => code === 0 ? resolve(Buffer.concat(out)) : reject(new Error(`${command} exited ${code}: ${(Buffer.concat(err).toString() || Buffer.concat(out).toString()).slice(-1600)}`)));
+    const {onOutput,timeout,...spawnOptions}=options;
+    const child = spawn(command, args, { ...spawnOptions, stdio: ['pipe', 'pipe', 'pipe'] });
+    let timedOut=false;
+    const timer=timeout?setTimeout(()=>{timedOut=true;child.kill(options.killSignal||'SIGTERM');},timeout):undefined;
+    timer?.unref();
+    const out = [], err = []; child.stdout.on('data', x => {out.push(x);onOutput?.(x);}); child.stderr.on('data', x => {err.push(x);onOutput?.(x);});
+    child.on('error', error=>{clearTimeout(timer);reject(error);}); child.on('close', code => {clearTimeout(timer);code === 0 ? resolve(Buffer.concat(out)) : reject(new Error(timedOut?`${command} timed out after ${timeout} ms`:`${command} exited ${code}: ${(Buffer.concat(err).toString() || Buffer.concat(out).toString()).slice(-1600)}`));});
     child.stdin.on('error', () => {}); child.stdin.end(options.input);
   });
 }

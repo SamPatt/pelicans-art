@@ -58,7 +58,7 @@ async function pocketRuntime() {
 async function setup() {
   // Ignore installer environment overrides that could redirect Python writes.
   const installerEnv=Object.fromEntries(Object.entries(process.env).filter(([key])=>!(/^(PIP_|UV_|PYTHON|VIRTUAL_ENV$)/.test(key))));
-  const run = (command,args,options={}) => installRun(command,args,{...options,env:installerEnv,timeout:20*60*1000});
+  const run = (command,args,options={}) => installRun(command,args,{...options,env:installerEnv,timeout:20*60*1000,onOutput:flags.has('check')?undefined:chunk=>process.stderr.write(chunk)});
   const basePython = flags.get('python') || 'python3.12';
   const inspection = await preflight(ROOT,{tts:flags.has('tts'),svgOnly:flags.has('svg'),python:basePython,run});
   const footprint = ['node_modules',...(flags.has('svg')?[]:['server/node_modules']),...(flags.has('tts')?['.runtime/pocket-tts-2.1.0','.runtime/pocket-april-presets']:[])];

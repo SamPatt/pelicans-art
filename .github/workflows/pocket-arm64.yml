@@ -34,7 +34,10 @@ jobs:
       - name: Install the locked ARM64 speech runtime
         run: |
           node scripts/theater.mjs setup --check --tts --python python3.12
-          node scripts/theater.mjs setup --tts --python python3.12 > pocket-setup.json
+          if ! node scripts/theater.mjs setup --tts --python python3.12 > pocket-setup.json; then
+            cat pocket-setup.json
+            exit 1
+          fi
           mv pocket-setup.json .runtime/ci-setup.json
       - name: Synthesize distinct presets, revise dialogue, and render
         run: node scripts/theater/pocket-install-smoke.mjs
@@ -44,6 +47,7 @@ jobs:
         with:
           name: pocket-arm64-evidence
           path: |
+            pocket-setup.json
             .runtime/ci-setup.json
             .runtime/ci-pocket.log
             .runtime/ci-speech-result.json
