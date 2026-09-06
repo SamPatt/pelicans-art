@@ -31,7 +31,7 @@ Edit `skit.json` and `assets/` in the created project. Set `meta.model` and asse
 
 The render result identifies the MP4, thumbnail, capture manifest, and self-contained `output/project.json` bundle with absolute local paths for attachment tools. Saved build manifests use `pathBase: "project"` and paths relative to the source project root; capture media filenames are relative to the capture manifest. The manifest checks complete voiced dialogue and H.264/AAC output. Caption-only mode is explicit. Keep the source directory and cache for future edits.
 
-Browser Studio has an **Import agent project** button. Choose the built bundle. Imported recordings are reused for unchanged text/casting when you Render and Download again. Changed lines need configured speech or will be unvoiced in captions-only mode. Browser backups also preserve the imported project.
+The [companion Editor](EDITOR.md) opens built bundles with **Open project**. It preserves unchanged recordings, lets users edit layout/dialogue/pauses, and exports a revised bundle. Changed lines are previewed with captions and marked as needing audio; use the CLI to regenerate them. Copy requests include the selected scene or character. Optional private Hermes chat proposes edits for review.
 
 To resume a downloaded GUI bundle in the CLI:
 

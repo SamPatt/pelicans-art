@@ -1568,6 +1568,7 @@
     }
 
     function getTtsMode() {
+      if (new URLSearchParams(location.search).get('recordedOnly') === '1') return 'none';
       const settings = getTtsSettings();
       return settings?.ttsMode || 'none';
     }

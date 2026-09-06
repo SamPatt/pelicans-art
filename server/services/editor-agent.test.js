@@ -1,0 +1,14 @@
+import {it,expect,afterEach} from 'vitest';
+import {EditorAgent} from './editor-agent.js';
+import {createEditorAgentRouter} from '../routes/editor-agent.js';
+import express from 'express';
+import path from 'node:path';
+import http from 'node:http';
+const rawPost=(url,headers)=>new Promise((resolve,reject)=>{const req=http.request(url,{method:'POST',headers},res=>{res.resume();resolve(res.statusCode);});req.on('error',reject);req.end();});
+const agents=[],servers=[],routers=[];
+const make=()=>{const a=new EditorAgent({command:process.execPath,args:[path.resolve('../tests/fixtures/fake-acp.mjs')],timeout:3000});agents.push(a);return a;};
+afterEach(async()=>{agents.forEach(a=>a.close());routers.forEach(r=>r.dispose());await Promise.all(servers.map(s=>new Promise(resolve=>s.close(resolve))));agents.length=routers.length=servers.length=0;});
+it('streams an ACP proposal without provider configuration',async()=>{const a=make(),events=[];a.on('event',e=>events.push(e));await a.connect();await a.prompt('Retitle',{title:'Old'});expect(events.find(e=>e.type==='text').text).toContain('Pelican 🐦');expect(events.at(-1).type).toBe('done');});
+it('requires explicit single-use permission and rejects unknown approval ids',async()=>{const a=make();await a.connect();const event=new Promise(resolve=>a.on('event',e=>{if(e.type==='permission')resolve(e);}));const pending=a.prompt('permission-test',{}).catch(()=>{});const permission=await event;expect(()=>a.permission(permission.requestId,'invented')).toThrow();a.permission(permission.requestId,'no');expect(()=>a.permission(permission.requestId,'yes')).toThrow();a.close();await pending;});
+it('limits one in-flight turn and terminates expired requests',async()=>{const a=make();await a.connect();a.timeout=50;const pending=a.prompt('wait-test',{});await expect(a.prompt('Another',{})).rejects.toThrow(/current reply/);await expect(pending).rejects.toThrow(/time/);expect(a.closed).toBe(true);});
+it('is disabled by default and rejects untrusted hosts when enabled',async()=>{let enabled=false;const router=createEditorAgentRouter({enabled:()=>enabled,createAgent:make});routers.push(router);const app=express();app.use(express.json());app.use(router);const server=await new Promise(resolve=>{const s=app.listen(0,'127.0.0.1',()=>resolve(s));});servers.push(server);const url=`http://127.0.0.1:${server.address().port}`;expect((await(await fetch(url+'/status')).json()).enabled).toBe(false);expect((await fetch(url+'/sessions',{method:'POST'})).status).toBe(404);enabled=true;expect(await rawPost(url+'/sessions',{Host:'evil.example'})).toBe(403);expect(await rawPost(url+'/sessions',{'sec-fetch-site':'cross-site'})).toBe(403);const result=await(await fetch(url+'/sessions',{method:'POST'})).json();expect(result.id).toBeTruthy();expect((await fetch(url+'/sessions/not-a-session/events')).status).toBe(404);await fetch(url+'/sessions/'+result.id,{method:'DELETE'});});

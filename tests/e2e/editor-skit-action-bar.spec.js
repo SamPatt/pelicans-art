@@ -38,7 +38,7 @@ test('shows skit action bar after selecting a skit', async ({ page, request }) =
   const skitId = createdSkit.id;
 
   try {
-    await page.goto('/editor?mode=server');
+    await page.goto('/legacy-studio.html?mode=server');
 
     const skitItem = page.locator(`.skit-item[data-id="${skitId}"]`);
     await expect(skitItem).toBeVisible();

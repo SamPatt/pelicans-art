@@ -2,7 +2,7 @@ const {test,expect}=require('@playwright/test');
 const fs=require('node:fs');
 const path=require('node:path');
 test('agent instructions are discoverable, copyable, and phone-sized',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.goto('/editor?mode=browser');
+ await page.setViewportSize({width:390,height:844});await page.goto('/legacy-studio.html?mode=browser');
  await page.getByRole('link',{name:/Create with your agent/}).click();
  await expect(page.getByRole('heading',{name:/You chat/})).toBeVisible();
  await page.context().grantPermissions(['clipboard-read','clipboard-write']);await page.getByRole('button',{name:'Copy agent instructions'}).click();
@@ -20,7 +20,7 @@ test('agent instructions are discoverable, copyable, and phone-sized',async({pag
 });
 test('agent bundle imports into editable browser assets and exports unchanged recorded audio',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('ait-welcome-dismissed','1'));
- await page.goto('/editor?mode=browser');
+ await page.goto('/legacy-studio.html?mode=browser');
  const file=path.resolve('src/published/theDescription.json');const source=JSON.parse(fs.readFileSync(file,'utf8'));
  const chooser=page.waitForEvent('filechooser');await page.getByRole('button',{name:'Import agent project',exact:true}).click();await (await chooser).setFiles(file);
  await expect(page.locator('#status-left')).toContainText('Agent project imported');

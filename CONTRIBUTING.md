@@ -42,12 +42,7 @@ The primary creation path is [agent chat and the CLI](docs/AGENT-WORKFLOW.md). R
 
 ## Browser and server behavior
 
-The same editor supports two backends. Changes to shared UI should be tested in both:
-
-- Browser Studio: `/editor?mode=browser`
-- Local server: `/editor?mode=server`
-
-Browser Studio stores projects in IndexedDB. Server mode stores project data on disk and exposes additional custom voice capabilities.
+The companion Editor at `/editor.html` works without a server connection. Test import/export, recording preservation, mobile layout, and optional Hermes chat. See [Editor](docs/EDITOR.md). The previous Studio remains at `/legacy-studio.html` for rollback; its browser/server compatibility tests remain separate.
 
 ## Publishing and capture
 

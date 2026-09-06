@@ -16,7 +16,7 @@
       .replace(/url\(\s*(['"]?)(?!#|data:image\/(?:png|jpe?g|gif|webp);base64,)[^)]+\1\s*\)/gi, 'none');
   }
 
-  function sanitize(svgText) {
+  function sanitize(svgText, { isolated = false } = {}) {
     if (!window.DOMPurify) {
       throw new Error('SVG sanitizer is unavailable');
     }
@@ -24,6 +24,8 @@
     const clean = window.DOMPurify.sanitize(String(svgText || ''), {
       USE_PROFILES: { svg: true, svgFilters: true },
       FORBID_TAGS: FORBIDDEN_TAGS,
+      // Only isolated Shadow DOM / serialized exports may preserve reserved animation IDs.
+      SANITIZE_DOM: !isolated,
       RETURN_DOM_FRAGMENT: true
     });
 

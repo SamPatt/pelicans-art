@@ -19,6 +19,7 @@ import backgroundsRouter from './routes/backgrounds.js';
 import propsRouter from './routes/props.js';
 import agentRouter from './routes/agent.js';
 import voiceRouter from './routes/voice.js';
+import editorAgentRouter from './routes/editor-agent.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC_DIR = path.join(__dirname, '../src');
@@ -46,6 +47,7 @@ app.use('/api/backgrounds', backgroundsRouter);
 app.use('/api/props', propsRouter);
 app.use('/api/agent', agentRouter);
 app.use('/api/voice', voiceRouter);
+app.use('/api/editor-agent', editorAgentRouter);
 
 // TTS proxy for legacy player compatibility (forwards /tts/* to TTS server)
 app.post('/tts/tts', async (req, res) => {
@@ -88,7 +90,7 @@ app.get('/player', (req, res) => {
 });
 
 app.get('/editor', (req, res) => {
-  res.sendFile(path.join(SRC_DIR, 'sprite-editor.html'));
+  res.sendFile(path.join(SRC_DIR, 'editor.html'));
 });
 
 // Static file serving

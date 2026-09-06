@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 const http = require('node:http');
 
 test('a first-time visitor can remix the bundled sample without credentials', async ({ page }) => {
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
 
   const wizard = page.locator('#ait-onboarding');
   await expect(wizard).toBeVisible();
@@ -20,7 +20,7 @@ test('AI onboarding validates one key and offers curated model choices', async (
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: [] }) });
   });
 
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
   const wizard = page.locator('#ait-onboarding');
   await wizard.getByRole('button', { name: /Create with AI/ }).click();
 
@@ -82,7 +82,7 @@ test('AI onboarding validates one key and offers curated model choices', async (
 
 test('the Hermes voice preset builds an authenticated WAV request through the local relay', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('ait-welcome-dismissed', '1'));
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
 
   const result = await page.evaluate(async () => {
     let captured = null;
@@ -135,7 +135,7 @@ test('browser character casting follows the active voice provider and remembers 
     localStorage.setItem('ait-tts-provider', 'openai');
     localStorage.setItem('ait-tts-voice', 'alloy');
   });
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
 
   await page.evaluate(async () => {
     await window.backend.saveSprite(
@@ -172,7 +172,7 @@ test('browser character casting follows the active voice provider and remembers 
 
 test('OpenAI speech generation honors a character-specific voice', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('ait-welcome-dismissed', '1'));
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
 
   const result = await page.evaluate(async () => {
     let requestBody = null;
@@ -207,7 +207,7 @@ test('OpenAI speech generation honors a character-specific voice', async ({ page
 });
 
 test('a browser skit shows its cast and saves per-skit voice overrides', async ({ page }) => {
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
   await page.getByRole('button', { name: /Remix a sample/ }).click();
   await expect(page.locator('#ait-onboarding')).toBeHidden({ timeout: 20_000 });
   await page.evaluate(() => {
@@ -248,7 +248,7 @@ test('custom TTS can load a hosted server voice list through the private relay',
 
   try {
     await page.addInitScript(() => localStorage.setItem('ait-welcome-dismissed', '1'));
-    await page.goto('/editor?mode=browser');
+    await page.goto('/legacy-studio.html?mode=browser');
     const voices = await page.evaluate(async ({ port }) => window.AITTtsProvider.listAvailableVoices({
       ttsMode: 'custom',
       ttsCustomPreset: 'openai-compatible',
@@ -280,7 +280,7 @@ test('an OpenAI-compatible local TTS receives the selected character voice', asy
 
   try {
     await page.addInitScript(() => localStorage.setItem('ait-welcome-dismissed', '1'));
-    await page.goto('/editor?mode=browser');
+    await page.goto('/legacy-studio.html?mode=browser');
     const result = await page.evaluate(async ({ port }) => {
       const blob = await window.AITTtsProvider.generateSpeech('Read this line.', 'local-comic', {
         ttsMode: 'custom',
@@ -318,7 +318,7 @@ test('the private TTS relay reaches a non-CORS JSON server and returns its audio
 
   try {
     await page.addInitScript(() => localStorage.setItem('ait-welcome-dismissed', '1'));
-    await page.goto('/editor?mode=browser');
+    await page.goto('/legacy-studio.html?mode=browser');
     const result = await page.evaluate(async ({ port }) => {
       const blob = await window.AITTtsProvider.generateSpeech(
         'Relay this line.',
@@ -347,7 +347,7 @@ test('the private TTS relay reaches a non-CORS JSON server and returns its audio
 
 test('the OpenAI browser adapter uses the Responses API and extracts text output', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('ait-welcome-dismissed', '1'));
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
 
   const result = await page.evaluate(async () => {
     let captured = null;
@@ -375,7 +375,7 @@ test('the OpenAI browser adapter uses the Responses API and extracts text output
 
 test('the first wizard screen fits a phone viewport and closes with Escape', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/editor?mode=browser');
+  await page.goto('/legacy-studio.html?mode=browser');
 
   const wizard = page.locator('#ait-onboarding');
   await expect(wizard).toBeVisible();
