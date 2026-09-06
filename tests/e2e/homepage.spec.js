@@ -5,7 +5,7 @@ test('The Description is featured in both players and other skits remain selecta
  await expect(page.locator('video')).toHaveAttribute('poster','media/the-description-cover.png');
  await expect(page.locator('#skitFrame')).toHaveAttribute('src',/skit=theDescription/);
  await expect(page.locator('.script-tab.active')).toHaveText('The Description');
- await expect(page.locator('.hero-pelican img')).toHaveAttribute('src','sprites/description-disguise/front.svg');
+ await expect(page.locator('.hero-pelican img')).toHaveAttribute('src','media/pelican-emcee.svg');
  await page.getByRole('button',{name:'The Box',exact:true}).click();
  await expect(page.locator('#skitFrame')).toHaveAttribute('src',/skit=theBox/);
  await expect(page.getByRole('button',{name:'The Box',exact:true})).toHaveAttribute('aria-pressed','true');

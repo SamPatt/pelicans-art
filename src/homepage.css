@@ -206,16 +206,6 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
   animation:bird-arrives 1.8s ease-out both
 }
 
-.hero-pelican figcaption {
-  position:relative;
-  text-align:right;
-  font-size:14px;
-  line-height:1.3;
-  font-weight:650;
-  transform:rotate(5deg);
-  margin-top:0
-}
-
 .main-content {
   max-width:1320px;
   margin:auto;
@@ -590,15 +580,6 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
     height:230px
   }
 
-  .hero-pelican figcaption {
-    position:absolute;
-    right:180px;
-    top:88px;
-    width:125px;
-    text-align:left;
-    font-size:12px
-  }
-
   .main-content {
     padding:0 20px
   }
@@ -726,17 +707,9 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
     height:210px
   }
 
-  .hero-pelican figcaption {
-    top:70px
-  }
-
 }
 
 @media(max-width:380px) {
-  .hero-pelican figcaption {
-    right:150px;
-    width:110px
-  }
 
   .pelicans-nav {
     gap:8px;

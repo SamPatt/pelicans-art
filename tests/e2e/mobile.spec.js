@@ -25,8 +25,6 @@ for (const width of [320,390]) test(`homepage navigation fits wider fallback fon
   // DejaVu Sans reproduces the GitHub Linux runner's 417px navigation on a 390px phone.
   await page.addStyleTag({content:':root { --font: "DejaVu Sans", sans-serif; }'});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-  const caption=await page.locator('.hero-pelican figcaption').boundingBox();
-  expect(caption.x).toBeGreaterThanOrEqual(0);
   for (const control of await page.locator('.pelicans-nav a, .pelicans-nav button').all()) {
     const box=await control.boundingBox();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(width);
   }
