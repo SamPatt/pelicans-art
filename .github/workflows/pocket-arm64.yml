@@ -1,0 +1,53 @@
+name: Pocket ARM64 installation
+on:
+  push:
+    paths:
+      - 'scripts/theater.mjs'
+      - 'scripts/theater/**'
+      - '.github/workflows/pocket-arm64.yml'
+  pull_request:
+    paths:
+      - 'scripts/theater.mjs'
+      - 'scripts/theater/**'
+      - '.github/workflows/pocket-arm64.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pocket-arm64:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Prepare disposable runner's host prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          npm ci
+          npx playwright install-deps chromium
+      - name: Install the locked ARM64 speech runtime
+        run: |
+          node scripts/theater.mjs setup --check --tts --python python3.12
+          node scripts/theater.mjs setup --tts --python python3.12 > pocket-setup.json
+          mv pocket-setup.json .runtime/ci-setup.json
+      - name: Synthesize distinct presets, revise dialogue, and render
+        run: node scripts/theater/pocket-install-smoke.mjs
+      - name: Preserve installation and speech evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pocket-arm64-evidence
+          path: |
+            .runtime/ci-setup.json
+            .runtime/ci-pocket.log
+            .runtime/ci-speech-result.json
+            .runtime/install-*.json
+            .runtime/ci-skit/output/render/project/
+          include-hidden-files: true
+          retention-days: 7

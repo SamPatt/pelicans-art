@@ -48,3 +48,12 @@ Editor: open `/editor.html`, choose **Open project**, and select `output/project
 Optional in-editor Hermes chat runs only through the user's private theater server with `HERMES_EDITOR_ENABLED=1` and an already configured `hermes acp` executable. See the runtime's `docs/EDITOR.md` for configuration. It proposes undoable edits and can request voice regeneration or MP4 rendering after Apply. The Editor’s **Update voices** and **Render video** buttons use the same private server jobs, which return updated recordings to the preview. Ensure the configured TTS service is ready. Export/import remains available for external agent chats. The public Editor works without this connection.
 
 In the connected Editor, the selection note can be sent directly to Hermes; the header shows connection/working status. Users can choose existing pinned voices from the Voice preset dropdown. Read `docs/POCKET-VOICES.md` in the runtime when evaluating additional voice sources.
+
+
+## Speech substitutions and future edits
+
+If local Pocket was requested and installation or readiness fails, report whether the failure occurred during preflight, dependency installation, model loading, or synthesis. Do not describe an architecture rejection as a Pocket synthesis failure. Preserve the diagnostics and obtain the user's choice before substituting a cloud provider, even if that provider is already configured in the agent.
+
+When the user chooses agent-supplied recordings, record the actual provider and actual voice name for each character in delivery notes. Different rate settings on one voice are not distinct voices. Use cast voice values compatible with the intended future synthesis endpoint; bookkeeping labels for supplied files must not be presented as selectable Pocket presets.
+
+Embedded audio makes existing dialogue playable, not automatically regenerable. Before promising editable voiced delivery, either verify the configured endpoint and preset voices for future changed dialogue, or clearly state that revised lines require the agent to regenerate and reattach supplied recordings. Do not claim a localhost endpoint is ready merely because its URL remains in project.json. Preserve existing recordings; if switching to Pocket for revisions, explicitly choose supported Pocket voice names and review any resulting recording invalidation. Test one changed line when claiming that the project's voice revision path works.

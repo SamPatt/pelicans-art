@@ -3,13 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {checkDirectories,checkPlatform,checkVenv,preflight} from '../../scripts/theater/install-safety.mjs';
+import {checkDirectories,checkPlatform,checkVenv,preflight,pocketLocks} from '../../scripts/theater/install-safety.mjs';
 import {run} from '../../scripts/theater/project.mjs';
 
 test('unsupported local speech platforms fail before installation',()=>{
-  for (const config of [{platform:'darwin',arch:'x64'},{platform:'linux',arch:'arm64'},{platform:'linux',arch:'x64',glibc:'2.17'},{platform:'win32',arch:'x64'}]) assert.throws(()=>checkPlatform({...config,tts:true}));
+  for (const config of [{platform:'darwin',arch:'x64'},{platform:'linux',arch:'riscv64'},{platform:'linux',arch:'x64',glibc:'2.17'},{platform:'win32',arch:'x64'}]) assert.throws(()=>checkPlatform({...config,tts:true}));
   checkPlatform({platform:'linux',arch:'x64',glibc:'2.28',tts:true});
   checkPlatform({platform:'darwin',arch:'arm64',tts:false});
+  checkPlatform({platform:'linux',arch:'arm64',glibc:'2.39',tts:true});
+  assert.throws(()=>checkPlatform({platform:'linux',arch:'arm64',glibc:'2.27',tts:true}));
+  assert.notEqual(pocketLocks.arm64,pocketLocks.x64);
 });
 test('redirected dependency directories are rejected without touching their targets',async()=>{
   const root=await fs.mkdtemp(path.join(os.tmpdir(),'theater-safety-'));
@@ -50,4 +53,15 @@ test('preflight failures never invoke installation or create directories',async(
     assert.deepEqual(await fs.readdir(root),[]);
     assert.ok(calls.every(([,args])=>!args.includes('install')&&!args.includes('ci')));
   } finally {await fs.rm(root,{recursive:true,force:true});}
+});
+
+test('both architecture locks preserve the pinned package versions and hashes',async()=>{
+  const locks=await Promise.all(Object.values(pocketLocks).map(p=>fs.readFile(p,'utf8')));
+  const versions=s=>s.match(/^[a-zA-Z0-9_-]+==[^\\\s]+/gm).sort();
+  assert.deepEqual(versions(locks[0]),versions(locks[1]));
+  for(const lock of locks) {
+    assert.match(lock,/^pocket-tts==2\.1\.0 /m);
+    assert.match(lock,/^torch==2\.8\.0\+cpu /m);
+    for(const entry of lock.trim().split(/\n(?=[a-zA-Z])/))assert.match(entry,/--hash=sha256:[a-f0-9]{64}/);
+  }
 });

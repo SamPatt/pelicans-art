@@ -90,7 +90,7 @@ async function setup() {
         else await run(basePython,['-I','-m','venv',env]);
       }
       await checkVenv(env,run);
-      const packages=['--require-hashes','--only-binary',':all:','-r',path.join(ROOT,'scripts/theater/pocket-linux-py312.lock'),'--extra-index-url','https://download.pytorch.org/whl/cpu'];
+      const packages=['--require-hashes','--only-binary',':all:','-r',path.join(ROOT,inspection.speechLock.path),'--extra-index-url','https://download.pytorch.org/whl/cpu'];
       if (hasUv) await run('uv',['pip','install','--python',python,'--index-strategy','unsafe-best-match',...packages]);
       else await run(python,['-I','-m','pip','--isolated','install',...packages]);
       await run(python,[path.join(ROOT,'scripts/theater/pocket-server.py'),'prepare']);
@@ -162,7 +162,7 @@ async function render() {
 }
 try {
   parseOptions();
-  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|svg|init|import|validate|build|render> [project-directory]',setup:'setup [--check] [--svg | --tts --python python3.12]: preflight then local npm/Chromium; locked Pocket requires Linux x64 glibc 2.28+ and Python 3.12. --svg installs only root npm/Chromium for standalone artwork, without FFmpeg/Python/TTS. --check makes no installation changes. Missing OS packages require explicit user opt-in.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',svg:'svg new-output-directory --source drawing.svg [--kind artwork|character|background|prop] [--model MODEL] [--title TITLE]: validate and deliver SVG + PNG preview; the agent authors the SVG directly.',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
+  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|svg|init|import|validate|build|render> [project-directory]',setup:'setup [--check] [--svg | --tts --python python3.12]: preflight then local npm/Chromium; locked Pocket requires Linux x64 or ARM64 glibc 2.28+ and Python 3.12. --svg installs only root npm/Chromium for standalone artwork, without FFmpeg/Python/TTS. --check makes no installation changes. Missing OS packages require explicit user opt-in.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',svg:'svg new-output-directory --source drawing.svg [--kind artwork|character|background|prop] [--model MODEL] [--title TITLE]: validate and deliver SVG + PNG preview; the agent authors the SVG directly.',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
   else if(command==='doctor')await doctor();
   else if(command==='setup')await setup();
   else if(command==='svg')report(await deliverSvg(directory,Object.fromEntries(flags)));

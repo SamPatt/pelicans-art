@@ -36,7 +36,7 @@ The deliberately simple visual style is part early web animation, part AI artifa
 
 Give your agent the [portable skill](skills/pelican-theater/SKILL.md). It handles dependency checks, SVG structure, skit validation, speech, rendering, and delivering the finished video in chat. You review the plot and ask for revisions in the same conversation.
 
-For shell users, follow the [CLI quickstart](docs/AGENT-WORKFLOW.md). Node.js 22+, FFmpeg, Chromium, and a speech service are needed for voiced MP4s. The CLI starts its own temporary player; running the Express authoring server is unnecessary. Locked local Pocket setup supports Linux x64 (including WSL), glibc 2.28+, and Python 3.12. Other platforms can use an existing speech endpoint; macOS rendering has not yet had a clean-machine rehearsal.
+For shell users, follow the [CLI quickstart](docs/AGENT-WORKFLOW.md). Node.js 22+, FFmpeg, Chromium, and a speech service are needed for voiced MP4s. The CLI starts its own temporary player; running the Express authoring server is unnecessary. Locked local Pocket setup supports Linux x64 and ARM64 (including compatible WSL installations), glibc 2.28+, and Python 3.12. Other platforms can use an existing speech endpoint; macOS rendering has not yet had a clean-machine rehearsal.
 
 ## Companion Editor
 

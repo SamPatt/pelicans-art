@@ -18,7 +18,7 @@ The complete skill folder contains SKILL.md and references. Copy/install the fol
 
 ## Dependencies
 
-The verified local Pocket installer targets Linux x64 (including WSL) with glibc 2.28+ and Python 3.12. Other architectures, native Windows, and macOS local Pocket installation are not yet supported by the locked installer. Intel macOS lacks the pinned Torch wheels. macOS rendering with an existing compatible speech endpoint is possible but has not had a clean-machine rehearsal. Rendering requires Node 22+, FFmpeg/ffprobe, and Playwright Chromium. Select an already installed Python 3.12 for local Pocket. Do not replace system Python or an agent's Python environment.
+The local Pocket installer targets Linux x64 and ARM64 (including compatible WSL installations) with glibc 2.28+ and Python 3.12. Other architectures, native Windows, and macOS local Pocket installation are not yet supported by the locked installer. Intel macOS lacks the pinned Torch wheels. macOS rendering with an existing compatible speech endpoint is possible but has not had a clean-machine rehearsal. Rendering requires Node 22+, FFmpeg/ffprobe, and Playwright Chromium. Select an already installed Python 3.12 for local Pocket. Do not replace system Python or an agent's Python environment.
 
 Choose **one** setup path after inspecting existing speech services:
 
@@ -61,7 +61,7 @@ If the user requested voice, missing speech is a failure to fix, not permission 
 
 Existing speech: `pocket` uses multipart text/voice_url; `openai-compatible` uses input/voice/model JSON; `piper` uses text/voice/rate/depth/format JSON. Piper is a specific relay format, not every Piper installation. Set an exact endpoint and verify an audio response. Credential config contains an environment variable name (`tokenEnv`), not its secret value. A chat agent's speech tool can instead supply local WAV/MP3/OGG files for individual lines.
 
-Python packages and transitive dependencies are pinned with SHA-256 hashes in `scripts/theater/pocket-linux-py312.lock`; installation requires binary wheels and checks hashes. Re-resolving or loosening the lock is a maintainer task, not an installation workaround.
+Python packages and transitive dependencies are pinned with SHA-256 hashes in architecture-specific locks: `scripts/theater/pocket-linux-py312.lock` for x64 and `scripts/theater/pocket-linux-arm64-py312.lock` for ARM64. Preflight selects the lock automatically and records its relative path and SHA-256 in the installation receipt; installation requires binary wheels and checks hashes. Re-resolving or loosening the lock is a maintainer task, not an installation workaround.
 
 Each setup attempt writes `.runtime/install-<timestamp>.json` before installation, including planned new directories, reused directories, resource observations, and shared cache categories. A completed attempt also updates `.runtime/install-receipt.json`. A failed attempt may leave partial dependencies; retain the receipt when reporting it. For removal, preview only the recorded new directories and verify they still belong to this installation before removing them. Preserve user projects, reused directories, and shared npm/Playwright/pip/uv/Hugging Face caches. Setup starts no processes; separately record exact process IDs for services the agent starts and stop only those. Never use broad process-name kills or cache deletion as cleanup.
 
