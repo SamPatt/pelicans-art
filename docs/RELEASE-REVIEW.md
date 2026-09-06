@@ -42,4 +42,4 @@ Setup remains non-root, isolated, hash-locked and explicit about OS-level change
 
 ## Before unrestricted community promotion
 
-The Pouch still accepts unauthenticated uploads without application-level rate limiting or an ownership/moderation workflow. Its asset reuse policy also needs clarification before encouraging broad asset exchange. Those are service-launch concerns documented in [Public readiness](PUBLIC-READINESS.md); this change does not alter asset licenses or community ownership. Keep the powerful local authoring server private.
+The Pouch now has upload throttles, a strict streamed body limit, a public report form and authenticated manual removal, plus explicit reuse guidance that preserves existing rights. See [Pouch moderation](POUCH-MODERATION.md) for limits and incident handling. Uploads remain anonymous and are not premoderated; the maintainer must review reports. Limits are approximate and per Cloudflare location, not a global spending cap. Keep the powerful local authoring server private.

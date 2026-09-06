@@ -39,6 +39,11 @@
       margin-top: var(--space-1);
     }
 
+    .pouch-policy { margin: var(--space-4) 0 var(--space-6); padding: var(--space-4); border: 1px solid var(--sand-warm); border-radius: var(--radius-md); line-height: 1.6; }
+    .pouch-policy summary { cursor: pointer; font-weight: 600; }
+    .pouch-policy p + p { margin-top: var(--space-3); }
+    .detail-policy { margin-top: var(--space-4); font-size: var(--text-sm); line-height: 1.6; }
+
     /* Category tabs */
     .category-tabs {
       display: flex;
@@ -524,6 +529,14 @@
     <h2>The <span style="color:var(--pouch-orange)">Pouch</span></h2>
     <p>Browse characters, backgrounds, and props shared by the flock.</p>
   </div>
+
+  <details class="pouch-policy" id="sharing-policy">
+    <summary>Sharing, reuse &amp; reporting</summary>
+    <p>Share links freely. A download button does not grant permission to redistribute or commercially reuse an asset. Check the creator’s stated license or ask them; where no license is stated, no reuse permission is implied. The repository’s MIT license covers its code, not every artwork or recording.</p>
+    <p>Only upload material you have the right to share, including any voices and recordings. Uploads are not reviewed before appearing. The maintainer may remove spam, unsafe content, privacy violations, or material shared without permission.</p>
+    <p><a href="https://github.com/SamPatt/pelicans-art/issues/new?template=asset_report.yml">Report an asset or request removal</a> with its Pouch link and a short reason. GitHub issues are public: do not include private information, credentials, or sensitive evidence. For sensitive reports, contact the repository owner privately; security vulnerabilities should use <a href="https://github.com/SamPatt/pelicans-art/security/policy">the security reporting instructions</a>. Reports are reviewed by the maintainer; there is no guaranteed response time.</p>
+    <p><a href="https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md">Asset rights and reuse details</a></p>
+  </details>
 
   <div class="category-tabs" id="category-tabs">
     <button class="category-tab active" data-type="all">All</button>

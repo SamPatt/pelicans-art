@@ -70,4 +70,12 @@ test('community skit metadata and dialogue render as text, not markup', async ({
   await expect(page.locator('#detail-content')).toContainText('<img src=x');
   expect(await page.evaluate(() => window.__communityExecuted)).toBe(false);
   expect(await page.locator('#detail-content img').count()).toBe(0);
+  const report = page.getByRole('link', {name:'Report / request removal'});
+  const reportUrl = new URL(await report.getAttribute('href'));
+  expect(reportUrl.searchParams.get('asset')).toBe('https://pelicans.art/community.html?type=skits&id=test');
+  await page.evaluate(() => {
+    Object.defineProperty(navigator, 'clipboard', {configurable:true, value:{writeText:async text=>{window.__copiedLink=text;}}});
+  });
+  await page.getByRole('button', {name:'Copy Link',exact:true}).click();
+  expect(await page.evaluate(() => window.__copiedLink)).toContain('community.html?type=skits&id=test');
 });

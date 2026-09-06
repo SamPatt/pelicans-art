@@ -5,6 +5,7 @@
   let currentCursor = null;
   let currentItems = [];
   let selectedSlug = null;
+  let selectedCategory = null;
 
   const CATEGORY_ICONS = {
     characters: '\u{1F9D1}',
@@ -256,6 +257,7 @@
 
     const matchedItem = currentItems.find(it => it.slug === slug);
     const detailCategory = matchedItem?._category || currentCategory;
+    selectedCategory = detailCategory;
 
     const url = new URL(window.location);
     url.searchParams.set('type', detailCategory);
@@ -299,6 +301,23 @@
         case 'published': await renderPublishedDetail(content, slug, meta); break;
         case 'voices': await renderVoiceDetail(content, slug, meta); break;
       }
+      const assetUrl = new URL('https://pelicans.art/community.html');
+      assetUrl.searchParams.set('type', detailCategory);
+      assetUrl.searchParams.set('id', slug);
+      const reportUrl = new URL('https://github.com/SamPatt/pelicans-art/issues/new');
+      reportUrl.searchParams.set('template', 'asset_report.yml');
+      reportUrl.searchParams.set('asset', assetUrl.href);
+      const policy = document.createElement('p');
+      policy.className = 'detail-policy';
+      policy.innerHTML = 'Reuse requires the creator’s permission or stated license. <a href="#sharing-policy">Sharing policy</a> · ';
+      policy.querySelector('a').addEventListener('click', () => {
+        document.getElementById('sharing-policy').open = true;
+      });
+      const report = document.createElement('a');
+      report.href = reportUrl.href;
+      report.textContent = 'Report / request removal';
+      policy.appendChild(report);
+      content.appendChild(policy);
     } catch (e) {
       content.innerHTML = `<div class="empty-state">Error: ${escapeHtml(e.message)}</div>`;
     }
@@ -626,7 +645,7 @@
   }
 
   function copyAssetLink() {
-    const link = detailCategory === 'published' ? skitShareUrl(selectedSlug) : window.location.href;
+    const link = selectedCategory === 'published' ? skitShareUrl(selectedSlug) : window.location.href;
     navigator.clipboard.writeText(link).then(() => {
       const btns = document.querySelectorAll('.btn-copy-link');
       btns.forEach(b => { b.textContent = 'Copied!'; });

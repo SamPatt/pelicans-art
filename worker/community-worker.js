@@ -26,6 +26,7 @@ function corsHeaders() {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key',
+    'Access-Control-Expose-Headers': 'Retry-After',
   };
 }
 
@@ -513,11 +514,20 @@ async function handleDelete(request, env, category, slug) {
     prefix = `${category}/${slug}/`;
   }
 
-  const listed = await env.BUCKET.list({ prefix });
+  const objects = [];
+  let cursor;
+  do {
+    const listed = await env.BUCKET.list({ prefix, ...(cursor ? {cursor} : {}) });
+    objects.push(...listed.objects);
+    cursor = listed.truncated ? listed.cursor : undefined;
+  } while (cursor);
+  let objectsToDelete = objects;
+  if (category === 'skits' || category === 'published') {
+    objectsToDelete = objects.filter(o => o.key === `${category}/${slug}.json`);
+  }
   // For voices, filter to only exact matches
-  let objectsToDelete = listed.objects;
   if (category === 'voices') {
-    objectsToDelete = listed.objects.filter(o =>
+    objectsToDelete = objects.filter(o =>
       o.key === `voices/${slug}.wav` || o.key === `voices/${slug}.safetensors`
     );
   }
@@ -529,18 +539,65 @@ async function handleDelete(request, env, category, slug) {
   return json({ ok: true, deleted: keys });
 }
 
+// Cloudflare counters are per location and eventually consistent: abuse
+// throttling, not a global billing cap. No identity is claimed by a username.
+async function checkUploadLimit(request, env) {
+  if (env.UPLOADS_ENABLED === 'false') return err('Uploads are temporarily paused.', 503);
+  try {
+    if (!env.UPLOAD_LIMITER || !env.UPLOAD_TOTAL_LIMITER) throw new Error('Missing limiter');
+    const key = 'pouch:upload:' + (request.headers.get('CF-Connecting-IP') || 'unknown');
+    const perClient = await env.UPLOAD_LIMITER.limit({ key });
+    const total = perClient.success && await env.UPLOAD_TOTAL_LIMITER.limit({ key: 'pouch:uploads' });
+    if (!perClient.success || !total.success) {
+      const response = err('Too many uploads. Please wait a minute and try again.', 429);
+      response.headers.set('Retry-After', '60');
+      return response;
+    }
+  } catch {
+    return err('Uploads are temporarily unavailable. Please try again later.', 503);
+  }
+  return null;
+}
+
+async function readUploadBody(request) {
+  if (Number(request.headers.get('Content-Length')) > MAX_PAYLOAD) return null;
+  if (!request.body) return '';
+  const reader = request.body.getReader();
+  const chunks = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > MAX_PAYLOAD) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return new TextDecoder().decode(bytes);
+}
+
 async function handleUpload(request, env, category) {
   if (!CATEGORIES.includes(category)) return err('Unknown category: ' + category, 404);
+
+  const limited = await checkUploadLimit(request, env);
+  if (limited) return limited;
 
   const contentType = request.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
     return err('Content-Type must be application/json');
   }
 
-  const rawBody = await request.text();
-  if (rawBody.length > MAX_PAYLOAD) {
-    return err(`Payload too large (${(rawBody.length / 1024 / 1024).toFixed(1)}MB). Max 3MB.`);
-  }
+  const rawBody = await readUploadBody(request);
+  if (rawBody === null) return err('Payload too large. Max 3MB.', 413);
 
   let body;
   try {
@@ -688,7 +745,7 @@ export default {
     try {
       return await handleRequest(request, env);
     } catch (e) {
-      return json({ error: 'Internal error', detail: e.message }, 500);
+      return err('Internal error', 500);
     }
   },
 };

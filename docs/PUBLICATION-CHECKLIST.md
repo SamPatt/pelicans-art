@@ -21,7 +21,7 @@ Use the [current release review](RELEASE-REVIEW.md) for evidence and remaining d
 
 ## Community-service follow-up
 
-Before soliciting unrestricted uploads, address upload abuse limits, ownership/moderation and reuse policy, and review existing stored community content. These are separate from publishing the local software's source. Keep the authoring server behind loopback, a tunnel or authenticated private access.
+Upload throttles, a byte limit, reporting/removal and reuse guidance are implemented. Follow [Pouch moderation](POUCH-MODERATION.md) to review reports and handle abuse; uploads are not premoderated and usernames do not prove ownership. Keep the authoring server behind loopback, a tunnel or authenticated private access.
 
 ## Recheck after changes
 
