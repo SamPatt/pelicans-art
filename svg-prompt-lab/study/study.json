@@ -1,0 +1,572 @@
+{
+  "version": 1,
+  "id": "svg-prompts-2026-09",
+  "frozenAt": "2026-09-06",
+  "seed": 20260906,
+  "model": "GPT-6 Astra",
+  "generationStatus": "awaiting execution-mode decision",
+  "briefs": [
+    {
+      "id": "stagehand",
+      "kind": "character",
+      "title": "Pelican stagehand",
+      "brief": "A full-body pelican stagehand wearing oversized overalls and a headset, holding a coiled cable. Tired but proud expression. Long recognizable beak, two webbed feet, one free wing. No bicycle. Three-quarter view facing right, both eyes visible.",
+      "checks": [
+        "pelican with long beak",
+        "oversized overalls",
+        "headset",
+        "coiled cable",
+        "two webbed feet",
+        "free wing"
+      ]
+    },
+    {
+      "id": "mushroom-chef",
+      "kind": "character",
+      "title": "Mushroom chef",
+      "brief": "A full-body mushroom chef with a broad spotted mushroom cap, little apron and oven mitt, holding a wooden spoon. Offended expression. Mushroom anatomy must stay recognizable; do not turn it into a human wearing a mushroom hat. Three-quarter view facing right, both eyes visible.",
+      "checks": [
+        "mushroom body and cap",
+        "spots",
+        "apron",
+        "oven mitt",
+        "wooden spoon",
+        "offended expression"
+      ]
+    },
+    {
+      "id": "clock",
+      "kind": "prop",
+      "title": "Bureaucratic cuckoo clock",
+      "brief": "A portable cuckoo clock used as an absurd office time clock: a tiny furious bird protrudes from its upper door, clock face below, and a clearly visible punch-card slot at the base. No words or numerals. One coherent object on transparent background.",
+      "checks": [
+        "cuckoo clock silhouette",
+        "bird protruding from door",
+        "clock face",
+        "punch-card slot",
+        "no text"
+      ]
+    },
+    {
+      "id": "teapot",
+      "kind": "prop",
+      "title": "Royal teapot",
+      "brief": "A squat teapot wearing a tiny crown, with a long curved spout, a large open handle, and a lid tilted by escaping steam. Three-quarter view. It should look indignantly regal while remaining unmistakably a teapot. No face or text. Transparent background.",
+      "checks": [
+        "teapot body",
+        "crown",
+        "curved spout",
+        "open handle",
+        "tilted lid",
+        "steam"
+      ]
+    },
+    {
+      "id": "laundromat",
+      "kind": "background",
+      "title": "Underwater laundromat",
+      "brief": "An underwater laundromat interior with two round washing-machine doors on the left, one large porthole on the right showing a curious fish, hanging socks above, and a clear continuous floor in the bottom quarter for two actors. No characters or text. Landscape composition.",
+      "checks": [
+        "two washing machine doors on left",
+        "large right porthole",
+        "fish outside porthole",
+        "hanging socks",
+        "clear bottom-quarter floor"
+      ]
+    },
+    {
+      "id": "moon-office",
+      "kind": "background",
+      "title": "Moon permit office",
+      "brief": "A municipal permit office on the moon: a service counter on the right, three mismatched waiting chairs on the left, Earth visible through a rear window, and a floating paper tray above the counter. Keep the bottom quarter as a clear continuous staging floor. No people or readable text. Landscape composition.",
+      "checks": [
+        "right service counter",
+        "three left chairs",
+        "Earth through rear window",
+        "floating paper tray",
+        "clear bottom-quarter floor"
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "id": "minimal",
+      "title": "Minimal contract",
+      "instruction": "Create an expressive, readable vector asset for an absurd comedy theater. Choose the visual treatment yourself. Output only the SVG."
+    },
+    {
+      "id": "current",
+      "title": "Current browser recipe",
+      "instruction": "Use the current browser generation prompt below, retaining its aesthetic guidance wherever compatible with the shared contract."
+    },
+    {
+      "id": "art-direction",
+      "title": "Art direction",
+      "instruction": "Design this as a characterful theatrical vector illustration. Establish one memorable silhouette and a clear focal feature. Use deliberate asymmetry where it serves the brief, controlled contrast, no more than six main colors, and generous separation between important shapes. Avoid tiny decorative marks that vanish at phone size. Favor a few expressive contours over stacks of generic circles. Preserve every required object and relationship. Output only the SVG."
+    },
+    {
+      "id": "layout-plan",
+      "title": "Scene/component/layout plan",
+      "instruction": "Before drawing, write a compact visible plan (at most 120 words): required objects, their component shapes, approximate bounding boxes, overlaps and front-to-back layer order. Check that connected parts actually touch and important objects remain visible. Then create the SVG from that plan using editable primitives and short paths. Do not add new story objects beyond the brief. Save the plan separately; the SVG file contains only SVG."
+    },
+    {
+      "id": "reference",
+      "title": "Same-category SVG example",
+      "instruction": "Use the supplied same-category SVG as an example of editable structure, shape vocabulary and visual coherence. Draw the requested new subject; do not copy the example subject, its distinctive props, or proportions that conflict with the brief. Output only the SVG."
+    }
+  ],
+  "trials": [
+    {
+      "id": "t001",
+      "briefId": "stagehand",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "54df75d9766dd9448a75bcf07a95dd5769a5f8fc933ceac9d1683a03b4560315",
+      "promptCharacters": 1980
+    },
+    {
+      "id": "t002",
+      "briefId": "stagehand",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "5e7f5433047b87fdef9c6f0aa84fa4aedb7a0ed31caa26312a9de9bd59364d1b",
+      "promptCharacters": 6539
+    },
+    {
+      "id": "t003",
+      "briefId": "stagehand",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "1433026138910ecd20b899a3e45586f279c765563027def082583b3836330142",
+      "promptCharacters": 2313
+    },
+    {
+      "id": "t004",
+      "briefId": "stagehand",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "1ec3192566ad0f71515ad0dbc0245f2a5c497b6a3d31bb6b2c40923a69bd787c",
+      "promptCharacters": 2286
+    },
+    {
+      "id": "t005",
+      "briefId": "stagehand",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/sprites/pelican/front.svg",
+        "sha256": "10ad0a6927eec8cf79504c189bafc8e4fe552d2700066ed22725fcdea913bf2a"
+      },
+      "promptSha256": "24d430d72aabd82798405c8504b465000d27b6be25fcc96df43009ac9c995688",
+      "promptCharacters": 6005
+    },
+    {
+      "id": "t006",
+      "briefId": "mushroom-chef",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "0d6d2b02f3e44a0d8053f4bf87bc17ff2b3a3dd768bcfe112263f20670865eb8",
+      "promptCharacters": 2015
+    },
+    {
+      "id": "t007",
+      "briefId": "mushroom-chef",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "b50ea1ac8bacaed5f37d0ed426db275e9e25a29e96026cd519cfabc7a7bc7bf6",
+      "promptCharacters": 6574
+    },
+    {
+      "id": "t008",
+      "briefId": "mushroom-chef",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "e58477cf536402fbc359d49de34c3614c58038ad0bfd60d3800b4fa673a2288c",
+      "promptCharacters": 2348
+    },
+    {
+      "id": "t009",
+      "briefId": "mushroom-chef",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "2131ea467dcfc48b0f83ea5710745796b9f54e9892d2dc2a5cf55ea9a7f6929f",
+      "promptCharacters": 2321
+    },
+    {
+      "id": "t010",
+      "briefId": "mushroom-chef",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/sprites/pelican/front.svg",
+        "sha256": "10ad0a6927eec8cf79504c189bafc8e4fe552d2700066ed22725fcdea913bf2a"
+      },
+      "promptSha256": "dcd27b6292d607c00b6508a6eb3d5c25cdc0ab331f54c84e59efed8d43f167bf",
+      "promptCharacters": 6040
+    },
+    {
+      "id": "t011",
+      "briefId": "clock",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "c1c1ecca6cfdf4b8719676d24289ad566493ba402951ad34db5d0c12f9996c7d",
+      "promptCharacters": 1447
+    },
+    {
+      "id": "t012",
+      "briefId": "clock",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "6f3991cdd375890bbf120e091fbcd8f97a5d48ab0e1fecd6f9ed02f2518e1520",
+      "promptCharacters": 2339
+    },
+    {
+      "id": "t013",
+      "briefId": "clock",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "9bd0a384ee83a6766aa73e7be30fea55d0a39307d81d5c5605de579e1c1bc75b",
+      "promptCharacters": 1780
+    },
+    {
+      "id": "t014",
+      "briefId": "clock",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "8d4c64c85c25bfa7b83e4d91d1a50505c259abf4a7d5067df30878b71db1c3e7",
+      "promptCharacters": 1753
+    },
+    {
+      "id": "t015",
+      "briefId": "clock",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/props/cheeseburger/prop.svg",
+        "sha256": "6745caebd2d7a126d5ac8558106c7e7e39645d6fe29e15d4f4e9ddc276993e0f"
+      },
+      "promptSha256": "6e32fda80fbc00fc6e878043d0a2f9a510ac11c7617eaad714450e6f4709beb0",
+      "promptCharacters": 3160
+    },
+    {
+      "id": "t016",
+      "briefId": "teapot",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "51918da2844fe11081e57bf302ab1e042899aa131534fbe8249405542029c009",
+      "promptCharacters": 1450
+    },
+    {
+      "id": "t017",
+      "briefId": "teapot",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "f8f1055695b01645a1d770e9d069126c6b62cb94af3a52363dcf3b15259bd2c3",
+      "promptCharacters": 2342
+    },
+    {
+      "id": "t018",
+      "briefId": "teapot",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "e35de533d5fcc63c2eb0120ab643f36752bb5ef0c7cce7069e3b13b51a072629",
+      "promptCharacters": 1783
+    },
+    {
+      "id": "t019",
+      "briefId": "teapot",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "93c242eb92a71c90ce8739c40315033b9e6c0657951353b071c434a0e089a8d2",
+      "promptCharacters": 1756
+    },
+    {
+      "id": "t020",
+      "briefId": "teapot",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/props/cheeseburger/prop.svg",
+        "sha256": "6745caebd2d7a126d5ac8558106c7e7e39645d6fe29e15d4f4e9ddc276993e0f"
+      },
+      "promptSha256": "19be3cff2c0c06b3ec00c82735573b1dc5e6565d067f621b5fbe566081fe0594",
+      "promptCharacters": 3163
+    },
+    {
+      "id": "t021",
+      "briefId": "laundromat",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "ee76fa580e17e1fb0c62cbda5f1fac3e74ee757c9f2c4471d5da430f73f8fa3c",
+      "promptCharacters": 1549
+    },
+    {
+      "id": "t022",
+      "briefId": "laundromat",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "8e744773c76d53b51906d25c5e1a4c5f332fefa258ad38f48276978e2b3c1ccb",
+      "promptCharacters": 2080
+    },
+    {
+      "id": "t023",
+      "briefId": "laundromat",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "66b656b9397901b99457d4ed74030cd3b9b4ae7906632a65d927475542337142",
+      "promptCharacters": 1882
+    },
+    {
+      "id": "t024",
+      "briefId": "laundromat",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "14a32873ec310686ee3a82e4310406f6b9181a57aabb9fb3b275080f26348f73",
+      "promptCharacters": 1855
+    },
+    {
+      "id": "t025",
+      "briefId": "laundromat",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/backgrounds/apartment/landscape.svg",
+        "sha256": "21a201d96ccca3fb2ff8ce054dd049d79d65e92630dfd7c0a5d057c03a95cd6d"
+      },
+      "promptSha256": "a178f9164d712545e2b83fadb851a26543ea601ca465c61e72504539106bafb8",
+      "promptCharacters": 4781
+    },
+    {
+      "id": "t026",
+      "briefId": "moon-office",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "c9acebc8886e57e13551a815535d927b8bbc2131c4f03968a6c48c76287616e9",
+      "promptCharacters": 1585
+    },
+    {
+      "id": "t027",
+      "briefId": "moon-office",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "511d2525e66939a3a60733a2ee4239c51a34765dc0d83e6f657908029ec4639b",
+      "promptCharacters": 2116
+    },
+    {
+      "id": "t028",
+      "briefId": "moon-office",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "cc403095af249650e5cee4c8265544130a360d5accfb646aaa4b599a8739fea9",
+      "promptCharacters": 1918
+    },
+    {
+      "id": "t029",
+      "briefId": "moon-office",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "4a7e79ffd54aacec66d2be743d08cc5b9c2710a79bb2931dc68ab7c4aadbe844",
+      "promptCharacters": 1891
+    },
+    {
+      "id": "t030",
+      "briefId": "moon-office",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/backgrounds/apartment/landscape.svg",
+        "sha256": "21a201d96ccca3fb2ff8ce054dd049d79d65e92630dfd7c0a5d057c03a95cd6d"
+      },
+      "promptSha256": "667f87c0ea6317c175d1430ac5b84a3748e9b68c6d0e083f80751c620ca4f409",
+      "promptCharacters": 4817
+    },
+    {
+      "id": "t031",
+      "briefId": "stagehand",
+      "methodId": "minimal",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "promptSha256": "54df75d9766dd9448a75bcf07a95dd5769a5f8fc933ceac9d1683a03b4560315",
+      "promptCharacters": 1980
+    },
+    {
+      "id": "t032",
+      "briefId": "mushroom-chef",
+      "methodId": "minimal",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "promptSha256": "0d6d2b02f3e44a0d8053f4bf87bc17ff2b3a3dd768bcfe112263f20670865eb8",
+      "promptCharacters": 2015
+    },
+    {
+      "id": "t033",
+      "briefId": "clock",
+      "methodId": "minimal",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "promptSha256": "c1c1ecca6cfdf4b8719676d24289ad566493ba402951ad34db5d0c12f9996c7d",
+      "promptCharacters": 1447
+    },
+    {
+      "id": "t034",
+      "briefId": "teapot",
+      "methodId": "minimal",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "promptSha256": "51918da2844fe11081e57bf302ab1e042899aa131534fbe8249405542029c009",
+      "promptCharacters": 1450
+    },
+    {
+      "id": "t035",
+      "briefId": "laundromat",
+      "methodId": "minimal",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "promptSha256": "ee76fa580e17e1fb0c62cbda5f1fac3e74ee757c9f2c4471d5da430f73f8fa3c",
+      "promptCharacters": 1549
+    },
+    {
+      "id": "t036",
+      "briefId": "moon-office",
+      "methodId": "minimal",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "promptSha256": "c9acebc8886e57e13551a815535d927b8bbc2131c4f03968a6c48c76287616e9",
+      "promptCharacters": 1585
+    },
+    {
+      "id": "t037",
+      "briefId": "stagehand",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t001",
+      "promptSha256": "19f0b96604545a4b1faf12cea6bdbd66300bdb1e662af9aa5bb5c9d6c15c561f",
+      "promptCharacters": 2143
+    },
+    {
+      "id": "t038",
+      "briefId": "mushroom-chef",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t006",
+      "promptSha256": "102064b7691ad165c341520584d7f2acc1682f59fe630fb6631b3a599e2045d8",
+      "promptCharacters": 2178
+    },
+    {
+      "id": "t039",
+      "briefId": "clock",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t011",
+      "promptSha256": "148e35c1fa74acdd9deb83255ffc61ba9a90b113d4a36113e35123bdf63fc85a",
+      "promptCharacters": 1610
+    },
+    {
+      "id": "t040",
+      "briefId": "teapot",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t016",
+      "promptSha256": "93b166e9a4a0462a438b95e14349fec249acd87676a1b11606c875aecc181e54",
+      "promptCharacters": 1613
+    },
+    {
+      "id": "t041",
+      "briefId": "laundromat",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t021",
+      "promptSha256": "45b3d0cceb3f74f5a105266c435d5507fe4e67fc591d0239507195d52cf58f68",
+      "promptCharacters": 1712
+    },
+    {
+      "id": "t042",
+      "briefId": "moon-office",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t026",
+      "promptSha256": "5ee3d2a4c958a596a10c8fe2a05c97b161512aaa3748f0157877472ebf917bd0",
+      "promptCharacters": 1748
+    }
+  ],
+  "dispatchOrder": [
+    "t013",
+    "t036",
+    "t025",
+    "t022",
+    "t012",
+    "t006",
+    "t004",
+    "t030",
+    "t023",
+    "t010",
+    "t002",
+    "t027",
+    "t018",
+    "t033",
+    "t029",
+    "t016",
+    "t011",
+    "t021",
+    "t024",
+    "t017",
+    "t028",
+    "t009",
+    "t031",
+    "t008",
+    "t032",
+    "t014",
+    "t003",
+    "t001",
+    "t020",
+    "t005",
+    "t007",
+    "t019",
+    "t034",
+    "t035",
+    "t026",
+    "t015",
+    "t037",
+    "t038",
+    "t039",
+    "t040",
+    "t041",
+    "t042"
+  ]
+}
