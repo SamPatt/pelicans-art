@@ -4,6 +4,7 @@ test('voice auditions retain editable labels and export usable agent casting not
  await expect(page.locator('.voice-row')).toHaveCount(26);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
  const label=page.getByRole('textbox',{name:'Your descriptive label: alba',exact:true});
+ await expect(label).toHaveValue('Good male voice, slightly high-pitched, American');
  await label.fill('Calm narrator');await page.getByRole('textbox',{name:'Character / role (optional): alba',exact:true}).fill('Inspector');
  await expect(page.locator('#agent-notes')).toHaveValue(/alba: Calm narrator — cast as Inspector/);
  await page.reload();await expect(label).toHaveValue('Calm narrator');

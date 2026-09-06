@@ -2,6 +2,8 @@
 
 Public sampler: https://pelicans.art/voices.html
 
+Shared default labels are available to agents at https://pelicans.art/voice-labels.json, keyed by exact preset ID and pinned voice revision. These are Sam’s subjective listening notes, not verified speaker identities. Browser edits override the defaults without changing the public file.
+
 The sampler covers all 26 presets in `scripts/theater/pocket-voices.json`. It uses static recordings from the pinned Pocket 2.1.0 April English profile. `src/voice-samples.json` records the exact synthesis profile, embedding revision, shared audition text, audio URLs, durations, and file hashes. Samples are loudness normalized; pitch and tempo are unchanged. Regenerate using `python3 scripts/build-voice-sampler.py` with the matching local service already running at 127.0.0.1:8001. The script rejects a mismatched profile or voice list.
 
 ## Taking choices back to an agent

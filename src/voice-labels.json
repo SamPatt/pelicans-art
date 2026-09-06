@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "voiceRevision": "e041936c75475d350b405bc870bcf7c22da4e9e6",
+  "attribution": "Sam\u2019s subjective listening notes; descriptions do not establish speaker identity.",
+  "labels": {
+    "alba": {
+      "label": "Good male voice, slightly high-pitched, American",
+      "character": ""
+    },
+    "anna": {
+      "label": "Good proper female voice, British",
+      "character": ""
+    },
+    "azelma": {
+      "label": "Good young female voice, American",
+      "character": ""
+    },
+    "bill_boerst": {
+      "label": "Good middle-aged American male voice",
+      "character": ""
+    },
+    "caro_davy": {
+      "label": "Mediocre female posh British",
+      "character": ""
+    },
+    "charles": {
+      "label": "Deep male British voice",
+      "character": ""
+    },
+    "cosette": {
+      "label": "Fast female American voice",
+      "character": ""
+    },
+    "eponine": {
+      "label": "Standard female voice",
+      "character": ""
+    },
+    "estelle": {
+      "label": "Female, French accent",
+      "character": ""
+    },
+    "eve": {
+      "label": "Slightly aggressive female American voice",
+      "character": ""
+    },
+    "fantine": {
+      "label": "Good British female voice",
+      "character": ""
+    },
+    "george": {
+      "label": "Standard American male voice",
+      "character": ""
+    },
+    "giovanni": {
+      "label": "Good Italian male voice",
+      "character": ""
+    },
+    "jane": {
+      "label": "Good young female American voice",
+      "character": ""
+    },
+    "javert": {
+      "label": "Deep, slow growly male American voice",
+      "character": ""
+    },
+    "jean": {
+      "label": "Good black male American voice",
+      "character": ""
+    },
+    "juergen": {
+      "label": "Fast male European accent",
+      "character": ""
+    },
+    "lola": {
+      "label": "Female Indian accent",
+      "character": ""
+    },
+    "marius": {
+      "label": "Mediocre, fast American male",
+      "character": ""
+    },
+    "mary": {
+      "label": "Female American",
+      "character": ""
+    },
+    "michael": {
+      "label": "Mediocre Male American, somewhat deep",
+      "character": ""
+    },
+    "paul": {
+      "label": "Good British male voice",
+      "character": ""
+    },
+    "peter_yearsley": {
+      "label": "Good posh British male voice",
+      "character": ""
+    },
+    "rafael": {
+      "label": "Good European accent male",
+      "character": ""
+    },
+    "stuart_bell": {
+      "label": "Mediocre British male voice",
+      "character": ""
+    },
+    "vera": {
+      "label": "Standard female British voice",
+      "character": ""
+    }
+  }
+}
