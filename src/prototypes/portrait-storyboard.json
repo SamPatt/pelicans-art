@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "kind": "pelican-storyboard",
+  "revision": 1,
+  "status": "draft",
+  "title": "Witness Perk-tection",
+  "premise": "A pelican in witness protection has one weakness: loyalty points.",
+  "orientation": "portrait",
+  "targetSeconds": 35,
+  "tone": "Dry absurdity. The pelican is serious; the barista is practical.",
+  "cast": [
+    {
+      "id": "customer",
+      "name": "Anonymous",
+      "description": "A tired pelican attempting to look inconspicuous. Navy overalls; expressive long beak.",
+      "voice": "paul",
+      "x": 26
+    },
+    {
+      "id": "barista",
+      "name": "Barista",
+      "description": "A patient human caf\u00e9 worker with dark wavy hair, a rust shirt, and a teal apron.",
+      "voice": "anna",
+      "x": 74
+    }
+  ],
+  "scenes": [
+    {
+      "title": "The alias",
+      "setting": "Portrait caf\u00e9 interior. Both characters face one another; the caf\u00e9 sign sits above them. Keep their faces large enough for a phone.",
+      "shot": "wide",
+      "focus": "customer",
+      "pauseSeconds": 0.7,
+      "dialogue": [
+        {
+          "who": "barista",
+          "text": "Name for the order?"
+        },
+        {
+          "who": "customer",
+          "text": "Anonymous."
+        }
+      ]
+    },
+    {
+      "title": "The announcement",
+      "setting": "Hold the two-shot. The barista calls the order. The pelican glances around and leans toward the barista.",
+      "shot": "wide",
+      "focus": "customer",
+      "pauseSeconds": 0.7,
+      "dialogue": [
+        {
+          "who": "barista",
+          "text": "One latte for Anonymous!"
+        },
+        {
+          "who": "customer",
+          "text": "Please keep your voice down. I am in witness protection."
+        }
+      ]
+    },
+    {
+      "title": "The weakness",
+      "setting": "The barista indicates a loyalty card. Let the pelican\u2019s hesitation land before the reply.",
+      "shot": "wide",
+      "focus": "customer",
+      "pauseSeconds": 0.7,
+      "dialogue": [
+        {
+          "who": "barista",
+          "text": "Then why did you give me your loyalty card?"
+        },
+        {
+          "who": "customer",
+          "text": "Nine stamps. I am not starting over."
+        }
+      ]
+    },
+    {
+      "title": "The evidence",
+      "setting": "Keep both faces visible. Hold eye contact after the barista points out the photograph. End on a silent beat.",
+      "shot": "wide",
+      "focus": "customer",
+      "pauseSeconds": 1.4,
+      "dialogue": [
+        {
+          "who": "barista",
+          "text": "It has your photograph on it."
+        },
+        {
+          "who": "customer",
+          "text": "That was before I became Anonymous."
+        }
+      ]
+    }
+  ]
+}

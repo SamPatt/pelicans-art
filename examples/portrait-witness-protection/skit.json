@@ -1,0 +1,136 @@
+{
+  "meta": {
+    "title": "Witness Perk-tection",
+    "model": "GPT-6 Astra",
+    "description": "A pelican in witness protection has one weakness: loyalty points."
+  },
+  "stage": {
+    "background": "cafe",
+    "orientation": "portrait"
+  },
+  "cast": {
+    "customer": {
+      "sprite": "pelican",
+      "x": 26,
+      "y": 86,
+      "scale": 1,
+      "voice": "paul"
+    },
+    "barista": {
+      "sprite": "barista",
+      "x": 74,
+      "y": 86,
+      "scale": 1,
+      "voice": "anna"
+    }
+  },
+  "script": [
+    {
+      "do": "shot",
+      "type": "wide"
+    },
+    {
+      "do": "pause",
+      "duration": 0.5
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "Name for the order?"
+    },
+    {
+      "do": "pause",
+      "duration": 0.3
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "Anonymous."
+    },
+    {
+      "do": "pause",
+      "duration": 0.4
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "One latte for Anonymous!"
+    },
+    {
+      "do": "pause",
+      "duration": 0.3
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "Please keep your voice down. I am in witness protection."
+    },
+    {
+      "do": "pause",
+      "duration": 0.5
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "Then why did you give me your loyalty card?"
+    },
+    {
+      "do": "pause",
+      "duration": 0.8
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "Nine stamps. I am not starting over."
+    },
+    {
+      "do": "pause",
+      "duration": 0.8
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "It has your photograph on it."
+    },
+    {
+      "do": "pause",
+      "duration": 0.6
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "That was before I became Anonymous."
+    },
+    {
+      "do": "pause",
+      "duration": 1.4
+    }
+  ],
+  "assets": {
+    "sprites": {
+      "pelican-front": "assets/pelican.svg",
+      "barista-front": "assets/barista.svg"
+    },
+    "spriteMeta": {
+      "pelican": {
+        "name": "Pelican",
+        "model": "GPT-6 Astra"
+      },
+      "barista": {
+        "name": "Barista",
+        "model": "GPT-6 Astra"
+      }
+    },
+    "backgrounds": {
+      "cafe": "assets/cafe.svg"
+    },
+    "props": {},
+    "audio": {},
+    "backgroundMeta": {
+      "cafe": {
+        "name": "The Daily Grind \u2014 portrait",
+        "model": "GPT-6 Astra"
+      }
+    }
+  }
+}
