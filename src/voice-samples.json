@@ -1,0 +1,223 @@
+{
+  "schemaVersion": 1,
+  "sampleText": "Good evening. I was told this was a perfectly ordinary job. Why is there a pelican in my office?",
+  "profile": {
+    "package": "pocket-tts==2.1.0",
+    "language_config": "english_2026-04",
+    "model_repository": "kyutai/pocket-tts-without-voice-cloning",
+    "model_revision": "d29db7978e464fb90cb3359ee0c69a273b9142cc",
+    "model_file": "languages/english_2026-04/model.safetensors",
+    "model_sha256": "be9c6b4876d3f30740a8225dfcaa2e43dc4aeb753c15272735bee16bbb4abb0a",
+    "tokenizer_revision": "d29db7978e464fb90cb3359ee0c69a273b9142cc",
+    "tokenizer_file": "languages/english_2026-04/tokenizer.model",
+    "voice_repository": "kyutai/pocket-tts-without-voice-cloning",
+    "voice_revision": "e041936c75475d350b405bc870bcf7c22da4e9e6",
+    "voice_directory": "languages/english_2026-04/embeddings",
+    "voices": [
+      "marius",
+      "jean",
+      "alba"
+    ],
+    "torch": "2.8.0",
+    "device": "cpu",
+    "quantize": false,
+    "temperature": 0.7,
+    "decode_steps": 1,
+    "eos_threshold": -4,
+    "seed": 4711,
+    "threads": 2,
+    "text_prefix": ""
+  },
+  "voiceCatalog": {
+    "repository": "kyutai/pocket-tts-without-voice-cloning",
+    "revision": "e041936c75475d350b405bc870bcf7c22da4e9e6",
+    "directory": "languages/english_2026-04/embeddings",
+    "voices": [
+      "alba",
+      "anna",
+      "azelma",
+      "bill_boerst",
+      "caro_davy",
+      "charles",
+      "cosette",
+      "eponine",
+      "estelle",
+      "eve",
+      "fantine",
+      "george",
+      "giovanni",
+      "jane",
+      "javert",
+      "jean",
+      "juergen",
+      "lola",
+      "marius",
+      "mary",
+      "michael",
+      "paul",
+      "peter_yearsley",
+      "rafael",
+      "stuart_bell",
+      "vera"
+    ]
+  },
+  "processing": "Loudness normalized to -18 LUFS; original tempo and pitch.",
+  "voices": [
+    {
+      "id": "alba",
+      "audio": "media/voice-samples/alba.mp3",
+      "duration": 5.304,
+      "sha256": "3c9f53a3fc07d4832ecd7e13e9c10f55873543f5c74b4068d6ff4410b0d2fc5b"
+    },
+    {
+      "id": "anna",
+      "audio": "media/voice-samples/anna.mp3",
+      "duration": 6.12,
+      "sha256": "d082c5846c4b64c2b7757905926017f0ab7871e1314dfaec538ddb44f3bf06eb"
+    },
+    {
+      "id": "azelma",
+      "audio": "media/voice-samples/azelma.mp3",
+      "duration": 6.984,
+      "sha256": "59cf54ab1b952af771fe9f12dd5ee40143d55ee76783ab11044beb5af350d764"
+    },
+    {
+      "id": "bill_boerst",
+      "audio": "media/voice-samples/bill_boerst.mp3",
+      "duration": 6.12,
+      "sha256": "1dff85ee2f10dab4284ecbeedd3a062dbdc95cd09c16fccf7d2c9bf56d35a2df"
+    },
+    {
+      "id": "caro_davy",
+      "audio": "media/voice-samples/caro_davy.mp3",
+      "duration": 7.08,
+      "sha256": "c44fae2b591daa25b1d416b5d994fa39365498002be7c1c4ff7e249311bedd64"
+    },
+    {
+      "id": "charles",
+      "audio": "media/voice-samples/charles.mp3",
+      "duration": 5.64,
+      "sha256": "2155156bd58f2abd108b525e2d49d6c251a2320a1d8ec3ccb71c6fdc37c78852"
+    },
+    {
+      "id": "cosette",
+      "audio": "media/voice-samples/cosette.mp3",
+      "duration": 4.512,
+      "sha256": "9834444c30c488ccbdd8c0c5f045957151d33eda1e0e3c3913755a6e6aeb4720"
+    },
+    {
+      "id": "eponine",
+      "audio": "media/voice-samples/eponine.mp3",
+      "duration": 6.12,
+      "sha256": "7e2aea25907bfa5afd94a417e39cb57658fc96630f762df0593b8672c6cb9429"
+    },
+    {
+      "id": "estelle",
+      "audio": "media/voice-samples/estelle.mp3",
+      "duration": 6.432,
+      "sha256": "7a1cc7e11a78e7630a6a82676a3c15216f464a217ce95496c9b8ac3f5fd14eeb"
+    },
+    {
+      "id": "eve",
+      "audio": "media/voice-samples/eve.mp3",
+      "duration": 5.952,
+      "sha256": "1a86b5b6ff445c561ac7ee1e2e304830d155200712e38c1a4db24a0361812194"
+    },
+    {
+      "id": "fantine",
+      "audio": "media/voice-samples/fantine.mp3",
+      "duration": 5.712,
+      "sha256": "7f3d3f1b7dec12ac4c38a30f7f5b1b07a50d679e4be74bf66da9578886a1250a"
+    },
+    {
+      "id": "george",
+      "audio": "media/voice-samples/george.mp3",
+      "duration": 5.88,
+      "sha256": "3dd127a75616fe3b06daa5f92b2886834f51548e3b43376edd859b7bba3c7755"
+    },
+    {
+      "id": "giovanni",
+      "audio": "media/voice-samples/giovanni.mp3",
+      "duration": 6.432,
+      "sha256": "98762d9896a829d505f4af4f58d9603c6bc176c25167c76273af8197740959f6"
+    },
+    {
+      "id": "jane",
+      "audio": "media/voice-samples/jane.mp3",
+      "duration": 5.784,
+      "sha256": "49a46756cf54ad7121348e743dab4655c20e4b12f32e2932deb0647257f7d6a0"
+    },
+    {
+      "id": "javert",
+      "audio": "media/voice-samples/javert.mp3",
+      "duration": 8.424,
+      "sha256": "63b8416a4bae5310f7a19de1d9f8a93e95f89b995e3220133cf0f13f93f17af3"
+    },
+    {
+      "id": "jean",
+      "audio": "media/voice-samples/jean.mp3",
+      "duration": 5.232,
+      "sha256": "b98492eff2b5cadcaf28bc27169fcf4558571594d1baf327e6fb06db664ab1a0"
+    },
+    {
+      "id": "juergen",
+      "audio": "media/voice-samples/juergen.mp3",
+      "duration": 3.72,
+      "sha256": "80d06a2b924a679ad9cc78bb7d88f8a9dbf5f188c028702670eb3153d5616131"
+    },
+    {
+      "id": "lola",
+      "audio": "media/voice-samples/lola.mp3",
+      "duration": 7.464,
+      "sha256": "548ee682bcc888854e4dc58871716b09304e3a664cb6387ac06a9c3d8aca4a78"
+    },
+    {
+      "id": "marius",
+      "audio": "media/voice-samples/marius.mp3",
+      "duration": 5.232,
+      "sha256": "90c81e2c9338114973e659e10850a5e9bac0ece5c0ec2ffe120c0c2fb1bf2576"
+    },
+    {
+      "id": "mary",
+      "audio": "media/voice-samples/mary.mp3",
+      "duration": 6.12,
+      "sha256": "45ea8f4890ba0466d853ddd2b171eda0fb6194afb9135853c3d42d63533a8889"
+    },
+    {
+      "id": "michael",
+      "audio": "media/voice-samples/michael.mp3",
+      "duration": 6.024,
+      "sha256": "5b7b1efd9562b5928675ac502d794ce2a22d4b04baad15fc9618770d62f80a5e"
+    },
+    {
+      "id": "paul",
+      "audio": "media/voice-samples/paul.mp3",
+      "duration": 6.672,
+      "sha256": "c49abdd913897e11cf2d7b0c2025f30b58d876c65e6bffba5123515165b8fdb7"
+    },
+    {
+      "id": "peter_yearsley",
+      "audio": "media/voice-samples/peter_yearsley.mp3",
+      "duration": 5.232,
+      "sha256": "fb4fae51037d5695743b697fffb9179982a173e5888ef7a625a705cb403bbd25"
+    },
+    {
+      "id": "rafael",
+      "audio": "media/voice-samples/rafael.mp3",
+      "duration": 5.16,
+      "sha256": "242ab1354329e6e75ac3c7422c73ff5127bb58211af27ab25dd677be7ec130bd"
+    },
+    {
+      "id": "stuart_bell",
+      "audio": "media/voice-samples/stuart_bell.mp3",
+      "duration": 7.632,
+      "sha256": "04a799639bfcc76244b7d8c5c0763fc1bc35e0722725bcb61f0e709c1b5ca8fd"
+    },
+    {
+      "id": "vera",
+      "audio": "media/voice-samples/vera.mp3",
+      "duration": 6.024,
+      "sha256": "1908d43c9b789983c73f9eecf6093ecc358ccc49263c19e16ab4914bde02f8ea"
+    }
+  ]
+}
