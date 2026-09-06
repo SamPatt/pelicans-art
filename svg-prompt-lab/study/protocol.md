@@ -2,14 +2,14 @@
 
 ## Scope
 
-One-model screening pilot, not a model leaderboard or proof of a universal best prompt. Six new briefs span two characters, two props and two backgrounds. Five first-pass recipes run on every brief (30 cells). A second minimal-contract draft per brief supplies repeatability information and a two-candidate search baseline (6 cells). One rendered-feedback revision of each first minimal draft supplies the competing two-candidate workflow (6 cells). Total planned: 42 SVGs.
+One-model screening pilot, not a model leaderboard or proof of a universal best prompt. Six new briefs span two characters, two props and two backgrounds. Six first-pass recipes run on every brief (36 cells). A second current-agent-guide draft per brief supplies repeatability information and a two-candidate search baseline (6 cells). One rendered-feedback revision of each first current-agent-guide draft supplies the competing two-candidate workflow (6 cells). Total planned: 48 SVGs.
 
-The five first-pass recipes are minimal contract, current browser prompt, art direction, scene/component/layout plan, and a same-category SVG example. Each receives the same asset brief and technical contract. Recipes are bundles of interventions; this does not isolate the causal effect of any single word. Prompt length and reference context are recorded, not secretly normalized away.
+The six first-pass recipes are minimal contract, current browser prompt, current agent guide, art direction, scene/component/layout plan, and a same-category SVG example. Each receives the same asset brief and technical contract. Recipes are bundles of interventions; this does not isolate the causal effect of any single word. Prompt length and reference context are recorded, not secretly normalized away.
 
 ## Generation rules
 
 - Freeze the matrix before looking at results. Use the same model and inherited reasoning configuration throughout. Record actual model/backend and unavailable settings as unavailable; never invent temperature or token counts.
-- Preferred execution: one fresh, history-free authorized Astra context per trial. Each gets only its own prompt and authorized output path, not other candidates, research conclusions or judge scores. Randomize dispatch order with a recorded seed.
+- Preferred execution: one fresh, history-free authorized Astra context per trial. Each gets only its own prompt and authorized output path, not other candidates, research conclusions or judge scores. Randomize dispatch order with a recorded seed; this is not an inference seed. Agents share a filesystem, so the restriction to their own inputs is instruction-based, not an OS isolation boundary.
 - If generation stays in the main chat, label it exploratory and context-contaminated; it cannot establish prompt superiority. Do not present hand-designed method variants as independent prompt samples.
 - First pass: produce one SVG, with a short visible layout artifact only when requested by that method. No renderer, repairs, existing assets or external lookup except the explicitly supplied reference. Preserve the first output even if invalid.
 - Revision: show the same draft, rendered PNG and original brief; identify at most three concrete visible defects and revise once. Preserve the critique, draft and result. Do not score your own work. Failed rendering is a recorded failure, not silently repaired and counted as first-pass success.
@@ -36,8 +36,12 @@ Technical gates are separate: safe parse/render, viewBox, required IDs/types/gro
 - Report pass/fail and missing outputs for every planned trial; never discard failures from denominators.
 - Compare per-brief ranks and paired differences. Do not treat six briefs as a large statistical sample, average incomparable characters/props/backgrounds into a definitive winner, or turn subjective scores into calibrated measurements.
 - Show second-draft variation separately. A method beating one lucky/unlucky baseline once is weak evidence.
-- Compare the human-preferred result from draft plus revision to the human-preferred result from that same draft plus a fresh minimal draft, counting ties. Also report whether the revision itself improved or regressed relative to its parent. Human selection is an explicit part of both workflows, not a free automatic model capability. Both use two generation opportunities, but token costs are not matched.
+- Compare the human-preferred result from draft plus revision to the human-preferred result from that same draft plus a fresh current-agent-guide draft, counting ties. Also report whether the revision itself improved or regressed relative to its parent. Human selection is an explicit part of both workflows, not a free automatic model capability. Both use two generation opportunities, but token costs are not matched.
 - Separate user judgments from the author's qualitative observations. No synthetic human ratings or unexplained model-generated numeric scores.
 - Promote only a recipe that wins on held-out briefs and passes production checks. Suggested next round: 3 new briefs per category × 3 independent repeats × finalists and current recipe, with two independent human raters if available. Keep that next round separate from this screening pilot.
 
 The deliverable is a decision aid: evidence-backed proposed guide edits, category-specific recommendations where supported, and explicit uncertainties. Production prompts are unchanged by the study.
+
+## Controls and scope of comparison
+
+The browser control freezes the production system prompt. The agent control freezes references/svg.md plus docs/SPRITE-GUIDE.md for characters. Both retain the same brief and study contract as experimental recipes. These are harmonized first-pass controls, not exact reproductions of an unconstrained chat or complete GUI workflow: the shared contract fixes dimensions, output constraints and postpones rendering. The agent guide’s normal render-and-inspect delivery step is tested separately through its visual revision condition. No initialized example is supplied to this control; the same-category example is a separate condition. Report every experimental recipe against the current-agent control and retain the browser control as a historical comparison. These constraints must accompany conclusions.

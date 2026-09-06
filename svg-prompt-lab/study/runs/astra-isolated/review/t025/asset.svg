@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <g id="background">
+    <rect width="400" height="225" fill="#b8d8ce"/>
+    <path d="M8 8 H392 V164 H8 Z" fill="#b8d8ce" stroke="#689c96" stroke-width="2"/>
+    <path d="M9 58 H391 M9 110 H252 M60 9 V58 M160 9 V58 M260 9 V36 M110 59 V74 M210 59 V163" fill="none" stroke="#9bc2b7" stroke-width="2"/>
+    <g id="porthole">
+      <circle cx="312" cy="94" r="61" fill="#547f7e" stroke="#284f59" stroke-width="4"/>
+      <circle cx="312" cy="94" r="53" fill="#d4b875" stroke="#284f59" stroke-width="2"/>
+      <circle cx="312" cy="94" r="46" fill="#287e9b" stroke="#284f59" stroke-width="3"/>
+      <path d="M275 77 Q306 45 343 68 Q325 74 298 105 Z" fill="#55a7b8"/>
+      <path d="M281 124 Q293 115 305 129 Q321 117 339 130 Q314 149 289 134 Z" fill="#246981"/>
+      <g id="curious-fish" stroke="#724b39" stroke-width="2" stroke-linejoin="round">
+        <path d="M326 93 L343 82 L340 105 L326 101 Z" fill="#efb75c"/>
+        <path d="M304 86 L318 76 L321 89 M305 108 L318 117 L322 103" fill="#df9450"/>
+        <ellipse cx="310" cy="97" rx="22" ry="14" fill="#f5c773"/>
+        <path d="M317 95 Q308 98 317 104" fill="#df9450"/>
+        <circle cx="299" cy="93" r="6" fill="#fff7dc"/>
+        <circle cx="297" cy="93" r="2.5" fill="#284f59" stroke="none"/>
+        <path d="M289 101 Q293 103 297 101" fill="none"/>
+      </g>
+      <g id="bubbles" fill="none" stroke="#a6d7d9" stroke-width="1.5">
+        <circle cx="281" cy="92" r="3"/><circle cx="285" cy="80" r="2"/><circle cx="290" cy="71" r="4"/>
+      </g>
+      <g id="porthole-bolts" fill="#f2d898" stroke="#284f59" stroke-width="1.5">
+        <circle cx="312" cy="38" r="3"/><circle cx="351" cy="55" r="3"/><circle cx="368" cy="94" r="3"/><circle cx="351" cy="133" r="3"/><circle cx="312" cy="150" r="3"/><circle cx="273" cy="133" r="3"/><circle cx="256" cy="94" r="3"/><circle cx="273" cy="55" r="3"/>
+      </g>
+    </g>
+  </g>
+  <g id="midground">
+    <g id="hanging-socks" stroke="#284f59" stroke-width="2" stroke-linejoin="round">
+      <path d="M20 22 Q123 43 230 22" fill="none"/>
+      <path d="M48 29 L64 31 L61 52 Q60 55 69 57 Q75 64 68 68 L48 65 Q44 63 45 57 Z" fill="#f5c773"/>
+      <path d="M49 37 L63 39" fill="none" stroke="#dc935c" stroke-width="4"/>
+      <path d="M93 35 L108 36 L107 56 L117 60 Q122 67 115 70 L97 68 Q90 67 91 61 Z" fill="#f7e8c8"/>
+      <path d="M94 43 L108 44" fill="none" stroke="#659a9b" stroke-width="4"/>
+      <path d="M154 35 L170 34 L170 53 L180 54 Q186 60 181 65 L160 68 Q155 68 155 61 Z" fill="#df9379"/>
+      <path d="M156 43 L170 42" fill="none" stroke="#f7e8c8" stroke-width="4"/>
+      <path d="M51 25 V34 M97 31 V40 M159 30 V39" stroke="#806b4e" stroke-width="4"/>
+    </g>
+    <g id="washing-machines" stroke="#284f59" stroke-width="2.5">
+      <rect x="20" y="80" width="87" height="83" rx="6" fill="#f0e8ce"/>
+      <rect x="113" y="80" width="87" height="83" rx="6" fill="#f0e8ce"/>
+      <path d="M21 99 H106 M114 99 H199"/>
+      <rect x="30" y="86" width="24" height="7" rx="2" fill="#76a6a2"/>
+      <rect x="123" y="86" width="24" height="7" rx="2" fill="#76a6a2"/>
+      <circle cx="90" cy="90" r="4" fill="#df9379"/><circle cx="183" cy="90" r="4" fill="#f5c773"/>
+      <circle cx="64" cy="130" r="26" fill="#79a5a2"/>
+      <circle cx="157" cy="130" r="26" fill="#79a5a2"/>
+      <circle cx="64" cy="130" r="19" fill="#285d72"/>
+      <circle cx="157" cy="130" r="19" fill="#285d72"/>
+      <path d="M48 135 Q58 123 65 136 Q72 124 80 134 Q74 151 61 147 Q50 146 48 135 Z" fill="#df9379" stroke="none"/>
+      <path d="M141 135 Q151 124 159 134 Q167 126 173 136 Q168 149 155 148 Q145 145 141 135 Z" fill="#f5c773" stroke="none"/>
+      <path d="M54 118 Q62 113 69 117 M147 118 Q155 113 162 117" fill="none" stroke="#b4dfe0" stroke-width="3" stroke-linecap="round"/>
+      <path d="M87 124 V136 M180 124 V136" stroke="#f0e8ce" stroke-width="4" stroke-linecap="round"/>
+    </g>
+  </g>
+  <g id="foreground">
+    <rect y="168" width="400" height="57" fill="#739792"/>
+    <path d="M0 165 H400 V169 H0 Z" fill="#365f65"/>
+  </g>
+</svg>

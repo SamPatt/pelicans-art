@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="none" stroke="#3c2925" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+  <g id="body">
+    <path id="left-leg" d="M38 112 Q32 122 29 131 Q22 132 20 138 Q30 143 43 138 L49 116" fill="#f7e3b0"/>
+    <path id="right-leg" d="M56 114 L58 135 Q64 141 78 137 Q80 132 68 129 L69 111" fill="#f7e3b0"/>
+    <path id="spoon-arm" d="M66 83 Q77 92 85 79 L91 82 Q86 103 66 99" fill="#f7e3b0"/>
+    <g id="wooden-spoon">
+      <path d="M85 91 L89 48 Q82 44 84 34 Q86 25 91 26 Q98 28 96 38 Q96 45 93 48 L90 92 Z" fill="#c48b42"/>
+      <path d="M88 36 Q90 30 92 34 L91 41" stroke="#3c2925" stroke-width="1.5"/>
+    </g>
+    <path id="spoon-grip" d="M82 82 Q82 77 86 76 L90 77 Q94 76 94 80 Q95 84 89 86 L85 88" fill="#f7e3b0"/>
+    <path id="stem" d="M35 42 Q42 69 31 96 Q26 109 34 117 Q46 126 65 118 Q74 114 73 103 Q68 75 68 43 Z" fill="#f7e3b0"/>
+    <path id="apron-neck" d="M40 81 Q47 90 62 83 L65 95 L38 96 Z" fill="#47766b"/>
+    <path id="apron-tie" d="M35 96 L24 99 L25 104 L36 102 M68 97 L76 98 L73 104 L69 102" fill="#47766b"/>
+    <path id="apron" d="M42 87 Q50 92 62 87 L63 99 Q64 108 70 115 Q57 125 34 116 Q40 106 40 98 Z" fill="#f5f0dc"/>
+    <path id="apron-pocket" d="M44 103 L60 104 L59 113 Q50 117 44 111 Z" fill="#47766b"/>
+    <path id="left-arm" d="M34 83 Q24 82 20 93 L26 99 Q33 91 36 95" fill="#f7e3b0"/>
+    <g id="oven-mitt">
+      <path d="M24 91 Q23 83 17 84 Q13 85 13 92 L13 95 Q9 89 5 92 Q2 96 7 101 L13 106 Q15 113 23 111 L30 103 Z" fill="#47766b"/>
+      <path d="M23 99 L31 104 L27 112 L18 107 Z" fill="#f5f0dc"/>
+      <path d="M15 92 L19 100" stroke="#f5f0dc"/>
+    </g>
+  </g>
+  <g id="head-top">
+    <path id="cap" d="M7 46 Q12 27 29 16 Q42 6 58 10 Q79 15 88 34 Q91 40 94 45 Q81 55 51 55 Q22 55 7 46 Z" fill="#bf4b3f"/>
+    <g id="cap-spots" fill="#f5f0dc" stroke="none">
+      <path d="M20 34 Q22 24 31 23 Q38 24 34 31 Q29 36 20 34 Z"/>
+      <path d="M43 14 Q54 12 61 18 Q61 23 54 25 Q44 24 43 14 Z"/>
+      <path d="M64 33 Q67 25 75 29 Q82 33 81 40 Q72 44 64 38 Z"/>
+      <path d="M38 41 Q37 35 43 33 Q49 34 50 40 Q47 46 38 41 Z"/>
+    </g>
+    <path id="cap-underside" d="M7 46 Q29 40 50 45 Q73 49 94 45 Q84 57 56 59 Q24 59 7 46 Z" fill="#c48b42"/>
+    <path id="gills" d="M20 47 L35 52 M33 47 L42 54 M51 48 L53 55 M68 50 L63 55 M82 49 L73 54" stroke-width="1.5"/>
+    <ellipse id="eye-left-white" cx="48" cy="66" rx="7" ry="7.5" fill="#f5f0dc"/>
+    <ellipse id="eye-right-white" cx="66" cy="64.5" rx="5.5" ry="7" fill="#f5f0dc"/>
+    <circle id="eye-left-pupil" class="pupil" cx="51" cy="65" r="2.5" fill="#3c2925" stroke="none"/>
+    <circle id="eye-right-pupil" class="pupil" cx="68" cy="63.5" r="2.3" fill="#3c2925" stroke="none"/>
+    <path id="brow-left" d="M39 56 Q46 55 54 60" stroke-width="3.2"/>
+    <path id="brow-right" d="M61 58 Q68 53 72 55" stroke-width="3.2"/>
+  </g>
+  <g id="head-bottom">
+    <path id="mouth-closed" d="M52 79 Q57 74 63 77" stroke="#3c2925" stroke-width="2.6" opacity="0"/>
+    <ellipse id="mouth-open" cx="57.5" cy="77.5" rx="5.5" ry="4" opacity="1" fill="#3c2925" stroke="#3c2925"/>
+  </g>
+</svg>

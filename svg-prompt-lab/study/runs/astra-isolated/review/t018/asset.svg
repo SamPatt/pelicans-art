@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g stroke="#32283F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <g id="open-handle">
+      <path d="M70 43 C91 31 98 49 91 65 C87 75 78 78 69 72 L71 64 C78 68 83 65 86 58 C91 46 82 44 73 52 Z" fill="#C39A46"/>
+      <path d="M78 45 C91 40 93 53 87 64" fill="none" stroke="#FFECC1" stroke-width="2"/>
+    </g>
+    <g id="curved-spout">
+      <path d="M36 54 C23 57 18 46 15 33 L7 29 C7 49 14 67 31 71 L41 62 Z" fill="#388D8B"/>
+      <path d="M11 36 C13 51 19 61 29 63" fill="none" stroke="#A8D7C7" stroke-width="3.4"/>
+      <path d="M6 28 Q10 24 17 29 L16 34 Q10 35 6 28 Z" fill="#C39A46"/>
+      <path d="M8 28 Q12 27 16 30 Q12 31 8 28" fill="#32283F" stroke="none"/>
+    </g>
+    <g id="squat-pot">
+      <path d="M37 41 C25 47 22 61 27 73 C31 83 44 87 59 85 C73 84 81 76 80 64 C79 51 70 42 61 40 Z" fill="#388D8B"/>
+      <path d="M37 46 C28 57 29 69 36 75 C42 80 49 80 51 77 C39 74 35 62 41 48 Z" fill="#A8D7C7" stroke="none"/>
+      <path d="M69 48 C78 58 79 72 69 78 C64 81 55 82 48 81" fill="none" stroke="#32283F" stroke-width="3"/>
+      <path d="M34 79 Q51 88 71 79 L68 86 Q51 92 37 85 Z" fill="#C39A46"/>
+      <path d="M38 42 Q49 34 62 39 Q72 42 70 47 Q51 53 35 46 Z" fill="#32283F"/>
+      <path d="M35 46 Q52 52 70 47" fill="none" stroke="#C39A46" stroke-width="3.2"/>
+    </g>
+    <g id="escaping-steam" fill="none" stroke="#A8D7C7" stroke-width="3.3">
+      <path d="M67 38 C75 33 68 28 71 23 C73 20 77 20 76 14"/>
+      <path d="M79 35 C85 30 78 26 82 22" stroke-width="2.6"/>
+    </g>
+    <g id="tilted-lid-and-crown" transform="rotate(-13 48 34)">
+      <g id="lid">
+        <path d="M31 36 C34 27 54 24 63 34 L69 38 C62 43 39 45 29 40 Z" fill="#388D8B"/>
+        <path d="M35 34 Q46 28 56 32" fill="none" stroke="#A8D7C7" stroke-width="3"/>
+        <path d="M29 40 Q47 44 69 38" fill="none" stroke="#C39A46" stroke-width="3.4"/>
+      </g>
+      <g id="tiny-crown">
+        <path d="M41 27 L37 15 L44 19 L48 11 L53 19 L60 14 L57 27 Q49 31 41 27 Z" fill="#C39A46"/>
+        <path d="M43 25 Q49 27 55 25" fill="none" stroke="#FFECC1" stroke-width="2.3"/>
+      </g>
+    </g>
+  </g>
+</svg>

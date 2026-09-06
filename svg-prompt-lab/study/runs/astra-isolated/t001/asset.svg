@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="none">
+  <g id="body" stroke="#283D49" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <g id="legs-and-webbed-feet">
+      <path d="M34 119 33 132M56 120 60 131" stroke="#B77939" stroke-width="5"/>
+      <path d="M33 129C28 130 21 133 18 139L29 137 34 141 38 136 44 138C44 134 40 131 36 130Z" fill="#E9B55D"/>
+      <path d="M60 128C56 132 53 136 53 139L63 137 69 141 73 137 83 139C80 134 72 130 66 128Z" fill="#E9B55D"/>
+      <path d="m33 132-4 5m5-4v6m30-7-1 5m3-5 4 6" stroke="#BB813D" stroke-width="1"/>
+    </g>
+    <path id="tail" d="M25 97 12 101 23 103 13 108 30 108Z" fill="#CDD6D0"/>
+    <path id="torso-and-neck" d="M37 45C37 53 31 59 26 68 21 78 21 95 28 106 36 116 56 117 66 104 73 93 71 76 61 66 55 59 57 53 58 45Z" fill="#EEECE0"/>
+    <path id="neck-shadow" d="M50 49C47 64 48 70 57 78L65 72C55 63 56 54 58 47" fill="#D1D7CB" stroke="none"/>
+    <g id="oversized-overalls">
+      <path d="M27 76 36 73 56 73 64 76C69 88 73 107 67 122L50 123 46 113 42 123 24 122C19 108 20 91 27 76Z" fill="#426D80"/>
+      <path d="M31 69 36 70 39 87 32 89Z" fill="#6594A1"/>
+      <path d="m54 70 5 1 3 17-7 1Z" fill="#6594A1"/>
+      <path d="M31 83Q46 87 62 83L61 104Q46 111 30 102Z" fill="#527E8D"/>
+      <path d="m40 91 14 1-1 9q-7 4-13-1Z" fill="#365B6E"/>
+      <path d="m43 92 8 1m-25 24 14 1m13 0 13-1M47 106l-1 7" stroke="#86A8AC" stroke-width="1"/>
+      <circle cx="35" cy="86" r="1.7" fill="#E9BE65"/>
+      <circle cx="58" cy="87" r="1.7" fill="#E9BE65"/>
+      <path d="M58 106h7v6h-7Z" fill="#DDB86A" stroke-width="1"/>
+    </g>
+    <g id="free-wing">
+      <path d="M28 67C19 68 14 80 13 88 12 97 17 104 22 105L21 96Q24 100 26 99L25 91Q29 94 30 91C27 81 33 73 28 67Z" fill="#EEECE0"/>
+      <path d="M23 77q-6 9-2 19m4-15q-3 4 0 10" stroke="#A1B2AB" stroke-width="1.2"/>
+    </g>
+    <g id="coiled-cable" stroke="#263841" stroke-width="2.8">
+      <ellipse cx="77" cy="98" rx="14" ry="19"/>
+      <ellipse cx="77" cy="98" rx="10" ry="16"/>
+      <ellipse cx="77" cy="98" rx="6" ry="13"/>
+      <path d="M68 82C61 88 67 108 77 116 83 122 85 122 87 117L87 108"/>
+      <path d="M76 80q6-9 10-4l4 8"/>
+      <path d="m86 108 3 0 0-6-3 0Z" fill="#739397" stroke-width="1.4"/>
+      <path d="m88 83 4-1 2 6-4 1Z" fill="#739397" stroke-width="1.4"/>
+      <path d="m70 82 11 1" stroke="#D8AC5B" stroke-width="4"/>
+    </g>
+    <path id="holding-wing" d="M63 69C68 69 71 72 72 77L79 76Q84 79 80 83L73 85C66 86 59 78 63 69Z" fill="#EEECE0"/>
+    <path d="m74 79 6 1m-9 0 3 3" stroke="#A1B2AB" stroke-width="1.1"/>
+    <g id="belt-radio">
+      <path d="M26 96 29 96 29 105 26 105Z" fill="#233D49"/>
+      <path d="m27 96-1-7"/>
+      <path d="M30 63C19 71 32 81 26 90" stroke-width="1"/>
+    </g>
+  </g>
+  <g id="head-top" stroke="#283D49" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path id="head" d="M36 52C30 46 29 33 33 25L30 19 39 22 38 16Q46 18 49 23C61 21 68 30 66 41L58 55Z" fill="#EEECE0"/>
+    <path id="far-face-shadow" d="M58 25Q70 30 65 44L60 47Q64 32 58 25Z" fill="#D1D7CB" stroke="none"/>
+    <ellipse id="eye-left-white" cx="44" cy="34" rx="5.8" ry="6.4" fill="#FFFDF0"/>
+    <ellipse id="eye-right-white" cx="57" cy="33" rx="4.7" ry="5.8" fill="#FFFDF0"/>
+    <circle id="eye-left-pupil" class="pupil" cx="46" cy="35" r="2.3" fill="#283D49" stroke="none"/>
+    <circle id="eye-right-pupil" class="pupil" cx="58.5" cy="34" r="2" fill="#283D49" stroke="none"/>
+    <path id="brow-left" d="M38 27Q43 25 49 28" stroke-width="2.2"/>
+    <path id="brow-right" d="M53 26Q57 24 61 26" stroke-width="2.2"/>
+    <path id="tired-eye-folds" d="M40 42q4 2 7 0m8-2 4 0" stroke="#A1B2AB" stroke-width="1"/>
+    <g id="headset">
+      <path d="M30 36C24 15 56 9 64 29" stroke="#283D49" stroke-width="4"/>
+      <path d="M32 24Q45 12 57 23" stroke="#729395" stroke-width="1.4"/>
+      <rect x="27" y="33" width="8" height="13" rx="4" fill="#355864"/>
+      <path d="M30 37v5" stroke="#89A8A5"/>
+    </g>
+  </g>
+  <g id="head-bottom" stroke="#283D49" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path id="throat-pouch" d="M47 43 92 42C88 48 75 62 63 62 52 62 45 54 45 46Z" fill="#E2BA76"/>
+    <path id="pouch-fold" d="M51 48Q54 61 65 59" stroke="#BF914F" stroke-width="1.2"/>
+    <path id="long-upper-beak" d="M47 39C59 36 75 36 94 40L95 44 91 45Q70 44 49 46C46 46 45 42 47 39Z" fill="#F1CD77"/>
+    <path id="nostril" d="m57 40 4-.2" stroke="#AD8246" stroke-width="1.3"/>
+    <path id="mouth-closed" d="M49 44Q69 46 89 44" stroke="#5C4A3A" stroke-width="1.3"/>
+    <ellipse id="mouth-open" cx="69" cy="44.5" rx="20" ry="2.7" fill="#513F38" stroke="#5C4A3A" opacity="0"/>
+    <path id="proud-mouth-corner" d="M48 44q0 3 3 4" stroke="#5C4A3A" stroke-width="1.2"/>
+    <g id="headset-microphone">
+      <path d="M31 44Q31 55 45 53" stroke-width="1.6"/>
+      <rect x="42" y="50.5" width="7" height="4" rx="2" fill="#283D49" stroke-width="1"/>
+    </g>
+  </g>
+</svg>

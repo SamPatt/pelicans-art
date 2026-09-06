@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g id="carrying-handle" fill="none" stroke="#342b29" stroke-width="5" stroke-linejoin="round">
+    <path d="M40 23V12Q40 7 45 7H55Q60 7 60 12V23"/>
+  </g>
+  <g id="wooden-case" stroke="#382a28" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M19 30L50 19L81 30V90Q81 94 77 94H23Q19 94 19 90Z" fill="#b65f38"/>
+    <path d="M73 32H81V90Q81 94 77 94H73Z" fill="#88412f" stroke="none"/>
+    <path d="M24 37V78M28 38V49M24 84V89" stroke="#d8894a" stroke-width="2" stroke-linecap="round"/>
+    <path d="M14 31L48 17Q50 16 52 17L86 31L82 37L50 24L18 37Z" fill="#37645f"/>
+    <path d="M18 31L50 19L82 31" fill="none" stroke="#78a49a" stroke-width="2"/>
+  </g>
+  <g id="cuckoo-doorway" stroke="#382a28" stroke-width="2">
+    <path d="M38 51V40A12 12 0 0 1 62 40V51Z" fill="#342c2b"/>
+    <path d="M38 37L29 33V49L38 52Z" fill="#d78a50"/>
+    <path d="M62 37L71 33V49L62 52Z" fill="#d78a50"/>
+    <path d="M32 37V47M68 37V47" stroke="#a95734" stroke-width="1.5"/>
+    <path d="M36 52H64" stroke="#e3a065" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <g id="furious-cuckoo" stroke="#382a28" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M45 44L37 36L39 45L35 43L41 51L48 50M55 44L64 35L62 45L66 42L60 51L53 50" fill="#cf673c"/>
+    <path d="M42 42Q40 34 47 33L46 29L50 32L54 30L55 34Q61 35 59 43L58 49Q56 54 50 54Q42 54 42 48Z" fill="#efb650"/>
+    <path d="M45 49Q50 46 55 49L54 53H46Z" fill="#ffe0a1" stroke="none"/>
+    <path d="M43 39L49 41M57 39L52 41" stroke-width="2.4"/>
+    <path d="M46 42V43M54 42V43" stroke-width="2.2"/>
+    <path d="M48 45L58 44L51 49Z" fill="#e66032"/>
+    <path d="M45 53L43 55M48 53L47 55M53 53L53 55M56 52L58 54" stroke="#80452d"/>
+  </g>
+  <g id="clock-face">
+    <circle cx="50" cy="68" r="15" fill="#f2bf68" stroke="#382a28" stroke-width="2.4"/>
+    <circle cx="50" cy="68" r="12.5" fill="#fff1c9"/>
+    <g id="hour-marks" stroke="#695044" stroke-width="1.7" stroke-linecap="round">
+      <path d="M50 57V59M50 77V79M39 68H41M59 68H61M42.2 60.2L43.5 61.5M56.5 74.5L57.8 75.8M42.2 75.8L43.5 74.5M56.5 61.5L57.8 60.2"/>
+    </g>
+    <g id="clock-hands" stroke="#354c49" stroke-width="2.4" stroke-linecap="round">
+      <path d="M50 68L46 64M50 68L54 60"/>
+      <circle cx="50" cy="68" r="1.5" fill="#354c49" stroke="none"/>
+    </g>
+  </g>
+  <g id="punch-card-slot" stroke-linejoin="round">
+    <rect x="27" y="84" width="46" height="7" rx="1.7" fill="#b8c5ba" stroke="#382a28" stroke-width="1.8"/>
+    <path d="M31 87H69V89H31Z" fill="#262b2a"/>
+    <path d="M33 85.5H67" stroke="#edf0d6" stroke-width="1"/>
+    <circle cx="29.5" cy="87.5" r="0.7" fill="#526560"/>
+    <circle cx="70.5" cy="87.5" r="0.7" fill="#526560"/>
+  </g>
+</svg>

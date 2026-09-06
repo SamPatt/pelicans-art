@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <defs>
+    <linearGradient id="wall-color" x2="0" y2="1"><stop stop-color="#c8d5c9"/><stop offset="1" stop-color="#e6dfbc"/></linearGradient>
+    <linearGradient id="floor-color" x2="0" y2="1"><stop stop-color="#aaa995"/><stop offset="1" stop-color="#cdc4a5"/></linearGradient>
+    <clipPath id="window-opening"><rect x="154" y="33" width="99" height=" sixty"/></clipPath>
+  </defs>
+  <g id="background">
+    <path fill="url(#wall-color)" d="M0 0H400V172H0Z"/>
+    <path fill="#526b67" d="M0 0H400V10H0Z"/>
+    <path fill="#a1b2a6" d="M0 14H400V17H0Z"/>
+    <path fill="#a7b5a4" d="M11 19H15V158H11ZM385 19H389V158H385Z"/>
+    <path d="M15 113H385" stroke="#8b9f92" stroke-width="2"/>
+    <path fill="#8b9b8d" d="M0 158H400V172H0Z"/>
+    <path fill="#4d6963" d="M0 163H400V168H0Z"/>
+    <g id="rear-window" stroke="#344d50" stroke-linejoin="round">
+      <rect x="144" y="23" width="119" height="86" rx="15" fill="#889a8f" stroke-width="3"/>
+      <rect x="150" y="29" width="107" height="73" rx="10" fill="#dfd6b4" stroke-width="2"/>
+      <rect x="155" y="34" width="97" height="63" rx="7" fill="#1c3543" stroke-width="2"/>
+      <path d="M157 86L170 79 180 82 195 78 214 84 231 79 250 83V94H157Z" fill="#999d96" stroke="none"/>
+      <path d="M159 89L173 86 183 90M221 89L232 86 246 91" fill="none" stroke="#6b7775" stroke-width="2"/>
+      <g id="earth" stroke="none">
+        <circle cx="211" cy="58" r="18" fill="#71c3cb"/>
+        <path d="M202 43L211 40 215 44 210 47 212 52 204 54 204 59 198 58 194 53 197 47Z" fill="#d1dbab"/>
+        <path d="M215 57L224 54 228 59 226 67 218 73 215 69 217 64 211 62Z" fill="#bdcc94"/>
+        <path d="M204 41Q229 46 222 69Q218 75 211 76Q236 70 226 48Q218 37 204 41Z" fill="#337c95"/>
+        <path d="M197 49Q209 43 221 50M195 62Q207 57 218 61M205 69L211 70" stroke="#e4f0d6" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+      <path d="M169 43H172M239 47H241M183 66H185M237 71H239" stroke="#ede6c6" stroke-width="1.5"/>
+      <path d="M153 105H256" stroke="#eff0cc" stroke-width="2"/>
+      <g fill="#4d6865" stroke="none"><circle cx="150" cy="27" r="2"/><circle cx="257" cy="27" r="2"/><circle cx="149" cy="101" r="2"/><circle cx="258" cy="101" r="2"/></g>
+    </g>
+    <g id="bureaucratic-wall-fixtures">
+      <rect x="32" y="31" width="71" height="42" rx="2" fill="#708980"/>
+      <rect x="36" y="35" width="63" height="34" fill="#e9dfb5"/>
+      <path d="M41 42H55V59H41ZM61 42H77V50H61ZM81 42H93V64H81ZM61 55H76V64H61Z" fill="#adab88"/>
+      <circle cx="48" cy="47" r="2" fill="#e3d7ad"/>
+      <circle cx="337" cy="43" r="18" fill="#486660"/>
+      <circle cx="337" cy="43" r="14" fill="#ddd8b7"/>
+      <path d="M337 31V34M349 43H346M337 55V52M325 43H328M337 43L332 36M337 43L344 41" stroke="#526d66" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="337" cy="43" r="2" fill="#ba6348"/>
+    </g>
+  </g>
+  <g id="midground" stroke="#3d5752" stroke-width="2.5" stroke-linejoin="round">
+    <g id="waiting-chair-plastic">
+      <path d="M30 139L27 162M54 138L58 162" fill="none"/>
+      <path d="M27 111Q41 106 55 111L54 134H29Z" fill="#c8764e"/>
+      <path d="M31 116Q41 113 51 116M32 121H50" stroke="#e6a571" stroke-width="2" fill="none"/>
+      <path d="M28 132L23 140Q40 146 59 140L54 132Z" fill="#db8a59"/>
+      <path d="M24 140V144H59V140" fill="#ac603f"/>
+    </g>
+    <g id="waiting-chair-upholstered">
+      <path d="M73 143L71 162M102 143L105 162" fill="none"/>
+      <rect x="72" y="100" width="32" height="37" rx="7" fill="#7f9990"/>
+      <path d="M77 106Q89 103 99 107V128H77Z" fill="#9aafa0" stroke-width="1.5"/>
+      <path d="M84 111L87 115 84 119M95 120L91 124" fill="none" stroke="#67857b" stroke-width="1"/>
+      <rect x="69" y="134" width="39" height="11" rx="4" fill="#9cafa0"/>
+      <path d="M70 139V125H66M107 139V125H111" fill="none"/>
+    </g>
+    <g id="waiting-chair-folding">
+      <path d="M121 113L143 162M145 119L120 162" fill="none"/>
+      <path d="M121 112L141 109 145 125 126 128Z" fill="#dcbd70"/>
+      <path d="M120 138L142 135 149 140 125 144Z" fill="#d7bb79"/>
+      <path d="M127 117L139 115" stroke="#f1daa0" stroke-width="2"/>
+      <circle cx="133" cy="140" r="2" fill="#485b53" stroke="none"/>
+    </g>
+    <g id="service-counter">
+      <path d="M244 126H380V166H244Z" fill="#697e6b"/>
+      <path d="M252 133H371V158H252Z" fill="#b6ba94"/>
+      <path d="M258 137H365V154H258Z" fill="#ced0a7" stroke="#89977a" stroke-width="1.5"/>
+      <path d="M244 157H380V166H244Z" fill="#4d675b" stroke="none"/>
+      <path d="M237 117H375L384 125H237Z" fill="#e3d2a0"/>
+      <path d="M237 125H384V130H237Z" fill="#8f9572"/>
+      <path d="M243 120H371" stroke="#f8e7b4" stroke-width="2"/>
+      <g id="counter-service-bell">
+        <path d="M347 114Q347 106 355 106Q363 106 363 114Z" fill="#bcae72"/>
+        <path d="M345 115H365" stroke-width="3"/>
+        <path d="M355 106V103"/>
+        <path d="M351 110Q353 107 356 108" stroke="#f4dfa0" stroke-width="1.5" fill="none"/>
+      </g>
+      <g id="rubber-stamp">
+        <path d="M285 115H305V118H285Z" fill="#384e4c"/>
+        <path d="M289 113L293 109V105Q290 102 293 99Q298 96 300 101L298 109 301 113Z" fill="#b3684c"/>
+      </g>
+    </g>
+    <g id="floating-paper-tray" transform="rotate(-7 294 84)">
+      <path d="M268 81H314L324 91H278Z" fill="#bd965f"/>
+      <path d="M270 78L309 76 317 85 279 89Z" fill="#f4e4b9" stroke-width="1.5"/>
+      <path d="M270 74L309 72 318 81 280 85Z" fill="#ece1c2" stroke-width="1.5"/>
+      <path d="M273 68L311 68 312 78 280 80Z" fill="#faf0d0" stroke-width="1.5"/>
+      <path d="M278 83V94H324V86L309 86V89H290V86Z" fill="#859e8b"/>
+      <path d="M268 81V88L278 94V83Z" fill="#657c6c"/>
+    </g>
+    <path d="M278 100L276 106M320 99L324 104" fill="none" stroke="#879d8b" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  <g id="foreground">
+    <path id="continuous-staging-floor" d="M0 169H400V225H0Z" fill="url(#floor-color)"/>
+    <path d="M0 170H400" stroke="#d4caae" stroke-width="2"/>
+  </g>
+</svg>

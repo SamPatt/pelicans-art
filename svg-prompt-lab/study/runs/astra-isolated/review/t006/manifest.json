@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Mushroom chef",
+  "model": "GPT-6 Astra",
+  "kind": "artwork",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 4293,
+      "sha256": "6b246c51af23c684410a19112835e3036aa02b759813bb570aa47d5c7a26b409"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 116654,
+      "sha256": "5b9101af98f44ec7269b67d5c0b3d869742491e7ba0dfb14bd02752379667f7f",
+      "width": 683,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

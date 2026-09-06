@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Underwater laundromat",
+  "model": "GPT-6 Astra",
+  "kind": "artwork",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 4285,
+      "sha256": "3b76897b0ab401e14e91bc81b8ffd4a93077529a89332ae6ed104c2b53d6900d"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 81497,
+      "sha256": "d95d92322b69f45be6c552119ee8a0dccd1c25a02c963aaf9e3fee9d70383015",
+      "width": 1024,
+      "height": 576
+    }
+  ],
+  "warnings": []
+}

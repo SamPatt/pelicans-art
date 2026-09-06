@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g id="open-handle" stroke="#352640" stroke-width="2.4" stroke-linejoin="round">
+    <path d="M68 47 C91 32 99 48 94 65 C91 78 81 82 69 73 L72 65 C82 72 87 67 89 59 C93 46 85 44 73 55 Z" fill="#76538e"/>
+    <path d="M78 47 C89 42 94 47 93 56" fill="none" stroke="#c5a5d5" stroke-width="1.8" stroke-linecap="round"/>
+  </g>
+  <g id="raised-curved-spout" stroke="#352640" stroke-width="2.4" stroke-linejoin="round">
+    <path d="M37 59 C27 61 22 55 18 45 C15 38 11 35 6 32 L7 39 C14 47 13 67 26 75 L39 76 Z" fill="#9675ad"/>
+    <path d="M31 69 C20 66 21 48 11 38" fill="none" stroke="#cbb5dd" stroke-width="2"/>
+    <ellipse cx="7.5" cy="34" rx="4.3" ry="2.2" transform="rotate(35 7.5 34)" fill="#302334"/>
+  </g>
+  <g id="squat-ceramic-body" stroke="#352640" stroke-width="2.4" stroke-linejoin="round">
+    <path d="M34 47 C24 52 23 66 27 75 C33 88  sixty 88  seventy 80" fill="none" stroke="none"/>
+    <path d="M34 46 C27 52 24 61 27 73 C30 85 46 89 61 86 C76 84 82 75 79 63 C78 54 71 47 64 44 Z" fill="#9d79b7"/>
+    <path d="M66 47 C76 63 75 77 61 82 C49 86 35 81 29 75 C34 88 57 90 71 82 C85 74 81 57 66 47 Z" fill="#76538e" stroke="none"/>
+    <path d="M35 57 C31 63 31 68 34 72" fill="none" stroke="#e6d7ed" stroke-width="3.3" stroke-linecap="round"/>
+    <path d="M35 80 Q54 90 70 78" fill="none" stroke="#e6b64e" stroke-width="2.6" stroke-linecap="round"/>
+  </g>
+  <g id="open-neck" stroke="#352640" stroke-width="2">
+    <ellipse cx="51" cy="47" rx="18" ry="6.2" fill="#d9b968"/>
+    <ellipse cx="51" cy="46.6" rx="14" ry="3.8" fill="#332737"/>
+  </g>
+  <g id="escaping-steam" fill="none" stroke="#b8acbf" stroke-width="2.5" stroke-linecap="round">
+    <path d="M64 43 C76 37 61 32 72 24"/>
+    <path d="M74 40 C85 34 74 30 81 23"/>
+    <path d="M29 38 C20 31 32 28 27 20"/>
+  </g>
+  <g id="tilted-lid" transform="rotate(-14 49 36)" stroke="#352640" stroke-width="2.1" stroke-linejoin="round">
+    <path d="M31 38 Q34 29 48 29 Q61 29 66 38 Z" fill="#ac8cc0"/>
+    <ellipse cx="48.5" cy="38" rx="19" ry="4" fill="#c4a3d4"/>
+    <path d="M31 39 Q49 45 67 39" fill="none" stroke="#ecc466" stroke-width="2.3"/>
+  </g>
+  <g id="tiny-royal-crown" transform="rotate(-14 49 28)" stroke="#64462a" stroke-width="1.6" stroke-linejoin="round">
+    <path d="M42 29 L39 18 L45 22 L49 14 L53 22 L59 18 L57 29 Q49 32 42 29 Z" fill="#f3c658"/>
+    <path d="M42 27 Q49 30 57 27 L57 30 Q49 33 42 30 Z" fill="#d99e39"/>
+    <path d="M49 23 L51 26 L49 29 L47 26 Z" fill="#963d69" stroke="none"/>
+    <circle cx="39" cy="17.5" r="1.5" fill="#ffdf81"/>
+    <circle cx="49" cy="13.5" r="1.5" fill="#ffdf81"/>
+    <circle cx="59" cy="17.5" r="1.5" fill="#ffdf81"/>
+  </g>
+</svg>

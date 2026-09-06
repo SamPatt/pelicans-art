@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Untitled SVG",
+  "model": "Unknown",
+  "kind": "artwork",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 5075,
+      "sha256": "d425c21d326734a42d563f808f610d1569e877616c0a32bdd0b6078a7148c4db"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 119357,
+      "sha256": "2499043d7f26cb3d11b3c146be5075c02d40c4357acff09178287de21e2dd6ef",
+      "width": 683,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

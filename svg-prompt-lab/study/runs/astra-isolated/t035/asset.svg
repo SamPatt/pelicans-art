@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <defs>
+    <linearGradient id="wall-color" x2="0" y2="1"><stop stop-color="#154451"/><stop offset="1" stop-color="#398486"/></linearGradient>
+    <linearGradient id="ocean-color" x2="0.7" y2="1"><stop stop-color="#63d5d0"/><stop offset="1" stop-color="#125c80"/></linearGradient>
+    <linearGradient id="enamel" x2="1" y2="1"><stop stop-color="#f4e2b9"/><stop offset="1" stop-color="#b6c6ac"/></linearGradient>
+    <linearGradient id="glass" x2="0.8" y2="1"><stop stop-color="#123f55"/><stop offset="1" stop-color="#377e89"/></linearGradient>
+    <clipPath id="port-glass"><circle cx="301" cy="92" r="51"/></clipPath>
+  </defs>
+  <g id="background">
+    <path fill="url(#wall-color)" d="M0 0H400V174H0Z"/>
+    <g id="wall-panels" stroke="#9cd0b2" stroke-opacity=".16" fill="none">
+      <path d="M4 47H396M4 99H238M365 99H396M4 150H396M76 4V47M174 4V47M267 4V33M355 4V47M34 48V98M130 48V98M219 48V98M77 100V149M174 100V149M376 100V149"/>
+    </g>
+    <g id="porthole">
+      <circle cx="301" cy="95" r="65" fill="#113e49" opacity=".6"/>
+      <circle cx="301" cy="92" r="64" fill="#ca9963" stroke="#153f4c" stroke-width="3"/>
+      <circle cx="301" cy="92" r="58" fill="#f2cb8a" stroke="#936947" stroke-width="2"/>
+      <circle cx="301" cy="92" r="52" fill="url(#ocean-color)" stroke="#1c5361" stroke-width="3"/>
+      <g clip-path="url(#port-glass)">
+        <path d="M260 35L283 36L261 144L242 143ZM301 32L311 34L289 145L280 145Z" fill="#c1f6d8" opacity=".18"/>
+        <path d="M246 138Q279 116 305 136T362 127V152H245Z" fill="#1d7083"/>
+        <path d="M326 145Q316 124 326 104Q337 126 331 145M338 149Q333 130 345 116Q349 135 343 150" fill="#205f76"/>
+        <g id="curious-fish" stroke="#854f34" stroke-width="1.5" stroke-linejoin="round">
+          <path d="M316 88L337 75L334 100L315 98Z" fill="#ef9b52"/>
+          <path d="M289 79Q296 65 309 76L310 83M292 103L305 111L313 100" fill="#eaa55d"/>
+          <path d="M276 89Q286 72 307 79Q321 83 321 92Q320 104 301 106Q284 106 276 96L271 93Z" fill="#ffd381"/>
+          <path d="M302 88Q310 88 314 95L303 99Z" fill="#edaa5c"/>
+          <path d="M285 101Q292 91 287 84" fill="none" stroke="#dca65f"/>
+          <ellipse cx="282" cy="85" rx="6" ry="7" fill="#fff4d5"/>
+          <ellipse cx="280" cy="85" rx="2.5" ry="3.5" fill="#173c4a" stroke="none"/>
+          <path d="M272 93L278 94" fill="none"/>
+        </g>
+        <g fill="none" stroke="#b8f5df" stroke-width="1.3" opacity=".8"><circle cx="266" cy="80" r="3"/><circle cx="271" cy="66" r="4"/><circle cx="264" cy="53" r="2"/></g>
+      </g>
+      <g fill="#876448" stroke="#ffe0a5" stroke-width="1"><circle cx="301" cy="34" r="3"/><circle cx="342" cy="51" r="3"/><circle cx="359" cy="92" r="3"/><circle cx="342" cy="133" r="3"/><circle cx="301" cy="150" r="3"/><circle cx="260" cy="133" r="3"/><circle cx="243" cy="92" r="3"/><circle cx="260" cy="51" r="3"/></g>
+    </g>
+  </g>
+  <g id="midground">
+    <g id="overhead-pipe" fill="none" stroke-linejoin="round"><path d="M8 158V24Q8 14 18 14H217" stroke="#113f49" stroke-width="10"/><path d="M8 158V24Q8 14 18 14H217" stroke="#729d96" stroke-width="6"/><path d="M8 40H17M8 139H17" stroke="#b5c0a1" stroke-width="4"/></g>
+    <g id="hanging-socks" stroke-linejoin="round">
+      <path d="M26 23Q120 46 221 23" fill="none" stroke="#e7c697" stroke-width="2"/>
+      <path d="M51 30L68 33L63 55L72 60Q75 69 67 71L50 65Q45 63 47 55Z" fill="#dd8870" stroke="#153f49" stroke-width="2"/>
+      <path d="M50 38L65 41M49 44L64 47" stroke="#f2c29a" stroke-width="3"/>
+      <path d="M104 37L119 37L120 58L132 62Q137 69 130 73L110 69Q105 68 105 62Z" fill="#eee1b6" stroke="#153f49" stroke-width="2"/>
+      <path d="M105 44H119M107 59L120 58" stroke="#62a6a3" stroke-width="3"/>
+      <path d="M165 34L181 31L185 53L198 56Q203 64 195 67L176 65Q170 65 170 57Z" fill="#8fbfa8" stroke="#153f49" stroke-width="2"/>
+      <path d="M168 41L182 38M170 47L183 44" stroke="#e5d8a3" stroke-width="3"/>
+      <path d="M55 26L54 36M109 32V42M172 28L174 38" stroke="#bd8957" stroke-width="4"/>
+    </g>
+    <g id="washing-machines" stroke="#183f48" stroke-width="2">
+      <rect x="22" y="78" width="186" height="86" rx="5" fill="#183f48" opacity=".5" stroke="none"/>
+      <rect x="20" y="74" width="90" height="87" rx="5" fill="url(#enamel)"/>
+      <rect x="114" y="74" width="90" height="87" rx="5" fill="url(#enamel)"/>
+      <path d="M21 94H109M115 94H203" fill="none" stroke="#819e90"/>
+      <rect x="28" y="81" width="22" height="6" rx="2" fill="#466e70" stroke="none"/>
+      <rect x="122" y="81" width="22" height="6" rx="2" fill="#466e70" stroke="none"/>
+      <circle cx="92" cy="84" r="5" fill="#dbb573"/><circle cx="186" cy="84" r="5" fill="#dbb573"/>
+      <path d="M92 81V84M186 81V84" stroke="#755e46"/>
+      <g id="left-machine-door"><circle cx="65" cy="125" r="28" fill="#749f9a"/><circle cx="65" cy="125" r="22" fill="url(#glass)"/><path d="M46 130Q56 125 65 132T84 130Q79 146 64 146Q51 145 46 130Z" fill="#7fbfb0" stroke="none"/><path d="M54 132L58 119L67 122L64 133L70 138L61 141Z" fill="#eac486" stroke="none"/><path d="M48 119Q52 110 62 108" fill="none" stroke="#c0e2cc" stroke-width="3" stroke-linecap="round"/><rect x="85" y="120" width="6" height="11" rx="2" fill="#e0c795"/></g>
+      <g id="right-machine-door"><circle cx="159" cy="125" r="28" fill="#749f9a"/><circle cx="159" cy="125" r="22" fill="url(#glass)"/><path d="M140 131Q150 136 158 130T179 130Q173 147 159 147Q145 146 140 131Z" fill="#7fbfb0" stroke="none"/><path d="M150 126Q159 118 172 130L163 140L151 136Z" fill="#d78873" stroke="none"/><path d="M142 119Q146 110 156 108" fill="none" stroke="#c0e2cc" stroke-width="3" stroke-linecap="round"/><rect x="179" y="120" width="6" height="11" rx="2" fill="#e0c795"/></g>
+    </g>
+    <path id="baseboard" d="M3 163H397V172H3Z" fill="#103e49"/>
+    <path d="M4 164H396" stroke="#81b3a1" stroke-width="2"/>
+  </g>
+  <g id="foreground">
+    <path id="actor-floor" d="M0 172H400V225H0Z" fill="#8eada0"/>
+    <path d="M3 190H397M3 214H397M77 173L54 223M175 173L170 223M273 173L286 223M371 173L397 217" fill="none" stroke="#658e87" stroke-width="1" opacity=".55"/>
+  </g>
+</svg>

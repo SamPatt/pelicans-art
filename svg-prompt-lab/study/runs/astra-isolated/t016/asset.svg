@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="porcelain" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fff0cc"/>
+      <stop offset=".48" stop-color="#eed8a1"/>
+      <stop offset="1" stop-color="#b58b54"/>
+    </linearGradient>
+    <linearGradient id="royalPurple" x1="0" y1="0" x2="1" y2=".8">
+      <stop stop-color="#9062ac"/>
+      <stop offset="1" stop-color="#442653"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2=".6" y2="1">
+      <stop stop-color="#fff0a0"/>
+      <stop offset=".55" stop-color="#e2b74c"/>
+      <stop offset="1" stop-color="#aa722b"/>
+    </linearGradient>
+  </defs>
+  <g stroke="#372a39" stroke-width="2.1" stroke-linejoin="round" stroke-linecap="round">
+    <g id="open-handle">
+      <path d="M71 44C81 32 94 39 94 53C94 70 86 80 72 75L73 66C81 70 86 61 86 53C86 44 82 43 76 51Z" fill="url(#gold)"/>
+      <path d="M80 43C88 38 91 48 90 55" fill="none" stroke="#fff0b0" stroke-width="1.6"/>
+    </g>
+    <g id="long-raised-spout">
+      <path d="M35 62C25 66 19 59 16 49C13 39 12 34 7 31L6 26C18 24 22 32 25 42C27 49 30 48 38 45Z" fill="url(#porcelain)"/>
+      <path d="M7 26C10 24 15 25 18 28L15 32C12 30 9 30 7 31Z" fill="url(#gold)"/>
+      <path d="M8 27C10 26 13 27 15 28" fill="none" stroke-width="1.6"/>
+      <path d="M19 41C22 52 25 57 30 56" fill="none" stroke="#fff6dc" stroke-width="2.5"/>
+    </g>
+    <g id="squat-pot-body">
+      <path d="M35 42C25 46 24 58 27 69C30 81 42 87 57 85C73 84 82 77 82 64C82 53 74 43 65 40Z" fill="url(#porcelain)"/>
+      <path d="M28 61C43 73 68 70 81 59L82 65C81 77 72 83 58 84C44 86 31 81 28 72Z" fill="url(#royalPurple)"/>
+      <path d="M28 61C43 73 68 70 81 59" fill="none" stroke="#d1a14b" stroke-width="3"/>
+      <path d="M33 76C43 84 63 85 74 75" fill="none" stroke="#dfb95e" stroke-width="2"/>
+      <path d="M37 49C33 52 32 56 33 59" fill="none" stroke="#fff9e9" stroke-width="4"/>
+      <path d="M45 74L48 78L51 74L48 70Z" fill="url(#gold)" stroke-width="1.2"/>
+      <path d="M62 73L65 76L68 72L65 69Z" fill="url(#gold)" stroke-width="1.2"/>
+      <path d="M39 42C45 37 60 36 68 41L68 45C58 51 44 51 37 46Z" fill="#916b4a"/>
+      <ellipse cx="53" cy="43" rx="14" ry="4.5" fill="#372a39" stroke="#d5ae61" stroke-width="2.5"/>
+    </g>
+    <g id="escaping-steam" fill="none" stroke="#aebfc5" stroke-width="2.6">
+      <path d="M67 36C78 29 66 24 73 18"/>
+      <path d="M77 36C86 31 78 25 83 22" stroke-width="2"/>
+      <path d="M66 16C62 12 69 9 66 5" stroke-width="2"/>
+    </g>
+    <g id="tilted-lid" transform="rotate(-16 49 32)">
+      <path d="M30 35C31 30 38 26 48 26C58 26 65 30 68 35C59 41 38 42 30 35Z" fill="url(#porcelain)"/>
+      <path d="M30 35C42 39 57 38 68 35L67 39C58 43 39 44 30 39Z" fill="url(#gold)"/>
+      <path d="M37 31C42 28 47 28 51 29" fill="none" stroke="#fff8e5" stroke-width="2.5"/>
+      <path d="M44 25L44 23Q49 20 54 23L54 27Q49 30 44 27Z" fill="url(#royalPurple)"/>
+    </g>
+    <g id="tiny-crown" transform="rotate(-16 48 23)">
+      <path d="M40 24L37 13L44 17L47 9L51 17L58 12L57 24Q49 28 40 24Z" fill="url(#gold)" stroke-width="1.7"/>
+      <path d="M40 22Q49 25 57 22" fill="none" stroke="#9e6b2e" stroke-width="1.2"/>
+      <path d="M47 19L49 17L51 19L49 22Z" fill="#ad385f" stroke-width="1"/>
+      <circle cx="37" cy="12.8" r="1.4" fill="#ffe29a" stroke-width="1"/>
+      <circle cx="47" cy="9" r="1.4" fill="#ffe29a" stroke-width="1"/>
+      <circle cx="58" cy="12" r="1.4" fill="#ffe29a" stroke-width="1"/>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <defs>
+    <linearGradient id="wall-water" x2="0" y2="1"><stop stop-color="#164f67"/><stop offset="1" stop-color="#40908f"/></linearGradient>
+    <linearGradient id="glass-water" x2="0" y2="1"><stop stop-color="#64d6c7"/><stop offset="1" stop-color="#147d99"/></linearGradient>
+    <linearGradient id="floor-color" x2="0" y2="1"><stop stop-color="#d8b889"/><stop offset="1" stop-color="#b78b67"/></linearGradient>
+  </defs>
+  <g id="background">
+    <path fill="url(#wall-water)" d="M0 0h400v225H0z"/>
+    <g id="wall-panel-seams" fill="none" stroke="#123f55" stroke-width="2" opacity=".55">
+      <path d="M4 56h392M4 111h392M81 4v160M206 4v160M384 4v160"/>
+    </g>
+    <g id="wall-rivets" fill="#73ada7">
+      <circle cx="12" cy="15" r="2"/><circle cx="72" cy="15" r="2"/><circle cx="90" cy="15" r="2"/><circle cx="197" cy="15" r="2"/><circle cx="215" cy="15" r="2"/><circle cx="375" cy="15" r="2"/>
+      <circle cx="12" cy="63" r="2"/><circle cx="197" cy="63" r="2"/><circle cx="215" cy="63" r="2"/><circle cx="375" cy="63" r="2"/>
+    </g>
+    <g id="ceiling-pipe" stroke="#102f46" stroke-width="3" stroke-linejoin="round">
+      <path d="M8 11h222q14 0 14 14v19h-10V27q0-6-7-6H8z" fill="#ca9766"/>
+      <path d="M42 7h8v18h-8zm116 0h8v18h-8z" fill="#edc58c"/>
+      <ellipse cx="239" cy="45" rx="9" ry="4" fill="#efc791"/>
+    </g>
+  </g>
+  <g id="midground" stroke="#133c50" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <g id="hanging-socks">
+      <path d="M23 36Q122 59 221 34" fill="none" stroke="#edcc9a" stroke-width="2"/>
+      <path d="m53 42-4 26q-2 8 6 11l14 3q10 1 11-6 0-6-9-7l2-23z" fill="#f4bd7c"/>
+      <path d="m53 46 19 4m-20 4 19 4" fill="none" stroke="#d67866" stroke-width="4"/>
+      <path d="m104 49 2 20-8 3q-8 3-5 10 2 5 10 3l17-7q5-2 4-8l-2-22z" fill="#dfebc7"/>
+      <path d="m105 55 18-1" stroke="#70b6a3" stroke-width="5"/>
+      <path d="m157 46 5 22q1 7 8 6l15-4q8-3 5-9-2-5-11-3l-2-16z" fill="#eaa2a0"/>
+      <path d="m160 51 17-4m-16 11 18-4" stroke="#b86180" stroke-width="3"/>
+      <path d="m58 37-2 12m57-7 1 12m47-14 3 12" stroke="#e2b97e" stroke-width="5"/>
+    </g>
+    <g id="washing-machine-pair">
+      <path d="M18 85q0-5 6-5h160q6 0 6 5v76H18z" fill="#ebdba8"/>
+      <path d="M19 105h170M104 81v79" fill="none"/>
+      <path d="M20 150h169v11H20z" fill="#b99f78" stroke="none"/>
+      <g id="left-machine-controls">
+        <rect x="28" y="89" width="23" height="7" rx="2" fill="#204d5c" stroke-width="2"/>
+        <circle cx="82" cy="93" r="6" fill="#ce8767" stroke-width="2"/>
+        <path d="m82 93 2-3" stroke-width="2"/>
+        <circle cx="62" cy="93" r="2" fill="#6bac8e" stroke="none"/>
+      </g>
+      <g id="right-machine-controls">
+        <rect x="114" y="89" width="23" height="7" rx="2" fill="#204d5c" stroke-width="2"/>
+        <circle cx="170" cy="93" r="6" fill="#ce8767" stroke-width="2"/>
+        <path d="m170 93-2-3" stroke-width="2"/>
+        <circle cx="148" cy="93" r="2" fill="#6bac8e" stroke="none"/>
+      </g>
+      <g id="left-round-door">
+        <circle cx="61" cy="129" r="25" fill="#ca9468"/>
+        <circle cx="61" cy="129" r="19" fill="#235b6b" stroke-width="2"/>
+        <path d="M45 129q8-11 15-1t17 0q-2 19-17 19-13-1-15-18" fill="#65aba4" stroke="none"/>
+        <path d="m54 124 9-7 9 9-6 7-6-4-5 3z" fill="#e9bc90" stroke-width="2"/>
+        <path d="M47 119q4-7 11-7" fill="none" stroke="#c8e7cb" stroke-width="3"/>
+        <rect x="78" y="122" width="7" height="13" rx="3" fill="#f6d9a0" stroke-width="2"/>
+      </g>
+      <g id="right-round-door">
+        <circle cx="147" cy="129" r="25" fill="#ca9468"/>
+        <circle cx="147" cy="129" r="19" fill="#235b6b" stroke-width="2"/>
+        <path d="M130 130q10 10 17 0t17 0q0 16-17 18-13-2-17-18" fill="#65aba4" stroke="none"/>
+        <path d="m144 115 9 4-3 11-8-1-4-8z" fill="#e4a0a0" stroke-width="2"/>
+        <path d="M133 119q4-7 10-7" fill="none" stroke="#c8e7cb" stroke-width="3"/>
+        <rect x="164" y="122" width="7" height="13" rx="3" fill="#f6d9a0" stroke-width="2"/>
+      </g>
+    </g>
+    <g id="large-porthole">
+      <circle cx="298" cy="93" r="62" fill="#133e54" stroke="none"/>
+      <circle cx="296" cy="89" r="60" fill="#d5a16a"/>
+      <circle cx="296" cy="89" r="49" fill="url(#glass-water)"/>
+      <path d="M265 56q11-13 27-13m-31 23 1-3" fill="none" stroke="#c3f3dc" stroke-width="5"/>
+      <g id="porthole-bolts" fill="#805f50" stroke-width="1.5">
+        <circle cx="296" cy="35" r="3"/><circle cx="334" cy="51" r="3"/><circle cx="350" cy="89" r="3"/><circle cx="334" cy="127" r="3"/><circle cx="296" cy="143" r="3"/><circle cx="258" cy="127" r="3"/><circle cx="242" cy="89" r="3"/><circle cx="258" cy="51" r="3"/>
+      </g>
+      <g id="curious-fish">
+        <path d="m317 91 21-14-3 16 4 14-21-7" fill="#e38462"/>
+        <path d="m284 78 12-13 11 16m-23 27 13 10 11-11" fill="#e38462" stroke-width="2"/>
+        <path d="M267 96q-2-18 21-21 25-2 34 20-9 18-30 18-20 0-25-17z" fill="#f4be69"/>
+        <path d="M303 91q12 4 2 12l-8-6z" fill="#d98261" stroke-width="2"/>
+        <circle cx="279" cy="88" r="10" fill="#fff2d3" stroke-width="2"/>
+        <circle cx="275" cy="88" r="4" fill="#153b4d" stroke="none"/>
+        <path d="m270 104-5-2 4-4" fill="none" stroke-width="2"/>
+      </g>
+      <g id="water-bubbles" fill="none" stroke="#c0f1d9" stroke-width="1.5">
+        <circle cx="257" cy="84" r="3"/><circle cx="263" cy="72" r="2"/><circle cx="322" cy="59" r="4"/><circle cx="329" cy="68" r="2"/><circle cx="281" cy="124" r="3"/>
+      </g>
+    </g>
+    <path id="baseboard" d="M3 163h394v7H3z" fill="#163e50" stroke="none"/>
+  </g>
+  <g id="foreground">
+    <path id="continuous-actor-floor" d="M0 169h400v56H0z" fill="url(#floor-color)"/>
+    <path id="floor-back-edge" d="M3 170h394" stroke="#f1d1a0" stroke-width="2"/>
+  </g>
+</svg>

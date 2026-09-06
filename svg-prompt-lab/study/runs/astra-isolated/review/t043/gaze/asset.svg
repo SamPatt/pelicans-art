@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="none" stroke="#283841" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+  <g id="body">
+    <g id="feet" fill="#E7A751">
+      <path d="M32 125 L31 134 Q24 135 21 140 Q27 140 30 139 L31 143 L37 140 Q43 142 46 140 L39 134 L40 125Z"/>
+      <path d="M53 125 L54 134 Q49 138 47 142 L56 140 L60 144 L64 141 L74 141 Q72 138 63 134 L62 124Z"/>
+      <path d="M31 134 L32 138 M39 134 L36 138 M54 134 L57 138 M63 134 L61 139" stroke="#A66C37" stroke-width="1"/>
+    </g>
+    <path id="torso" d="M32 61 Q23 67 22 84 L23 108 Q25 124 44 127 Q66 127 71 110 Q77 84 63 68 L58 54 L39 50Z" fill="#F4EEE0"/>
+    <path id="neck" d="M36 31 Q31 48 34 64 Q33 75 44 79 Q58 83 63 72 Q55 62 55 46Z" fill="#F4EEE0"/>
+    <path d="M39 49 Q37 64 44 69 Q49 72 53 70" stroke="#D0C7B4" stroke-width="2"/>
+    <g id="overalls">
+      <path d="M25 82 L33 85 L34 73 Q45 77 61 75 L65 87 L72 85 L72 109 Q69 119 65 128 Q58 132 50 128 L47 115 L44 128 Q33 132 26 126 L23 107Z" fill="#447B89"/>
+      <path d="M31 66 L37 68 L39 90 L33 91Z M56 67 L62 70 L66 90 L60 90Z" fill="#729CA4"/>
+      <path d="M33 91 L64 90 L62 108 Q49 113 36 107Z" fill="#548895"/>
+      <path d="M39 95 L57 95 L56 104 Q49 108 40 104Z" fill="#3C6A78" stroke="#A0BBC0" stroke-width="1"/>
+      <path d="M44 96 L44 103 M52 96 L52 103" stroke="#52808C" stroke-width="1"/>
+      <circle cx="36" cy="88" r="2" fill="#E8BE6A"/>
+      <circle cx="62" cy="88" r="2" fill="#E8BE6A"/>
+      <path d="M26 119 Q34 122 43 119 M52 120 Q58 123 67 120 M47 115 L48 110" stroke="#2F5D6B"/>
+      <path d="M27 123 Q34 126 43 123 M52 124 L64 125" stroke="#86AAB1" stroke-width="1"/>
+      <path d="M27 102 L31 104 L30 112 L26 111Z" fill="#DBB66D"/>
+    </g>
+    <g id="free-wing" fill="#ECE7D9">
+      <path d="M29 68 Q20 65 17 78 Q14 88 17 103 Q18 108 21 110 L23 98 Q23 106 27 104 L27 93 Q28 99 31 97 Q35 87 30 79"/>
+      <path d="M22 76 Q19 88 21 96 M26 80 Q24 87 26 92" stroke="#B6B6AC" stroke-width="1"/>
+    </g>
+    <g id="coiled-cable" stroke="#26313B" stroke-width="3">
+      <ellipse cx="77" cy="103" rx="15" ry="22"/>
+      <ellipse cx="77" cy="103" rx="11" ry="18"/>
+      <ellipse cx="77" cy="103" rx="7" ry="14"/>
+      <path d="M86 119 Q88 132 78 133 L73 130"/>
+      <path d="M65 89 Q62 94 59 99"/>
+      <path d="M89 99 Q91 112 84 120 M82 88 Q90 98 86 109 M72 88 Q66 97 69 109" stroke="#67737B" stroke-width=".7"/>
+      <path d="M72 127 L67 125 L64 130 L69 133Z" fill="#7D8B90" stroke-width="1.2"/>
+      <path d="M65 129 L62 127" stroke-width="2"/>
+    </g>
+    <g id="holding-wing" fill="#F4EEE0">
+      <path d="M65 72 Q72 72 74 80 L77 84 Q80 80 82 82 L82 88 Q80 94 75 93 Q64 88 61 83"/>
+      <path d="M75 85 L76 90 M79 85 L79 90" stroke="#B6B6AC" stroke-width="1"/>
+    </g>
+  </g>
+  <g id="head-top">
+    <path id="head" d="M32 37 Q27 28 33 18 Q36 11 45 12 L43 7 Q48 8 52 13 L56 10 L56 15 Q66 19 65 32 L59 45 Q46 53 35 44Z" fill="#F4EEE0"/>
+    <path d="M33 25 Q30 14 42 12" stroke="#C5BEAD"/>
+    <g id="eyes">
+      <ellipse id="eye-left-white" cx="43" cy="28" rx="6" ry="7" fill="#FFFDF2"/>
+      <ellipse id="eye-right-white" cx="58" cy="27" rx="4.5" ry="6" fill="#FFFDF2"/>
+      <circle id="eye-left-pupil" class="pupil" cx="45" cy="29.5" r="2.5" fill="#26313B" stroke="none" transform=" translate(2 0)"/>
+      <circle id="eye-right-pupil" class="pupil" cx="59.5" cy="28.5" r="2" fill="#26313B" stroke="none" transform=" translate(2 0)"/>
+      <path d="M37.5 25 Q42 23.5 48.5 26 M54 24 Q58 22.5 62 25" fill="#E0D9C8"/>
+      <path d="M39 37 Q43 39 47 37 M55 35 L59 35.5" stroke="#B5AB96" stroke-width="1"/>
+      <path id="brow-left" d="M37 20 Q42 18 48 20.5" stroke-width="2"/>
+      <path id="brow-right" d="M54 19.5 Q58 18 61 20" stroke-width="2"/>
+    </g>
+    <g id="headset">
+      <path d="M30 33 Q24 12 39 9 Q49 5 59 14" stroke="#283841" stroke-width="4"/>
+      <path d="M29 22 Q28 13 37 10" stroke="#71858C" stroke-width="1.2"/>
+      <rect x="26" y="28" width="9" height="15" rx="4" fill="#354650"/>
+      <path d="M30 31 L30 39" stroke="#7B949A" stroke-width="2"/>
+      <path d="M29 43 Q24 54 28 65" stroke="#283841" stroke-width="1.3"/>
+    </g>
+  </g>
+  <g id="head-bottom">
+    <path id="beak-pouch" d="M47 36 L93 42 Q86 46 74 51 Q62 60 52 55 Q45 51 43 43Z" fill="#DCA65F"/>
+    <path d="M50 43 Q54 54 64 51 Q72 50 83 45" stroke="#BB8048" stroke-width="1"/>
+    <path id="upper-beak" d="M49 33 Q56 31 66 35 L91 40 Q96 41 95 44 L91 46 Q89 43 86 43 L51 44 Q44 42 44 39 Q44 35 49 33Z" fill="#F0C573"/>
+    <path d="M59 35 L83 40" stroke="#FADEA0" stroke-width="1.3"/>
+    <path d="M56 36 L58 36" stroke="#9B7445" stroke-width="1"/>
+    <path id="mouth-closed" d="M49 42 Q68 45 89 42" stroke="#785031" stroke-width="1.4"/>
+    <ellipse id="mouth-open" cx="69" cy="42.75" rx="20" ry="3.5" fill="#624333" stroke="#785031" opacity="0"/>
+    <g id="microphone">
+      <path d="M31 39 Q29 49 44 50" stroke="#354650" stroke-width="2"/>
+      <rect x="42" y="47.5" width="7" height="4" rx="2" fill="#354650"/>
+    </g>
+  </g>
+</svg>

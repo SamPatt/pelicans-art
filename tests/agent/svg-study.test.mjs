@@ -17,19 +17,19 @@ test('SVG study retains failures, renders expression probes, and keeps methods h
  }
  await fs.writeFile(path.join(root,'run.json'),JSON.stringify({mode:'Harness test',limitation:'Fixtures are not generation trials.'}));
  const result=JSON.parse((await run(process.execPath,['svg-prompt-lab/study/evaluate.mjs',name],{timeout:60000})).toString());
- assert.equal(result.planned,42);assert.equal(result.passed,2);assert.equal(result.contractFailed,1);assert.equal(result.renderFailed,1);assert.equal(result.missing,38);
+ assert.equal(result.planned,48);assert.equal(result.passed,2);assert.equal(result.contractFailed,1);assert.equal(result.renderFailed,1);assert.equal(result.missing,44);
  const report=JSON.parse(await fs.readFile(path.join(root,'review/results.json')));assert.ok(report.results.find(r=>r.id==='t001').mouth);assert.equal(await fs.readFile(path.join(root,'t012/asset.svg'),'utf8'),prop.replace('</svg>',''));
  const webRoot=path.join(root,'review');const server=createServer(async(req,res)=>{try{const relative=new URL(req.url,'http://localhost').pathname;const file=path.resolve(webRoot,'.'+relative+(relative==='/'?'index.html':''));if(!file.startsWith(webRoot+path.sep))throw Error('outside');res.setHeader('Content-Type',file.endsWith('.json')?'application/json':file.endsWith('.png')?'image/png':'text/html');res.end(await fs.readFile(file));}catch{res.statusCode=404;res.end();}});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));t.after(()=>new Promise(resolve=>server.close(resolve)));
  const browser=await chromium.launch();t.after(()=>browser.close());const page=await browser.newPage({viewport:{width:390,height:844}});await page.goto(`http://127.0.0.1:${server.address().port}/`);await page.locator('.card').first().waitFor();
- assert.equal(await page.getByText('Minimal contract',{exact:false}).count(),0);assert.equal(await page.locator('body').evaluate(e=>e.scrollWidth<=window.innerWidth),true);
+ assert.equal(await page.getByText('Minimal contract',{exact:false}).count(),0);assert.equal(await page.locator('#notes').isVisible(),false);assert.equal(await page.locator('body').evaluate(e=>e.scrollWidth<=window.innerWidth),true);
  await page.locator('#brief').selectOption('clock');const card=page.locator('.card').filter({has:page.locator('img')}).first();await card.locator('input[type=checkbox]').check();
- await page.locator('#reveal').click();assert.ok(await page.getByText('Minimal contract',{exact:false}).count()>0);await page.locator('#reveal').click();
+ await page.locator('#reveal').click();assert.ok(await page.getByText('Minimal contract',{exact:false}).count()>0);assert.equal(await page.locator('#notes').isVisible(),true);await page.locator('#reveal').click();
  const downloadPromise=page.waitForEvent('download');await page.locator('#export').click();const download=await downloadPromise;const file=await download.path();const ratings=JSON.parse(await fs.readFile(file));assert.equal(ratings.methodsRevealed,false);assert.equal(ratings.methodsEverRevealed,true);assert.ok(Object.values(ratings.ratings).some(r=>r.favorite));
 });
 
 test('the frozen study is balanced and every dispatch prompt matches its recorded hash',async()=>{
  const root=path.resolve('svg-prompt-lab/study'),study=JSON.parse(await fs.readFile(path.join(root,'study.json')));
- assert.equal(study.briefs.length,6);assert.equal(study.methods.length,5);assert.equal(study.trials.length,42);assert.equal(new Set(study.dispatchOrder).size,42);
- for(const b of study.briefs){const trials=study.trials.filter(t=>t.briefId===b.id);assert.equal(trials.length,7);assert.equal(new Set(trials.filter(t=>t.phase==='first-pass').map(t=>t.methodId)).size,5);const revision=trials.find(t=>t.phase==='revision');assert.equal(trials.find(t=>t.id===revision.parent).methodId,'minimal');}
+ assert.equal(study.briefs.length,6);assert.equal(study.methods.length,6);assert.equal(study.trials.length,48);assert.equal(new Set(study.dispatchOrder).size,48);
+ for(const b of study.briefs){const trials=study.trials.filter(t=>t.briefId===b.id);assert.equal(trials.length,8);assert.equal(new Set(trials.filter(t=>t.phase==='first-pass').map(t=>t.methodId)).size,6);const revision=trials.find(t=>t.phase==='revision');assert.equal(trials.find(t=>t.id===revision.parent).methodId,'agent-current');}
  for(const trial of study.trials){const prompt=await fs.readFile(path.join(root,'prompts',trial.id+'.md'));assert.equal(createHash('sha256').update(prompt).digest('hex'),trial.promptSha256);}
 });

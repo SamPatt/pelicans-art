@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <g id="background">
+    <path fill="#929EA8" d="M0 0h400v225H0z"/>
+    <path fill="#E8DDC3" d="M8 8h384v158H8z"/>
+    <path fill="#929EA8" d="M8 8h384v14H8zM8 22h13v144H8z"/>
+    <path fill="#929EA8" d="M21 154h371v12H21z"/>
+    <g id="rear-window">
+      <path fill="#293E52" d="M130 32h105q12 0 12 12v57q0 12-12 12H130q-12 0-12-12V44q0-12 12-12Z"/>
+      <path fill="#929EA8" d="M133 39h98q9 0 9 9v49q0 9-9 9h-98q-9 0-9-9V48q0-9 9-9Z"/>
+      <path fill="#293E52" d="M135 45h94q5 0 5 5v45q0 5-5 5h-94q-5 0-5-5V50q0-5 5-5Z"/>
+      <g id="earth">
+        <circle cx="182" cy="71" r="22" fill="#559B9C"/>
+        <path fill="#E8DDC3" d="M168 54q8-6 15-4l2 9-6 5 4 7-8 3-2-7-9-3Zm19 21 9-3 6 5q-3 11-14 15l2-7-5-5Z"/>
+        <path fill="none" stroke="#E8DDC3" stroke-width="3" stroke-linecap="round" d="M172 53q14-6 25 6"/>
+      </g>
+      <path fill="#E8DDC3" d="m213 55 2-3 2 3-2 3ZM143 82l2-3 2 3-2 3Z"/>
+      <path fill="#929EA8" d="m130 92 26-4 22 7 30-5 26 5v5H130Z"/>
+    </g>
+    <g id="office-wall-fixtures">
+      <path fill="#929EA8" d="M34 43h59v48H34z"/>
+      <path fill="#293E52" d="M39 48h49v38H39z"/>
+      <path fill="#D2A35A" d="m45 55 15-2 2 21-15 2Z"/>
+      <path fill="#E8DDC3" d="m67 59 14 2-2 18-14-2Z"/>
+      <path fill="#293E52" d="M316 34h29v40h-29z"/>
+      <path fill="#D2A35A" d="M322 40h17v11h-17z"/>
+      <path fill="#559B9C" d="M322 57h17v11h-17z"/>
+    </g>
+  </g>
+  <g id="midground">
+    <g id="waiting-chairs">
+      <g id="chair-ochre">
+        <path fill="none" stroke="#293E52" stroke-width="4" stroke-linecap="round" d="m35 135-4 26m26-26 4 26"/>
+        <path fill="#D2A35A" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="M28 108q18-7 34 0l-3 24H31Z"/>
+        <path fill="#D2A35A" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="M29 131h32l4 8H26Z"/>
+      </g>
+      <g id="chair-teal">
+        <path fill="none" stroke="#293E52" stroke-width="4" stroke-linecap="round" d="M81 135v26m22-26v26"/>
+        <path fill="#559B9C" stroke="#293E52" stroke-width="3" d="M76 99h30v32H76z"/>
+        <path fill="#559B9C" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="M76 131h30l4 9H72Z"/>
+      </g>
+      <g id="chair-salvaged">
+        <path fill="none" stroke="#293E52" stroke-width="4" stroke-linecap="round" d="m125 132 23 29m-4-29-24 29"/>
+        <path fill="#929EA8" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="m118 113 27-4 3 20-27 4Z"/>
+        <path fill="#E8DDC3" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="M120 132h29v8h-29z"/>
+      </g>
+    </g>
+    <g id="service-counter">
+      <path fill="#293E52" d="M246 120h130v43H246z"/>
+      <path fill="#559B9C" d="M241 123h122v40H241z"/>
+      <path fill="#293E52" d="m363 123 15-5v45h-15Z"/>
+      <path fill="#D2A35A" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="m239 114 135-3 8 8-17 7H235v-9Z"/>
+      <path fill="none" stroke="#E8DDC3" stroke-width="3" d="M251 134h99"/>
+      <path fill="#D2A35A" d="M289 141h16v12h-16z"/>
+      <path fill="#293E52" d="M288 108h18v5h-18z"/>
+      <path fill="#929EA8" stroke="#293E52" stroke-width="2" d="M291 108v-7q6-9 12 0v7Z"/>
+    </g>
+    <g id="floating-paper-tray">
+      <path fill="#E8DDC3" stroke="#293E52" stroke-width="2" stroke-linejoin="round" d="m261 80 37-6 14 7-36 7Z"/>
+      <path fill="#E8DDC3" stroke="#293E52" stroke-width="2" stroke-linejoin="round" d="m266 71 34 2 10-9-33-3Z"/>
+      <path fill="#D2A35A" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="m257 83 42-6 18 8-43 8Z"/>
+      <path fill="#D2A35A" stroke="#293E52" stroke-width="3" stroke-linejoin="round" d="m257 83 17 10 43-8-2 9-42 8-14-9Z"/>
+    </g>
+  </g>
+  <g id="foreground">
+    <path id="continuous-staging-floor" fill="#929EA8" d="M0 169h400v56H0z"/>
+  </g>
+</svg>

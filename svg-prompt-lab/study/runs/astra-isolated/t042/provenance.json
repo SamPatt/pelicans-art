@@ -1,0 +1,10 @@
+{
+  "model": "GPT-6 Astra",
+  "parent_trial": "t048",
+  "rendered": false,
+  "parent_png_inspected": true,
+  "revision_passes": 1,
+  "asset_size_characters": 6147,
+  "asset_size_bytes": 6147,
+  "deviations": []
+}

@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <g id="body">
+    <g id="stem-and-feet" stroke="#51372D" stroke-width="2.4">
+      <path d="M34 63 C33 79 28 97 30 115 Q31 125 37 131 L34 139 Q34 143 42 143 L49 140 51 126 58 126 61 137 Q65 141 74 138 Q78 135 72 131 L66 119 Q73 100 65 78 L63 63Z" fill="#F1D5A1"/>
+      <path d="M37 110 Q36 122 42 130 M62 109 Q64 121 60 126" stroke="#D2AD77" stroke-width="2"/>
+    </g>
+    <g id="spoon-arm" stroke="#51372D" stroke-width="2.4">
+      <path d="M65 80 Q77 91 83 82 L87 76 Q90 74 92 78 Q95 85 87 91 Q76 104 65 91Z" fill="#F1D5A1"/>
+      <path d="M82 94 85 62 Q78 58 80 49 Q83 39 89 42 Q96 45 93 55 Q92 61 88 63 L86 95Z" fill="#B87B3D"/>
+      <path d="M86 46 Q82 52 86 57" stroke="#DBAB68" stroke-width="2"/>
+      <path d="M82 81 Q86 77 89 80 L89 85 Q84 89 81 86" fill="#F1D5A1"/>
+    </g>
+    <g id="apron">
+      <path d="M36 77 40 69 M59 77 61 69" stroke="#FDF5DF" stroke-width="4"/>
+      <path d="M35 77 Q48 82 62 76 L66 115 Q51 123 31 115Z" fill="#FAF4DF" stroke="#51372D" stroke-width="2.4"/>
+      <path d="M35 88 Q49 92 63 86" stroke="#BD5141" stroke-width="3"/>
+      <path d="M43 99 57 98 57 107 Q49 113 43 107Z" fill="#E7DCC0" stroke="#98846B" stroke-width="1.5"/>
+      <path d="M32 86 26 91 28 98 M32 86 26 82 23 87Z" stroke="#FAF4DF" stroke-width="3"/>
+    </g>
+    <g id="oven-mitt" stroke="#51372D" stroke-width="2.4">
+      <path d="M34 78 Q20 79 21 92 L28 96 Q28 87 35 88" fill="#F1D5A1"/>
+      <path d="M19 87 Q13 83 10 89 L10 101 Q11 110 20 111 L27 110 Q33 107 32 101 L30 91 Q28 86 25 90 L24 95Z" fill="#387F7D"/>
+      <path d="M13 94 26 107 M13 102 24 91 M19 109 30 98" stroke="#70AAA0" stroke-width="1.5"/>
+      <path d="M18 109 28 109 28 115 18 115Z" fill="#205B60"/>
+    </g>
+  </g>
+  <g id="head-top">
+    <path id="upper-stem" d="M33 43 Q45 36 61 43 Q68 52 68 66 L65 74 Q52 81 32 73 Q30 58 33 43Z" fill="#F1D5A1" stroke="#51372D" stroke-width="2.4"/>
+    <g id="mushroom-cap" stroke="#51372D" stroke-width="2.4">
+      <path d="M8 42 Q14 12 42 10 Q66 7 82 29 Q88 37 88 44 Q65 56 35 53 Q16 51 8 42Z" fill="#D95843"/>
+      <path d="M8 42 Q24 47 45 43 Q68 39 88 44 Q76 57 45 56 Q20 56 8 42Z" fill="#D7A978"/>
+      <path d="M19 47 34 52 M30 47 40 53 M44 46 46 53 M58 45 53 53 M70 46 61 52 M79 46 69 51" stroke="#A16F4D" stroke-width="1.4"/>
+    </g>
+    <g id="cap-spots" fill="#FBE6BA">
+      <path d="M18 32 Q20 23 28 23 Q35 24 32 30 Q26 35 18 32Z"/>
+      <path d="M39 16 Q47 12 53 18 Q54 23 47 24 Q38 25 39 16Z"/>
+      <path d="M64 23 Q73 24 77 32 Q75 37 69 34 Q62 31 64 23Z"/>
+      <path d="M40 32 Q49 27 55 33 Q57 39 47 40 Q38 40 40 32Z"/>
+      <ellipse cx="17" cy="39" rx="3.3" ry="2"/>
+    </g>
+    <ellipse id="eye-left-white" cx="47" cy="61" rx="5.8" ry="4.6" fill="#FFFCF3" stroke="#51372D" stroke-width="1.5"/>
+    <ellipse id="eye-right-white" cx="62" cy="60" rx="4.2" ry="4.3" fill="#FFFCF3" stroke="#51372D" stroke-width="1.5"/>
+    <circle id="eye-left-pupil" class="pupil" cx="49.5" cy="61" r="1.9" fill="#332C2A"/>
+    <circle id="eye-right-pupil" class="pupil" cx="63.6" cy="60" r="1.7" fill="#332C2A"/>
+    <path id="brow-left" d="M41 51 Q46 51 52 54" stroke="#51372D" stroke-width="2.5"/>
+    <path id="brow-right" d="M57 53 Q61 50 67 51" stroke="#51372D" stroke-width="2.5"/>
+  </g>
+  <g id="head-bottom">
+    <path id="lower-stem" d="M32 67 Q30 77 34 80 Q48 86 63 79 Q69 75 68 65" fill="#F1D5A1"/>
+    <path id="cheek-contour" d="M68 65 Q71 75 64 78" stroke="#51372D" stroke-width="2.4"/>
+    <path id="mouth-closed" d="M51 73 Q56 69 61 73" stroke="#683B31" stroke-width="2.5" opacity="0"/>
+    <ellipse id="mouth-open" cx="56" cy="72" rx="5" ry="3" fill="#683B31" opacity="1"/>
+    <path id="offended-crease" d="M49 74 48 76" stroke="#AD805C" stroke-width="1.5"/>
+  </g>
+</svg>

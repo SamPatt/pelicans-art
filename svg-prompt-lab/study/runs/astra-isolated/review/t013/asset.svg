@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g id="carry-handle" fill="none" stroke="#292b36" stroke-width="5" stroke-linejoin="round">
+    <path d="M39 18V9Q50 3 61 9V18"/>
+  </g>
+  <g id="clock-housing" stroke="#292b36" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M20 35L50 15L80 35V87Q80 91 76 91H24Q20 91 20 87Z" fill="#a85e40"/>
+    <path d="M20 78H80V87Q80 91 76 91H24Q20 91 20 87Z" fill="#659e9a"/>
+    <path d="M15 36L48 12Q50 10 52 12L86 35L81 42L50 20L20 43Z" fill="#d6483c"/>
+    <path d="M25 91V95H35V91M65 91V95H75V91" fill="#292b36"/>
+  </g>
+  <g id="cuckoo-door" stroke="#292b36" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M39 48V36Q39 26 50 26Q61 26 61 36V48Z" fill="#292b36"/>
+    <path d="M61 32L72 37V52L61 48Z" fill="#e5ab69"/>
+  </g>
+  <g id="furious-cuckoo" stroke="#292b36" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M45 46Q36 44 31 36L40 37Q37 28 45 29L43 23L50 27L55 23L55 29Q62 30 61 39L65 44L58 47Q55 50 47 48Z" fill="#659e9a"/>
+    <path d="M44 40Q47 47 54 44" fill="none"/>
+    <path d="M59 36L72 40L60 43Z" fill="#e5ab69"/>
+    <path d="M53 32L59 34" fill="none" stroke-width="3"/>
+    <path d="M56 36L57 37" fill="none" stroke="#fff0cd" stroke-width="3"/>
+    <path d="M48 48V51M55 48V51" fill="none"/>
+  </g>
+  <g id="clock-face" stroke="#292b36" stroke-linecap="round">
+    <circle cx="50" cy="64" r="14" fill="#fff0cd" stroke-width="2.5"/>
+    <path d="M50 53V55M61 64H59M50 75V73M39 64H41" fill="none" stroke-width="2"/>
+    <path d="M50 57V64L56 68" fill="none" stroke-width="3"/>
+  </g>
+  <g id="punch-card-slot" stroke="#292b36" stroke-linejoin="round">
+    <path d="M31 82H69V87H31Z" fill="#292b36" stroke-width="2"/>
+    <path d="M42 85L40 75H62L64 85Z" fill="#fff0cd" stroke-width="2"/>
+    <path d="M46 79H48M54 79H56" fill="none" stroke-width="2.5"/>
+    <path d="M32 87H68" fill="none" stroke-width="2"/>
+  </g>
+</svg>

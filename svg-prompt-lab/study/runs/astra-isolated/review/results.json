@@ -1,0 +1,2382 @@
+{
+  "studyId": "svg-prompts-2026-09",
+  "run": "astra-isolated",
+  "execution": {
+    "mode": "Isolated Astra subagents",
+    "model": "GPT-6 Astra",
+    "limitation": "Screening pilot: six briefs, one first pass per recipe, with a second draft and visual revision for the current agent guide. Judge before revealing methods.",
+    "authorization": "User explicitly authorized subagents and requested current controls.",
+    "startedAt": "2026-09-06T16:35:09.198862+00:00",
+    "runtimeRevision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "protocolChanges": "Added current agent guide alongside browser control before generating; revisions and repeats use agent guide.",
+    "context": "Fresh fork_turns=none context per trial. Only own prompt and authorized output path supplied. Applicable repository instructions inherited. File isolation is instruction-based, not a filesystem sandbox between trials.",
+    "settings": {
+      "temperature": "unavailable",
+      "reasoning": "inherited; not separately measured",
+      "tokenUsage": "unavailable",
+      "modelRandomSeed": "unavailable; the recorded seed controls dispatch order only"
+    },
+    "license": "Original generated trial artwork offered under repository MIT license; same-category reference sources are existing repository assets.",
+    "dispatchOrder": [
+      "t035",
+      "t006",
+      "t019",
+      "t018",
+      "t014",
+      "t036",
+      "t032",
+      "t016",
+      "t025",
+      "t013",
+      "t007",
+      "t028",
+      "t029",
+      "t009",
+      "t011",
+      "t026",
+      "t003",
+      "t033",
+      "t034",
+      "t020",
+      "t045",
+      "t022",
+      "t015",
+      "t027",
+      "t030",
+      "t021",
+      "t002",
+      "t012",
+      "t043",
+      "t010",
+      "t044",
+      "t048",
+      "t004",
+      "t001",
+      "t024",
+      "t005",
+      "t008",
+      "t023",
+      "t046",
+      "t047",
+      "t031",
+      "t017",
+      "t037",
+      "t038",
+      "t039",
+      "t040",
+      "t041",
+      "t042"
+    ],
+    "agentNames": {
+      "t035": "/root/trial_t035",
+      "t006": "/root/trial_t006",
+      "t019": "/root/trial_t019",
+      "t018": "/root/trial_t018",
+      "t014": "/root/trial_t014",
+      "t036": "/root/trial_t036",
+      "t032": "/root/trial_t032",
+      "t016": "/root/trial_t016",
+      "t025": "/root/trial_t025",
+      "t013": "/root/trial_t013",
+      "t007": "/root/trial_t007",
+      "t028": "/root/trial_t028",
+      "t029": "/root/trial_t029",
+      "t009": "/root/trial_t009",
+      "t011": "/root/trial_t011",
+      "t026": "/root/trial_t026",
+      "t003": "/root/trial_t003",
+      "t033": "/root/trial_t033",
+      "t034": "/root/trial_t034",
+      "t020": "/root/trial_t020",
+      "t045": "/root/trial_t045",
+      "t022": "/root/trial_t022",
+      "t015": "/root/trial_t015",
+      "t027": "/root/trial_t027",
+      "t030": "/root/trial_t030",
+      "t021": "/root/trial_t021",
+      "t002": "/root/trial_t002",
+      "t012": "/root/trial_t012",
+      "t043": "/root/trial_t043",
+      "t010": "/root/trial_t010",
+      "t044": "/root/trial_t044",
+      "t048": "/root/trial_t048",
+      "t004": "/root/trial_t004",
+      "t001": "/root/trial_t001",
+      "t024": "/root/trial_t024",
+      "t005": "/root/trial_t005",
+      "t008": "/root/trial_t008",
+      "t023": "/root/trial_t023",
+      "t046": "/root/trial_t046",
+      "t047": "/root/trial_t047",
+      "t031": "/root/trial_t031",
+      "t017": "/root/trial_t017",
+      "t037": "/root/trial_t037",
+      "t038": "/root/trial_t038",
+      "t039": "/root/trial_t039",
+      "t040": "/root/trial_t040",
+      "t041": "/root/trial_t041",
+      "t042": "/root/trial_t042"
+    },
+    "studySha256": "da28a108d9d2574c5e6b7d798241cb62e264d6153d7150895e8fed09bf60f4eb",
+    "openRouterCalls": 0,
+    "generationBackend": "Codex subagents; no separately configured generation API",
+    "dispatchWrapperSummary": "Execute one isolated SVG generation trial. Read only your frozen prompt and applicable repository instructions. Write asset.svg and provenance.json into the authorized trial directory, plus plan.md only if requested. No other study files, artworks, results or research; no renderer, visual inspection, network, APIs, TTS or repair passes in first pass. Preserve first output. Inherited GPT-6 Astra; do not invent settings/usage. Report completion; do not commit.",
+    "dispatchTemplate": "../../dispatch-template.txt",
+    "firstPassCompletedAt": "2026-09-06T17:05:15.274Z",
+    "revisionDispatchTemplate": "../../revision-dispatch-template.txt",
+    "completedAt": "2026-09-06T17:10:12.824311+00:00",
+    "completedTrials": 48,
+    "sourceIntegrityVerified": true,
+    "generationFailures": 0,
+    "sourceIntegrityVerifiedAt": "2026-09-06T17:10:12.825846+00:00"
+  },
+  "renderer": {
+    "engine": "Chromium",
+    "version": "145.0.7632.6",
+    "longEdge": 1024,
+    "delivery": "scripts/theater/svg.mjs",
+    "network": "blocked",
+    "probes": "Approximate mouth opacity and pupil translation; no full player animation"
+  },
+  "generatedAt": "2026-09-06T17:13:05.906Z",
+  "briefs": [
+    {
+      "id": "stagehand",
+      "kind": "character",
+      "title": "Pelican stagehand",
+      "brief": "A full-body pelican stagehand wearing oversized overalls and a headset, holding a coiled cable. Tired but proud expression. Long recognizable beak, two webbed feet, one free wing. No bicycle. Three-quarter view facing right, both eyes visible.",
+      "checks": [
+        "pelican with long beak",
+        "oversized overalls",
+        "headset",
+        "coiled cable",
+        "two webbed feet",
+        "free wing"
+      ]
+    },
+    {
+      "id": "mushroom-chef",
+      "kind": "character",
+      "title": "Mushroom chef",
+      "brief": "A full-body mushroom chef with a broad spotted mushroom cap, little apron and oven mitt, holding a wooden spoon. Offended expression. Mushroom anatomy must stay recognizable; do not turn it into a human wearing a mushroom hat. Three-quarter view facing right, both eyes visible.",
+      "checks": [
+        "mushroom body and cap",
+        "spots",
+        "apron",
+        "oven mitt",
+        "wooden spoon",
+        "offended expression"
+      ]
+    },
+    {
+      "id": "clock",
+      "kind": "prop",
+      "title": "Bureaucratic cuckoo clock",
+      "brief": "A portable cuckoo clock used as an absurd office time clock: a tiny furious bird protrudes from its upper door, clock face below, and a clearly visible punch-card slot at the base. No words or numerals. One coherent object on transparent background.",
+      "checks": [
+        "cuckoo clock silhouette",
+        "bird protruding from door",
+        "clock face",
+        "punch-card slot",
+        "no text"
+      ]
+    },
+    {
+      "id": "teapot",
+      "kind": "prop",
+      "title": "Royal teapot",
+      "brief": "A squat teapot wearing a tiny crown, with a long curved spout, a large open handle, and a lid tilted by escaping steam. Three-quarter view. It should look indignantly regal while remaining unmistakably a teapot. No face or text. Transparent background.",
+      "checks": [
+        "teapot body",
+        "crown",
+        "curved spout",
+        "open handle",
+        "tilted lid",
+        "steam"
+      ]
+    },
+    {
+      "id": "laundromat",
+      "kind": "background",
+      "title": "Underwater laundromat",
+      "brief": "An underwater laundromat interior with two round washing-machine doors on the left, one large porthole on the right showing a curious fish, hanging socks above, and a clear continuous floor in the bottom quarter for two actors. No characters or text. Landscape composition.",
+      "checks": [
+        "two washing machine doors on left",
+        "large right porthole",
+        "fish outside porthole",
+        "hanging socks",
+        "clear bottom-quarter floor"
+      ]
+    },
+    {
+      "id": "moon-office",
+      "kind": "background",
+      "title": "Moon permit office",
+      "brief": "A municipal permit office on the moon: a service counter on the right, three mismatched waiting chairs on the left, Earth visible through a rear window, and a floating paper tray above the counter. Keep the bottom quarter as a clear continuous staging floor. No people or readable text. Landscape composition.",
+      "checks": [
+        "right service counter",
+        "three left chairs",
+        "Earth through rear window",
+        "floating paper tray",
+        "clear bottom-quarter floor"
+      ]
+    }
+  ],
+  "methods": [
+    {
+      "id": "minimal",
+      "title": "Minimal contract",
+      "instruction": "Create an expressive, readable vector asset for an absurd comedy theater. Choose the visual treatment yourself. Output only the SVG."
+    },
+    {
+      "id": "current",
+      "title": "Current browser recipe",
+      "instruction": "Use the current browser generation prompt below, retaining its aesthetic guidance wherever compatible with the shared contract."
+    },
+    {
+      "id": "art-direction",
+      "title": "Art direction",
+      "instruction": "Design this as a characterful theatrical vector illustration. Establish one memorable silhouette and a clear focal feature. Use deliberate asymmetry where it serves the brief, controlled contrast, no more than six main colors, and generous separation between important shapes. Avoid tiny decorative marks that vanish at phone size. Favor a few expressive contours over stacks of generic circles. Preserve every required object and relationship. Output only the SVG."
+    },
+    {
+      "id": "layout-plan",
+      "title": "Scene/component/layout plan",
+      "instruction": "Before drawing, write a compact visible plan (at most 120 words): required objects, their component shapes, approximate bounding boxes, overlaps and front-to-back layer order. Check that connected parts actually touch and important objects remain visible. Then create the SVG from that plan using editable primitives and short paths. Do not add new story objects beyond the brief. Save the plan separately; the SVG file contains only SVG."
+    },
+    {
+      "id": "reference",
+      "title": "Same-category SVG example",
+      "instruction": "Use the supplied same-category SVG as an example of editable structure, shape vocabulary and visual coherence. Draw the requested new subject; do not copy the example subject, its distinctive props, or proportions that conflict with the brief. Output only the SVG."
+    },
+    {
+      "id": "agent-current",
+      "title": "Current agent guide",
+      "instruction": "Follow the supplied current agent SVG authoring guide and character guide where compatible with the shared study contract. The study runner handles rendering after your first output; do not render this first-pass candidate."
+    },
+    {
+      "id": "visual-revision",
+      "title": "One visual-feedback revision"
+    }
+  ],
+  "results": [
+    {
+      "id": "t001",
+      "briefId": "stagehand",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "54df75d9766dd9448a75bcf07a95dd5769a5f8fc933ceac9d1683a03b4560315",
+      "promptCharacters": 1980,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5020,
+      "characters": 5020,
+      "sha256": "3b477880368208adbf02cd56018ad9b857788a89ebe1ecb022777e10085974d6",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 5020,
+        "settings": "Not available",
+        "usage": "Not available"
+      },
+      "preview": "t001/preview.png",
+      "svg": "t001/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 7.152557373046875e-7,
+        "elements": 63,
+        "paths": 41,
+        "groups": 10,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t001/mouth/preview.png",
+      "gaze": "t001/gaze/preview.png"
+    },
+    {
+      "id": "t002",
+      "briefId": "stagehand",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "5e7f5433047b87fdef9c6f0aa84fa4aedb7a0ed31caa26312a9de9bd59364d1b",
+      "promptCharacters": 6539,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4449,
+      "characters": 4449,
+      "sha256": "dd4f760a825fd5120082ada3852df96b3d393e599dbee7ae1433cf70e40b20f0",
+      "provenance": {
+        "model": "GPT-6 Astra (inherited)",
+        "rendered": false,
+        "visual_inspection": false,
+        "repair_passes": 0,
+        "svg_bytes": 4449,
+        "svg_characters": 4449,
+        "deviations": [
+          "Delivered SVG and provenance as files according to DELIVERY rather than returning the browser snapshot JSON envelope."
+        ],
+        "meta": {
+          "name": "Cable Call",
+          "type": "creature",
+          "description": "Tired but proud pelican stagehand in oversized teal overalls with headset and coiled cable, facing right in three-quarter view.",
+          "tags": [
+            "pelican",
+            "stagehand",
+            "overalls",
+            "headset",
+            "cable"
+          ],
+          "voice": {
+            "id": "alba",
+            "pitch": 0,
+            "speed": 1
+          },
+          "colors": {
+            "skin": "#fff5df",
+            "hair": "#fff5df",
+            "primary": "#337b93"
+          }
+        }
+      },
+      "preview": "t002/preview.png",
+      "svg": "t002/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0.6666660308837962,
+        "elements": 52,
+        "paths": 34,
+        "groups": 8,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t002/mouth/preview.png",
+      "gaze": "t002/gaze/preview.png"
+    },
+    {
+      "id": "t003",
+      "briefId": "stagehand",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "1433026138910ecd20b899a3e45586f279c765563027def082583b3836330142",
+      "promptCharacters": 2313,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3614,
+      "characters": 3614,
+      "sha256": "d93432c1fa78b6717d17b291e311cdbc0f10e2b6834cf2e1c07ed59a98c5d60a",
+      "provenance": {
+        "model": "GPT-6 Astra (inherited)",
+        "rendered": false,
+        "deviations": [],
+        "svg_characters": 3614
+      },
+      "preview": "t003/preview.png",
+      "svg": "t003/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0.75,
+        "elements": 40,
+        "paths": 27,
+        "groups": 6,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t003/mouth/preview.png",
+      "gaze": "t003/gaze/preview.png"
+    },
+    {
+      "id": "t004",
+      "briefId": "stagehand",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "1ec3192566ad0f71515ad0dbc0245f2a5c497b6a3d31bb6b2c40923a69bd787c",
+      "promptCharacters": 2286,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4783,
+      "characters": 4783,
+      "sha256": "67bff758d93ca170ca73741be4c65dd2198876c2d1e9cdecfdadc69efe160212",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_size_bytes": 4783,
+        "svg_size_characters": 4783
+      },
+      "preview": "t004/preview.png",
+      "svg": "t004/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0.000001430511474609375,
+        "elements": 58,
+        "paths": 37,
+        "groups": 9,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t004/mouth/preview.png",
+      "gaze": "t004/gaze/preview.png"
+    },
+    {
+      "id": "t005",
+      "briefId": "stagehand",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/sprites/pelican/front.svg",
+        "sha256": "10ad0a6927eec8cf79504c189bafc8e4fe552d2700066ed22725fcdea913bf2a"
+      },
+      "promptSha256": "24d430d72aabd82798405c8504b465000d27b6be25fcc96df43009ac9c995688",
+      "promptCharacters": 6005,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5524,
+      "characters": 5524,
+      "sha256": "5ba6fe66aa5fb9216a424a9da18f14a010f2715613a68f1654f7bf25bf22482a",
+      "provenance": {
+        "model": "GPT-6 Astra (inherited)",
+        "rendered": false,
+        "deviations": [
+          "Headset earcup and microphone are in the corresponding head groups to remain attached during head movement."
+        ],
+        "asset_size_bytes": 5524,
+        "asset_size_characters": 5524
+      },
+      "preview": "t005/preview.png",
+      "svg": "t005/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 7.152557373046875e-7,
+        "elements": 63,
+        "paths": 39,
+        "groups": 12,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t005/mouth/preview.png",
+      "gaze": "t005/gaze/preview.png"
+    },
+    {
+      "id": "t006",
+      "briefId": "mushroom-chef",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "0d6d2b02f3e44a0d8053f4bf87bc17ff2b3a3dd768bcfe112263f20670865eb8",
+      "promptCharacters": 2015,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4293,
+      "characters": 4293,
+      "sha256": "6b246c51af23c684410a19112835e3036aa02b759813bb570aa47d5c7a26b409",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "output_characters": 4293,
+        "output_bytes": 4293
+      },
+      "preview": "t006/preview.png",
+      "svg": "t006/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0,
+        "elements": 49,
+        "paths": 27,
+        "groups": 10,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t006/mouth/preview.png",
+      "gaze": "t006/gaze/preview.png"
+    },
+    {
+      "id": "t007",
+      "briefId": "mushroom-chef",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "b50ea1ac8bacaed5f37d0ed426db275e9e25a29e96026cd519cfabc7a7bc7bf6",
+      "promptCharacters": 6574,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3846,
+      "characters": 3846,
+      "sha256": "8e4261a0fb4866f94d34d1272079726193d6ae574e28420215a32e8355a38e75",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_size_bytes": 3846,
+        "notes": "First output preserved. No visual inspection or repair passes. Delivered as files per trial instructions."
+      },
+      "preview": "t007/preview.png",
+      "svg": "t007/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0,
+        "elements": 44,
+        "paths": 29,
+        "groups": 9,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t007/mouth/preview.png",
+      "gaze": "t007/gaze/preview.png"
+    },
+    {
+      "id": "t008",
+      "briefId": "mushroom-chef",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "e58477cf536402fbc359d49de34c3614c58038ad0bfd60d3800b4fa673a2288c",
+      "promptCharacters": 2348,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3134,
+      "characters": 3134,
+      "sha256": "d7546b7b0aa0900a3d60ec9aa9f8916e960f309812e40753a4425efaea35840f",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 3134
+      },
+      "preview": "t008/preview.png",
+      "svg": "t008/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0.0625,
+        "elements": 36,
+        "paths": 25,
+        "groups": 6,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t008/mouth/preview.png",
+      "gaze": "t008/gaze/preview.png"
+    },
+    {
+      "id": "t009",
+      "briefId": "mushroom-chef",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "2131ea467dcfc48b0f83ea5710745796b9f54e9892d2dc2a5cf55ea9a7f6929f",
+      "promptCharacters": 2321,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3977,
+      "characters": 3977,
+      "sha256": "58cb4542356da49f655a5e13b68d5c85647591e0a51587a9890e12bed341545f",
+      "provenance": {
+        "model": "GPT-6 Astra (inherited)",
+        "rendered": false,
+        "deviations": [],
+        "svg_bytes": 3977,
+        "svg_characters": 3977,
+        "first_output_preserved": true
+      },
+      "preview": "t009/preview.png",
+      "svg": "t009/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0,
+        "elements": 47,
+        "paths": 25,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t009/mouth/preview.png",
+      "gaze": "t009/gaze/preview.png"
+    },
+    {
+      "id": "t010",
+      "briefId": "mushroom-chef",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/sprites/pelican/front.svg",
+        "sha256": "10ad0a6927eec8cf79504c189bafc8e4fe552d2700066ed22725fcdea913bf2a"
+      },
+      "promptSha256": "dcd27b6292d607c00b6508a6eb3d5c25cdc0ab331f54c84e59efed8d43f167bf",
+      "promptCharacters": 6040,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4403,
+      "characters": 4403,
+      "sha256": "ed0a441f5256415afe7c6e72a5e457be848fd63e1b176ed7718f90d3402e8f5d",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_characters": 4403,
+        "svg_bytes": 4403
+      },
+      "preview": "t010/preview.png",
+      "svg": "t010/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0.2511100769042969,
+        "elements": 51,
+        "paths": 28,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t010/mouth/preview.png",
+      "gaze": "t010/gaze/preview.png"
+    },
+    {
+      "id": "t011",
+      "briefId": "clock",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "c1c1ecca6cfdf4b8719676d24289ad566493ba402951ad34db5d0c12f9996c7d",
+      "promptCharacters": 1447,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [
+        "Geometry approaches the canvas edge; inspect stroke clipping and safe margin"
+      ],
+      "bytes": 3249,
+      "characters": 3249,
+      "sha256": "126b20f23729d3e77f5971f5cf28de2ce99a205d9194339c2afd808ba99bdf06",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_size_bytes": 3249
+      },
+      "preview": "t011/preview.png",
+      "svg": "t011/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [
+          "Geometry approaches the canvas edge; inspect stroke clipping and safe margin"
+        ],
+        "mouthDistance": null,
+        "elements": 44,
+        "paths": 30,
+        "groups": 10,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t012",
+      "briefId": "clock",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "6f3991cdd375890bbf120e091fbcd8f97a5d48ab0e1fecd6f9ed02f2518e1520",
+      "promptCharacters": 2339,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 1978,
+      "characters": 1978,
+      "sha256": "ed59e610b76852e83c2880434f3ec45c6bbbfb47d94e07b498b6fa951fbf5ec4",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 1978,
+        "asset_size_characters": 1978
+      },
+      "preview": "t012/preview.png",
+      "svg": "t012/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 31,
+        "paths": 19,
+        "groups": 8,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t013",
+      "briefId": "clock",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "9bd0a384ee83a6766aa73e7be30fea55d0a39307d81d5c5605de579e1c1bc75b",
+      "promptCharacters": 1780,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 1946,
+      "characters": 1946,
+      "sha256": "e3d3efa3382c9dca2dea9ec1f13bdea04c82c9e17eb0e1ef65e50e11d35ef8af",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 1946
+      },
+      "preview": "t013/preview.png",
+      "svg": "t013/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 26,
+        "paths": 19,
+        "groups": 6,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t014",
+      "briefId": "clock",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "8d4c64c85c25bfa7b83e4d91d1a50505c259abf4a7d5067df30878b71db1c3e7",
+      "promptCharacters": 1753,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 2778,
+      "characters": 2778,
+      "sha256": "45f0a120703ae65072c7d96dff940fcc29309a62fc7a6dc5665d8153e72509d9",
+      "provenance": {
+        "model": "GPT-6 Astra (inherited)",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 2778,
+        "asset_characters": 2778,
+        "first_output_preserved": true
+      },
+      "preview": "t014/preview.png",
+      "svg": "t014/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 36,
+        "paths": 22,
+        "groups": 8,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t015",
+      "briefId": "clock",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/props/cheeseburger/prop.svg",
+        "sha256": "6745caebd2d7a126d5ac8558106c7e7e39645d6fe29e15d4f4e9ddc276993e0f"
+      },
+      "promptSha256": "6e32fda80fbc00fc6e878043d0a2f9a510ac11c7617eaad714450e6f4709beb0",
+      "promptCharacters": 3160,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [
+        "Geometry approaches the canvas edge; inspect stroke clipping and safe margin"
+      ],
+      "bytes": 2546,
+      "characters": 2546,
+      "sha256": "19aeaae90bb081e67b30e19e5898b50aece0be59ffa0b4c5ba58814f0680c559",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 2546
+      },
+      "preview": "t015/preview.png",
+      "svg": "t015/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [
+          "Geometry approaches the canvas edge; inspect stroke clipping and safe margin"
+        ],
+        "mouthDistance": null,
+        "elements": 34,
+        "paths": 20,
+        "groups": 6,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t016",
+      "briefId": "teapot",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "51918da2844fe11081e57bf302ab1e042899aa131534fbe8249405542029c009",
+      "promptCharacters": 1450,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3549,
+      "characters": 3549,
+      "sha256": "45e7382092c474600db244a30f23771e4db374954140ecb8c09749a4b70b874f",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 3549,
+        "asset_size_characters": 3549,
+        "first_output_preserved": true
+      },
+      "preview": "t016/preview.png",
+      "svg": "t016/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 47,
+        "paths": 24,
+        "groups": 7,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t017",
+      "briefId": "teapot",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "f8f1055695b01645a1d770e9d069126c6b62cb94af3a52363dcf3b15259bd2c3",
+      "promptCharacters": 2342,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 1942,
+      "characters": 1942,
+      "sha256": "ec5930260de3716dcb32fc97902f2470561f27f0a4605d68bad3d65abd4e8c35",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 1942,
+        "asset_characters": 1942
+      },
+      "preview": "t017/preview.png",
+      "svg": "t017/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 23,
+        "paths": 16,
+        "groups": 5,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t018",
+      "briefId": "teapot",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "e35de533d5fcc63c2eb0120ab643f36752bb5ef0c7cce7069e3b13b51a072629",
+      "promptCharacters": 1783,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 2200,
+      "characters": 2200,
+      "sha256": "f800a5e768d91663f3afd2a1b651b64f14bd02cb0cc42ff9189eb39ea7d3a344",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "output_bytes": 2200,
+        "output_characters": 2200
+      },
+      "preview": "t018/preview.png",
+      "svg": "t018/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 27,
+        "paths": 19,
+        "groups": 8,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t019",
+      "briefId": "teapot",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "93c242eb92a71c90ce8739c40315033b9e6c0657951353b071c434a0e089a8d2",
+      "promptCharacters": 1756,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3192,
+      "characters": 3192,
+      "sha256": "5738b296362685816209f53a5eb86353c2d4254c866d059d5838c9f9b3dfada5",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 3192
+      },
+      "preview": "t019/preview.png",
+      "svg": "t019/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 38,
+        "paths": 17,
+        "groups": 8,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t020",
+      "briefId": "teapot",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/props/cheeseburger/prop.svg",
+        "sha256": "6745caebd2d7a126d5ac8558106c7e7e39645d6fe29e15d4f4e9ddc276993e0f"
+      },
+      "promptSha256": "19be3cff2c0c06b3ec00c82735573b1dc5e6565d067f621b5fbe566081fe0594",
+      "promptCharacters": 3163,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 2731,
+      "characters": 2731,
+      "sha256": "70885dd243cb9015364ddd30d97a0da1378025540b39cc39d91f7dfab28f7d96",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_size_bytes": 2731,
+        "svg_size_characters": 2731
+      },
+      "preview": "t020/preview.png",
+      "svg": "t020/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 31,
+        "paths": 17,
+        "groups": 7,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t021",
+      "briefId": "laundromat",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "ee76fa580e17e1fb0c62cbda5f1fac3e74ee757c9f2c4471d5da430f73f8fa3c",
+      "promptCharacters": 1549,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5925,
+      "characters": 5925,
+      "sha256": "2a9e2faecbf80c397028d5d829a9d8243255d5aa8f32a00c5b55582f57784028",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 5925
+      },
+      "preview": "t021/preview.png",
+      "svg": "t021/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 99,
+        "paths": 32,
+        "groups": 16,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t022",
+      "briefId": "laundromat",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "8e744773c76d53b51906d25c5e1a4c5f332fefa258ad38f48276978e2b3c1ccb",
+      "promptCharacters": 2080,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4285,
+      "characters": 4285,
+      "sha256": "3b76897b0ab401e14e91bc81b8ffd4a93077529a89332ae6ed104c2b53d6900d",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "output_characters": 4285,
+        "output_bytes": 4285,
+        "first_output_preserved": true
+      },
+      "preview": "t022/preview.png",
+      "svg": "t022/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 66,
+        "paths": 26,
+        "groups": 13,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t023",
+      "briefId": "laundromat",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "66b656b9397901b99457d4ed74030cd3b9b4ae7906632a65d927475542337142",
+      "promptCharacters": 1882,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3693,
+      "characters": 3693,
+      "sha256": "8ed72b546ac8f32f23a5eb8593ecc345041ac5efc2efdff623b2ba7a8f8023b3",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "actual_size_bytes": 3693
+      },
+      "preview": "t023/preview.png",
+      "svg": "t023/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 47,
+        "paths": 32,
+        "groups": 9,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t024",
+      "briefId": "laundromat",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "14a32873ec310686ee3a82e4310406f6b9181a57aabb9fb3b275080f26348f73",
+      "promptCharacters": 1855,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 6232,
+      "characters": 6232,
+      "sha256": "f8905e7556502e183db09307e92a85d5615e8aaa98c4b45d2cca6e0d4c2def3c",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_size_bytes": 6232
+      },
+      "preview": "t024/preview.png",
+      "svg": "t024/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 90,
+        "paths": 31,
+        "groups": 13,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t025",
+      "briefId": "laundromat",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/backgrounds/apartment/landscape.svg",
+        "sha256": "21a201d96ccca3fb2ff8ce054dd049d79d65e92630dfd7c0a5d057c03a95cd6d"
+      },
+      "promptSha256": "a178f9164d712545e2b83fadb851a26543ea601ca465c61e72504539106bafb8",
+      "promptCharacters": 4781,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4117,
+      "characters": 4117,
+      "sha256": "3344bec959228666ae4c317b65b0d63271b2f92fa3814660de14e613dce270a8",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 4117
+      },
+      "preview": "t025/preview.png",
+      "svg": "t025/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 60,
+        "paths": 22,
+        "groups": 9,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t026",
+      "briefId": "moon-office",
+      "methodId": "minimal",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "c9acebc8886e57e13551a815535d927b8bbc2131c4f03968a6c48c76287616e9",
+      "promptCharacters": 1585,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 6098,
+      "characters": 6098,
+      "sha256": "8e1553247a149c65d4482d52fef6e814e9fdd42680b360cb04ee25d88736a5c4",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [
+          "An unused clipPath includes an invalid height value; preserved without repair."
+        ],
+        "output_characters": 6098,
+        "output_bytes": 6098
+      },
+      "preview": "t026/preview.png",
+      "svg": "t026/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 92,
+        "paths": 52,
+        "groups": 14,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t027",
+      "briefId": "moon-office",
+      "methodId": "current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "511d2525e66939a3a60733a2ee4239c51a34765dc0d83e6f657908029ec4639b",
+      "promptCharacters": 2116,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4326,
+      "characters": 4326,
+      "sha256": "7f9320d604290e36d46ccddeb6708c5870f05f3fc88e246fa2ac2474d80f1671",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 4326
+      },
+      "preview": "t027/preview.png",
+      "svg": "t027/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 68,
+        "paths": 36,
+        "groups": 16,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t028",
+      "briefId": "moon-office",
+      "methodId": "art-direction",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "cc403095af249650e5cee4c8265544130a360d5accfb646aaa4b599a8739fea9",
+      "promptCharacters": 1918,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3871,
+      "characters": 3871,
+      "sha256": "0bfb1206ca6f220917c0be9a4a152e7c0ea07958129570105ca2a247426e1e4b",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_size_bytes": 3871
+      },
+      "preview": "t028/preview.png",
+      "svg": "t028/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 53,
+        "paths": 40,
+        "groups": 12,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t029",
+      "briefId": "moon-office",
+      "methodId": "layout-plan",
+      "replicate": 1,
+      "phase": "first-pass",
+      "promptSha256": "4a7e79ffd54aacec66d2be743d08cc5b9c2710a79bb2931dc68ab7c4aadbe844",
+      "promptCharacters": 1891,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4675,
+      "characters": 4675,
+      "sha256": "2025ec017a36bb046c7146dfa69bdb6d5885f417fc010eca7b4a9c139b432faa",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 4675
+      },
+      "preview": "t029/preview.png",
+      "svg": "t029/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 65,
+        "paths": 41,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t030",
+      "briefId": "moon-office",
+      "methodId": "reference",
+      "replicate": 1,
+      "phase": "first-pass",
+      "reference": {
+        "path": "src/backgrounds/apartment/landscape.svg",
+        "sha256": "21a201d96ccca3fb2ff8ce054dd049d79d65e92630dfd7c0a5d057c03a95cd6d"
+      },
+      "promptSha256": "667f87c0ea6317c175d1430ac5b84a3748e9b68c6d0e083f80751c620ca4f409",
+      "promptCharacters": 4817,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4332,
+      "characters": 4332,
+      "sha256": "d4023433c638c4ba60df7a131ccc2bc88958981bc9e0ebded617a4ad84bd43bd",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_characters": 4332,
+        "svg_bytes": 4332
+      },
+      "preview": "t030/preview.png",
+      "svg": "t030/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 64,
+        "paths": 26,
+        "groups": 13,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t031",
+      "briefId": "stagehand",
+      "methodId": "agent-current",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "2194cabf7ec7de33dd234cfdcda38e43710d08fff11d539a4bea850c7ad363d5",
+      "promptCharacters": 7983,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5135,
+      "characters": 5135,
+      "sha256": "a588d2fe8215ed6617bbfc815ea7c956d3b1926b5329cf4168d8e28c8021aeaf",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_size_bytes": 5135,
+        "svg_size_characters": 5135
+      },
+      "preview": "t031/preview.png",
+      "svg": "t031/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0.5,
+        "elements": 59,
+        "paths": 38,
+        "groups": 9,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t031/mouth/preview.png",
+      "gaze": "t031/gaze/preview.png"
+    },
+    {
+      "id": "t032",
+      "briefId": "mushroom-chef",
+      "methodId": "agent-current",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "03658fdaf6c22e3d8b851451086b8a6346eb12c3ed8314894bca6c821132c40f",
+      "promptCharacters": 8018,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4489,
+      "characters": 4489,
+      "sha256": "fb5d7d57c27088a11a41c2be75bedb3c8c69835ed94a6c84bbbe85d1002721aa",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_bytes": 4489
+      },
+      "preview": "t032/preview.png",
+      "svg": "t032/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0.0000030994415283203125,
+        "elements": 50,
+        "paths": 32,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t032/mouth/preview.png",
+      "gaze": "t032/gaze/preview.png"
+    },
+    {
+      "id": "t033",
+      "briefId": "clock",
+      "methodId": "agent-current",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "1b4452278da5dd35d4edf20a9297cd07e4f944f219ee5068d48fbdc4e8a83b8a",
+      "promptCharacters": 4594,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 2325,
+      "characters": 2325,
+      "sha256": "34b7199789250fa3ef02b283fd39e6557e1c80ad592be04c48b6e8df951ee5b4",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_bytes": 2325,
+        "svg_characters": 2325
+      },
+      "preview": "t033/preview.png",
+      "svg": "t033/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 31,
+        "paths": 20,
+        "groups": 8,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t034",
+      "briefId": "teapot",
+      "methodId": "agent-current",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "79b84fe9b827cc7466cd81dac7a6aa69a813ad04adb5025f2008d856346f1c4a",
+      "promptCharacters": 4597,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 2884,
+      "characters": 2884,
+      "sha256": "65a420339eb0206cb1aeeaa7f5487cab6917a3cc48db3e13ca07870733c70ca3",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 2884
+      },
+      "preview": "t034/preview.png",
+      "svg": "t034/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 39,
+        "paths": 20,
+        "groups": 6,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t035",
+      "briefId": "laundromat",
+      "methodId": "agent-current",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "ccf5af11a3e292d8c2022f11cd1b078afd9f80c1c6cc9de0f41febf1620d9dcd",
+      "promptCharacters": 4696,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 6217,
+      "characters": 6217,
+      "sha256": "30a63d295be86b9386095efd595ade4caa3111bc21671c73ce952aed01c801a6",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "size_bytes": 6217,
+        "size_characters": 6217
+      },
+      "preview": "t035/preview.png",
+      "svg": "t035/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 93,
+        "paths": 34,
+        "groups": 14,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t036",
+      "briefId": "moon-office",
+      "methodId": "agent-current",
+      "replicate": 2,
+      "phase": "fresh-repeat",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "21759ae42f75d48378250fed6354bd94b2f3f8c28fbac1ed3bcf284eec19eb8d",
+      "promptCharacters": 4732,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5582,
+      "characters": 5582,
+      "sha256": "880004f6e90542af7e9fd76b5331d6c9155950601dcd409bf2854d928a975a2f",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_bytes": 5582
+      },
+      "preview": "t036/preview.png",
+      "svg": "t036/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 103,
+        "paths": 45,
+        "groups": 18,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t037",
+      "briefId": "stagehand",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t043",
+      "promptSha256": "80ed35df7fffda42c404fcbff4b21cb562a6ca49d64e536275eb5e111dc603a2",
+      "promptCharacters": 2143,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5095,
+      "characters": 5095,
+      "sha256": "650137eed028c851c4d3f0b526fb1982e76d590c8c31e4bfe2a2be86101ba90e",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "parent_trial": "t043",
+        "rendered": false,
+        "parent_png_inspected": true,
+        "revision_passes": 1,
+        "output_characters": 5095,
+        "output_bytes": 5095,
+        "deviations": []
+      },
+      "preview": "t037/preview.png",
+      "svg": "t037/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0,
+        "elements": 59,
+        "paths": 39,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t037/mouth/preview.png",
+      "gaze": "t037/gaze/preview.png"
+    },
+    {
+      "id": "t038",
+      "briefId": "mushroom-chef",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t044",
+      "promptSha256": "196b0326468c85a7a6f73b33c6e410fcb438d04e7bd2eac1981e40163bf7a4f6",
+      "promptCharacters": 2178,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 4061,
+      "characters": 4061,
+      "sha256": "e1e1c8156fa2a90901055e28fdc6436d1d3fc3c177faf475c4ec537acfaceeda",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "parent_trial": "t044",
+        "trial": "t038",
+        "supplied_parent_png_inspected": true,
+        "rendered": false,
+        "revision_passes": 1,
+        "asset_size_characters": 4061,
+        "asset_size_bytes": 4061,
+        "deviations": []
+      },
+      "preview": "t038/preview.png",
+      "svg": "t038/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0,
+        "elements": 47,
+        "paths": 24,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t038/mouth/preview.png",
+      "gaze": "t038/gaze/preview.png"
+    },
+    {
+      "id": "t039",
+      "briefId": "clock",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t045",
+      "promptSha256": "e6487ef6e309b3c0b67d99cc2a42bda6c3375b784ce9152f39ed49533f15b860",
+      "promptCharacters": 1610,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 2807,
+      "characters": 2807,
+      "sha256": "24a75512e67536b3a47d320576a8e4a0a9e5a58968583cbcf4eb5a0d3da09d57",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "parent_trial": "t045",
+        "rendered": false,
+        "parent_png_inspected": true,
+        "revision_passes": 1,
+        "asset_size_characters": 2807,
+        "asset_size_bytes": 2807,
+        "deviations": []
+      },
+      "preview": "t039/preview.png",
+      "svg": "t039/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 34,
+        "paths": 23,
+        "groups": 7,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t040",
+      "briefId": "teapot",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t046",
+      "promptSha256": "b90cbc2072cbb3af066a9a5646c8c4e6f5da09882643c0d17d3644005d78e3ac",
+      "promptCharacters": 1613,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3832,
+      "characters": 3832,
+      "sha256": "ca2833d5ceb9b8d86812ade1c75ead1badc3a8459fc33a0c7925b132819a39bc",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "parent_trial": "t046",
+        "rendered": false,
+        "inspected_supplied_parent_png": true,
+        "revision_passes": 1,
+        "asset_characters": 3832,
+        "asset_bytes": 3832,
+        "deviations": []
+      },
+      "preview": "t040/preview.png",
+      "svg": "t040/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 47,
+        "paths": 23,
+        "groups": 7,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t041",
+      "briefId": "laundromat",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t047",
+      "promptSha256": "7e89c2416d5cefc61ac3214104d95cfd0ee1f91682cee32bfe22ec79c129fe8b",
+      "promptCharacters": 1712,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5421,
+      "characters": 5421,
+      "sha256": "fa63cb8c59878930f47cf849c12d99527959d0882d3a946c3d3f29842abd3a05",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "parent_trial": "t047",
+        "rendered": false,
+        "parent_png_inspected": true,
+        "revision_passes": 1,
+        "asset_characters": 5421,
+        "asset_bytes": 5421,
+        "deviations": []
+      },
+      "preview": "t041/preview.png",
+      "svg": "t041/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 99,
+        "paths": 34,
+        "groups": 18,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t042",
+      "briefId": "moon-office",
+      "methodId": "visual-revision",
+      "replicate": 1,
+      "phase": "revision",
+      "parent": "t048",
+      "promptSha256": "830ebf23b77dc1772f4c10a2c1f2c9a4a4b1698a5f15d0cc199e9fa11e5aa704",
+      "promptCharacters": 1748,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 6147,
+      "characters": 6147,
+      "sha256": "7a5fa53a855bb15e1e76083eccd331dea2518d907e2c0ff4c7fda6cea77e4663",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "parent_trial": "t048",
+        "rendered": false,
+        "parent_png_inspected": true,
+        "revision_passes": 1,
+        "asset_size_characters": 6147,
+        "asset_size_bytes": 6147,
+        "deviations": []
+      },
+      "preview": "t042/preview.png",
+      "svg": "t042/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 98,
+        "paths": 45,
+        "groups": 17,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t043",
+      "briefId": "stagehand",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "2194cabf7ec7de33dd234cfdcda38e43710d08fff11d539a4bea850c7ad363d5",
+      "promptCharacters": 7983,
+      "title": "Pelican stagehand",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5016,
+      "characters": 5016,
+      "sha256": "abe57d31ca3fcddbd30f7d7c9488bb9f50d31896a103341951ec7db1433f1536",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 5016
+      },
+      "preview": "t043/preview.png",
+      "svg": "t043/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": 0,
+        "elements": 63,
+        "paths": 40,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t043/mouth/preview.png",
+      "gaze": "t043/gaze/preview.png"
+    },
+    {
+      "id": "t044",
+      "briefId": "mushroom-chef",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "03658fdaf6c22e3d8b851451086b8a6346eb12c3ed8314894bca6c821132c40f",
+      "promptCharacters": 8018,
+      "title": "Mushroom chef",
+      "kind": "character",
+      "status": "passed",
+      "errors": [],
+      "warnings": [
+        "Geometry approaches the canvas edge; inspect stroke clipping and safe margin"
+      ],
+      "bytes": 4088,
+      "characters": 4088,
+      "sha256": "fe158117207bd32ee9b689293eb0934084b529b05674ed9f3ba2e08eb2707101",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 4088,
+        "asset_characters": 4088,
+        "first_output_preserved": true
+      },
+      "preview": "t044/preview.png",
+      "svg": "t044/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [
+          "Geometry approaches the canvas edge; inspect stroke clipping and safe margin"
+        ],
+        "mouthDistance": 0,
+        "elements": 47,
+        "paths": 24,
+        "groups": 11,
+        "viewBox": [
+          0,
+          0,
+          100,
+          150
+        ]
+      },
+      "mouth": "t044/mouth/preview.png",
+      "gaze": "t044/gaze/preview.png"
+    },
+    {
+      "id": "t045",
+      "briefId": "clock",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "1b4452278da5dd35d4edf20a9297cd07e4f944f219ee5068d48fbdc4e8a83b8a",
+      "promptCharacters": 4594,
+      "title": "Bureaucratic cuckoo clock",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 2687,
+      "characters": 2687,
+      "sha256": "b110461cf23e181bd90cd3419cd73b16e35fed3ebc35dbba3a3640d444256e1f",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_size_bytes": 2687
+      },
+      "preview": "t045/preview.png",
+      "svg": "t045/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 34,
+        "paths": 23,
+        "groups": 7,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t046",
+      "briefId": "teapot",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "79b84fe9b827cc7466cd81dac7a6aa69a813ad04adb5025f2008d856346f1c4a",
+      "promptCharacters": 4597,
+      "title": "Royal teapot",
+      "kind": "prop",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 3781,
+      "characters": 3781,
+      "sha256": "cfab752007983f479bd303a623d0e3c3cb432887861281ecb03f206333c5efb6",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "asset_bytes": 3781,
+        "asset_characters": 3781
+      },
+      "preview": "t046/preview.png",
+      "svg": "t046/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 47,
+        "paths": 23,
+        "groups": 7,
+        "viewBox": [
+          0,
+          0,
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "t047",
+      "briefId": "laundromat",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "ccf5af11a3e292d8c2022f11cd1b078afd9f80c1c6cc9de0f41febf1620d9dcd",
+      "promptCharacters": 4696,
+      "title": "Underwater laundromat",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 5393,
+      "characters": 5393,
+      "sha256": "49915bc7b064ce0633f83f51000c8f40b18886778ea1909f5aa23bc6d25e15f9",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "svg_bytes": 5393,
+        "svg_characters": 5393,
+        "first_output_preserved": true
+      },
+      "preview": "t047/preview.png",
+      "svg": "t047/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 99,
+        "paths": 34,
+        "groups": 18,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    },
+    {
+      "id": "t048",
+      "briefId": "moon-office",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "21759ae42f75d48378250fed6354bd94b2f3f8c28fbac1ed3bcf284eec19eb8d",
+      "promptCharacters": 4732,
+      "title": "Moon permit office",
+      "kind": "background",
+      "status": "passed",
+      "errors": [],
+      "warnings": [],
+      "bytes": 6147,
+      "characters": 6147,
+      "sha256": "7e1ee13c47128ed938fab4a185c64628ae6f9b72c88cdfb8237e57aa502d9005",
+      "provenance": {
+        "model": "GPT-6 Astra",
+        "rendered": false,
+        "deviations": [],
+        "output_bytes": 6147
+      },
+      "preview": "t048/preview.png",
+      "svg": "t048/asset.svg",
+      "geometry": {
+        "errors": [],
+        "warnings": [],
+        "mouthDistance": null,
+        "elements": 98,
+        "paths": 45,
+        "groups": 17,
+        "viewBox": [
+          0,
+          0,
+          400,
+          225
+        ]
+      }
+    }
+  ]
+}

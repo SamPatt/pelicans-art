@@ -4,7 +4,7 @@
   "frozenAt": "2026-09-06",
   "seed": 20260906,
   "model": "GPT-6 Astra",
-  "generationStatus": "awaiting execution-mode decision",
+  "generationStatus": "authorized isolated Astra trials",
   "briefs": [
     {
       "id": "stagehand",
@@ -113,6 +113,11 @@
       "id": "reference",
       "title": "Same-category SVG example",
       "instruction": "Use the supplied same-category SVG as an example of editable structure, shape vocabulary and visual coherence. Draw the requested new subject; do not copy the example subject, its distinctive props, or proportions that conflict with the brief. Output only the SVG."
+    },
+    {
+      "id": "agent-current",
+      "title": "Current agent guide",
+      "instruction": "Follow the supplied current agent SVG authoring guide and character guide where compatible with the shared study contract. The study runner handles rendering after your first output; do not render this first-pass candidate."
     }
   ],
   "trials": [
@@ -413,56 +418,100 @@
     {
       "id": "t031",
       "briefId": "stagehand",
-      "methodId": "minimal",
+      "methodId": "agent-current",
       "replicate": 2,
       "phase": "fresh-repeat",
-      "promptSha256": "54df75d9766dd9448a75bcf07a95dd5769a5f8fc933ceac9d1683a03b4560315",
-      "promptCharacters": 1980
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "2194cabf7ec7de33dd234cfdcda38e43710d08fff11d539a4bea850c7ad363d5",
+      "promptCharacters": 7983
     },
     {
       "id": "t032",
       "briefId": "mushroom-chef",
-      "methodId": "minimal",
+      "methodId": "agent-current",
       "replicate": 2,
       "phase": "fresh-repeat",
-      "promptSha256": "0d6d2b02f3e44a0d8053f4bf87bc17ff2b3a3dd768bcfe112263f20670865eb8",
-      "promptCharacters": 2015
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "03658fdaf6c22e3d8b851451086b8a6346eb12c3ed8314894bca6c821132c40f",
+      "promptCharacters": 8018
     },
     {
       "id": "t033",
       "briefId": "clock",
-      "methodId": "minimal",
+      "methodId": "agent-current",
       "replicate": 2,
       "phase": "fresh-repeat",
-      "promptSha256": "c1c1ecca6cfdf4b8719676d24289ad566493ba402951ad34db5d0c12f9996c7d",
-      "promptCharacters": 1447
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "1b4452278da5dd35d4edf20a9297cd07e4f944f219ee5068d48fbdc4e8a83b8a",
+      "promptCharacters": 4594
     },
     {
       "id": "t034",
       "briefId": "teapot",
-      "methodId": "minimal",
+      "methodId": "agent-current",
       "replicate": 2,
       "phase": "fresh-repeat",
-      "promptSha256": "51918da2844fe11081e57bf302ab1e042899aa131534fbe8249405542029c009",
-      "promptCharacters": 1450
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "79b84fe9b827cc7466cd81dac7a6aa69a813ad04adb5025f2008d856346f1c4a",
+      "promptCharacters": 4597
     },
     {
       "id": "t035",
       "briefId": "laundromat",
-      "methodId": "minimal",
+      "methodId": "agent-current",
       "replicate": 2,
       "phase": "fresh-repeat",
-      "promptSha256": "ee76fa580e17e1fb0c62cbda5f1fac3e74ee757c9f2c4471d5da430f73f8fa3c",
-      "promptCharacters": 1549
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "ccf5af11a3e292d8c2022f11cd1b078afd9f80c1c6cc9de0f41febf1620d9dcd",
+      "promptCharacters": 4696
     },
     {
       "id": "t036",
       "briefId": "moon-office",
-      "methodId": "minimal",
+      "methodId": "agent-current",
       "replicate": 2,
       "phase": "fresh-repeat",
-      "promptSha256": "c9acebc8886e57e13551a815535d927b8bbc2131c4f03968a6c48c76287616e9",
-      "promptCharacters": 1585
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "21759ae42f75d48378250fed6354bd94b2f3f8c28fbac1ed3bcf284eec19eb8d",
+      "promptCharacters": 4732
     },
     {
       "id": "t037",
@@ -470,8 +519,8 @@
       "methodId": "visual-revision",
       "replicate": 1,
       "phase": "revision",
-      "parent": "t001",
-      "promptSha256": "19f0b96604545a4b1faf12cea6bdbd66300bdb1e662af9aa5bb5c9d6c15c561f",
+      "parent": "t043",
+      "promptSha256": "80ed35df7fffda42c404fcbff4b21cb562a6ca49d64e536275eb5e111dc603a2",
       "promptCharacters": 2143
     },
     {
@@ -480,8 +529,8 @@
       "methodId": "visual-revision",
       "replicate": 1,
       "phase": "revision",
-      "parent": "t006",
-      "promptSha256": "102064b7691ad165c341520584d7f2acc1682f59fe630fb6631b3a599e2045d8",
+      "parent": "t044",
+      "promptSha256": "196b0326468c85a7a6f73b33c6e410fcb438d04e7bd2eac1981e40163bf7a4f6",
       "promptCharacters": 2178
     },
     {
@@ -490,8 +539,8 @@
       "methodId": "visual-revision",
       "replicate": 1,
       "phase": "revision",
-      "parent": "t011",
-      "promptSha256": "148e35c1fa74acdd9deb83255ffc61ba9a90b113d4a36113e35123bdf63fc85a",
+      "parent": "t045",
+      "promptSha256": "e6487ef6e309b3c0b67d99cc2a42bda6c3375b784ce9152f39ed49533f15b860",
       "promptCharacters": 1610
     },
     {
@@ -500,8 +549,8 @@
       "methodId": "visual-revision",
       "replicate": 1,
       "phase": "revision",
-      "parent": "t016",
-      "promptSha256": "93b166e9a4a0462a438b95e14349fec249acd87676a1b11606c875aecc181e54",
+      "parent": "t046",
+      "promptSha256": "b90cbc2072cbb3af066a9a5646c8c4e6f5da09882643c0d17d3644005d78e3ac",
       "promptCharacters": 1613
     },
     {
@@ -510,8 +559,8 @@
       "methodId": "visual-revision",
       "replicate": 1,
       "phase": "revision",
-      "parent": "t021",
-      "promptSha256": "45b3d0cceb3f74f5a105266c435d5507fe4e67fc591d0239507195d52cf58f68",
+      "parent": "t047",
+      "promptSha256": "7e89c2416d5cefc61ac3214104d95cfd0ee1f91682cee32bfe22ec79c129fe8b",
       "promptCharacters": 1712
     },
     {
@@ -520,48 +569,152 @@
       "methodId": "visual-revision",
       "replicate": 1,
       "phase": "revision",
-      "parent": "t026",
-      "promptSha256": "5ee3d2a4c958a596a10c8fe2a05c97b161512aaa3748f0157877472ebf917bd0",
+      "parent": "t048",
+      "promptSha256": "830ebf23b77dc1772f4c10a2c1f2c9a4a4b1698a5f15d0cc199e9fa11e5aa704",
       "promptCharacters": 1748
+    },
+    {
+      "id": "t043",
+      "briefId": "stagehand",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "2194cabf7ec7de33dd234cfdcda38e43710d08fff11d539a4bea850c7ad363d5",
+      "promptCharacters": 7983
+    },
+    {
+      "id": "t044",
+      "briefId": "mushroom-chef",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        },
+        {
+          "path": "docs/SPRITE-GUIDE.md",
+          "sha256": "57792978452abd55359875a54e85e487606481135bfa3ad12f898fdca5f307dd"
+        }
+      ],
+      "promptSha256": "03658fdaf6c22e3d8b851451086b8a6346eb12c3ed8314894bca6c821132c40f",
+      "promptCharacters": 8018
+    },
+    {
+      "id": "t045",
+      "briefId": "clock",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "1b4452278da5dd35d4edf20a9297cd07e4f944f219ee5068d48fbdc4e8a83b8a",
+      "promptCharacters": 4594
+    },
+    {
+      "id": "t046",
+      "briefId": "teapot",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "79b84fe9b827cc7466cd81dac7a6aa69a813ad04adb5025f2008d856346f1c4a",
+      "promptCharacters": 4597
+    },
+    {
+      "id": "t047",
+      "briefId": "laundromat",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "ccf5af11a3e292d8c2022f11cd1b078afd9f80c1c6cc9de0f41febf1620d9dcd",
+      "promptCharacters": 4696
+    },
+    {
+      "id": "t048",
+      "briefId": "moon-office",
+      "methodId": "agent-current",
+      "replicate": 1,
+      "phase": "first-pass",
+      "guideSnapshots": [
+        {
+          "path": "skills/pelican-theater/references/svg.md",
+          "sha256": "6fc6fcbf0faa5f13984e8d3b275322b9fb3a693f4d85b52c884c61b6ded4efa0"
+        }
+      ],
+      "promptSha256": "21759ae42f75d48378250fed6354bd94b2f3f8c28fbac1ed3bcf284eec19eb8d",
+      "promptCharacters": 4732
     }
   ],
   "dispatchOrder": [
-    "t013",
-    "t036",
-    "t025",
-    "t022",
-    "t012",
-    "t006",
-    "t004",
-    "t030",
-    "t023",
-    "t010",
-    "t002",
-    "t027",
-    "t018",
-    "t033",
-    "t029",
-    "t016",
-    "t011",
-    "t021",
-    "t024",
-    "t017",
-    "t028",
-    "t009",
-    "t031",
-    "t008",
-    "t032",
-    "t014",
-    "t003",
-    "t001",
-    "t020",
-    "t005",
-    "t007",
-    "t019",
-    "t034",
     "t035",
+    "t006",
+    "t019",
+    "t018",
+    "t014",
+    "t036",
+    "t032",
+    "t016",
+    "t025",
+    "t013",
+    "t007",
+    "t028",
+    "t029",
+    "t009",
+    "t011",
     "t026",
+    "t003",
+    "t033",
+    "t034",
+    "t020",
+    "t045",
+    "t022",
     "t015",
+    "t027",
+    "t030",
+    "t021",
+    "t002",
+    "t012",
+    "t043",
+    "t010",
+    "t044",
+    "t048",
+    "t004",
+    "t001",
+    "t024",
+    "t005",
+    "t008",
+    "t023",
+    "t046",
+    "t047",
+    "t031",
+    "t017",
     "t037",
     "t038",
     "t039",

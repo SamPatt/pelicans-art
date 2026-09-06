@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <g id="body" stroke="#343942" stroke-width="1.5">
+    <g id="webbed-feet" fill="#DA963F">
+      <path id="foot-left" d="M31 119L30 131L24 138Q24 140 28 140L35 138L40 141L46 138L39 131L40 120Z"/>
+      <path id="foot-right" d="M51 119L52 132L46 140Q46 142 50 141L57 139L63 142L71 139L61 132L60 119Z"/>
+      <path d="M32 134L30 138M36 134L37 138M55 135L52 139M60 135L63 139" stroke="#A7672C" stroke-width="1"/>
+    </g>
+    <path id="torso-neck" fill="#EEEBDD" d="M35 36Q29 53 33 68Q20 77 22 98Q22 114 32 121L56 125Q70 116 68 97Q67 80 55 69L55 40Z"/>
+    <path id="neck-shadow" fill="#D1CFBE" stroke="none" d="M36 44Q34 62 43 72L55 81L58 71Q45 61 46 43Z"/>
+    <g id="overalls">
+      <path id="overall-trousers" fill="#547484" d="M25 84Q42 90 63 82L69 108Q70 117 63 128L49 129L44 115L43 129L27 127Q19 109 25 84Z"/>
+      <path id="overall-bib" fill="#638899" d="M32 80L55 80L60 102Q45 111 29 100Z"/>
+      <path id="strap-left" fill="#7D9AA5" d="M28 73L33 72L38 87L32 89Z"/>
+      <path id="strap-right" fill="#7D9AA5" d="M53 70L58 73L58 88L52 88Z"/>
+      <circle cx="35" cy="87" r="1.6" fill="#D6B96F"/>
+      <circle cx="55" cy="87" r="1.6" fill="#D6B96F"/>
+      <path id="bib-pocket" fill="#476879" d="M36 92L52 92L51 100Q44 105 37 100Z"/>
+      <path d="M25 120L42 122M50 123L65 122M26 102L30 107M59 106L64 102" stroke="#BCD0D3" stroke-width="1"/>
+      <path d="M44 107L44 115" stroke="#304D5E"/>
+    </g>
+    <g id="free-wing" fill="#F0EDDE">
+      <path d="M27 76Q16 80 16 95Q17 108 23 114Q26 111 25 105Q29 108 30 104L27 99Q33 101 32 96L28 90Q31 82 27 76Z"/>
+      <path d="M22 85Q20 95 25 105M24 93L28 99" stroke="#ABAFA4" stroke-width="1"/>
+    </g>
+    <g id="coiled-cable" stroke="#30323B" stroke-width="2.6">
+      <ellipse cx="77" cy="102" rx="13" ry="17"/>
+      <ellipse cx="77" cy="102" rx="9.5" ry="14"/>
+      <ellipse cx="77" cy="102" rx="6" ry="11"/>
+      <path d="M79 86Q88 78 90 87L91 100"/>
+      <path d="M72 116L73 124L79 126"/>
+      <path id="cable-plug" d="M90 99L92 105" stroke-width="4"/>
+      <path d="M92 105L93 108" stroke="#A1A8AE" stroke-width="2"/>
+    </g>
+    <path id="holding-wing" fill="#F0EDDE" d="M59 75Q66 74 70 85L78 86Q82 86 81 89L76 91L78 93Q78 96 73 95L66 93Q60 89 59 75Z"/>
+    <path d="M68 87L76 89" stroke="#ABAFA4" stroke-width="1"/>
+  </g>
+  <g id="head-bottom" stroke="#343942" stroke-width="1.5">
+    <path id="head-silhouette" fill="#F2EFE2" d="M34 44Q29 34 34 24Q41 14 53 19Q67 20 66 37L60 48Q54 56 45 54L36 52Z"/>
+    <path id="crown-feathers" fill="#F2EFE2" d="M37 23L35 17L42 20L42 14L48 19L51 16L54 21"/>
+    <path id="gular-pouch" fill="#D9AB61" d="M47 41L94 45Q81 51 66 61Q57 69 49 61Q44 55 47 41Z"/>
+    <path id="pouch-light" d="M52 49Q52 61 61 59L82 49" stroke="#F0CC83" stroke-width="2"/>
+    <path id="upper-bill" fill="#EBC574" d="M53 36Q69 35 93 41Q98 43 95 47L89 48Q73 45 51 45Z"/>
+    <path id="bill-ridge" d="M61 39L89 42" stroke="#FADE97" stroke-width="1.5"/>
+    <path id="nostril" d="M62 40L65 40.3" stroke="#8C642F" stroke-width="1"/>
+    <path id="mouth-closed" d="M51 44Q73 45 95 46" stroke="#77522E" stroke-width="1.4"/>
+    <ellipse id="mouth-open" cx="73" cy="45" rx="21" ry="2.6" fill="#69423B" stroke="#77522E" opacity="0"/>
+  </g>
+  <g id="head-top" stroke="#343942" stroke-width="1.3">
+    <g id="eyes">
+      <ellipse id="eye-right-white" cx="60" cy="32.5" rx="4.2" ry="5.5" fill="#FFFCF3"/>
+      <circle id="eye-right-pupil" class="pupil" cx="61.1" cy="34" r="1.8" fill="#30343A" stroke="none"/>
+      <ellipse id="eye-left-white" cx="49" cy="33" rx="5.3" ry="6" fill="#FFFCF3"/>
+      <circle id="eye-left-pupil" class="pupil" cx="50.7" cy="34.4" r="2.1" fill="#30343A" stroke="none"/>
+      <path id="lid-right" d="M56.1 30.6L63.8 31.6" stroke="#A2A498" stroke-width="1.6"/>
+      <path id="lid-left" d="M44 31.7L54 32.6" stroke="#A2A498" stroke-width="1.7"/>
+      <path id="brow-left" d="M43.4 25.4Q48 26.5 53 24.2" stroke-width="1.8"/>
+      <path id="brow-right" d="M57 24.9Q60 25 63.2 27" stroke-width="1.8"/>
+      <path d="M46 40.5L51 41.2M58 39.1L61.5 39.3" stroke="#B6B6A7" stroke-width="1"/>
+    </g>
+    <g id="headset">
+      <path id="headband" d="M33 36Q28 23 37 17Q48 9 60 21" stroke="#353B47" stroke-width="3.8"/>
+      <path d="M34 26Q34 19 41 17" stroke="#77808A" stroke-width="1"/>
+      <ellipse id="earcup" cx="34" cy="36" rx="5" ry="7.5" fill="#434B58"/>
+      <ellipse cx="33.5" cy="36" rx="2.5" ry="5" fill="#677786" stroke="none"/>
+      <path id="microphone-arm" d="M35 42Q37 54 48 53L53 51" stroke="#353B47" stroke-width="1.8"/>
+      <path id="microphone" d="M51 52L55 50.5" stroke="#353B47" stroke-width="3.5"/>
+    </g>
+  </g>
+</svg>

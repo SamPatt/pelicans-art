@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150">
+  <g id="body" stroke="#49392b" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+    <g id="stem-feet" fill="#eedcaa">
+      <path d="M37 123 Q33 130 31 136 Q28 140 31 143 Q38 146 45 141 L49 126Z"/>
+      <path d="M54 124 L56 140 Q64 144 72 140 Q76 137 70 134 L65 122Z"/>
+    </g>
+    <path id="mushroom-stalk" d="M35 51 Q32 71 34 87 Q34 103 28 120 Q24 133 43 135 Q65 138 72 127 Q74 122 69 109 Q62 88 64 57Z" fill="#f7e7b9"/>
+    <path id="stalk-shadow" d="M35 54 Q33 87 36 103 L31 120 Q28 130 41 131 L45 131 Q34 119 41 102 Q46 81 44 56Z" fill="#dfc78d" stroke="none"/>
+    <path id="left-arm" d="M34 89 Q22 86 20 98 L23 112 Q27 117 34 110" fill="#eedcaa"/>
+    <g id="apron">
+      <path d="M43 81 L41 92 M61 81 L62 92" fill="none" stroke="#52796f" stroke-width="4"/>
+      <path d="M41 89 Q52 92 63 88 L63 102 Q66 116 68 125 Q52 131 35 124 Q40 110 41 89Z" fill="#79a99a"/>
+      <path d="M41 103 Q52 106 64 101" fill="none" stroke="#426b61"/>
+      <path d="M46 108 L59 108 L59 116 Q52 121 46 116Z" fill="#d8e5cc"/>
+      <path d="M35 104 L30 100 L29 108 L36 106" fill="#79a99a"/>
+      <path d="M36 106 L31 117" fill="none" stroke="#52796f" stroke-width="3"/>
+    </g>
+    <g id="oven-mitt">
+      <path d="M21 112 Q14 108 13 98 L12 89 Q12 84 16 84 Q20 84 21 91 L22 93 L23 86 Q24 82 28 84 Q30 86 29 92 L31 101 Q32 107 27 111Z" fill="#df8b50"/>
+      <path d="M17 91 L27 101 M16 99 L24 107 M18 104 L27 93 M15 96 L22 89" stroke="#b7653d" stroke-width="1" fill="none"/>
+      <path d="M20 109 L29 105 L31 112 L23 116Z" fill="#f1c285"/>
+    </g>
+    <g id="wooden-spoon">
+      <path d="M80 97 L86 59" fill="none" stroke="#49392b" stroke-width="5.5"/>
+      <path d="M80 97 L86 59" fill="none" stroke="#c58c50" stroke-width="2.5"/>
+      <ellipse cx="87" cy="51" rx="6.5" ry="11" fill="#c58c50" transform="rotate(9 87 51)"/>
+      <path d="M88 44 Q82 47 85 55" fill="none" stroke="#9d6538" stroke-width="1.2"/>
+    </g>
+    <path id="right-arm" d="M64 91 Q67 97 71 99 Q77 101 82 93 Q84 89 81 88 Q79 86 76 90 L72 92 L68 85" fill="#f7e7b9"/>
+    <path id="finger-fold" d="M77 91 L80 93" fill="none"/>
+  </g>
+  <g id="head-top" stroke="#49392b" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round">
+    <path id="face-stem" d="M35 48 Q33 61 36 76 Q40 85 53 85 Q66 85 69 74 Q70 61 64 49Z" fill="#f7e7b9" stroke="none"/>
+    <g id="mushroom-cap">
+      <path id="cap-dome" d="M7 49 Q12 35 20 25 Q31 11 47 12 Q71 10 84 30 Q90 38 93 46 Q95 52 87 56 Q68 63 44 60 Q20 61 9 56 Q5 54 7 49Z" fill="#b94f3c"/>
+      <path id="cap-light" d="M14 44 Q28 15 49 16 Q65 15 77 30 Q57 20 43 26 Q25 31 14 44Z" fill="#d96b50" stroke="none"/>
+      <g id="cap-spots" fill="#f4e6c4" stroke="none">
+        <ellipse cx="30" cy="29" rx="7" ry="4.5" transform="rotate(-31 30 29)"/>
+        <ellipse cx="53" cy="23" rx="6" ry="4" transform="rotate(10 53 23)"/>
+        <ellipse cx="73" cy="35" rx="6.5" ry="4.5" transform="rotate(35 73 35)"/>
+        <ellipse cx="47" cy="41" rx="8" ry="5.8"/>
+        <ellipse cx="19" cy="46" rx="4.3" ry="3.4"/>
+        <ellipse cx="84" cy="46" rx="3.5" ry="3"/>
+      </g>
+      <path id="cap-underside" d="M8 51 Q25 45 48 48 Q72 48 92 47 Q89 59 61 62 Q27 64 8 55Z" fill="#dcb984"/>
+      <g id="gills" stroke="#a88357" stroke-width="1" fill="none">
+        <path d="M14 53 L38 57 M23 50 L43 57 M36 50 L47 57 M52 51 L52 58 M67 51 L58 58 M79 50 L63 59 M87 51 L68 59"/>
+      </g>
+      <path id="cap-rim" d="M8 51 Q25 45 48 48 Q72 48 92 47" fill="none" stroke="#743e2c"/>
+    </g>
+    <g id="eyes" fill="#fffaf0">
+      <ellipse id="eye-left-white" cx="49" cy="69" rx="6.2" ry="7"/>
+      <ellipse id="eye-right-white" cx="64" cy="67.8" rx="4.6" ry="6.2"/>
+      <circle id="eye-left-pupil" class="pupil" cx="51.4" cy="69.3" r="2.6" fill="#302d28" stroke="none"/>
+      <circle id="eye-right-pupil" class="pupil" cx="65.4" cy="68" r="2.2" fill="#302d28" stroke="none"/>
+    </g>
+    <path id="brow-left" d="M42 59 Q47 58 54 62" fill="none" stroke-width="2.8"/>
+    <path id="brow-right" d="M60 60 Q64 57 69 57.5" fill="none" stroke-width="2.5"/>
+  </g>
+  <g id="head-bottom">
+    <path id="mouth-closed" d="M54 80 Q60 75 66 79" fill="none" stroke="#713e31" stroke-width="2" stroke-linecap="round" opacity="0"/>
+    <ellipse id="mouth-open" cx="60" cy="78.36" rx="5" ry="4" fill="#713e31" opacity="1"/>
+  </g>
+</svg>

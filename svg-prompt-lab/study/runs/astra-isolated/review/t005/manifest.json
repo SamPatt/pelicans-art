@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Pelican stagehand",
+  "model": "GPT-6 Astra (inherited)",
+  "kind": "artwork",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 5524,
+      "sha256": "5ba6fe66aa5fb9216a424a9da18f14a010f2715613a68f1654f7bf25bf22482a"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 134855,
+      "sha256": "2134e42994a19e9a63ca864770deffd20ba50781cd50e6eaa0479a4c2b348885",
+      "width": 683,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <defs>
+    <linearGradient id="wall-light" x2="0" y2="1"><stop stop-color="#d9e5dd"/><stop offset="1" stop-color="#b5c5bf"/></linearGradient>
+    <linearGradient id="floor-light" x2="0" y2="1"><stop stop-color="#718985"/><stop offset="1" stop-color="#526c6c"/></linearGradient>
+    <linearGradient id="earth-light" x1="0" x2="1" y2=".5"><stop stop-color="#b9e0df"/><stop offset=".48" stop-color="#599fb1"/><stop offset="1" stop-color="#244d6b"/></linearGradient>
+    <clipPath id="window-interior"><rect x="129" y="28" width="122" height="78" rx="17"/></clipPath>
+    <clipPath id="earth-disc"><circle cx="192" cy="58" r="24"/></clipPath>
+  </defs>
+  <g id="background">
+    <path fill="url(#wall-light)" d="M0 0H400V169H0Z"/>
+    <path fill="#95aaa4" d="M0 153H400V170H0Z"/>
+    <path fill="#819893" d="M0 163H400V170H0Z"/>
+    <g id="wall-panels" fill="none" stroke="#a2b5ad" stroke-width="1">
+      <path d="M19 1V151M108 1V151M272 1V151M382 1V151M1 119H107M274 119H399"/>
+      <path d="M20 13H106M274 13H381" stroke="#edf0df"/>
+    </g>
+    <g id="rear-window">
+      <rect x="121" y="20" width="138" height="94" rx="24" fill="#859b94"/>
+      <rect x="125" y="23" width="130" height="87" rx="21" fill="#edf0dc" stroke="#687e79" stroke-width="2"/>
+      <g clip-path="url(#window-interior)">
+        <rect x="129" y="28" width="122" height="78" fill="#172e43"/>
+        <g fill="#d9e9dc"><circle cx="145" cy="39" r=".7"/><circle cx="235" cy="47" r=".8"/><circle cx="158" cy="69" r=".6"/><circle cx="224" cy="32" r=".6"/></g>
+        <circle cx="192" cy="58" r="25" fill="#7baebc" opacity=".25"/>
+        <circle cx="192" cy="58" r="24" fill="url(#earth-light)"/>
+        <g clip-path="url(#earth-disc)">
+          <path d="M172 42L181 40L184 45L194 46L193 52L185 55L183 62L175 60L171 54ZM196 60L203 59L210 64L206 71L201 73L198 81L192 78L194 68Z" fill="#a4b8a1"/>
+          <path d="M166 50Q186 33 215 48M170 65Q185 53 213 60M178 77Q189 67 211 70" fill="none" stroke="#e8efdf" stroke-width="3" opacity=".8"/>
+          <path d="M200 31Q218 58 200 85H221V29Z" fill="#153a57" opacity=".35"/>
+        </g>
+        <path d="M126 93L143 85L158 89L176 83L196 92L214 88L239 83L255 90V111H125Z" fill="#9faeac"/>
+        <path d="M126 102L149 95L177 99L203 95L228 99L255 93V110H126Z" fill="#bec6ba"/>
+        <ellipse cx="159" cy="99" rx="9" ry="2" fill="#899e9c"/><ellipse cx="232" cy="95" rx="6" ry="1.3" fill="#879c9b"/>
+      </g>
+      <g fill="#83978d"><circle cx="135" cy="29" r="1.6"/><circle cx="246" cy="29" r="1.6"/><circle cx="133" cy="103" r="1.6"/><circle cx="247" cy="103" r="1.6"/></g>
+    </g>
+    <g id="office-fixtures">
+      <rect x="29" y="36" width="61" height="47" rx="3" fill="#8a9c87" stroke="#6c8077" stroke-width="2"/>
+      <path fill="#e8e4c9" d="M36 43L55 41L57 62L38 64Z"/><path fill="#c4d4d0" d="M63 48H82V75H63Z"/>
+      <circle cx="44" cy="44" r="1.5" fill="#b97957"/><circle cx="72" cy="50" r="1.5" fill="#b97957"/>
+      <path d="M39 56L45 49L51 56Z" fill="#c7b78c"/><circle cx="72" cy="64" r="5" fill="#9bafa9"/>
+      <rect x="300" y="26" width="52" height="21" rx="5" fill="#a5b8af"/>
+      <path d="M308 33H344M308 38H344M308 43H344" stroke="#6a817a" stroke-width="2"/>
+    </g>
+  </g>
+  <g id="midground">
+    <g id="waiting-chair-orange" stroke="#526a68" stroke-width="2" stroke-linejoin="round">
+      <path d="M29 135L27 162M53 134L55 162" fill="none"/>
+      <path d="M24 112Q24 107 29 107H50Q54 107 54 112L52 133H27Z" fill="#c28d60"/>
+      <path d="M23 134Q39 130 56 134L55 140H24Z" fill="#ddaa78"/>
+      <path d="M30 114H48" fill="none" stroke="#dfa779"/>
+    </g>
+    <g id="waiting-chair-blue" stroke="#526a68" stroke-width="2" stroke-linejoin="round">
+      <path d="M70 134L67 162M92 134L96 162M64 123V143M100 123V143" fill="none"/>
+      <rect x="68" y="100" width="27" height="32" rx="9" fill="#769d9d"/>
+      <path d="M67 133Q81 129 96 133L96 141H67Z" fill="#9abbb5"/>
+      <path d="M62 123H70M94 123H102" fill="none"/>
+      <path d="M74 109Q81 106 89 109" fill="none" stroke="#acc6bc"/>
+    </g>
+    <g id="waiting-chair-yellow" stroke="#596b60" stroke-width="2" stroke-linejoin="round">
+      <path d="M116 122L113 162M137 122L141 162" fill="none"/>
+      <path d="M111 110H140V128H111Z" fill="#c9ba7c"/>
+      <path d="M111 134H141V140H111Z" fill="#d9cc99"/>
+      <path d="M114 119H137" fill="none" stroke="#aa9e69"/>
+    </g>
+    <g id="service-counter">
+      <path d="M243 117H380V163H243Z" fill="#8b9c85" stroke="#506d66" stroke-width="2"/>
+      <path d="M251 126H371V153H251Z" fill="#acb99d"/>
+      <path d="M256 131H367M256 134H367" stroke="#c7cfb0"/>
+      <path d="M244 157H379V164H244Z" fill="#586f68"/>
+      <path d="M235 110H384V119H235Z" fill="#e4dac0" stroke="#516e67" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M237 112H382" stroke="#f5eed4"/>
+      <g id="service-hatch" fill="none" stroke="#708b81" stroke-width="3">
+        <path d="M249 107V60Q249 54 255 54H372Q378 54 378 60V107"/>
+      </g>
+      <path d="M259 61H368V98H259Z" fill="#d4e6d8" opacity=".28"/>
+      <path d="M262 63L282 63L264 86Z" fill="#eff3df" opacity=".45"/>
+      <g id="counter-stamp">
+        <path d="M349 104H363V109H349Z" fill="#455f5a"/>
+        <path d="M353 104V98Q350 91 356 91Q362 91 359 98V104Z" fill="#b47e59"/>
+      </g>
+      <g id="floating-paper-tray">
+        <path d="M291 85L329 81L340 89L302 94Z" fill="#5e7c79" stroke="#416461" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M294 82L326 79L336 86L303 90Z" fill="#efead2"/>
+        <path d="M296 78L328 75L336 82L304 86Z" fill="#faf2da"/>
+        <path d="M300 71L324 69L329 73L305 76Z" fill="#ede7cd"/>
+        <path d="M291 84L302 91L339 87V93L302 98L291 90Z" fill="#87a6a0" stroke="#416461" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M306 103H327" stroke="#86a79c" stroke-width="1" opacity=".65"/>
+      </g>
+    </g>
+  </g>
+  <g id="foreground">
+    <path id="clear-staging-floor" d="M0 169H400V225H0Z" fill="url(#floor-light)"/>
+    <path d="M0 169H400" stroke="#a9bbb0" stroke-width="1"/>
+  </g>
+</svg>

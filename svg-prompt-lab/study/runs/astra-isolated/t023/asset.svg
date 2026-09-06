@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <g id="background">
+    <path fill="#174650" d="M0 0H400V225H0Z"/>
+    <path fill="#398E91" d="M5 5H395V168H5Z"/>
+    <path fill="#174650" d="M5 157H395V169H5Z"/>
+    <path fill="#75C8BB" d="M15 16H23V151H15ZM377 16H385V151H377Z"/>
+    <path fill="none" stroke="#174650" stroke-width="5" stroke-linecap="round" d="M34 13V28Q125 52 220 26V13"/>
+  </g>
+  <g id="midground" stroke="#174650" stroke-linejoin="round">
+    <g id="hanging-socks" stroke-width="3">
+      <path fill="#F3E5BA" d="M61 33L82 37L76 65Q76 70 69 70L52 66Q45 65 47 58Q49 54 60 57Z"/>
+      <path fill="#E7836A" d="M116 41L135 42L136 69Q136 77 128 77L111 77Q104 76 105 70Q106 65 117 66Z"/>
+      <path fill="#F3E5BA" d="M175 37L194 34L198 57Q200 64 194 67L179 71Q171 72 170 66Q169 60 180 58Z"/>
+      <path fill="none" d="M63 42L79 45M118 50L134 50M177 45L195 42"/>
+    </g>
+    <g id="washing-machine-bank" stroke-width="4">
+      <path fill="#F3E5BA" d="M31 90Q31 80 43 80H117L126 85H216Q223 85 223 94V162H31Z"/>
+      <path fill="#D7AB58" d="M34 83H116L126 88H220V105H34Z" stroke="none"/>
+      <path fill="none" d="M126 88V160M34 105H220"/>
+      <path fill="#E7836A" d="M44 91H62V98H44Z" stroke-width="2"/>
+      <path fill="#E7836A" d="M139 93H157V100H139Z" stroke-width="2"/>
+      <path fill="#174650" d="M100 89A6 6 0 1 1 99.9 89ZM202 91A6 6 0 1 1 201.9 91Z" stroke="none"/>
+      <g id="left-round-door">
+        <circle cx="78" cy="132" r="25" fill="#75C8BB"/>
+        <circle cx="78" cy="132" r="18" fill="#174650" stroke="none"/>
+        <path fill="#398E91" d="M62 130Q70 135 78 130Q86 125 95 132Q94 146 78 149Q62 146 62 130Z" stroke="none"/>
+        <path fill="none" stroke="#F3E5BA" stroke-width="3" stroke-linecap="round" d="M65 125Q69 118 76 118"/>
+        <path fill="#D7AB58" d="M97 127H103V138H97Z" stroke-width="2"/>
+      </g>
+      <g id="right-round-door">
+        <circle cx="173" cy="132" r="25" fill="#75C8BB"/>
+        <circle cx="173" cy="132" r="18" fill="#174650" stroke="none"/>
+        <path fill="#398E91" d="M157 134Q165 128 173 133Q181 138 190 131Q190 147 173 149Q160 146 157 134Z" stroke="none"/>
+        <path fill="none" stroke="#F3E5BA" stroke-width="3" stroke-linecap="round" d="M160 125Q164 118 171 118"/>
+        <path fill="#D7AB58" d="M192 127H198V138H192Z" stroke-width="2"/>
+      </g>
+    </g>
+    <g id="large-porthole" stroke-width="4">
+      <path fill="#D7AB58" d="M298 35C332 31 363 50 365 86C368 121 343 148 311 150C277 152 249 131 246 99C243 65 263 39 298 35Z"/>
+      <circle cx="306" cy="93" r="45" fill="#174650"/>
+      <path fill="#398E91" stroke="none" d="M269 109Q285 101 303 111Q324 123 345 105Q338 134 308 135Q282 136 269 109Z"/>
+      <path fill="none" stroke="#F3E5BA" stroke-width="4" stroke-linecap="round" d="M272 77Q279 58 298 55"/>
+      <g id="curious-fish" stroke-width="2.5">
+        <path fill="#E7836A" d="M322 88L340 77Q335 92 341 106L322 101Q314 115 300 107Q288 103 282 94Q291 82 304 80Q316 77 322 88Z"/>
+        <path fill="#D7AB58" d="M302 80L309 70L318 82M306 107L312 115L319 105"/>
+        <path fill="#F3E5BA" d="M291 88A7 7 0 1 0 305 88A7 7 0 1 0 291 88Z"/>
+        <circle cx="295" cy="88" r="2.7" fill="#174650" stroke="none"/>
+        <path fill="none" stroke-linecap="round" d="M284 95L290 96M315 90Q309 96 316 100"/>
+      </g>
+      <path fill="none" stroke-width="5" stroke-linecap="round" d="M305 41V46M353 91H358M307 140V145M252 94H257"/>
+    </g>
+  </g>
+  <g id="foreground">
+    <path id="continuous-actor-floor" fill="#75C8BB" d="M0 169H400V225H0Z"/>
+    <path fill="#F3E5BA" d="M5 172H395V177H5Z"/>
+    <path fill="#398E91" d="M5 215H395V220H5Z"/>
+  </g>
+</svg>

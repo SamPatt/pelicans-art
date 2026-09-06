@@ -1,0 +1,9 @@
+{
+  "model": "GPT-6 Astra",
+  "rendered": false,
+  "deviations": [
+    "An unused clipPath includes an invalid height value; preserved without repair."
+  ],
+  "output_characters": 6098,
+  "output_bytes": 6098
+}

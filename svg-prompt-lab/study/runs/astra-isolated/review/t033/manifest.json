@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Bureaucratic cuckoo clock",
+  "model": "GPT-6 Astra",
+  "kind": "artwork",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 2325,
+      "sha256": "34b7199789250fa3ef02b283fd39e6557e1c80ad592be04c48b6e8df951ee5b4"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 78056,
+      "sha256": "16457c2d0bb7a40f81bfce1a104c698a0707b34db0b1a102c89df0cfce5ae630",
+      "width": 1024,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

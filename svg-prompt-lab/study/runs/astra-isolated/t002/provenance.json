@@ -1,0 +1,33 @@
+{
+  "model": "GPT-6 Astra (inherited)",
+  "rendered": false,
+  "visual_inspection": false,
+  "repair_passes": 0,
+  "svg_bytes": 4449,
+  "svg_characters": 4449,
+  "deviations": [
+    "Delivered SVG and provenance as files according to DELIVERY rather than returning the browser snapshot JSON envelope."
+  ],
+  "meta": {
+    "name": "Cable Call",
+    "type": "creature",
+    "description": "Tired but proud pelican stagehand in oversized teal overalls with headset and coiled cable, facing right in three-quarter view.",
+    "tags": [
+      "pelican",
+      "stagehand",
+      "overalls",
+      "headset",
+      "cable"
+    ],
+    "voice": {
+      "id": "alba",
+      "pitch": 0,
+      "speed": 1
+    },
+    "colors": {
+      "skin": "#fff5df",
+      "hair": "#fff5df",
+      "primary": "#337b93"
+    }
+  }
+}

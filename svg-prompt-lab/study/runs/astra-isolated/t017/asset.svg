@@ -1,0 +1,30 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <g id="handle" stroke="#302340" stroke-width="3.2" stroke-linejoin="round">
+    <path d="M70 45C96 31 103 65 81 76L72 76L72 67C91 70 96 43 76 54Z" fill="#E9AE39"/>
+  </g>
+  <g id="spout" stroke="#302340" stroke-width="3.2" stroke-linejoin="round">
+    <path d="M34 56C20 58 22 36 9 32L5 36C14 45 9 64 23 71L35 73Z" fill="#9353AC"/>
+    <path d="M6 32C8 30 14 31 16 34C14 37 9 38 5 36Z" fill="#E9AE39"/>
+    <path d="M9 33L13 34" fill="none" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <g id="teapot-body" stroke="#302340" stroke-width="3" stroke-linejoin="round">
+    <path d="M39 42C27 46 23 57 25 68C27 80 38 85 55 85C73 85 84 77 83 64C83 53 75 44 65 42Z" fill="#9353AC"/>
+    <path d="M66 46C80 53 82 65 76 74C71 81 58 84 45 82C63 88 85 80 83 64C83 54 76 47 66 46Z" fill="#723989" stroke="none"/>
+    <path d="M34 77C44 81 61 82 74 76L72 82C61 88 42 86 35 82Z" fill="#E9AE39"/>
+    <ellipse cx="52" cy="44" rx="17" ry="5" fill="#302340"/>
+    <path d="M34 48C43 53 63 53 73 47" fill="none" stroke="#F4C85C" stroke-width="3.5"/>
+    <path d="M34 58C32 63 33 67 35 69" fill="none" stroke="#BF85CD" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <g id="escaping-steam" fill="none" stroke="#B5BDCA" stroke-width="3" stroke-linecap="round">
+    <path d="M43 39C35 33 44 30 39 24"/>
+    <path d="M55 40C49 32 58 29 53 23"/>
+    <path d="M66 36C71 29 62 27 66 20"/>
+  </g>
+  <g id="tilted-lid" transform="rotate(-17 50 32)" stroke="#302340" stroke-width="2.7" stroke-linejoin="round">
+    <path d="M32 32C34 24 43 22 50 22C58 22 66 26 69 32Z" fill="#9353AC"/>
+    <ellipse cx="50" cy="32" rx="20" ry="4" fill="#E9AE39"/>
+    <path d="M40 15L43 25Q50 28 57 25L60 15L53 19L50 12L46 19Z" fill="#F5C74F"/>
+    <path d="M44 24Q50 26 56 24" fill="none" stroke="#B97922" stroke-width="1.7"/>
+    <path d="M50 21L52 23L50 25L48 23Z" fill="#C44564" stroke="none"/>
+  </g>
+</svg>

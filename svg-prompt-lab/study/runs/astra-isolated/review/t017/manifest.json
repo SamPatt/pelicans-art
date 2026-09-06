@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Royal teapot",
+  "model": "GPT-6 Astra",
+  "kind": "artwork",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 1942,
+      "sha256": "ec5930260de3716dcb32fc97902f2470561f27f0a4605d68bad3d65abd4e8c35"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 85693,
+      "sha256": "a3d42097ba567fbbb2d77ebc4c8613ca8fb7d40b29db438dd5b1b838e228e591",
+      "width": 1024,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

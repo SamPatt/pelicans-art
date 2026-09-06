@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Moon permit office",
+  "model": "GPT-6 Astra",
+  "kind": "artwork",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "5e8979e78130e4ac75d9e025b95179b4ad8cf2ee",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 6098,
+      "sha256": "8e1553247a149c65d4482d52fef6e814e9fdd42680b360cb04ee25d88736a5c4"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 64907,
+      "sha256": "6c80cd66a46f86192495f326114168b639385f61eb1cddd74d845805f5f0bf27",
+      "width": 1024,
+      "height": 576
+    }
+  ],
+  "warnings": []
+}
