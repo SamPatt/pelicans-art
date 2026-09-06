@@ -29,31 +29,6 @@
       }
     });
 
-    // --- Theme toggle ---
-    function applyTheme(theme) {
-      if (theme === 'ocean') {
-        document.documentElement.dataset.theme = 'ocean';
-        document.getElementById('themeIcon').innerHTML = '&#9728;';
-        document.getElementById('themeLabel').textContent = 'Beach';
-      } else {
-        delete document.documentElement.dataset.theme;
-        document.getElementById('themeIcon').innerHTML = '&#127754;';
-        document.getElementById('themeLabel').textContent = 'Ocean';
-      }
-    }
-    function toggleTheme() {
-      const current = document.documentElement.dataset.theme === 'ocean' ? 'ocean' : 'beach';
-      const next = current === 'ocean' ? 'beach' : 'ocean';
-      localStorage.setItem('pelicans-theme', next);
-      applyTheme(next);
-    }
-    (function initTheme() {
-      const saved = localStorage.getItem('pelicans-theme');
-      if (saved) { applyTheme(saved); return; }
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) { applyTheme('ocean'); }
-    })();
-    document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-
     // --- Community carousel ---
     (async function initCarousel() {
       const API = 'https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community';

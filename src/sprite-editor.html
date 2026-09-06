@@ -3160,6 +3160,8 @@
       #command-bar .command-status { min-width: 0; overflow-wrap: anywhere; }
     }
   </style>
+<link rel="stylesheet" href="/site.css">
+<script src="/js/site-shell.js" defer></script>
 </head>
 <body>
   <!-- Help Modal -->
@@ -3321,15 +3323,7 @@
     }
   </style>
   
-  <nav class="pelicans-nav">
-    <a href="./" class="pelicans-nav-logo">pelicans<span>.art</span></a>
-    <ul class="pelicans-nav-links">
-      <li><a href="sprite-editor.html" class="active">Studio</a></li>
-      <li><a href="./">Watch</a></li>
-      <li><a href="community.html">The <span style="color:var(--pouch-orange)">Pouch</span></a></li>
-      <li><button class="theme-toggle" id="themeToggle" data-ait-onclick="toggleTheme()"><span class="theme-toggle-icon" id="themeIcon">&#127754;</span> <span id="themeLabel">Ocean</span></button></li>
-    </ul>
-  </nav>
+  <nav class="pelicans-nav" aria-label="Main navigation"><a href="/" class="pelicans-nav-logo">pelicans<span>.art</span></a><ul class="pelicans-nav-links"><li><a href="/#now-playing">Watch</a></li><li><a href="/community.html">The Pouch</a></li><li><a href="/agent.html">Create</a></li></ul></nav>
   <header>
     <div class="toolbar">
       <div class="toolbar-dropdown-wrapper">

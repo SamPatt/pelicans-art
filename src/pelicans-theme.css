@@ -3,9 +3,6 @@
    Import via: <link rel="stylesheet" href="pelicans-theme.css">
    ============================================ */
 
-/* Google Fonts (also add link tags in HTML for faster loading) */
-@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
-
 :root {
   /* === Pouch (Primary Warm) === */
   --pouch-orange: #F5A623;
@@ -159,68 +156,6 @@
 .tag-skit { background: #FCE4EC; color: #C62828; border-color: #F48FB1; }
 .tag-new { background: var(--pouch-orange); color: #fff; }
 
-/* Shared nav bar */
-.pelicans-nav {
-  background: var(--plumage-white);
-  border-bottom: 2px solid var(--plumage-cream);
-  padding: 0 24px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
-  z-index: 100;
-  overflow: hidden;
-}
-
-.pelicans-nav-logo {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--text-xl);
-  color: var(--wing-dark);
-  text-decoration: none;
-  margin-right: var(--space-8);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.pelicans-nav-logo span { color: var(--pouch-orange); }
-
-.pelicans-nav-links {
-  display: flex;
-  gap: var(--space-6);
-  list-style: none;
-  align-items: center;
-}
-
-.pelicans-nav-links a {
-  text-decoration: none;
-  color: var(--wing-gray);
-  font-family: var(--font-body);
-  font-size: var(--text-base);
-  font-weight: 500;
-  padding-bottom: 4px;
-  transition: color var(--duration-fast);
-}
-
-.pelicans-nav-links a:hover { color: var(--wing-dark); }
-
-.pelicans-nav-links a.active {
-  color: var(--ocean-blue);
-  border-bottom: 2px solid var(--pouch-orange);
-}
-
-/* Dark variant of nav for player */
-.pelicans-nav.dark {
-  background: var(--player-surface);
-  border-bottom-color: var(--player-border);
-}
-
-.pelicans-nav.dark .pelicans-nav-logo { color: var(--player-text); }
-.pelicans-nav.dark .pelicans-nav-links a { color: rgba(232,228,223,0.6); }
-.pelicans-nav.dark .pelicans-nav-links a:hover { color: var(--player-text); }
-.pelicans-nav.dark .pelicans-nav-links a.active { color: var(--ocean-blue); }
-
 /* Wave divider */
 .wave-divider {
   width: 100%;
@@ -282,77 +217,11 @@
   --shadow-ocean: 0 0 20px rgba(45,142,196,0.2);
 }
 
-/* Nav auto-adapts to ocean mode */
-:root[data-theme="ocean"] .pelicans-nav {
-  background: var(--plumage-cream);
-  border-bottom-color: var(--sand-warm);
-}
-
-:root[data-theme="ocean"] .pelicans-nav-logo { color: var(--wing-dark); }
-:root[data-theme="ocean"] .pelicans-nav-links a { color: var(--wing-gray); }
-:root[data-theme="ocean"] .pelicans-nav-links a:hover { color: var(--wing-dark); }
-:root[data-theme="ocean"] .pelicans-nav-links a.active { color: var(--ocean-blue); }
-
 /* Tag adjustments for ocean mode */
 :root[data-theme="ocean"] .tag-character { background: #1B3244; color: #5BB8E0; border-color: #1B4A62; }
 :root[data-theme="ocean"] .tag-background { background: #2A3A4A; color: #C4B08A; border-color: #3A4A5A; }
 :root[data-theme="ocean"] .tag-prop { background: #3A2A1A; color: #FFCC80; border-color: #5A3A1A; }
 :root[data-theme="ocean"] .tag-skit { background: #3A1A2A; color: #F48FB1; border-color: #5A2A3A; }
-
-/* Theme toggle button */
-.theme-toggle {
-  background: transparent;
-  border: 1px solid var(--sand-warm);
-  border-radius: var(--radius-full);
-  color: var(--wing-gray);
-  cursor: pointer;
-  padding: 6px 12px;
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all var(--duration-fast) var(--ease-standard);
-  white-space: nowrap;
-}
-
-.theme-toggle:hover {
-  border-color: var(--ocean-blue);
-  color: var(--wing-dark);
-}
-
-.theme-toggle-icon { font-size: 16px; line-height: 1; }
-
-/* === Mobile nav === */
-@media (max-width: 768px) {
-  .pelicans-nav {
-    padding: 0 var(--space-3);
-  }
-
-  .pelicans-nav-logo {
-    margin-right: var(--space-3);
-    font-size: var(--text-base);
-  }
-
-  .pelicans-nav-links {
-    gap: var(--space-3);
-  }
-
-  .pelicans-nav-links a {
-    font-size: var(--text-sm);
-    white-space: nowrap;
-  }
-
-  /* Theme toggle: icon only on mobile */
-  #themeLabel {
-    display: none;
-  }
-
-  .theme-toggle {
-    padding: 6px 8px;
-  }
-}
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {

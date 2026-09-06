@@ -682,8 +682,6 @@
       copyAssetLink();
     }
   }
-
-  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
   document.getElementById('detail-close-btn').addEventListener('click', closeDetail);
   document.getElementById('load-more-btn').addEventListener('click', loadMore);
   document.getElementById('category-tabs').addEventListener('click', (event) => {
@@ -694,27 +692,3 @@
   document.getElementById('detail-content').addEventListener('click', handleDetailButtonClick);
 
   init();
-
-  // --- Theme toggle ---
-  function applyTheme(theme) {
-    if (theme === 'ocean') {
-      document.documentElement.dataset.theme = 'ocean';
-      document.getElementById('themeIcon').innerHTML = '&#9728;';
-      document.getElementById('themeLabel').textContent = 'Beach';
-    } else {
-      delete document.documentElement.dataset.theme;
-      document.getElementById('themeIcon').innerHTML = '&#127754;';
-      document.getElementById('themeLabel').textContent = 'Ocean';
-    }
-  }
-  function toggleTheme() {
-    const current = document.documentElement.dataset.theme === 'ocean' ? 'ocean' : 'beach';
-    const next = current === 'ocean' ? 'beach' : 'ocean';
-    localStorage.setItem('pelicans-theme', next);
-    applyTheme(next);
-  }
-  (function initTheme() {
-    const saved = localStorage.getItem('pelicans-theme');
-    if (saved) { applyTheme(saved); return; }
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) { applyTheme('ocean'); }
-  })();

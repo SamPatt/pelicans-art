@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; base-uri 'self'; object-src 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self'; base-uri 'self'; object-src 'none';">
   <title>How pelicans.art works</title>
   <link rel="stylesheet" href="pelicans-theme.css">
   <style>
@@ -22,16 +22,11 @@
     .note { border-left: 4px solid var(--pouch-orange); padding: 4px 0 4px 18px; }
     @media (max-width: 650px) { .pipeline { grid-template-columns: 1fr 1fr; } main { padding-top: 36px; } }
   </style>
+<link rel="stylesheet" href="/site.css">
+<script src="/js/site-shell.js" defer></script>
 </head>
 <body>
-  <nav class="pelicans-nav">
-    <a href="./" class="pelicans-nav-logo">pelicans<span>.art</span></a>
-    <ul class="pelicans-nav-links">
-      <li><a href="./">Watch</a></li>
-      <li><a href="community.html">The <span style="color:var(--pouch-orange)">Pouch</span></a></li>
-      <li><a href="how-it-works.html" class="active">How it works</a></li>
-    </ul>
-  </nav>
+  <nav class="pelicans-nav" aria-label="Main navigation"><a href="/" class="pelicans-nav-logo">pelicans<span>.art</span></a><ul class="pelicans-nav-links"><li><a href="/#now-playing">Watch</a></li><li><a href="/community.html">The Pouch</a></li><li><a href="/agent.html">Create</a></li></ul></nav>
 
   <main>
     <div class="eyebrow">Behind the pouch</div>

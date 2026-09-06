@@ -1,0 +1,90 @@
+/* Site-wide shell. Page styles own content layout; this owns palette and navigation. */
+:root {
+  color-scheme:light;
+  --paper:#fffdf5; --ink:#123940; --sea:#087f8c; --bill:#ffc94a; --coral:#f49889; --surf:#dcefeb;
+  --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --font-body:var(--font); --font-display:var(--font);
+  --plumage-white:var(--paper); --plumage-cream:var(--surf);
+  --wing-dark:var(--ink); --wing-gray:#45656b; --wing-tip:var(--ink);
+  --pouch-orange:#915400; --pouch-deep:#915400;
+  --ocean-blue:var(--sea); --ocean-deep:#086773; --ocean-foam:var(--surf); --ocean-shallow:#c1dcd6;
+  --sand-warm:#a4beb7; --sand-pale:var(--surf); --water-deep:var(--sea);
+  --player-bg:var(--paper); --player-surface:var(--surf); --player-text:var(--ink); --player-border:var(--sand-warm);
+}
+:root[data-theme="ocean"] {
+  color-scheme:dark;
+  --paper:#153e47; --ink:#f4f7ed; --sea:#90d6cf; --surf:#245560;
+  --plumage-white:var(--paper); --plumage-cream:var(--surf);
+  --wing-dark:var(--ink); --wing-gray:#c0d6d6; --wing-tip:var(--ink);
+  --pouch-orange:#ffcf68; --pouch-deep:#ffcf68;
+  --ocean-foam:var(--surf); --ocean-shallow:#376c72; --sand-warm:#679095; --sand-pale:var(--surf);
+}
+html { background:var(--paper); }
+body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--font); }
+body:not(.embed-mode) { background:var(--paper); }
+a { color:inherit; }
+:focus-visible { outline:3px solid var(--sea); outline-offset:4px; }
+body .pelicans-nav {
+  box-sizing:border-box; width:100%; max-width:1320px; height:auto; min-height:88px;
+  margin:0 auto; padding:25px 48px; display:flex; flex-wrap:wrap; align-items:center;
+  justify-content:space-between; gap:20px; background:transparent; border:0;
+  overflow:visible; position:relative; z-index:10; flex-shrink:0;
+}
+body .pelicans-nav .pelicans-nav-logo {
+  margin:0; font:850 31px/1.2 var(--font); letter-spacing:-1.5px;
+  color:var(--ink); text-decoration:none; white-space:nowrap;
+}
+body .pelicans-nav-logo span { color:var(--sea); }
+body .pelicans-nav-links {
+  display:flex; flex-wrap:wrap; gap:30px; align-items:center; list-style:none; margin:0; padding:0;
+}
+body .pelicans-nav-links li { margin:0; padding:0; }
+body .pelicans-nav .pelicans-nav-links a {
+  color:var(--ink); font:650 15px/1.5 var(--font); text-decoration:none; padding:0; border:0; white-space:nowrap;
+}
+body .pelicans-nav-links a:hover, body .pelicans-nav-links a[aria-current="page"] {
+  text-decoration:underline; text-underline-offset:6px; text-decoration-color:var(--sea);
+}
+body .pelicans-nav .theme-toggle {
+  display:inline-flex; align-items:center; gap:6px; background:transparent; color:var(--ink);
+  border:1px solid currentColor; border-radius:30px; padding:6px 12px; margin:0;
+  font:500 13px/1.4 var(--font); box-shadow:none; cursor:pointer;
+}
+body .btn-pouch, body .btn-play, body .detail-header-play, body .category-tab.active,
+body .agent-page button, body .agent-page .download, body .watch-page button {
+  background:var(--bill); color:#123940; border:2px solid #123940; border-radius:8px;
+  box-shadow:2px 3px 0 #123940; font-family:var(--font); font-weight:650;
+}
+body .btn-download { background:var(--sea); color:var(--paper); box-shadow:none; }
+body .agent-page, body .watch-page { max-width:1040px; margin:auto; padding:32px 24px 72px; }
+body .agent-page { max-width:808px; }
+body .agent-page textarea { background:var(--paper); color:var(--ink); border-color:var(--sand-warm); }
+body .watch-page .model { color:var(--wing-gray); }
+body .watch-page header { justify-content:flex-end; }
+body .page-header h2 { font-size:clamp(32px,5vw,48px); line-height:1.1; font-weight:800; letter-spacing:-1px; }
+body .eyebrow { color:var(--wing-gray); text-transform:none; letter-spacing:0; }
+body.embed-mode .pelicans-nav { display:none; }
+body.embed-mode.controls-below { background:transparent; }
+body #viewport { box-shadow:none; }
+@media(max-width:768px) {
+  body .pelicans-nav { padding:20px; gap:16px; min-height:76px; }
+  body .pelicans-nav .pelicans-nav-logo { font-size:26px; }
+  body .pelicans-nav-links { gap:16px; }
+  body .pelicans-nav .pelicans-nav-links a { font-size:13px; }
+  body .pelicans-nav .theme-toggle { padding:6px 8px; }
+  #themeLabel { display:none; }
+}
+@media(max-width:380px) {
+  body .pelicans-nav { padding:17px; gap:8px; }
+  body .pelicans-nav .pelicans-nav-logo { font-size:22px; }
+  body .pelicans-nav-links { gap:12px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
+}
+body .pelicans-footer { background:var(--surf); color:var(--ink); }
+body .pelicans-footer-wave { display:none; }
+body .pelicans-footer-logo, body .pelicans-footer-tagline { color:var(--ink); }
+body .pelicans-footer-logo span { color:var(--sea); }
+body #controls button { background:var(--bill); color:#123940; border:2px solid #123940; box-shadow:none; }
+.pelicans-footer .pelicans-nav-logo { font:850 28px/1.2 var(--font); letter-spacing:-1.5px; text-decoration:none; }
