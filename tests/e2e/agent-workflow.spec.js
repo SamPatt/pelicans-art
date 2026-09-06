@@ -16,7 +16,7 @@ test('agent instructions are discoverable, copyable, and phone-sized',async({pag
  expect(receipt.ref).toMatch(/^[a-f0-9]{40}$/);
  expect(prompt).toContain('pelican-theater/SKILL.md');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
- const download=await page.request.get('/downloads/pelican-theater-1.0.5.zip');expect(download.ok()).toBe(true);expect((await download.body()).subarray(0,2).toString()).toBe('PK');
+ const download=await page.request.get('/downloads/pelican-theater-1.0.6.zip');expect(download.ok()).toBe(true);expect((await download.body()).subarray(0,2).toString()).toBe('PK');
 });
 test('agent bundle imports into editable browser assets and exports unchanged recorded audio',async({page})=>{
  await page.addInitScript(()=>localStorage.setItem('ait-welcome-dismissed','1'));
