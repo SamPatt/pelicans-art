@@ -127,3 +127,28 @@ test('saved build manifest resolves after moving delivery files while CLI paths 
  const delivery=await fs.mkdtemp(path.join(os.tmpdir(),'theater-relocated-'));t.after(()=>fs.rm(delivery,{recursive:true,force:true}));await fs.cp(path.join(root,'output'),path.join(delivery,'output'),{recursive:true});
  const moved=await json(path.join(delivery,'output/build-manifest.json'));assert.equal((await json(path.resolve(delivery,moved.bundle))).meta.title,'The Return');
 });
+
+test('pinned Pocket sends original text, verifies server profile, and invalidates changed profiles',async t=>{
+ const {pocketDefaults}=await import('../../scripts/theater/pocket.mjs');
+ const {synthesize}=await import('../../scripts/theater/project.mjs');
+ const root=await fixture(t);let seen=[],confirm=true;
+ const endpoint=await speechServer(t,async(req,res)=>{const chunks=[];for await(const chunk of req)chunks.push(chunk);seen.push(Buffer.concat(chunks).toString());if(confirm)res.setHeader('X-Pelican-Pocket-Profile',req.headers['x-pelican-pocket-profile']);res.end(wav());});
+ const tts={...pocketDefaults(),endpoint};
+ await writeJson(path.join(root,'project.json'),{version:1,tts});
+ assert.equal((await buildProject(root)).generated,3);
+ assert.match(seen[0],/\r\n\r\nI would like to return this bicycle\./);assert.doesNotMatch(seen[0],/\r\n\r\n, /);
+ assert.equal((await buildProject(root)).reused,3);
+ // A different pinned voice revision gets a different profile and speech cache.
+ const profile={...tts.profile,voice_revision:'different-revision'};
+ const profileHash=(await import('node:crypto')).createHash('sha256').update(JSON.stringify(profile)).digest('hex');
+ await assert.rejects(synthesize({...tts,profile},'Hello','alba'),/profile was edited/);
+ await writeJson(path.join(root,'project.json'),{version:1,tts:{...tts,profile,profileHash}});
+ assert.equal((await buildProject(root)).generated,3);
+ confirm=false;await assert.rejects(synthesize(tts,'Oh man, I had better change.','marius'),/did not confirm/);
+});
+
+test('Python preset server and JavaScript CLI agree on the exact profile fingerprint',async()=>{
+ const {pocketProfileHash}=await import('../../scripts/theater/pocket.mjs');
+ const result=await run('python3',['-c',"import runpy; print(runpy.run_path('scripts/theater/pocket-server.py')['PROFILE_HASH'])"]);
+ assert.equal(result.toString().trim(),pocketProfileHash);
+});

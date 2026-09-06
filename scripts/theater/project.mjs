@@ -95,10 +95,12 @@ export async function synthesize(tts, text, voice, {timeoutMs=120_000}={}) {
     const token = process.env[tts.tokenEnv]; if (!token) throw new Error(`Missing credential environment variable ${tts.tokenEnv}`);
     headers[tts.authHeader || 'Authorization'] = `${tts.authPrefix ?? 'Bearer '}${token}`;
   }
-  if (tts.engine === 'pocket') { body = new FormData(); body.append('text', `, ${text}`); body.append('voice_url', voice); }
+  if (tts.profileHash && hash(JSON.stringify(tts.profile)) !== tts.profileHash) throw new Error('Pocket profile was edited without updating its fingerprint');
+  if (tts.engine === 'pocket') { body = new FormData(); body.append('text', `${tts.textPrefix ?? (tts.profileHash ? '' : ', ')}${text}`); if(tts.profileHash) headers['X-Pelican-Pocket-Profile']=tts.profileHash; body.append('voice_url', voice); }
   else { headers['Content-Type'] = 'application/json'; body = JSON.stringify(tts.engine === 'piper' ? { text, voice, rate:16000, depth:16, format:'linear' } : { input:text,voice,model:tts.model,response_format:'wav',speed:tts.speed || 1 }); }
   const response = await fetch(endpoint, { method:'POST',headers,body,redirect:'error',signal });
   if (!response.ok) throw Object.assign(new Error(`Speech endpoint returned ${response.status}`), {status:response.status});
+  if (tts.profileHash && response.headers.get('x-pelican-pocket-profile') !== tts.profileHash) throw new Error('Speech endpoint did not confirm the pinned Pocket profile');
   const chunks = []; let size = 0;
   for await (const chunk of response.body) { size += chunk.length; if (size > 20*1024*1024) throw new Error('Speech response exceeds 20 MB'); chunks.push(Buffer.from(chunk)); }
   const buffer = Buffer.concat(chunks);
@@ -125,14 +127,14 @@ export async function buildProject(directory) {
     const file = path.join(cache,`${key}.mp3`); let audio;
     try { audio = await fs.readFile(file); await audioProbe(audio); reused++; }
     catch { const raw = await synthesize(config.tts,beat.line,voice); audio = await run('ffmpeg',['-v','error','-i','pipe:0','-f','mp3','-ac','1','-b:a','96k','pipe:1'],{input:raw}); await fs.writeFile(file,audio); generated++; }
-    assets.audio[id] = dataUrl({data:audio,mime:'audio/mpeg'}); lines.push({id,text:beat.line,voice,source:config.tts.engine,model:config.tts.model || 'Unknown',hash:hash(audio),cacheKey:key});
+    assets.audio[id] = dataUrl({data:audio,mime:'audio/mpeg'}); lines.push({id,text:beat.line,voice,source:config.tts.engine,model:config.tts.model || 'Unknown',...(config.tts.profileHash?{profileHash:config.tts.profileHash}:{}),hash:hash(audio),cacheKey:key});
   }
   const bundle = {...skit,captionOnly:config.tts.engine === 'none',meta:{...skit.meta,model:skit.meta?.model || 'Unknown'},assets,publishedAt:new Date().toISOString()};
   const bundlePath = path.join(out,'project.json');
   await writeJson(bundlePath,bundle);
   const revision = await run('git',['rev-parse','HEAD'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>b.toString().trim()).catch(()=> 'Unknown');
   const workingTreeDirty = await run('git',['status','--porcelain'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>Boolean(b.toString().trim())).catch(()=>null);
-  const manifest = {version:1,revision,workingTreeDirty,model:bundle.meta.model,assets:hashes,lines,generated,reused,pathBase:'project',bundle:'output/project.json'};
+  const manifest = {version:1,revision,workingTreeDirty,...(config.tts.profile?{configuredSpeech:{profile:config.tts.profile,profileHash:config.tts.profileHash}}:{}),model:bundle.meta.model,assets:hashes,lines,generated,reused,pathBase:'project',bundle:'output/project.json'};
   await writeJson(path.join(out,'build-manifest.json'),manifest);
   return {...manifest,bundle:bundlePath};
 }

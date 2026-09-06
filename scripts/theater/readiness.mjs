@@ -31,7 +31,7 @@ export async function probeSpeech(endpoint, {waitMs=0}={}) {
   while (true) {
     attempts++;
     try {
-      await synthesize({engine:'pocket',endpoint},'The theater is ready.','alba',{timeoutMs:Math.max(1,deadline-Date.now())});
+      await synthesize({engine:'pocket',endpoint,textPrefix:''},'The theater is ready.','alba',{timeoutMs:Math.max(1,deadline-Date.now())});
       return {ok:true,endpoint:safeEndpoint,attempts,elapsedMs:Date.now()-started};
     } catch(error) {
       const failure=speechFailure(error), remaining=deadline-Date.now();

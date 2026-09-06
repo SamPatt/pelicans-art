@@ -19,7 +19,7 @@ node scripts/theater.mjs validate data/projects/my-skit
 node scripts/theater.mjs render data/projects/my-skit
 ```
 
-Install FFmpeg using your OS package manager. `setup` installs npm dependencies and Chromium; Linux browser OS libraries may need `npx playwright install-deps chromium`. `setup --tts` adds an isolated pinned Pocket 1.0.3 environment under `.runtime/`, with CPU Torch 2.8.0 on Linux. It does not alter the agent's environment or start services. Linux/macOS are the initial supported paths; use WSL on Windows.
+Install FFmpeg using your OS package manager. `setup` installs npm dependencies and Chromium; Linux browser OS libraries may need `npx playwright install-deps chromium`. `setup --tts` adds an isolated pinned Pocket 2.1.0 environment under `.runtime/`, with CPU Torch 2.8.0 on Linux. It does not alter the agent's environment or start services. Linux/macOS are the initial supported paths; use WSL on Windows.
 
 Edit `skit.json` and `assets/` in the created project. Set `meta.model` and asset metadata to the actual model or Unknown. `project.json` controls speech: Pocket, an OpenAI-compatible endpoint, a specific Piper JSON relay, or explicit caption-only mode (`init --silent`). The complete speech URL belongs in `tts.endpoint`. Authentication uses `tts.tokenEnv` plus optional `authHeader`/`authPrefix`, not a stored token.
 
@@ -67,3 +67,11 @@ The versioned skill archive matches its four source files and SHA-256 receipt; s
 A further real Pocket rehearsal created three lines using Marius and Alba, changed one line, generated exactly one replacement while reusing two, and rendered all three lines with clean capture diagnostics. Local evidence is in ignored `artifacts/agent-workflow/revision-rehearsal.json`. This used the existing model cache and does not establish fresh Hermes installation or chat attachment delivery.
 
 For the editable ZIP layout and exclusions, see the skill's [delivery reference](../skills/pelican-theater/references/delivery.md). Keep caches locally, but omit them from delivery.
+
+## Pinned April preset speech
+
+New projects and imports use the exact audition profile in `scripts/theater/pocket-profile.json`: Pocket 2.1.0, the non-voice-cloning April English checkpoint, independently pinned preset embeddings, CPU Torch 2.8.0, and seed 4711 reset per line. Setup downloads the pinned files and verifies the model SHA-256. Start the emitted Python wrapper, not bare `pocket-tts serve`. The service confirms its profile on each new synthesis request; the CLI rejects a mismatched or unconfirmed profile. Only Marius, Jean, and Alba presets are supported.
+
+Existing supplied recordings remain untouched. Old project configurations retain their old speech settings and cache; to migrate new/revised dialogue, copy the full TTS configuration from a newly initialized project and adjust its endpoint. The cache includes the full profile, both revisions, and text-prefix setting. The new profile sends original text without the comma workaround; legacy unprofiled Pocket configurations keep their previous prefix behavior. Do not claim voice-cloning or emotional-delivery improvements from this preset audition. Loudness normalization and the bonus-round 1.15× tempo are not implicit generation defaults.
+
+Local April-profile verification (2026-09-06): installed Pocket 2.1.0 into a separate environment with Torch 2.8.0+cpu; the supported `setup --tts` command succeeded. The model checksum matched, the service reported two threads, and all three presets synthesized real audio. Repeating a Marius line returned byte-identical WAV data. A four-line build reused all four lines on repetition; editing one line regenerated one and reused three. The MP4 contained all four expected recordings, H.264/AAC, and no capture diagnostics. Original-text and comma-prefixed comparison WAVs were generated; this is not a new blind listening verdict. Existing model-download caches were available. Fresh-account downloads, macOS, and a fresh Hermes installation remain unverified; Hermes was not modified.

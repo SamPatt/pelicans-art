@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
 import { json, writeJson, run, loadProject, buildProject } from './theater/project.mjs';
+import { pocketDefaults } from './theater/pocket.mjs';
 import { probeSpeech } from './theater/readiness.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), require = createRequire(import.meta.url);
 const args = process.argv.slice(2), command = args.shift();
@@ -40,7 +41,7 @@ async function doctor() {
   const ok=Object.values(checks).every(c=>c.ok); report({ok,checks,platform:process.platform,architecture:process.arch,pocketRuntime:pocket,speechChecked:flags.has('endpoint')}); if(!ok)process.exitCode=1;
 }
 async function pocketRuntime() {
-  const directory=path.join(ROOT,'.runtime/pocket-tts');
+  const directory=path.join(ROOT,'.runtime/pocket-tts-2.1.0');
   const executable=path.join(directory,'bin/pocket-tts'), python=path.join(directory,'bin/python');
   const exists=await fs.access(executable,fs.constants.X_OK).then(()=>true).catch(()=>false);
   if (!exists) return {installed:false,executable,python};
@@ -56,7 +57,7 @@ async function setup() {
   await run('npx',['playwright','install','chromium'],{cwd:ROOT});
   let tts;
   if (flags.has('tts')) {
-    const env=path.join(ROOT,'.runtime/pocket-tts'), python=path.join(env,'bin/python');
+    const env=path.join(ROOT,'.runtime/pocket-tts-2.1.0'), python=path.join(env,'bin/python');
     const basePython = flags.get('python') || 'python3';
     const version = JSON.parse((await run(basePython,['-c','import sys,json;print(json.dumps(list(sys.version_info[:2])))'])).toString());
     if(version[0]!==3 || version[1]<10 || version[1]>13) throw new Error('Pocket installer requires Python 3.10–3.13; specify --python python3.12');
@@ -72,11 +73,12 @@ async function setup() {
       ? run('uv',['pip','install','--python',python,...packages])
       : run(python,['-m','pip','install',...packages]);
     await install(['torch==2.8.0',...(process.platform==='linux'?['--index-url','https://download.pytorch.org/whl/cpu']:[])]);
-    await install(['pocket-tts==1.0.3']);
+    await install(['pocket-tts==2.1.0']);
+    await run(python,[path.join(ROOT,'scripts/theater/pocket-server.py'),'prepare']);
     const runtime=await pocketRuntime();
     if (!runtime.ok) throw new Error('Installed Pocket runtime could not be verified');
-    const serveCommand=['serve','--host','127.0.0.1','--port','8001'];
-    tts={...runtime,engine:'pocket',serveCommand,endpoint:'http://127.0.0.1:8001/tts',
+    const serveCommand=[path.join(ROOT,'scripts/theater/pocket-server.py'),'serve','--port','8001'];
+    tts={...runtime,...pocketDefaults(),executable:python,serveCommand,endpoint:'http://127.0.0.1:8001/tts',
       readiness:{executable:process.execPath,args:[path.join(ROOT,'scripts/theater.mjs'),'doctor','--endpoint','http://127.0.0.1:8001/tts','--wait','120','--json']}};
   }
   report({ok:true,tts,message:'Dependencies installed. Run doctor with --endpoint to verify speech; TTS is not started automatically.'});
@@ -88,7 +90,7 @@ async function init() {
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150"><g id="body"><ellipse cx="48" cy="100" rx="27" ry="34" fill="#fff7df" stroke="#193b40" stroke-width="2"/><path d="M35 126v15h-14m38-15v15h15" fill="none" stroke="#efac35" stroke-width="5"/></g><g id="head-top"><path d="M32 76V38Q35 18 50 21Q72 24 68 46L64 77" fill="#fff7df" stroke="#193b40" stroke-width="2"/><ellipse id="eye-left-white" cx="44" cy="40" rx="6" ry="8" fill="white"/><ellipse id="eye-right-white" cx="59" cy="40" rx="6" ry="8" fill="white"/><circle id="eye-left-pupil" class="pupil" cx="46" cy="41" r="3" fill="#193b40"/><circle id="eye-right-pupil" class="pupil" cx="61" cy="41" r="3" fill="#193b40"/><path id="brow-left" d="M39 29h10" stroke="#193b40"/><path id="brow-right" d="M55 29h10" stroke="#193b40"/></g><g id="head-bottom"><path d="M47 51h48L53 68Z" fill="#efac35" stroke="#193b40"/><path id="mouth-closed" d="M49 55h37" stroke="#193b40"/><ellipse id="mouth-open" cx="61" cy="55" rx="10" ry="4" fill="#193b40" opacity="0"/></g></svg>`;
   await fs.writeFile(path.join(directory,'assets/pelican.svg'),svg);
   await fs.writeFile(path.join(directory,'assets/harbor.svg'),'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720"><path fill="#f8e7bd" d="M0 0h1280v720H0z"/><path fill="#83b4b0" d="M0 300h1280v200H0z"/><path fill="#d8c39b" d="M0 500h1280v220H0z"/></svg>');
-  await writeJson(path.join(directory,'project.json'),{version:1,tts:{engine:flags.has('silent')?'none':'pocket',endpoint:'http://127.0.0.1:8001/tts',model:'pocket-tts-1.0.3'}});
+  await writeJson(path.join(directory,'project.json'),{version:1,tts:flags.has('silent')?{engine:'none'}:pocketDefaults()});
   await writeJson(path.join(directory,'skit.json'),{meta:{title:'The Return',model:'Unknown'},stage:{background:'harbor',orientation:'landscape'},cast:{customer:{sprite:'pelican',x:30,voice:'marius'},clerk:{sprite:'pelican',x:70,voice:'alba'}},script:[{do:'shot',type:'wide'},{do:'say',who:'customer',line:'I would like to return this bicycle.'},{do:'pause',duration:0.5},{do:'say',who:'clerk',line:'You came on foot.'},{do:'pause',duration:0.7},{do:'say',who:'customer',line:'Exactly. It has abandoned me.'},{do:'pause',duration:1}],assets:{sprites:{'pelican-front':'assets/pelican.svg'},spriteMeta:{pelican:{name:'Pelican',model:'Unknown'}},backgrounds:{harbor:'assets/harbor.svg'},props:{},audio:{}}});
   report({ok:true,project:directory,next:'Edit skit.json and assets, then validate, build, render.'});
 }
@@ -103,7 +105,7 @@ async function importBundle() {
   try {
     bundle.audioBindings = Object.fromEntries(bundle.script.filter(b=>b?.do==='say').map((b,i)=>[`line-${i}`,{line:b.line,who:b.who,voice:bundle.cast[b.who]?.voice}]));
     await writeJson(path.join(staging,'skit.json'),bundle);
-    await writeJson(path.join(staging,'project.json'),{version:1,tts:bundle.captionOnly === true ? {engine:'none'} : {engine:'pocket',endpoint:'http://127.0.0.1:8001/tts',model:'pocket-tts-1.0.3'}});
+    await writeJson(path.join(staging,'project.json'),{version:1,tts:bundle.captionOnly === true ? {engine:'none'} : pocketDefaults()});
     await loadProject(staging);
     for (const file of ['skit.json','project.json']) await fs.rename(path.join(staging,file),path.join(directory,file));
   } finally { await fs.rm(staging,{recursive:true,force:true}); }

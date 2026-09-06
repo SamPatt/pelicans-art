@@ -9,7 +9,7 @@ node scripts/theater.mjs build data/projects/my-skit
 node scripts/theater.mjs render data/projects/my-skit
 ```
 
-`project.json`: `{ "version": 1, "tts": { "engine": "pocket", "endpoint": "http://127.0.0.1:8001/tts", "model": "pocket-tts-1.0.3" } }`.
+`project.json`: keep the complete pinned `tts` profile emitted by `init` or `import`; change only the endpoint to your scoped service. Do not substitute the `english` alias or manually shorten the profile. Existing supplied recordings are retained; revised lines use the new preset profile. Other authorized speech engines need their own configuration without Pocket profile fields.
 
 `skit.json` follows the player's format: meta (title/model), stage (background/orientation), cast (role -> sprite/x/voice), optional props, sequential script, and assets. Init writes a complete original example with two voices. Modify it rather than guessing the schema.
 

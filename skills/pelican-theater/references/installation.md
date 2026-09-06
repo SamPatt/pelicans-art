@@ -27,7 +27,7 @@ Choose **one** setup path after inspecting existing speech services:
 
 Both install root/server npm lockfiles and Chromium. On Linux, install missing browser OS libraries with Playwright's `install-deps chromium` through the normal permission flow. Install FFmpeg through the OS package manager if absent. Worker dependencies are unnecessary for video creation. Setup reconciles this checkout's locked dependency tree, so run it only in the theater checkout.
 
-`setup --tts` adds a dedicated `.runtime/pocket-tts` environment with Pocket 1.0.3 and CPU Torch 2.8.0 on Linux. First use downloads model/voice weights. It installs dependencies but starts no service. Output includes the actual isolated Python/version, `tts.executable`, `tts.serveCommand` as an argument array, the default endpoint, and `tts.readiness` with an executable and argument array.
+`setup --tts` adds a dedicated `.runtime/pocket-tts-2.1.0` environment with Pocket 2.1.0 and CPU Torch 2.8.0 on Linux. Setup downloads the exact non-voice-cloning April English model/tokenizer revision `d29db7978e464fb90cb3359ee0c69a273b9142cc` and voice-embedding revision `e041936c75475d350b405bc870bcf7c22da4e9e6`. It verifies the model SHA-256 against `scripts/theater/pocket-profile.json`. Use only the emitted Python wrapper command; bare `pocket-tts serve` does not enforce this profile. It installs dependencies but starts no service. Output includes the actual isolated Python/version, `tts.executable`, `tts.serveCommand` as an argument array, the default endpoint, and `tts.readiness` with an executable and argument array.
 
 Start and verify a scoped Pocket process:
 
@@ -40,7 +40,8 @@ Start and verify a scoped Pocket process:
    ```
 
 4. Require `speech.ok: true`. This probe performs synthesis and decodes the response with ffprobe. It waits within one deadline for retryable connection failures; HTTP errors and invalid audio fail immediately. Read `kind`, `code`/`status`, `attempts`, and `elapsedMs` on failure. A timeout does not prove that a model is loading: inspect the service logs before retrying.
-5. Set the project's complete `tts.endpoint`, including `/tts`, and keep the service alive through builds. Stop only the scoped process you started when the task no longer needs it. Do not stop preexisting speech services.
+5. Preset voices are `marius`, `jean`, and `alba`; this profile does not support voice cloning. The wrapper uses CPU, no quantization, two threads, temperature 0.7, one decode step, EOS threshold -4.0, and seed 4711 reset for each request. Send original text without adding punctuation prefixes.
+6. Set the project's complete `tts.endpoint`, including `/tts`, and keep the service alive through builds. Stop only the scoped process you started when the task no longer needs it. Do not stop preexisting speech services.
 
 Without `--wait`, doctor performs one speech attempt. `--wait` is in seconds (0–300), not a per-attempt timeout. Its `pocketRuntime` reports the isolated interpreter separately from the system `checks.python3`. The default endpoint and readiness args emitted by setup are suggestions, not a claim that port 8001 is available or a server is running.
 
