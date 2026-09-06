@@ -9,9 +9,9 @@ source = root / 'skills/pelican-theater'
 (root / 'src/pocket-voices.json').write_bytes((root / 'scripts/theater/pocket-voices.json').read_bytes())
 out = root / 'src/downloads'
 out.mkdir(exist_ok=True)
-version = '1.0.6'
+version = '1.0.7'
 # Runtime verified by the full CLI rehearsal; packaging edits do not advance it.
-runtime_ref = '5992dc493ddad9b461cf1c76d1e20f81a30ffff1'
+runtime_ref = 'b99f39fcfd9dd2767bdd1cc83327f070c53ef557'
 target = out / f'pelican-theater-{version}.zip'
 with ZipFile(target, 'w', compression=ZIP_DEFLATED) as archive:
     for file in sorted(source.rglob('*')):
