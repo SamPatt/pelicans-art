@@ -1,0 +1,242 @@
+{
+  "meta": {
+    "title": "Name for the Order?",
+    "description": "An incognito pelican takes a caf\u00e9 order label personally.",
+    "model": "GPT-6 Astra"
+  },
+  "stage": {
+    "orientation": "portrait",
+    "background": "cafe"
+  },
+  "cast": {
+    "customer": {
+      "sprite": "customer",
+      "x": 25,
+      "y": 86,
+      "scale": 0.83,
+      "voice": "alba"
+    },
+    "barista": {
+      "sprite": "barista",
+      "x": 75,
+      "y": 86,
+      "scale": 0.83,
+      "voice": "paul"
+    }
+  },
+  "props": {
+    "order": {
+      "prop": "fish-bucket",
+      "x": 92,
+      "y": 85,
+      "scale": 1.2,
+      "visible": false,
+      "layer": "foreground"
+    }
+  },
+  "script": [
+    {
+      "do": "shot",
+      "type": "wide"
+    },
+    {
+      "do": "look",
+      "who": "customer",
+      "at": "right"
+    },
+    {
+      "do": "look",
+      "who": "barista",
+      "at": "left"
+    },
+    {
+      "do": "pause",
+      "duration": 0.4
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "Name?"
+    },
+    {
+      "do": "pause",
+      "duration": 0.35
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "James."
+    },
+    {
+      "do": "pause",
+      "duration": 0.35
+    },
+    {
+      "do": "look",
+      "who": "barista",
+      "at": "down"
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "Pelican."
+    },
+    {
+      "do": "pause",
+      "duration": 0.45
+    },
+    {
+      "do": "look",
+      "who": "barista",
+      "at": "left"
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "James Montgomery."
+    },
+    {
+      "do": "pause",
+      "duration": 0.4
+    },
+    {
+      "do": "look",
+      "who": "barista",
+      "at": "down"
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "Pelican."
+    },
+    {
+      "do": "pause",
+      "duration": 0.45
+    },
+    {
+      "do": "look",
+      "who": "barista",
+      "at": "left"
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "Lord James Montgomery the Third."
+    },
+    {
+      "do": "pause",
+      "duration": 0.4
+    },
+    {
+      "do": "pause",
+      "duration": 0.25
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "Pelican."
+    },
+    {
+      "do": "pause",
+      "duration": 0.55
+    },
+    {
+      "do": "emote",
+      "who": "customer",
+      "emotion": "angry"
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "Why do you keep writing pelican?"
+    },
+    {
+      "do": "pause",
+      "duration": 0.3
+    },
+    {
+      "do": "spawn",
+      "what": "order",
+      "at": [
+        92,
+        85
+      ]
+    },
+    {
+      "do": "prop-move",
+      "what": "order",
+      "to": [
+        52,
+        85
+      ],
+      "duration": 0.55
+    },
+    {
+      "do": "pause",
+      "duration": 0.7
+    },
+    {
+      "do": "say",
+      "who": "barista",
+      "line": "That\u2019s the order. Twelve sardines, extra wet."
+    },
+    {
+      "do": "pause",
+      "duration": 0.9
+    },
+    {
+      "do": "look",
+      "who": "customer",
+      "at": "down"
+    },
+    {
+      "do": "emote",
+      "who": "customer",
+      "emotion": "neutral"
+    },
+    {
+      "do": "pause",
+      "duration": 0.35
+    },
+    {
+      "do": "say",
+      "who": "customer",
+      "line": "I asked for oat milk."
+    },
+    {
+      "do": "pause",
+      "duration": 1.3
+    }
+  ],
+  "assets": {
+    "sprites": {
+      "customer-front": "assets/characters-customer/front.svg",
+      "barista-front": "assets/characters-barista/front.svg"
+    },
+    "spriteMeta": {
+      "customer": {
+        "model": "GPT-6 Astra"
+      },
+      "barista": {
+        "model": "GPT-6 Astra"
+      }
+    },
+    "backgrounds": {
+      "cafe": "assets/backgrounds-cafe/portrait.svg"
+    },
+    "backgroundMeta": {
+      "cafe": {
+        "model": "GPT-6 Astra"
+      }
+    },
+    "props": {
+      "fish-bucket": "assets/props-fish-bucket/prop.svg"
+    },
+    "propMeta": {
+      "fish-bucket": {
+        "model": "GPT-6 Astra"
+      }
+    },
+    "audio": {}
+  }
+}

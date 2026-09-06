@@ -1,0 +1,30 @@
+{
+  "source": "local",
+  "category": "characters",
+  "id": "astra-barista",
+  "name": "The unflappable barista",
+  "description": "A wry human caf\u00e9 worker with an apron and excellent patience. Holding an order pad and pencil.",
+  "tags": [
+    "barista",
+    "cafe",
+    "apron",
+    "order-pad"
+  ],
+  "model": "GPT-6 Astra",
+  "files": [
+    {
+      "path": "front.svg",
+      "sha256": "f2bd647e14b54938ecb4a42976ad07d2e262bcd2efe8d77ca2ddc14ff4374086"
+    }
+  ],
+  "previews": [
+    "https://pelicans.art/sprites/astra-barista/front.svg"
+  ],
+  "provenance": {
+    "source": "local",
+    "category": "characters",
+    "id": "astra-barista",
+    "importedAt": "2026-09-06T23:48:55.415Z"
+  },
+  "adaptation": "Added order pad and pencil"
+}

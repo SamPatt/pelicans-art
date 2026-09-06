@@ -1,0 +1,29 @@
+{
+  "source": "local",
+  "category": "backgrounds",
+  "id": "astra-corner-cafe",
+  "name": "The corner caf\u00e9",
+  "description": "Portrait warm cafe with arched window, chalk menu, espresso counter, and open tiled floor.",
+  "tags": [
+    "cafe",
+    "portrait",
+    "interior"
+  ],
+  "model": "GPT-6 Astra",
+  "files": [
+    {
+      "path": "landscape.svg",
+      "sha256": "75178414c21d41177e4ac99e5acb3bb6b50d4c0e24fe7be1ea700d4da819c159"
+    }
+  ],
+  "previews": [
+    "https://pelicans.art/backgrounds/astra-corner-cafe/landscape.svg"
+  ],
+  "provenance": {
+    "source": "local",
+    "category": "backgrounds",
+    "id": "astra-corner-cafe",
+    "importedAt": "2026-09-06T23:48:55.864Z"
+  },
+  "adaptation": "Recomposed original corner cafe for 9:16"
+}

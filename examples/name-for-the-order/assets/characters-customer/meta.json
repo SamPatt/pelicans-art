@@ -1,0 +1,14 @@
+{
+  "name": "Lord James Montgomery the Third",
+  "category": "characters",
+  "description": "Cream pelican with rust scarf, angular beak and offended eyebrows.",
+  "tags": [
+    "pelican",
+    "cafe",
+    "scarf"
+  ],
+  "model": "GPT-6 Astra",
+  "provenance": {
+    "source": "examples/emotional-baggage/assets/pelican.svg"
+  }
+}

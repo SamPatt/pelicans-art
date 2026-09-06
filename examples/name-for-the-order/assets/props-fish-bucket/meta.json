@@ -1,0 +1,13 @@
+{
+  "name": "Pelican takeaway",
+  "category": "props",
+  "description": "Rust takeaway bucket labeled PELICAN containing silvery sardines.",
+  "tags": [
+    "fish",
+    "bucket",
+    "takeaway",
+    "pelican"
+  ],
+  "model": "GPT-6 Astra",
+  "provenance": {}
+}

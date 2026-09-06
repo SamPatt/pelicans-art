@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" stroke="#293c3e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<title>Lord James Montgomery the Third</title>
+<g id="body">
+<path d="M36 116L34 136L22 142L42 143L47 135L49 118M57 117L62 135L55 142L80 143L69 134L67 111" fill="#e4ab4d"/>
+<path d="M39 56Q18 68 17 97L10 114L29 111Q40 130 64 119Q79 109 74 85L63 55Z" fill="#f1e4c9"/>
+<path d="M29 73Q20 91 33 109Q51 112 55 83Q45 96 34 97" fill="#c6d6d2"/>
+<path d="M38 56Q51 64 67 57L72 68Q57 76 35 67Z" fill="#ba6448"/>
+<path d="M60 69L65 99L74 91L70 65Z" fill="#ba6448"/>
+<path d="M68 83Q78 86 77 105L68 105" fill="none"/>
+
+
+</g>
+<g id="head-top">
+<path d="M34 57Q28 39 34 23Q43 12 59 18Q72 21 72 45L64 61Z" fill="#f1e4c9"/>
+<path d="M34 24L28 17L43 20L42 13L53 19" fill="#f1e4c9"/>
+<path d="M43 31Q47 27 52 31L53 43Q47 47 42 42Z" id="eye-left-white" fill="white"/>
+<path d="M57 30Q63 27 67 32L67 43Q62 46 57 42Z" id="eye-right-white" fill="white"/>
+<ellipse id="eye-left-pupil" class="pupil" cx="49" cy="38" rx="2" ry="3.5" fill="#293c3e" stroke="none"/>
+<ellipse id="eye-right-pupil" class="pupil" cx="64" cy="38" rx="2" ry="3.5" fill="#293c3e" stroke="none"/>
+<path id="brow-left" d="M41 27L51 28" fill="none"/><path id="brow-right" d="M58 26L68 29" fill="none"/>
+<path d="M49 44L93 48Q96 51 89 54L49 53Z" fill="#e4ab4d"/>
+</g>
+<g id="head-bottom"><path d="M49 53L90 54Q74 68 59 64L50 59Z" fill="#e4ab4d"/><path id="mouth-closed" d="M50 53L90 54" fill="none"/><path id="mouth-open" d="M50 53L89 54Q70 64 53 58Z" fill="#293c3e" opacity="0"/></g>
+</svg>

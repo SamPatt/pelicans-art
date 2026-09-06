@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "tts": {
+    "engine": "pocket",
+    "endpoint": "http://127.0.0.1:8001/tts",
+    "model": "pocket-tts-2.1.0/english_2026-04",
+    "profile": {
+      "package": "pocket-tts==2.1.0",
+      "language_config": "english_2026-04",
+      "model_repository": "kyutai/pocket-tts-without-voice-cloning",
+      "model_revision": "d29db7978e464fb90cb3359ee0c69a273b9142cc",
+      "model_file": "languages/english_2026-04/model.safetensors",
+      "model_sha256": "be9c6b4876d3f30740a8225dfcaa2e43dc4aeb753c15272735bee16bbb4abb0a",
+      "tokenizer_revision": "d29db7978e464fb90cb3359ee0c69a273b9142cc",
+      "tokenizer_file": "languages/english_2026-04/tokenizer.model",
+      "voice_repository": "kyutai/pocket-tts-without-voice-cloning",
+      "voice_revision": "e041936c75475d350b405bc870bcf7c22da4e9e6",
+      "voice_directory": "languages/english_2026-04/embeddings",
+      "voices": [
+        "marius",
+        "jean",
+        "alba"
+      ],
+      "torch": "2.8.0",
+      "device": "cpu",
+      "quantize": false,
+      "temperature": 0.7,
+      "decode_steps": 1,
+      "eos_threshold": -4,
+      "seed": 4711,
+      "threads": 2,
+      "text_prefix": ""
+    },
+    "profileHash": "a8d706787c9563c5b819b7f61b82877c171337ca5f63411b5a56963baac8e4f8",
+    "textPrefix": ""
+  }
+}

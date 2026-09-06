@@ -1,0 +1,106 @@
+{
+  "start": "2026-09-06T23:44:56+00:00",
+  "scope": "Returning user, existing runtime and warm speech; includes agent work and tool overhead; user review wait reported separately.",
+  "events": [
+    {
+      "name": "skill_read_complete",
+      "at": "2026-09-06T23:45:16.059724+00:00"
+    },
+    {
+      "name": "asset_search_complete",
+      "at": "2026-09-06T23:45:18.639546+00:00"
+    },
+    {
+      "name": "premise_choices_ready",
+      "at": "2026-09-06T23:45:35.610988+00:00"
+    },
+    {
+      "name": "user_premise_review_wait_started",
+      "at": "2026-09-06T23:45:45.251174+00:00"
+    },
+    {
+      "name": "premise_selected_agent_work_resumed",
+      "at": "2026-09-06T23:46:39.567446+00:00",
+      "choice": "Name for the order?"
+    },
+    {
+      "name": "script_review_wait_started",
+      "at": "2026-09-06T23:47:28.274173+00:00"
+    },
+    {
+      "name": "production_approved_resumed",
+      "at": "2026-09-06T23:48:38.254350+00:00",
+      "orientation": "portrait"
+    },
+    {
+      "name": "source_files_written",
+      "at": "2026-09-06T23:52:41.763831+00:00"
+    },
+    {
+      "name": "preview_start",
+      "at": "2026-09-06T23:53:00.480502+00:00"
+    },
+    {
+      "name": "preview_end",
+      "at": "2026-09-06T23:53:05.681752+00:00",
+      "seconds": 5.201076803030446,
+      "code": 0
+    },
+    {
+      "name": "render_start",
+      "at": "2026-09-06T23:53:24.060914+00:00"
+    },
+    {
+      "name": "render_end",
+      "at": "2026-09-06T23:53:52.906665+00:00",
+      "seconds": 28.84556244290434,
+      "code": 0
+    },
+    {
+      "name": "inspect_start",
+      "at": "2026-09-06T23:54:24.962803+00:00"
+    },
+    {
+      "name": "inspect_end",
+      "at": "2026-09-06T23:54:27.239625+00:00",
+      "seconds": 2.2766150501556695,
+      "code": 0
+    },
+    {
+      "name": "package_start",
+      "at": "2026-09-06T23:54:27.262134+00:00"
+    },
+    {
+      "name": "package_end",
+      "at": "2026-09-06T23:54:27.458981+00:00",
+      "seconds": 0.1966605270281434,
+      "code": 0
+    },
+    {
+      "name": "media_and_archive_verified",
+      "at": "2026-09-06T23:55:02.542284+00:00"
+    },
+    {
+      "name": "delivery_link_sent",
+      "at": "2026-09-06T23:55:33.788839+00:00"
+    }
+  ],
+  "elapsedSeconds": 637.788839,
+  "reviewBoundarySeconds": 124.296449,
+  "activeElapsedSeconds": 513.4923900000001,
+  "productionAfterApprovalSeconds": 415.534489,
+  "timedCommandSeconds": 36.5199148231186,
+  "notes": [
+    "Start excludes initial response before first clock reading.",
+    "Review intervals are bounded by tool timestamps before presenting a question and after receiving the reply, so include a small amount of assistant/UI overhead, not pure user think time.",
+    "Recorded command durations cover preview, render, inspect, package. Asset discovery/import, validation, other tooling, approvals and agent work remain in elapsed phase totals.",
+    "Returning user, warm Pocket, existing installed runtime; not a fresh installation benchmark.",
+    "The current conversation retains prior project knowledge; this is not an independent fresh-agent trial.",
+    "Portrait adaptation and approval-review rejection/recovery are included; no correction was subtracted.",
+    "8 unique recordings synthesized; repeated Pelican line reused twice in initial build. Final render reused all 10 lines.",
+    "Visual frame review and decode/coverage checks performed; no listening review."
+  ],
+  "runtimeRevision": "4a9919c70739382105aec82f6d9cd4fafce59cd0",
+  "project": "examples/name-for-the-order",
+  "model": "GPT-6 Astra"
+}
