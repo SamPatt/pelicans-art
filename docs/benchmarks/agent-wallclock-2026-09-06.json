@@ -1,0 +1,191 @@
+{
+  "measurementStart": "2026-09-06T23:05:24+00:00",
+  "runtimeRevision": "34db2ac",
+  "project": "examples/emotional-baggage",
+  "model": "GPT-6 Astra",
+  "environment": "Existing Linux x64 runtime and warm local pinned Pocket 2.1.0 service; no install or download required.",
+  "scope": "Wallclock from first clock reading to video delivery link; excludes opening response before the first clock reading. Subsequent audit/report/commit time is recorded separately.",
+  "readySeconds": 362.957,
+  "linkSentSeconds": 374.915,
+  "timedCommandSeconds": 37.642,
+  "outsideTimedCommandsSeconds": 337.274,
+  "caveats": [
+    "Outside-command time includes agent composition/reasoning, reading and visual review, tool submission/approval/transport, communications, and untimed helper/file preparation. It is not pure model inference.",
+    "Some delivery helper authoring overlapped the running render. Phase windows are elapsed partitions, not additive person/CPU effort.",
+    "This trial includes one-off timing instrumentation overhead. It was not independently isolated; no estimated correction was subtracted.",
+    "The original authoring_start marker was executed only when the source-writing command reached the machine. Actual agent authoring occurred beforehand, between doctor completion and asset_file_write_started.",
+    "One trial in an established long conversation; no claim of performance on another agent, model, fresh session, or VPS."
+  ],
+  "events": [
+    {
+      "event": "mark",
+      "name": "measurement_start",
+      "at": "2026-09-06T23:05:24+00:00",
+      "elapsedSeconds": 0.0
+    },
+    {
+      "event": "mark",
+      "name": "planning_and_contract_read_complete",
+      "at": "2026-09-06T23:06:19.254127+00:00",
+      "elapsedSeconds": 55.254
+    },
+    {
+      "event": "command_start",
+      "name": "init",
+      "at": "2026-09-06T23:06:19.275367+00:00",
+      "elapsedSeconds": 55.275
+    },
+    {
+      "event": "command_end",
+      "name": "init",
+      "seconds": 0.04231259902007878,
+      "code": 0,
+      "at": "2026-09-06T23:06:19.317738+00:00",
+      "elapsedSeconds": 55.318
+    },
+    {
+      "event": "command_start",
+      "name": "doctor",
+      "at": "2026-09-06T23:06:19.339776+00:00",
+      "elapsedSeconds": 55.34
+    },
+    {
+      "event": "command_end",
+      "name": "doctor",
+      "seconds": 1.0622313369531184,
+      "code": 0,
+      "at": "2026-09-06T23:06:20.402067+00:00",
+      "elapsedSeconds": 56.402
+    },
+    {
+      "event": "mark",
+      "name": "asset_file_write_started",
+      "at": "2026-09-06T23:09:01.586223+00:00",
+      "elapsedSeconds": 217.586,
+      "originalMarkerName": "authoring_start"
+    },
+    {
+      "event": "mark",
+      "name": "asset_files_written",
+      "at": "2026-09-06T23:09:01.628723+00:00",
+      "elapsedSeconds": 217.629,
+      "originalMarkerName": "authoring_complete"
+    },
+    {
+      "event": "command_start",
+      "name": "validate",
+      "at": "2026-09-06T23:09:01.649384+00:00",
+      "elapsedSeconds": 217.649
+    },
+    {
+      "event": "command_end",
+      "name": "validate",
+      "seconds": 0.04276317893527448,
+      "code": 0,
+      "at": "2026-09-06T23:09:01.692207+00:00",
+      "elapsedSeconds": 217.692
+    },
+    {
+      "event": "command_start",
+      "name": "build",
+      "at": "2026-09-06T23:09:01.713453+00:00",
+      "elapsedSeconds": 217.713
+    },
+    {
+      "event": "command_end",
+      "name": "build",
+      "seconds": 5.577042468125001,
+      "code": 0,
+      "at": "2026-09-06T23:09:07.290557+00:00",
+      "elapsedSeconds": 223.291
+    },
+    {
+      "event": "command_start",
+      "name": "stage_preview",
+      "at": "2026-09-06T23:09:36.745864+00:00",
+      "elapsedSeconds": 252.746
+    },
+    {
+      "event": "command_end",
+      "name": "stage_preview",
+      "seconds": 0.7183754849247634,
+      "code": 0,
+      "at": "2026-09-06T23:09:37.464300+00:00",
+      "elapsedSeconds": 253.464
+    },
+    {
+      "event": "mark",
+      "name": "visual_review_passed_no_art_revision",
+      "at": "2026-09-06T23:10:03.769843+00:00",
+      "elapsedSeconds": 279.77
+    },
+    {
+      "event": "command_start",
+      "name": "render",
+      "at": "2026-09-06T23:10:03.791950+00:00",
+      "elapsedSeconds": 279.792
+    },
+    {
+      "event": "command_end",
+      "name": "render",
+      "seconds": 28.99802844109945,
+      "code": 0,
+      "at": "2026-09-06T23:10:32.790051+00:00",
+      "elapsedSeconds": 308.79
+    },
+    {
+      "event": "command_start",
+      "name": "deliver",
+      "at": "2026-09-06T23:11:01.172458+00:00",
+      "elapsedSeconds": 337.172
+    },
+    {
+      "event": "command_end",
+      "name": "deliver",
+      "seconds": 0.5147966770455241,
+      "code": 0,
+      "at": "2026-09-06T23:11:01.687319+00:00",
+      "elapsedSeconds": 337.687
+    },
+    {
+      "event": "command_start",
+      "name": "playback_check",
+      "at": "2026-09-06T23:11:26.229240+00:00",
+      "elapsedSeconds": 362.229
+    },
+    {
+      "event": "command_end",
+      "name": "playback_check",
+      "seconds": 0.6658016419969499,
+      "code": 0,
+      "at": "2026-09-06T23:11:26.895101+00:00",
+      "elapsedSeconds": 362.895
+    },
+    {
+      "event": "command_start",
+      "name": "private_link_check",
+      "at": "2026-09-06T23:11:26.916817+00:00",
+      "elapsedSeconds": 362.917
+    },
+    {
+      "event": "command_end",
+      "name": "private_link_check",
+      "seconds": 0.020165730034932494,
+      "code": 0,
+      "at": "2026-09-06T23:11:26.937039+00:00",
+      "elapsedSeconds": 362.937
+    },
+    {
+      "event": "mark",
+      "name": "skit_ready_to_deliver",
+      "at": "2026-09-06T23:11:26.956877+00:00",
+      "elapsedSeconds": 362.957
+    },
+    {
+      "event": "mark",
+      "name": "delivery_link_sent_analysis_start",
+      "at": "2026-09-06T23:11:38.915210+00:00",
+      "elapsedSeconds": 374.915
+    }
+  ]
+}

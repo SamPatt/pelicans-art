@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "title": "Emotional Baggage",
+    "description": "A pelican checks in a regret that should have expired years ago.",
+    "model": "GPT-6 Astra"
+  },
+  "stage": {
+    "orientation": "landscape",
+    "background": "terminal"
+  },
+  "cast": {
+    "pelican": {
+      "sprite": "pelican",
+      "x": 30,
+      "y": 86,
+      "voice": "paul",
+      "scale": 1.08
+    },
+    "clerk": {
+      "sprite": "clerk",
+      "x": 72,
+      "y": 86,
+      "voice": "anna",
+      "scale": 1.08
+    }
+  },
+  "script": [
+    {
+      "do": "shot",
+      "type": "wide"
+    },
+    {
+      "do": "pause",
+      "duration": 0.4
+    },
+    {
+      "do": "say",
+      "who": "clerk",
+      "line": "Any baggage?"
+    },
+    {
+      "do": "pause",
+      "duration": 0.3
+    },
+    {
+      "do": "say",
+      "who": "pelican",
+      "line": "One regret."
+    },
+    {
+      "do": "pause",
+      "duration": 0.3
+    },
+    {
+      "do": "say",
+      "who": "clerk",
+      "line": "Size?"
+    },
+    {
+      "do": "pause",
+      "duration": 0.3
+    },
+    {
+      "do": "say",
+      "who": "pelican",
+      "line": "I said, you too, when the waiter said, enjoy your meal."
+    },
+    {
+      "do": "pause",
+      "duration": 0.5
+    },
+    {
+      "do": "say",
+      "who": "clerk",
+      "line": "That fits under the seat."
+    },
+    {
+      "do": "pause",
+      "duration": 0.4
+    },
+    {
+      "do": "say",
+      "who": "pelican",
+      "line": "It happened in two thousand and nine."
+    },
+    {
+      "do": "pause",
+      "duration": 0.6
+    },
+    {
+      "do": "say",
+      "who": "clerk",
+      "line": "Checked baggage."
+    },
+    {
+      "do": "pause",
+      "duration": 0.6
+    },
+    {
+      "do": "say",
+      "who": "pelican",
+      "line": "Will I get it back?"
+    },
+    {
+      "do": "pause",
+      "duration": 0.7
+    },
+    {
+      "do": "say",
+      "who": "clerk",
+      "line": "Every night. At three in the morning."
+    },
+    {
+      "do": "pause",
+      "duration": 1.4
+    }
+  ],
+  "assets": {
+    "sprites": {
+      "pelican-front": "assets/pelican.svg",
+      "clerk-front": "assets/clerk.svg"
+    },
+    "spriteMeta": {
+      "pelican": {
+        "name": "Pelican",
+        "model": "GPT-6 Astra"
+      },
+      "clerk": {
+        "name": "Clerk",
+        "model": "GPT-6 Astra"
+      }
+    },
+    "backgrounds": {
+      "terminal": "assets/terminal.svg"
+    },
+    "backgroundMeta": {
+      "terminal": {
+        "model": "GPT-6 Astra"
+      }
+    },
+    "props": {},
+    "audio": {}
+  }
+}
