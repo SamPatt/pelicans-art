@@ -45,7 +45,7 @@ A build manifest records project/repo versions, generated asset hashes, model at
 
 ## Agent creative workflow
 
-For a request to brainstorm, stay in script/scene planning. For a request to make a finished skit, use reasonable defaults and proceed without inserting an obligatory approval step.
+For a new skit, propose format, character appearances/voices, setting, scene beats, and exact dialogue in chat. Revise with the creator and wait for approval before finished artwork, speech, or rendering. Reuse prior approval and honor an explicit request to skip review. No separate storyboard UI is required.
 
 - Establish a readable setup, escalation, reveal, and final beat. Specify the audience's view at each scene, especially for motionless SVGs.
 - Write SVGs directly using the agent's current model. Follow required eye, mouth, body and head hooks; validate references and safe markup before rendering. Do not silently route generation to a paid API.

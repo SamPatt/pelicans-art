@@ -56,16 +56,18 @@ The deliberately simple visual style is part early web animation, part AI artifa
 
 ## Create with your agent (recommended)
 
-Copy the block below into an agent chat that can run shell commands. Your agent downloads the skill, installs the runtime, and returns a test video.
+Copy the block below into an agent chat that can run shell commands. Your agent downloads the skill and sets up the runtime, then works out the skit with you in chat before creating the video.
 
 ```text
-Download https://pelicans.art/downloads/pelican-theater-1.0.12.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.12.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.
+Download https://pelicans.art/downloads/pelican-theater-1.0.13.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.13.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.
 
 Use the tested runtime commit in the receipt's ref field. Fetch the public runtime from https://github.com/SamPatt/pelicans-art.git over HTTPS; no GitHub login, token, SSH alias, or deploy key is needed. If fetching fails, explain the network or environment problem. Do not request tokens, change Git authentication, or change repository visibility.
 
-Create a short voiced pelican comedy by writing the SVG artwork and script directly with your current model, without OpenRouter. Use local Pocket TTS or verify an existing compatible speech service, keeping any new dependencies isolated. Validate and render the project, inspect the result, and send the playable MP4 here with the editable bundle. Tell me if this chat cannot deliver a playable file.
+Before making the first skit, ask whether I have an idea or would like two absurd suggestions. Confirm portrait (9:16) or landscape (16:9) if I have not specified it. Then walk me through your proposed characters and their appearances and voices, setting, scene beats, and exact dialogue in this chat. Suggest sensible defaults for length and tone. Revise the plan from my feedback and wait until I approve it before generating finished artwork, speech, or video. No storyboard editor or separate file is needed.
 
-After successfully delivering the test video, ask me what skit I would like to make next. Invite my own idea and offer two short, absurd skit suggestions to spark ideas. Wait for my choice before creating another skit.
+Once I approve the plan, create the skit by writing the SVG artwork and script directly with your current model, without OpenRouter. Use local Pocket TTS or verify an existing compatible speech service, keeping any new dependencies isolated. Preserve the agreed portrait or landscape format. Validate and render the project, inspect the result, and send the playable MP4 here with the editable bundle. Tell me if this chat cannot deliver a playable file.
+
+After delivering the video, invite my next idea or offer two short, absurd suggestions. Use the same chat-based review before producing another skit.
 ```
 
 Your agent will download the [portable skill](skills/pelican-theater/SKILL.md). It handles dependency checks, SVG structure, skit validation, speech, rendering, and delivering the finished video in chat. You review the plot and ask for revisions in the same conversation.

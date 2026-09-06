@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-06",
+  "runtimeRevision": "0599a77",
+  "environment": {
+    "platform": "Linux x64",
+    "node": "22.23.1",
+    "speech": "Pocket 2.1.0 pinned April English CPU model, 2 inference threads, preexisting warm service"
+  },
+  "fixture": "examples/portrait-witness-protection",
+  "dialogueLines": 8,
+  "videoDimensions": [
+    720,
+    1280
+  ],
+  "deliveredVideoSeconds": 25.734,
+  "unchangedRenderWallSeconds": 28.87,
+  "buildMeasurements": [
+    {
+      "name": "validation",
+      "seconds": 0.0033405890000000014
+    },
+    {
+      "name": "fresh_speech_build_service_warm",
+      "seconds": 5.234762266000001,
+      "generated": 8,
+      "reused": 0
+    },
+    {
+      "name": "unchanged_build",
+      "seconds": 0.3887234360000002,
+      "generated": 0,
+      "reused": 8
+    },
+    {
+      "name": "one_line_revision",
+      "seconds": 0.960750215,
+      "generated": 1,
+      "reused": 7
+    },
+    {
+      "name": "tempo_only_revision",
+      "seconds": 5.390514878,
+      "generated": 8,
+      "reused": 0
+    }
+  ],
+  "separateInstrumentedCaptureStages": [
+    {
+      "stage": "browser_load_and_cover",
+      "seconds": 0.20673269800000002
+    },
+    {
+      "stage": "real_time_playback",
+      "seconds": 24.750482237
+    },
+    {
+      "stage": "end_hold_and_webm_flush",
+      "seconds": 1.1019549170000027
+    },
+    {
+      "stage": "probe_and_sync_scan",
+      "seconds": 0.4736842039999974
+    },
+    {
+      "stage": "audio_extract_and_mp4_encode",
+      "seconds": 1.4758993120000015
+    },
+    {
+      "stage": "final_probe_manifest_cleanup",
+      "seconds": 0.06478455699999904
+    }
+  ],
+  "scope": "Single local measurements, not repeated statistical benchmarks. Excludes model authoring time, fresh installation, cold speech startup, upload/chat delivery, and Hermes ARM64 performance. Capture phase measurements are from a separate run using temporary instrumentation; no production timing code was changed."
+}

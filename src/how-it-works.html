@@ -34,14 +34,14 @@
     <h1>How it works</h1>
     <p class="lede">You supply the predicament. Your agent draws the cast, gives them voices, and sends you a finished video.</p>
     <div class="pipeline" aria-label="Creation pipeline">
-      <div class="step">1. Work out the joke</div><div class="step">2. Draw the cast</div><div class="step">3. Voice &amp; render</div><div class="step">4. Watch &amp; revise</div>
+      <div class="step">1. Agree on the plan in chat</div><div class="step">2. Draw the cast</div><div class="step">3. Voice &amp; render</div><div class="step">4. Watch &amp; revise</div>
     </div>
     <h2>Start in your agent chat</h2>
     <p>Give the <a href="agent.html">pelican-theater skill to your agent</a>, then describe your scene. Review the plot and dialogue together before making it. The agent writes SVG artwork and the skit directly with its own model; the theater does not make additional OpenRouter or other LLM API calls.</p>
     <p>The agent needs permission to work with files and run commands on a computer or VPS. It checks Node.js, Chromium, FFmpeg, and a speech service. Local Pocket TTS provides voices; you can also use a compatible service or explicitly choose captions only. The current install path supports Linux and macOS, or WSL on Windows.</p>
     <h2>Make it, watch it, change one thing</h2>
     <p>The CLI validates the artwork and script, creates speech, and captures the performance as an MP4. Ask your agent to send that video in chat so you can watch on your phone. You also get an editable project bundle. A localhost link on a VPS will not open on your phone.</p>
-    <p>Ask for a quicker delivery, a new shirt, or a longer pause. The agent edits the project and renders again. Unchanged speech is cached, so a camera or timing edit does not regenerate the voices.</p>
+    <p>Before production, your agent proposes the format, characters, setting, scene beats, and dialogue in chat. Give feedback until you are happy with the plan, then approve it. No separate storyboard tool is needed.</p><p>Afterward, ask for a quicker delivery, a new shirt, or a longer pause. The agent edits the project and renders again. Unchanged speech is cached, so a camera or timing edit does not regenerate the voices.</p>
     <pre><code>node scripts/theater.mjs init data/projects/my-skit
 # Your agent edits skit.json and assets/ here.
 node scripts/theater.mjs validate data/projects/my-skit

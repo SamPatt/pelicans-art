@@ -7,11 +7,19 @@ description: Make SVG artwork or voiced skits directly from agent chat.
 
 For standalone artwork, follow [SVG artwork](references/svg.md) and return a viewable PNG plus the editable SVG. Do not expand an artwork request into a skit.
 
-Turn a user's skit request into SVG artwork, a script, local dialogue audio, and an MP4. Write SVG and JSON directly with your current model. The theater does not need a second LLM connection. Honor a request for brainstorming without starting production; otherwise proceed with reasonable creative defaults.
+Turn a user's skit request into SVG artwork, a script, local dialogue audio, and an MP4. Write SVG and JSON directly with your current model. The theater does not need a second LLM connection. Plan new skits with the creator in chat before production.
 
 ## When to use
 
 Use for local theater installation, direct SVG character creation, skit authoring and revisions, or rendering an editable project into a voiced video. The GUI and a second LLM connection are optional.
+
+## Review the plan in chat
+
+Before producing a new skit, walk the creator through a concise proposal: portrait (9:16) or landscape (16:9), character appearances and proposed voices (including anyone introduced by the reveal), setting, scene/action beats, and exact dialogue including important pauses and the ending. Ask only about missing choices that materially affect the result; propose defaults for length and tone rather than giving the user a questionnaire. If they have no premise, offer two brief ideas first. Voice auditions and descriptive preset labels are available at https://pelicans.art/voices.html and https://pelicans.art/voice-labels.json; keep canonical IDs and verify endpoint availability before synthesis.
+
+Revise the proposal from feedback, and wait for the creator to approve it before writing finished SVG assets, synthesizing dialogue, or rendering. This review happens entirely in chat: no storyboard editor, form, or separate file is required. A plan already approved in the conversation counts; do not ask again. If the user explicitly asks you to skip review and make the creative choices, honor that. For revisions, the requested change itself is authorization; discuss broader creative changes before doing them.
+
+After approval, produce the agreed plan. Keep sources and speech cache, change only what the revision needs, and use the lightest useful check before another full MP4 capture. A built bundle can be reviewed in the player without encoding a new MP4 when the creator has an accessible preview. Do not require users to operate the Editor.
 
 ## Find or install the runtime
 

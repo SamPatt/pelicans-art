@@ -92,3 +92,7 @@ Local April-profile verification (2026-09-06): installed Pocket 2.1.0 into a sep
 ### Installation boundaries
 
 Run `node scripts/theater.mjs setup --check --tts --python python3.12` before installation. The locked local speech installer supports Linux x64 and ARM64 with glibc 2.28+ and Python 3.12. Other platforms should use an existing compatible endpoint until independently verified. Setup refuses root, redirected dependency directories, and non-isolated existing speech environments; no system packages or services are installed. Host package changes require explicit opt-in. Per-attempt receipts under `.runtime/install-*.json` document the footprint and shared caches. See the [installation reference](../skills/pelican-theater/references/installation.md) for removal and platform limits.
+
+## Plan before production
+
+The agent walks through format (portrait 9:16 or landscape 16:9), character appearances and voices, setting, scene beats, and exact dialogue in chat. It incorporates feedback and waits for approval before generating finished SVGs, speech, or video. No storyboard file or Editor is required. An already approved plan counts, and explicit requests to skip review are respected. Keep the same project and cache for revisions; review a built bundle through an accessible player when a new MP4 is unnecessary.
