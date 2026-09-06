@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "A health inspector who has seen enough",
+  "model": "GPT-6 Astra",
+  "kind": "character",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "fbee3e8b05a9e0228370982e57d35a5e5d261cff",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 3034,
+      "sha256": "77472813f2b64942006c1c316c5e0e42e9036bafe25b6095fcaf5d6ffc9b5186"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 99020,
+      "sha256": "9f45141560ffdee90d8665f866f89f9e51fa2cf8ed21c8da0b2ba3a5d8dc17aa",
+      "width": 683,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

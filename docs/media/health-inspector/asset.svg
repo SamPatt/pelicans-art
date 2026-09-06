@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="none" stroke="#292b36" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+<title>A health inspector who has seen enough</title>
+<desc>A human woman with swept silver hair, angular glasses, a plum coat and a clipboard, raising one skeptical eyebrow.</desc>
+<g transform="scale(0.4166666667)">
+<g id="body">
+<path d="M91 267L87 333H109L122 276L135 333H157L150 266" fill="#292b36"/>
+<path d="M87 327Q69 333 66 344H110L111 330M135 330L135 344H179Q176 333 157 327" fill="#292b36"/>
+<path d="M94 139L151 137Q174 142 187 166L171 185L162 168L173 282Q119 295 67 280L81 170L70 214L48 208Q50 158 94 139Z" fill="#79617e"/>
+<path d="M110 127L108 147L126 168L146 145L139 126" fill="#c28b69"/>
+<path d="M99 140L118 169L102 188L86 153M147 138L126 169L142 188L161 152" fill="#f4ead6"/>
+<path d="M121 173L120 279" stroke-width="2"/>
+<circle cx="130" cy="207" r="3" fill="#e1b552" stroke="none"/><circle cx="130" cy="239" r="3" fill="#e1b552" stroke="none"/>
+<path d="M73 242L105 245L101 262L72 258" stroke-width="2"/>
+<path d="M48 204Q40 228 56 245Q65 249 75 239L64 222L69 211" fill="#c28b69"/>
+<g transform="rotate(12 177 212)">
+<path d="M153 177H208V253H153Z" fill="#e1b552"/>
+<path d="M161 186H200V244H161Z" fill="#f4ead6" stroke-width="2"/>
+<path d="M173 173H189V184H173Z" fill="#292b36"/>
+<path d="M168 201H191M168 212H187M168 223H191M168 234H182" stroke-width="2"/>
+</g>
+<path d="M175 162Q186 160 192 173L188 199Q184 207 177 201L177 182L169 175" fill="#c28b69"/>
+<path d="M69 223L81 219L91 235" stroke-width="3"/>
+</g>
+<g id="head-top">
+<path d="M74 85Q55 58 72 37Q82 21 103 26Q123 9 146 27Q173 26 182 50Q191 73 172 100L152 120L87 108Z" fill="#b9c7c6"/>
+<path d="M82 63Q103 53 118 40Q133 65 165 68L162 111Q158 140 128 146Q96 142 83 120L75 92Z" fill="#c28b69"/>
+<path d="M80 86Q64 80 67 97Q68 108 82 109M164 87Q178 80 175 99Q173 109 163 109" fill="#c28b69"/>
+<path d="M82 62Q107 58 119 38M121 38Q139 56 165 61" stroke-width="3"/>
+<path d="M84 78L113 82L111 101L89 100ZM131 81L162 75L157 99L135 101Z" fill="#f4ead6"/>
+<ellipse id="eye-left-white" cx="100" cy="90" rx="8" ry="7" fill="#f4ead6" stroke="none"/>
+<ellipse id="eye-right-white" cx="146" cy="89" rx="8" ry="8" fill="#f4ead6" stroke="none"/>
+<circle id="eye-left-pupil" class="pupil" cx="104" cy="91" r="4" fill="#292b36" stroke="none"/>
+<circle id="eye-right-pupil" class="pupil" cx="150" cy="90" r="4" fill="#292b36" stroke="none"/>
+<path d="M113 86Q122 80 132 85M84 82L75 78M162 81L169 77"/>
+<path id="brow-left" d="M85 68L110 73" stroke-width="5"/>
+<path id="brow-right" d="M134 67Q145 55 157 61" stroke-width="5"/>
+<path d="M123 88L119 110L129 111" stroke-width="2.5"/>
+<circle cx="76" cy="115" r="4" fill="#e1b552" stroke-width="2"/><circle cx="166" cy="113" r="4" fill="#e1b552" stroke-width="2"/>
+</g>
+<g id="head-bottom">
+<path id="mouth-closed" d="M113 127Q125 122 139 126" stroke-width="3"/>
+<ellipse id="mouth-open" cx="126" cy="125" rx="10" ry="5" fill="#292b36" opacity="0"/>
+</g>
+</g>
+</svg>

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "Police scanner",
+  "model": "GPT-6 Astra",
+  "kind": "prop",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "fbee3e8b05a9e0228370982e57d35a5e5d261cff",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 733,
+      "sha256": "5f572679d0340aaefe338631d94f261daf5f3d1e50a8dd5b3a2de83767e97778"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 28435,
+      "sha256": "c61563580ba28fb89d02c1f13b8e849bb29fee15a98ce20575083ee354cd875b",
+      "width": 717,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

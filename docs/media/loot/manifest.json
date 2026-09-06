@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "title": "A suspiciously labeled sack",
+  "model": "GPT-6 Astra",
+  "kind": "prop",
+  "pathBase": "manifest",
+  "runtime": {
+    "source": "SamPatt/pelicans-art",
+    "revision": "fbee3e8b05a9e0228370982e57d35a5e5d261cff",
+    "workingTreeDirty": true
+  },
+  "files": [
+    {
+      "path": "asset.svg",
+      "mimeType": "image/svg+xml",
+      "size": 738,
+      "sha256": "6cb325859d87169691d1912227c142effa211126c8dbc2cb06eb477610f0eb89"
+    },
+    {
+      "path": "preview.png",
+      "mimeType": "image/png",
+      "size": 68422,
+      "sha256": "525e14caa65dad7cd289f9f21efdee7425b3fbafb983bcfc21404011a05aacc2",
+      "width": 853,
+      "height": 1024
+    }
+  ],
+  "warnings": []
+}

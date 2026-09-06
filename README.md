@@ -23,11 +23,23 @@ The repository is public. Agents can fetch `https://github.com/SamPatt/pelicans-
 
 ## Draw a cast. Give it a problem.
 
-| A tired pelican stagehand | A mushroom chef with opinions | A teapot with royal ambitions |
+| A tired pelican stagehand | A mushroom chef with opinions | A health inspector who has seen enough |
 | :---: | :---: | :---: |
-| <img src="svg-prompt-lab/study/runs/astra-isolated/review/t003/preview.png" alt="Pelican stagehand wearing a headset and carrying a cable" width="210"> | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t008/preview.png" alt="Grumpy mushroom chef holding a spoon and oven mitt" width="210"> | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t018/preview.png" alt="Teal teapot wearing a gold crown" width="210"> |
+| <img src="svg-prompt-lab/study/runs/astra-isolated/review/t003/preview.png" alt="Pelican stagehand wearing a headset and carrying a cable" width="210"> | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t008/preview.png" alt="Grumpy mushroom chef holding a spoon and oven mitt" width="210"> | <img src="docs/media/health-inspector/preview.png" alt="Human health inspector with silver hair, skeptical eyebrows, plum coat and clipboard" width="210"> |
 
-Actual GPT-6 Astra SVG outputs from our [prompting study](svg-prompt-lab/study/runs/astra-isolated/findings.md). Agents can deliver standalone artwork or build it into a voiced skit. Our [art-direction guide](skills/pelican-theater/references/art-direction.md) focuses on expressive silhouettes and readable shapes.
+**Props**
+
+| Police scanner | A suspiciously labeled sack |
+| :---: | :---: |
+| <img src="docs/media/scanner/preview.png" alt="Handheld police radio with antenna and green display" height="180"> | <img src="docs/media/loot/preview.png" alt="Drawstring sack plainly labeled LOOT" height="180"> |
+
+**Backgrounds**
+
+| Underwater laundromat | A very ordinary office on the moon |
+| :---: | :---: |
+| <img src="svg-prompt-lab/study/runs/astra-isolated/review/t023/preview.png" alt="Underwater laundromat with washing machines and a fish outside the porthole" width="330"> | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t028/preview.png" alt="Moon office with waiting chairs, a service counter and Earth outside the window" width="330"> |
+
+Actual GPT-6 Astra SVG artwork: characters and backgrounds from our [prompting study](svg-prompt-lab/study/runs/astra-isolated/findings.md), props from *The Description*, and a [new human inspector](docs/media/health-inspector/asset.svg). Agents can deliver standalone artwork or build it into a voiced skit. Our [art-direction guide](skills/pelican-theater/references/art-direction.md) focuses on expressive silhouettes and readable shapes.
 
 ## What works
 
