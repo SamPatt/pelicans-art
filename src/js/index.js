@@ -7,7 +7,8 @@
       if (!btn) return;
 
       const skitName = btn.dataset.skit;
-      if (!skitName) return;
+      const skitUrl = btn.dataset.skitUrl;
+      if (!skitName && !skitUrl) return;
 
       // Update active state
       selector.querySelectorAll('.script-tab').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); });
@@ -15,7 +16,9 @@
       btn.setAttribute('aria-pressed', 'true');
 
       // Reload iframe with new skit
-      skitFrame.src = `skit-player.html?embed=1&captions=1&skit=${skitName}`;
+      const params = new URLSearchParams({ embed: '1', captions: '1' });
+      params.set(skitUrl ? 'url' : 'skit', skitUrl || skitName);
+      skitFrame.src = `skit-player.html?${params}`;
     });
 
     // Listen for orientation changes from embedded skit player
