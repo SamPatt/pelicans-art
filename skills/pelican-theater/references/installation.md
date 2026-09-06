@@ -18,14 +18,16 @@ The complete skill folder contains SKILL.md and references. Copy/install the fol
 
 ## Dependencies
 
-Supported initial installation path: Linux and macOS, or Linux through WSL. Node 22+, Python 3.10–3.13 for the pinned Pocket stack, FFmpeg/ffprobe, and Playwright Chromium. Prefer Python 3.12 for a new isolated environment. Do not replace system Python or an agent's Python environment.
+The verified local Pocket installer targets Linux x64 (including WSL) with glibc 2.28+ and Python 3.12. Other architectures, native Windows, and macOS local Pocket installation are not yet supported by the locked installer. Intel macOS lacks the pinned Torch wheels. macOS rendering with an existing compatible speech endpoint is possible but has not had a clean-machine rehearsal. Rendering requires Node 22+, FFmpeg/ffprobe, and Playwright Chromium. Select an already installed Python 3.12 for local Pocket. Do not replace system Python or an agent's Python environment.
 
 Choose **one** setup path after inspecting existing speech services:
 
 - If a compatible speech service is already verified, or the user explicitly wants captions only, run `node scripts/theater.mjs setup`.
 - If local Pocket is needed, run `node scripts/theater.mjs setup --tts --python python3.12` (select an installed compatible interpreter). This includes normal setup; do not run `setup` first.
 
-Both install root/server npm lockfiles and Chromium. On Linux, install missing browser OS libraries with Playwright's `install-deps chromium` through the normal permission flow. Install FFmpeg through the OS package manager if absent. Worker dependencies are unnecessary for video creation. Setup reconciles this checkout's locked dependency tree, so run it only in the theater checkout.
+First run the selected setup command with `--check`. It checks tools, platform, free disk/RAM, installation directories, and existing venv isolation without installing anything. Setup repeats these checks before mutations. Inspect available space: the measured Python environment alone is about 1 GB; model files, Chromium and download caches need additional space. Do not treat this as a universal minimum.
+
+Both setup paths install root/server npm lockfiles and Chromium. Setup refuses root execution. Missing FFmpeg, Python/venv support, or browser OS libraries require an explicit user opt-in to the specific host package changes before running an OS package manager or `playwright install-deps`. A request to make a skit alone does not authorize those changes. Explain the missing packages and proposed command; if permission is unavailable, stop with that prerequisite. Never replace system tools, use sudo for setup, or change an agent environment to bypass the check. Worker dependencies are unnecessary for video creation. Setup reconciles this checkout's locked dependency tree, so run it only in the theater checkout.
 
 `setup --tts` adds a dedicated `.runtime/pocket-tts-2.1.0` environment with Pocket 2.1.0 and CPU Torch 2.8.0 on Linux. Setup downloads the exact non-voice-cloning April English model/tokenizer revision `d29db7978e464fb90cb3359ee0c69a273b9142cc` and voice-embedding revision `e041936c75475d350b405bc870bcf7c22da4e9e6`. It verifies the model SHA-256 against `scripts/theater/pocket-profile.json`. Use only the emitted Python wrapper command; bare `pocket-tts serve` does not enforce this profile. It installs dependencies but starts no service. Output includes the actual isolated Python/version, `tts.executable`, `tts.serveCommand` as an argument array, the default endpoint, and `tts.readiness` with an executable and argument array.
 
@@ -57,5 +59,9 @@ A persistent service is optional and requires a user request. Never replace Herm
 If the user requested voice, missing speech is a failure to fix, not permission to switch silently to captions. Explicit caption-only projects use `init ... --silent`.
 
 Existing speech: `pocket` uses multipart text/voice_url; `openai-compatible` uses input/voice/model JSON; `piper` uses text/voice/rate/depth/format JSON. Piper is a specific relay format, not every Piper installation. Set an exact endpoint and verify an audio response. Credential config contains an environment variable name (`tokenEnv`), not its secret value. A chat agent's speech tool can instead supply local WAV/MP3/OGG files for individual lines.
+
+Python packages and transitive dependencies are pinned with SHA-256 hashes in `scripts/theater/pocket-linux-py312.lock`; installation requires binary wheels and checks hashes. Re-resolving or loosening the lock is a maintainer task, not an installation workaround.
+
+Each setup attempt writes `.runtime/install-<timestamp>.json` before installation, including planned new directories, reused directories, resource observations, and shared cache categories. A completed attempt also updates `.runtime/install-receipt.json`. A failed attempt may leave partial dependencies; retain the receipt when reporting it. For removal, preview only the recorded new directories and verify they still belong to this installation before removing them. Preserve user projects, reused directories, and shared npm/Playwright/pip/uv/Hugging Face caches. Setup starts no processes; separately record exact process IDs for services the agent starts and stop only those. Never use broad process-name kills or cache deletion as cleanup.
 
 The installer prefers an existing `uv` for isolated Python installation, with standard `venv`/pip as fallback. On Debian/Ubuntu without uv, install the matching `python3-venv` package if ensurepip is missing. Select another compatible interpreter with `setup --tts --python python3.12`.

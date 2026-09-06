@@ -5,15 +5,17 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
+import { run as installRun } from './theater/project.mjs';
 import { json, writeJson, run, loadProject, buildProject } from './theater/project.mjs';
 import { pocketDefaults } from './theater/pocket.mjs';
+import { preflight, checkVenv } from './theater/install-safety.mjs';
 import { probeSpeech } from './theater/readiness.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), require = createRequire(import.meta.url);
 const args = process.argv.slice(2), command = args.shift();
 let flags, directory;
 function parseOptions() {
   const commands = {
-    setup: {tts:'boolean',python:'string'}, doctor: {json:'boolean',endpoint:'string',wait:'string'},
+    setup: {tts:'boolean',python:'string',check:'boolean'}, doctor: {json:'boolean',endpoint:'string',wait:'string'},
     init: {silent:'boolean'}, import: {bundle:'string'}, validate: {}, build: {},
     render: {port:'string',output:'string'}, help: {}, '--help': {}
   };
@@ -51,37 +53,57 @@ async function pocketRuntime() {
   } catch { return {installed:true,ok:false,executable,python,message:'Could not inspect the isolated Pocket runtime'}; }
 }
 async function setup() {
-  console.error('Installing locked theater dependencies…');
-  await run('npm',['ci'],{cwd:ROOT}); await run('npm',['--prefix','server','ci'],{cwd:ROOT});
-  console.error('Installing Chromium…');
-  await run('npx',['playwright','install','chromium'],{cwd:ROOT});
-  let tts;
-  if (flags.has('tts')) {
-    const env=path.join(ROOT,'.runtime/pocket-tts-2.1.0'), python=path.join(env,'bin/python');
-    const basePython = flags.get('python') || 'python3';
-    const version = JSON.parse((await run(basePython,['-c','import sys,json;print(json.dumps(list(sys.version_info[:2])))'])).toString());
-    if(version[0]!==3 || version[1]<10 || version[1]>13) throw new Error('Pocket installer requires Python 3.10–3.13; specify --python python3.12');
-    console.error('Installing isolated CPU speech runtime (first install downloads model dependencies)…');
-    await fs.mkdir(path.dirname(env),{recursive:true});
-    const hasUv = await run('uv',['--version']).then(()=>true).catch(()=>false);
-    if (hasUv) {
-      try {await fs.access(python);} catch {await run('uv',['venv',env,'--python',basePython]);}
-    } else {
-      try {await run(python,['-m','pip','--version']);} catch {await run(basePython,['-m','venv',env]);}
+  // Ignore installer environment overrides that could redirect Python writes.
+  const installerEnv=Object.fromEntries(Object.entries(process.env).filter(([key])=>!(/^(PIP_|UV_|PYTHON|VIRTUAL_ENV$)/.test(key))));
+  const run = (command,args,options={}) => installRun(command,args,{...options,env:installerEnv,timeout:20*60*1000});
+  const basePython = flags.get('python') || 'python3.12';
+  const inspection = await preflight(ROOT,{tts:flags.has('tts'),python:basePython,run});
+  const footprint = ['node_modules','server/node_modules',...(flags.has('tts')?['.runtime/pocket-tts-2.1.0','.runtime/pocket-april-presets']:[])];
+  const created = [];
+  for (const entry of footprint) if (!await fs.lstat(path.join(ROOT,entry)).catch(()=>null)) created.push(entry);
+  const receipt = {version:1,startedAt:new Date().toISOString(),inspection,plannedNewDirectories:created,createdDirectories:[],reusedDirectories:footprint.filter(p=>!created.includes(p)),processesStarted:[],sharedCaches:['npm','Playwright Chromium','pip/uv','Hugging Face'],removal:'Review createdDirectories before removing anything. Preserve projects and shared caches. No system packages or services were installed.'};
+  if (flags.has('check')) return report({ok:true,checkOnly:true,...receipt});
+  console.error('Setup replaces this checkout’s node_modules. Downloads also use shared user caches. Pocket alone occupies about 1 GB, plus model and download caches.');
+  await fs.mkdir(path.join(ROOT,'.runtime'),{recursive:true});
+  const lockPath=path.join(ROOT,'.runtime/setup.lock');
+  const lock=await fs.open(lockPath,'wx');
+  try {
+    const receiptPath=path.join(ROOT,'.runtime/install-receipt.json');
+    // Keep a separate receipt for every attempt, including partial failures.
+    const attemptPath=path.join(ROOT,'.runtime',`install-${Date.now()}.json`);
+    await fs.writeFile(attemptPath,JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
+    console.error('Installing locked theater dependencies…');
+    await run('npm',['ci'],{cwd:ROOT}); await run('npm',['--prefix','server','ci'],{cwd:ROOT});
+    console.error('Installing Chromium…');
+    await run('npx',['playwright','install','chromium'],{cwd:ROOT});
+    let tts;
+    if (flags.has('tts')) {
+      const env=path.join(ROOT,'.runtime/pocket-tts-2.1.0'), python=path.join(env,'bin/python');
+      console.error('Installing isolated, hash-locked CPU speech runtime…');
+      const hasUv = await run('uv',['--version']).then(()=>true).catch(()=>false);
+      if (!await checkVenv(env,run)) {
+        if (hasUv) await run('uv',['venv',env,'--python',basePython]);
+        else await run(basePython,['-I','-m','venv',env]);
+      }
+      await checkVenv(env,run);
+      const packages=['--require-hashes','--only-binary',':all:','-r',path.join(ROOT,'scripts/theater/pocket-linux-py312.lock'),'--extra-index-url','https://download.pytorch.org/whl/cpu'];
+      if (hasUv) await run('uv',['pip','install','--python',python,'--index-strategy','unsafe-best-match',...packages]);
+      else await run(python,['-I','-m','pip','--isolated','install',...packages]);
+      await run(python,[path.join(ROOT,'scripts/theater/pocket-server.py'),'prepare']);
+      const runtime=await pocketRuntime();
+      if (!runtime.ok) throw new Error('Installed Pocket runtime could not be verified');
+      const serveCommand=[path.join(ROOT,'scripts/theater/pocket-server.py'),'serve','--port','8001'];
+      tts={...runtime,...pocketDefaults(),executable:python,serveCommand,endpoint:'http://127.0.0.1:8001/tts',
+        readiness:{executable:process.execPath,args:[path.join(ROOT,'scripts/theater.mjs'),'doctor','--endpoint','http://127.0.0.1:8001/tts','--wait','120','--json']}};
     }
-    const install = async packages => hasUv
-      ? run('uv',['pip','install','--python',python,...packages])
-      : run(python,['-m','pip','install',...packages]);
-    await install(['torch==2.8.0',...(process.platform==='linux'?['--index-url','https://download.pytorch.org/whl/cpu']:[])]);
-    await install(['pocket-tts==2.1.0']);
-    await run(python,[path.join(ROOT,'scripts/theater/pocket-server.py'),'prepare']);
-    const runtime=await pocketRuntime();
-    if (!runtime.ok) throw new Error('Installed Pocket runtime could not be verified');
-    const serveCommand=[path.join(ROOT,'scripts/theater/pocket-server.py'),'serve','--port','8001'];
-    tts={...runtime,...pocketDefaults(),executable:python,serveCommand,endpoint:'http://127.0.0.1:8001/tts',
-      readiness:{executable:process.execPath,args:[path.join(ROOT,'scripts/theater.mjs'),'doctor','--endpoint','http://127.0.0.1:8001/tts','--wait','120','--json']}};
-  }
-  report({ok:true,tts,message:'Dependencies installed. Run doctor with --endpoint to verify speech; TTS is not started automatically.'});
+    receipt.createdDirectories=[];
+    for (const entry of created) if (await fs.lstat(path.join(ROOT,entry)).catch(()=>null)) receipt.createdDirectories.push(entry);
+    receipt.completedAt=new Date().toISOString();
+    await writeJson(attemptPath,receipt);
+    await fs.writeFile(receiptPath+'.tmp',JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
+    await fs.rename(receiptPath+'.tmp',receiptPath);
+    report({ok:true,tts,receipt:attemptPath,message:'Dependencies installed. Run doctor with --endpoint to verify speech; TTS is not started automatically.'});
+  } finally { await lock.close(); await fs.unlink(lockPath); }
 }
 async function init() {
   await fs.mkdir(directory,{recursive:true});
@@ -136,7 +158,7 @@ async function render() {
 }
 try {
   parseOptions();
-  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|init|import|validate|build|render> [project-directory]',setup:'setup [--tts] installs npm/Chromium, optionally isolated Pocket TTS (Linux/macOS; use WSL on Windows). Install FFmpeg with your OS package manager.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
+  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|init|import|validate|build|render> [project-directory]',setup:'setup [--check] [--tts --python python3.12]: preflight then local npm/Chromium; locked Pocket requires Linux x64 glibc 2.28+ and Python 3.12. --check makes no installation changes. Missing OS packages require explicit user opt-in.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
   else if(command==='doctor')await doctor();
   else if(command==='setup')await setup();
   else if(command==='init')await init();
