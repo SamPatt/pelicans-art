@@ -138,3 +138,5 @@ Working prototype. The viewer and Editor are usable. The repository is being pre
 ## License
 
 The source code is available under the [MIT License](LICENSE). Creative assets and third-party references have separate terms described in [ASSET-LICENSE.md](ASSET-LICENSE.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+For artwork alone, the [standalone SVG workflow](docs/AGENT-WORKFLOW.md#standalone-svgs) returns an editable SVG and a chat-friendly PNG preview, without installing speech or creating a skit.

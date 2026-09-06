@@ -19,13 +19,26 @@ node scripts/theater.mjs validate data/projects/my-skit
 node scripts/theater.mjs render data/projects/my-skit
 ```
 
-Install FFmpeg using your OS package manager. `setup` installs npm dependencies and Chromium; Linux browser OS libraries may need `npx playwright install-deps chromium`. `setup --tts` adds an isolated pinned Pocket 2.1.0 environment under `.runtime/`, with CPU Torch 2.8.0 on Linux. It does not alter the agent's environment or start services. Linux/macOS are the initial supported paths; use WSL on Windows.
+Install FFmpeg using your OS package manager. `setup` installs npm dependencies and Chromium; Linux browser OS libraries may need `npx playwright install-deps chromium`. `setup --tts` adds an isolated pinned Pocket 2.1.0 environment under `.runtime/`, with CPU Torch 2.8.0 on Linux. It does not alter the agent's environment or start services. Locked local Pocket setup supports Linux x64/WSL with glibc 2.28+ and Python 3.12; other platforms can use an existing compatible speech endpoint.
 
 Edit `skit.json` and `assets/` in the created project. Set `meta.model` and asset metadata to the actual model or Unknown. `project.json` controls speech: Pocket, an OpenAI-compatible endpoint, a specific Piper JSON relay, or explicit caption-only mode (`init --silent`). The complete speech URL belongs in `tts.endpoint`. Authentication uses `tts.tokenEnv` plus optional `authHeader`/`authPrefix`, not a stored token.
 
 `build` is available separately from `render`. Speech is cached by text, voice, engine/model and delivery configuration. Unchanged lines survive a camera/pause edit. Supplied audio files are accepted in `skit.json`'s `assets.audio`; the agent must replace/remove a supplied recording when editing its text.
 
 `setup --tts` includes normal setup. Its JSON contains the actual isolated Python/Pocket versions, `tts.executable`, `tts.serveCommand` argv, endpoint, and `tts.readiness` executable/args. Doctor reports platform/architecture and `pocketRuntime` separately from system Python. `doctor --endpoint ... --wait 120` verifies real decodable speech within one overall wait deadline. Without `--wait` it makes one attempt. HTTP errors and invalid audio fail immediately; connection failures report cause codes. A timeout does not establish that a model is loading.
+
+## Standalone SVGs
+
+Ask your agent for a character, prop, background, or illustration without making a skit. The agent writes the SVG directly, then delivers the original and a PNG preview:
+
+```sh
+# Only if preview dependencies are missing; no TTS, Python or FFmpeg needed.
+node scripts/theater.mjs setup --check --svg
+node scripts/theater.mjs setup --svg
+node scripts/theater.mjs svg data/artwork/pelican-v1 --source /path/to/pelican.svg --kind character --model "GPT-6 Astra" --title "Stage manager"
+```
+
+Use the actual model name or omit it for `Unknown`. `--kind artwork` is the default and accepts ordinary illustrations; `character` additionally checks the theater's required animation IDs. Each delivery directory must be new. The CLI returns `asset.svg`, a full-frame `preview.png`, and a portable metadata manifest with hashes. The agent should inspect and display the PNG inline, then attach the SVG through the chat's file tools. No server, skit, paid generation API, or public upload is involved. See the [standalone SVG reference](../skills/pelican-theater/references/svg.md).
 
 ## Outputs and editing
 

@@ -29,11 +29,11 @@ export async function checkVenv(env, run) {
   if (info.prefix !== await fs.realpath(env) || info.prefix === info.base || !/^include-system-site-packages\s*=\s*false\s*$/mi.test(config) || info.version.join('.') !== '3.12') throw new Error('Existing Pocket environment is not an isolated Python 3.12 venv; choose a fresh checkout.');
   return true;
 }
-export async function preflight(root, {tts, python, run}) {
+export async function preflight(root, {tts, svgOnly=false, python, run}) {
   checkPlatform({tts});
   if (process.getuid?.() === 0) throw new Error('Run setup as a regular user, not root or sudo.');
   await checkDirectories(root,['node_modules','server/node_modules','.runtime/pocket-tts-2.1.0','.runtime/pocket-april-presets']);
-  for (const [command,args] of [['npm',['--version']],['ffmpeg',['-version']],['ffprobe',['-version']]]) await run(command,args);
+  for (const [command,args] of [['npm',['--version']],...(svgOnly?[]:[['ffmpeg',['-version']],['ffprobe',['-version']]])]) await run(command,args);
   if (tts) {
     const version = JSON.parse((await run(python,['-I','-c','import sys,json;print(json.dumps(list(sys.version_info[:2])))'])).toString());
     if (version.join('.') !== '3.12') throw new Error('Locked Pocket setup requires installed Python 3.12; use --python python3.12.');

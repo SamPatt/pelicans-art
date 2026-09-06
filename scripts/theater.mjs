@@ -8,6 +8,7 @@ import { parseArgs } from 'node:util';
 import { run as installRun } from './theater/project.mjs';
 import { json, writeJson, run, loadProject, buildProject } from './theater/project.mjs';
 import { pocketDefaults } from './theater/pocket.mjs';
+import { deliverSvg } from './theater/svg.mjs';
 import { preflight, checkVenv } from './theater/install-safety.mjs';
 import { probeSpeech } from './theater/readiness.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), require = createRequire(import.meta.url);
@@ -15,16 +16,18 @@ const args = process.argv.slice(2), command = args.shift();
 let flags, directory;
 function parseOptions() {
   const commands = {
-    setup: {tts:'boolean',python:'string',check:'boolean'}, doctor: {json:'boolean',endpoint:'string',wait:'string'},
-    init: {silent:'boolean'}, import: {bundle:'string'}, validate: {}, build: {},
+    setup: {tts:'boolean',python:'string',check:'boolean',svg:'boolean'}, doctor: {json:'boolean',endpoint:'string',wait:'string'},
+    svg: {source:'string',kind:'string',model:'string',title:'string'}, init: {silent:'boolean'}, import: {bundle:'string'}, validate: {}, build: {},
     render: {port:'string',output:'string'}, help: {}, '--help': {}
   };
   if (command && !Object.hasOwn(commands,command)) throw new Error(`Unknown command ${command}`);
   const options = Object.fromEntries(Object.entries({help:'boolean',...commands[command]}).map(([name,type])=>[name,{type}]));
   const parsed = parseArgs({args,options,allowPositionals:true,strict:true});
   flags = new Map(Object.entries(parsed.values));
-  const acceptsDirectory = ['init','import','validate','build','render'].includes(command);
+  const acceptsDirectory = ['svg','init','import','validate','build','render'].includes(command);
   if (parsed.positionals.length > (acceptsDirectory ? 1 : 0)) throw new Error('Unexpected positional arguments; provide one project directory for project commands');
+  if (command==='setup' && flags.has('svg') && (flags.has('tts') || flags.has('python'))) throw new Error('--svg cannot be combined with --tts or --python');
+  if (command==='svg' && !flags.has('help') && parsed.positionals.length!==1) throw new Error('svg requires a new output directory');
   directory = path.resolve(parsed.positionals[0] || 'data/projects/my-skit');
   if (flags.has('wait') && (!flags.has('endpoint') || !/^\d+$/.test(flags.get('wait')) || Number(flags.get('wait'))>300)) throw new Error('--wait requires --endpoint and an integer number of seconds from 0 to 300');
   if (flags.has('port') && (!/^\d+$/.test(flags.get('port')) || Number(flags.get('port')) > 65535)) throw new Error('--port must be an integer from 0 to 65535');
@@ -57,11 +60,11 @@ async function setup() {
   const installerEnv=Object.fromEntries(Object.entries(process.env).filter(([key])=>!(/^(PIP_|UV_|PYTHON|VIRTUAL_ENV$)/.test(key))));
   const run = (command,args,options={}) => installRun(command,args,{...options,env:installerEnv,timeout:20*60*1000});
   const basePython = flags.get('python') || 'python3.12';
-  const inspection = await preflight(ROOT,{tts:flags.has('tts'),python:basePython,run});
-  const footprint = ['node_modules','server/node_modules',...(flags.has('tts')?['.runtime/pocket-tts-2.1.0','.runtime/pocket-april-presets']:[])];
+  const inspection = await preflight(ROOT,{tts:flags.has('tts'),svgOnly:flags.has('svg'),python:basePython,run});
+  const footprint = ['node_modules',...(flags.has('svg')?[]:['server/node_modules']),...(flags.has('tts')?['.runtime/pocket-tts-2.1.0','.runtime/pocket-april-presets']:[])];
   const created = [];
   for (const entry of footprint) if (!await fs.lstat(path.join(ROOT,entry)).catch(()=>null)) created.push(entry);
-  const receipt = {version:1,startedAt:new Date().toISOString(),inspection,plannedNewDirectories:created,createdDirectories:[],reusedDirectories:footprint.filter(p=>!created.includes(p)),processesStarted:[],sharedCaches:['npm','Playwright Chromium','pip/uv','Hugging Face'],removal:'Review createdDirectories before removing anything. Preserve projects and shared caches. No system packages or services were installed.'};
+  const receipt = {version:1,startedAt:new Date().toISOString(),inspection,plannedNewDirectories:created,createdDirectories:[],reusedDirectories:footprint.filter(p=>!created.includes(p)),processesStarted:[],sharedCaches:['npm','Playwright Chromium',...(flags.has('tts')?['pip/uv','Hugging Face']:[])],removal:'Review createdDirectories before removing anything. Preserve projects and shared caches. No system packages or services were installed.'};
   if (flags.has('check')) return report({ok:true,checkOnly:true,...receipt});
   console.error('Setup replaces this checkout’s node_modules. Downloads also use shared user caches. Pocket alone occupies about 1 GB, plus model and download caches.');
   await fs.mkdir(path.join(ROOT,'.runtime'),{recursive:true});
@@ -73,7 +76,8 @@ async function setup() {
     const attemptPath=path.join(ROOT,'.runtime',`install-${Date.now()}.json`);
     await fs.writeFile(attemptPath,JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
     console.error('Installing locked theater dependencies…');
-    await run('npm',['ci'],{cwd:ROOT}); await run('npm',['--prefix','server','ci'],{cwd:ROOT});
+    await run('npm',['ci'],{cwd:ROOT});
+    if (!flags.has('svg')) await run('npm',['--prefix','server','ci'],{cwd:ROOT});
     console.error('Installing Chromium…');
     await run('npx',['playwright','install','chromium'],{cwd:ROOT});
     let tts;
@@ -102,7 +106,7 @@ async function setup() {
     await writeJson(attemptPath,receipt);
     await fs.writeFile(receiptPath+'.tmp',JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
     await fs.rename(receiptPath+'.tmp',receiptPath);
-    report({ok:true,tts,receipt:attemptPath,message:'Dependencies installed. Run doctor with --endpoint to verify speech; TTS is not started automatically.'});
+    report({ok:true,tts,receipt:attemptPath,message:flags.has('svg')?'SVG preview dependencies installed. Run svg with your artwork; no speech service is needed.':'Dependencies installed. Run doctor with --endpoint to verify speech; TTS is not started automatically.'});
   } finally { await lock.close(); await fs.unlink(lockPath); }
 }
 async function init() {
@@ -158,9 +162,10 @@ async function render() {
 }
 try {
   parseOptions();
-  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|init|import|validate|build|render> [project-directory]',setup:'setup [--check] [--tts --python python3.12]: preflight then local npm/Chromium; locked Pocket requires Linux x64 glibc 2.28+ and Python 3.12. --check makes no installation changes. Missing OS packages require explicit user opt-in.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
+  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|svg|init|import|validate|build|render> [project-directory]',setup:'setup [--check] [--svg | --tts --python python3.12]: preflight then local npm/Chromium; locked Pocket requires Linux x64 glibc 2.28+ and Python 3.12. --svg installs only root npm/Chromium for standalone artwork, without FFmpeg/Python/TTS. --check makes no installation changes. Missing OS packages require explicit user opt-in.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',svg:'svg new-output-directory --source drawing.svg [--kind artwork|character|background|prop] [--model MODEL] [--title TITLE]: validate and deliver SVG + PNG preview; the agent authors the SVG directly.',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
   else if(command==='doctor')await doctor();
   else if(command==='setup')await setup();
+  else if(command==='svg')report(await deliverSvg(directory,Object.fromEntries(flags)));
   else if(command==='init')await init();
   else if(command==='import')await importBundle();
   else if(command==='validate'){const p=await loadProject(directory);report({ok:true,warnings:p.warnings,assets:p.hashes});}

@@ -1,9 +1,11 @@
 ---
 name: pelican-theater
-description: Install the theater and make voiced SVG skits from chat.
+description: Make SVG artwork or voiced skits directly from agent chat.
 ---
 
 # Pelican theater
+
+For standalone artwork, follow [SVG artwork](references/svg.md) and return a viewable PNG plus the editable SVG. Do not expand an artwork request into a skit.
 
 Turn a user's skit request into SVG artwork, a script, local dialogue audio, and an MP4. Write SVG and JSON directly with your current model. The theater does not need a second LLM connection. Honor a request for brainstorming without starting production; otherwise proceed with reasonable creative defaults.
 
@@ -17,7 +19,7 @@ Locate the user's existing `SamPatt/pelicans-art` checkout (`ai-improv-theater` 
 
 For a fresh voiced install, choose the setup branch in [installation](references/installation.md) first: `setup --check --tts --python python3.12` performs read-only preflight; `setup --tts` includes ordinary setup; do not run both. Reuse a verified compatible speech service when available, matching the project’s speech profile. New local projects use the pinned April Pocket presets; keep the complete profile emitted by `init`, and start the wrapper command emitted by setup. Run `doctor --json` to diagnose missing tools. After starting Pocket, run `doctor --endpoint <actual-url> --wait 120 --json`; success means actual synthesis returned decodable audio. For other adapters, verify through a short build. A port opening or doctor without speech does not establish voice readiness.
 
-## Create or revise
+## Create or revise a skit
 
 Read [authoring](references/authoring.md) before writing a new project. Use `init`, then edit its files. Default new projects to `data/projects/<name>` or the user's chosen directory, not shipped `src/` examples. Do not overwrite existing work. You do not need the GUI, an OpenRouter key, an OpenClaw gateway, or Hermes itself to run the theater.
 
@@ -30,4 +32,4 @@ Speech is cached by text, voice, and speech configuration. Changing staging alon
 
 ## Deliver
 
-Read [delivery](references/delivery.md) when rendering or returning results. Return the MP4 using the current chat's native artifact/attachment mechanism, with the editable `output/project.json` bundle and source folder. A VPS-local path or localhost URL is not a usable phone link. Use an existing authorized private preview or explain the missing delivery capability. Do not publish to the Pouch, open public ports, or change repository visibility just to make a link.
+For standalone SVGs, follow the [SVG delivery path](references/svg.md). For skits, read [delivery](references/delivery.md). Return the MP4 using the current chat's native artifact/attachment mechanism, with the editable `output/project.json` bundle and source folder. A VPS-local path or localhost URL is not a usable phone link. Use an existing authorized private preview or explain the missing delivery capability. Do not publish to the Pouch, open public ports, or change repository visibility just to make a link.
