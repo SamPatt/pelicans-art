@@ -7,9 +7,9 @@ root = Path(__file__).resolve().parent.parent
 source = root / 'skills/pelican-theater'
 out = root / 'src/downloads'
 out.mkdir(exist_ok=True)
-version = '1.0.4'
+version = '1.0.5'
 # Runtime verified by the full CLI rehearsal; packaging edits do not advance it.
-runtime_ref = '1c86a86e4f617c5fdf33b793403e91b5a08a3a2c'
+runtime_ref = 'a5be13894470898d4033f03eed4baac4f03257e5'
 target = out / f'pelican-theater-{version}.zip'
 with ZipFile(target, 'w', compression=ZIP_DEFLATED) as archive:
     for file in sorted(source.rglob('*')):
