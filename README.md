@@ -2,7 +2,11 @@
 
 An agent-first SVG theater and companion editor for making odd little voiced comedy skits.
 
-**Live site:** [pelicans.art](https://pelicans.art/)
+[![The Description — animated preview of a burglar pelican changing his disguise](docs/media/the-description-preview.gif)](https://pelicans.art/watch/the-description-f8ccb1/)
+
+**[▶ Watch The Description with sound · 39 seconds](https://pelicans.art/watch/the-description-f8ccb1/)** · [Download the MP4](https://pelicans.art/media/the-description.mp4) · [Make your own](https://pelicans.art/agent.html)
+
+*A burglar pelican keeps changing his disguise. The police scanner keeps up. The looping preview above is silent; open the full video for the dialogue.*
 
 The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https://simonwillison.net/2024/Oct/25/pelicans-on-a-bicycle/): if a model can draw a recognizable SVG pelican riding a bicycle, what happens when generated SVG characters become reusable, expressive actors?
 
@@ -18,6 +22,14 @@ The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https:/
 Start with an agent that can edit files and run shell commands. It writes artwork and dialogue directly, then uses the CLI to synthesize local speech and render an MP4. No additional LLM API key is needed. The companion Editor provides visual changes, optional private Hermes chat, voice updates, and MP4 rendering through your local server; watching needs no setup.
 
 The repository is public. Agents can fetch `https://github.com/SamPatt/pelicans-art.git` over HTTPS without GitHub credentials, tokens, or a deploy key. The downloadable skill pins a tested runtime revision.
+
+## Draw a cast. Give it a problem.
+
+| A tired pelican stagehand | A mushroom chef with opinions | A teapot with royal ambitions |
+| :---: | :---: | :---: |
+| <img src="svg-prompt-lab/study/runs/astra-isolated/review/t003/preview.png" alt="Pelican stagehand wearing a headset and carrying a cable" width="210"> | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t008/preview.png" alt="Grumpy mushroom chef holding a spoon and oven mitt" width="210"> | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t018/preview.png" alt="Teal teapot wearing a gold crown" width="210"> |
+
+Actual GPT-6 Astra SVG outputs from our [prompting study](svg-prompt-lab/study/runs/astra-isolated/findings.md). Agents can deliver standalone artwork or build it into a voiced skit. Our [art-direction guide](skills/pelican-theater/references/art-direction.md) focuses on expressive silhouettes and readable shapes.
 
 ## What works
 
@@ -39,6 +51,10 @@ Give your agent the [portable skill](skills/pelican-theater/SKILL.md). It handle
 For shell users, follow the [CLI quickstart](docs/AGENT-WORKFLOW.md). Node.js 22+, FFmpeg, Chromium, and a speech service are needed for voiced MP4s. The CLI starts its own temporary player; running the Express authoring server is unnecessary. Locked local Pocket setup supports Linux x64 and ARM64 (including compatible WSL installations), glibc 2.28+, and Python 3.12. Other platforms can use an existing speech endpoint; macOS rendering has not yet had a clean-machine rehearsal.
 
 ## Companion Editor
+
+[![The Description open in the companion Editor, with the pelican selected and position and voice controls alongside the stage](docs/media/editor-the-description.png)](https://pelicans.art/editor.html)
+
+*The actual Editor with the sample project open. Try it in your browser, then bring your own agent-created project.*
 
 Open the [Editor](https://pelicans.art/editor.html), choose **Open project**, and select the built `output/project.json` your agent sent. Edit character positions, dialogue, and pauses; preview with existing recordings; export the revised project. Changed dialogue is marked as needing a new recording. **Copy request for your agent** includes the selected character or scene and asks the agent to work from your latest export.
 
