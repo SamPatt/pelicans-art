@@ -4,9 +4,7 @@ An agent-first SVG theater and companion editor for making odd little voiced com
 
 [![The Description — animated preview of a burglar pelican changing his disguise](docs/media/the-description-preview.gif)](https://pelicans.art/watch/the-description-f8ccb1/)
 
-**[▶ Watch The Description with sound · 39 seconds](https://pelicans.art/watch/the-description-f8ccb1/)** · [Download the MP4](https://pelicans.art/media/the-description.mp4) · [Copy the agent prompt](#create-with-your-agent-recommended)
-
-*A burglar pelican keeps changing his disguise. The police scanner keeps up. The looping preview above is silent; open the full video for the dialogue.*
+**[▶ Watch The Description with sound · 39 seconds](https://pelicans.art/watch/the-description-f8ccb1/)** · [Copy the agent prompt](#create-with-your-agent-recommended)
 
 The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https://simonwillison.net/2024/Oct/25/pelicans-on-a-bicycle/): if a model can draw a recognizable SVG pelican riding a bicycle, what happens when generated SVG characters become reusable, expressive actors?
 
@@ -58,7 +56,7 @@ Create a short voiced pelican comedy by writing the SVG artwork and script direc
 After successfully delivering the test video, ask me what skit I would like to make next. Invite my own idea and offer two short, absurd skit suggestions to spark ideas. Wait for my choice before creating another skit.
 ```
 
-Give your agent the [portable skill](skills/pelican-theater/SKILL.md). It handles dependency checks, SVG structure, skit validation, speech, rendering, and delivering the finished video in chat. You review the plot and ask for revisions in the same conversation.
+Your agent will download the [portable skill](skills/pelican-theater/SKILL.md). It handles dependency checks, SVG structure, skit validation, speech, rendering, and delivering the finished video in chat. You review the plot and ask for revisions in the same conversation.
 
 For shell users, follow the [CLI quickstart](docs/AGENT-WORKFLOW.md). Node.js 22+, FFmpeg, Chromium, and a speech service are needed for voiced MP4s. The CLI starts its own temporary player; running the Express authoring server is unnecessary. Locked local Pocket setup supports Linux x64 and ARM64 (including compatible WSL installations), glibc 2.28+, and Python 3.12. Other platforms can use an existing speech endpoint; macOS rendering has not yet had a clean-machine rehearsal.
 
