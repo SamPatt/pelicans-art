@@ -20,6 +20,7 @@ The primary workflow is direct SVG/JSON authoring through an agent and the CLI, 
 ## Verified locally
 
 - Full suite: 47 browser, 26 server, 27 Worker and 42 agent/CLI tests passed (142 total).
+- A local Chromium control/protected comparison confirmed that a harmless marker script executes without the new CSP and is blocked with it, while the SVG rectangle still renders. No live upload or exploit test was performed.
 - All 77 shipped SVGs remain accepted by the tightened Worker validation. Regression tests cover upload rejection before storage and restrictive headers on previously stored unsafe SVGs.
 - Four npm audits, including development dependencies, report zero known vulnerabilities: root, server, Worker and optional SVG lab.
 - Targeted credential scan across 336 reachable commits / 1,688 blobs at audit start found no common credential/private-key signatures. No historical dependency environments, secret environment files or runtime caches were found. This does not cover inaccessible GitHub cached/dangling objects or establish that every possible secret format is absent.
