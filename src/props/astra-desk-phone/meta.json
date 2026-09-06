@@ -1,0 +1,14 @@
+{
+  "name": "Desk telephone",
+  "description": "A mustard-yellow rotary telephone with a chunky dark receiver and coiled cord.",
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 1
+}

@@ -1,0 +1,10 @@
+{
+  "name": "The bus that never comes",
+  "description": "Neighborhood bus stop with an empty bench and open pavement.",
+  "model": "GPT-6 Astra",
+  "defaultScale": 1,
+  "anchorPoint": [
+    0.5,
+    1
+  ]
+}

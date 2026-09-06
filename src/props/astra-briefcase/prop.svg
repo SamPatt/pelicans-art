@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280">
+  <title>Battered briefcase</title>
+  <g stroke="#293e3c" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="#6e4637" d="M129 91V57q0-23 25-23h49q24 0 25 23v32h-21V60q0-6-7-6h-43q-7 0-7 6v31Z"/>
+    <path fill="#b77549" d="M37 89q123-16 283-1l5 133q-141 24-292 5Z"/>
+    <path fill="#6e4637" d="m37 89-4 137q9 12 24 12l7-141Z"/>
+    <path fill="#c8915f" d="M36 87q130-16 285 0l1 60q-139 23-287 2Z"/>
+    <path fill="none" stroke="#6e4637" stroke-width="3" d="M58 102q119-12 245-1m-244 27q119 17 243 0M69 210q99 13 222-1"/>
+    <path fill="#d9b578" d="m92 137 29 2-1 38-30-2Zm155 0 29-2 2 38-30 2Z"/>
+    <path fill="#6e4637" stroke="none" d="m102 148 9 1v13h-9Zm155 0 10-1v13l-10 1Z"/>
+    <path fill="#f6e5be" d="m159 178 47-9 10 42-47 7Z" stroke-width="3"/>
+    <path fill="#293e3c" stroke="none" d="m168 205 9-17 11 9 9-14 10 18Z"/>
+    <path fill="#d9b578" stroke="none" d="M166 181h10v8h-10Z"/>
+    <path fill="#6e4637" d="m285 211 38-9 2 19-44 7Z"/>
+    <path fill="none" stroke="#d9b578" stroke-width="3" d="m291 211 4 10m10-13 4 11M74 183l14 3m187-73 15-2"/>
+  </g>
+</svg>

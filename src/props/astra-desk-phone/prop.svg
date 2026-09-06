@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 280">
+  <title>Desk telephone</title>
+  <g stroke="#293e3c" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="none" stroke-width="7" d="M73 81C30 77 25 125 38 143c20 24 44 6 22-8s-39 16-17 29 40-13 16-23-36 19-15 32 40-12 15-22-35 18-14 32 41-13 14-22-33 22-9 32c20 9 28-7 29-23"/>
+    <path fill="#d9a952" d="m103 103-29 51-11 67q104 31 224 0l-15-68-28-50Z"/>
+    <path fill="#bd7748" d="M63 211q113 23 224-1l1 23q-111 34-226-1Z"/>
+    <path fill="#e8c680" d="m107 109-19 42q79 17 167 0l-20-41Z"/>
+    <path fill="#293e3c" d="M101 83h15v28h-15zm123 0h15v28h-15Z"/>
+    <path fill="#293e3c" d="M71 67q6-23 32-24 79-21 151 2 23 5 26 23l-8 28q-15 8-42-1l-4-24q-49-9-109-1l-7 27q-30 9-44-2Z"/>
+    <path fill="none" stroke="#6e8980" stroke-width="5" d="M87 61q9-7 21-7m16 1q48-10 94 0"/>
+    <ellipse fill="#293e3c" cx="173" cy="173" rx="55" ry="39"/>
+    <ellipse fill="#f6e5be" cx="173" cy="173" rx="25" ry="18" stroke-width="4"/>
+    <g fill="#f6e5be" stroke="none">
+      <ellipse cx="137" cy="158" rx="7" ry="5"/><ellipse cx="156" cy="145" rx="7" ry="5"/><ellipse cx="181" cy="144" rx="7" ry="5"/><ellipse cx="204" cy="153" rx="7" ry="5"/><ellipse cx="215" cy="170" rx="7" ry="5"/><ellipse cx="206" cy="188" rx="7" ry="5"/><ellipse cx="184" cy="200" rx="7" ry="5"/><ellipse cx="158" cy="198" rx="7" ry="5"/><ellipse cx="136" cy="184" rx="7" ry="5"/>
+    </g>
+    <path fill="none" stroke="#bd7748" stroke-width="4" d="M164 172h19"/>
+    <path fill="#f6e5be" d="m212 195 12-3 4 9-15 3Z" stroke-width="3"/>
+  </g>
+</svg>

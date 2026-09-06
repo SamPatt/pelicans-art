@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+<title>The bus that never comes</title><desc>A neighborhood bus stop, empty bench, timetable and leafy tree with open pavement for a conversation.</desc>
+<rect width="1600" height="900" fill="#eadcb9"/>
+<path d="M0 399L168 314L365 382L546 276L789 389L1000 298L1222 377L1440 281L1600 338V650H0Z" fill="#91afa3"/>
+<path d="M0 612H1600V900H0Z" fill="#bcab92"/>
+<path d="M0 762H1600V900H0Z" fill="#354e52"/>
+<path d="M0 752H1600" stroke="#eadcb9" stroke-width="18"/>
+<path d="M67 837H304M467 837H704M867 837H1104M1267 837H1504" stroke="#e1b85c" stroke-width="9"/>
+<path d="M273 180H905V599H273Z" fill="#91afa3" stroke="#354e52" stroke-width="13"/>
+<path d="M285 196H567V579H285ZM582 196H892V579H582Z" fill="#eadcb9" opacity=".35"/>
+<path d="M249 167L285 119H880L933 167V194H249Z" fill="#b9664c" stroke="#354e52" stroke-width="12" stroke-linejoin="round"/>
+<path d="M269 198V643M906 198V643" stroke="#354e52" stroke-width="17"/>
+<path d="M360 490H809V527H360Z" fill="#e1b85c" stroke="#354e52" stroke-width="9"/>
+<path d="M382 449H790V480H382Z" fill="#b9664c" stroke="#354e52" stroke-width="9"/>
+<path d="M398 531L387 613M773 531L785 613" stroke="#354e52" stroke-width="13"/>
+<path d="M319 255L415 220M319 291L502 221" stroke="#eadcb9" stroke-width="8" opacity=".8"/>
+<rect x="737" y="248" width="106" height="146" rx="3" fill="#eadcb9" stroke="#354e52" stroke-width="7"/>
+<path d="M755 272H825M755 295H802M755 318H825M755 341H810M755 365H825" stroke="#354e52" stroke-width="5"/>
+<path d="M1041 242V651" stroke="#354e52" stroke-width="13"/>
+<rect x="988" y="135" width="107" height="127" rx="28" fill="#e1b85c" stroke="#354e52" stroke-width="9"/>
+<rect x="1012" y="165" width="59" height="62" rx="9" fill="#354e52"/>
+<rect x="1020" y="174" width="43" height="26" rx="3" fill="#eadcb9"/>
+<circle cx="1025" cy="213" r="5" fill="#eadcb9"/><circle cx="1058" cy="213" r="5" fill="#eadcb9"/>
+<path d="M1022 227V238M1061 227V238" stroke="#354e52" stroke-width="8"/>
+<path d="M1380 633L1362 260M1369 419L1298 335M1368 354L1443 276" stroke="#354e52" stroke-width="23" stroke-linecap="round"/>
+<path d="M1283 354Q1188 352 1220 267Q1178 195 1259 177Q1297 108 1360 154Q1443 103 1474 191Q1572 211 1508 291Q1517 368 1442 352Q1373 403 1329 352Z" fill="#91afa3" stroke="#354e52" stroke-width="10"/>
+<path d="M1282 266Q1327 224 1370 262M1403 224Q1443 229 1457 269" fill="none" stroke="#eadcb9" stroke-width="9" stroke-linecap="round"/>
+<path d="M1302 635H1450" stroke="#354e52" stroke-width="10" stroke-linecap="round"/>
+</svg>

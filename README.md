@@ -39,7 +39,7 @@ The repository is public. Agents can fetch `https://github.com/SamPatt/pelicans-
 | :---: | :---: |
 | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t023/preview.png" alt="Underwater laundromat with washing machines and a fish outside the porthole" width="330"> | <img src="svg-prompt-lab/study/runs/astra-isolated/review/t028/preview.png" alt="Moon office with waiting chairs, a service counter and Earth outside the window" width="330"> |
 
-Actual GPT-6 Astra SVG artwork: characters and backgrounds from our [prompting study](svg-prompt-lab/study/runs/astra-isolated/findings.md), props from *The Description*, and a [new human inspector](docs/media/health-inspector/asset.svg). Agents can deliver standalone artwork or build it into a voiced skit. Our [art-direction guide](skills/pelican-theater/references/art-direction.md) focuses on expressive silhouettes and readable shapes.
+[Browse more characters, props, and backgrounds in the Pouch →](https://pelicans.art/community.html)
 
 ## What works
 
@@ -56,7 +56,7 @@ The deliberately simple visual style is part early web animation, part AI artifa
 
 ## Create with your agent (recommended)
 
-Copy the block below into an agent chat that can run shell commands. Your agent downloads the skill, installs the runtime, and returns a test video; you do not need to clone the repository first.
+Copy the block below into an agent chat that can run shell commands. Your agent downloads the skill, installs the runtime, and returns a test video.
 
 ```text
 Download https://pelicans.art/downloads/pelican-theater-1.0.12.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.12.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.

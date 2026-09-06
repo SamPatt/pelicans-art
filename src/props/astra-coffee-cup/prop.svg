@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300">
+  <title>Takeaway coffee</title>
+  <g stroke="#293e3c" stroke-width="6" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="#b9573f" d="M51 78 70 263Q120 280 169 263L190 78Z"/>
+    <path fill="#dc8d58" stroke="none" d="m63 93 17 159q10 7 20 7L84 95Z"/>
+    <path fill="#d9b578" d="m58 143 10 82q47 18 108-2l10-83q-64 17-128 3Z"/>
+    <path fill="#f6e5be" d="M46 65 57 42Q120 29 182 43L195 66 188 86Q120 98 51 86Z"/>
+    <path fill="#f6e5be" d="M39 70Q120 85 202 70L199 88Q120 105 42 88Z"/>
+    <path fill="none" d="M71 57Q107 48 143 52"/>
+    <path fill="#293e3c" stroke="none" d="M152 51q11-3 20 0l3 8-23 1Z"/>
+    <path fill="#b9573f" d="M115 159c-17 5-26 20-20 34s24 17 39 8 21-25 11-35-20-11-30-7Z"/>
+    <path fill="none" stroke="#f6e5be" stroke-width="4" d="M108 196c-5-20 24-13 24-31"/>
+  </g>
+</svg>

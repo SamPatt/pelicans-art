@@ -1,0 +1,93 @@
+{
+  "publishedAt": "2026-09-06T20:54:35.018Z",
+  "assets": [
+    {
+      "title": "The unflappable barista",
+      "category": "characters",
+      "slug": "the-unflappable-barista-c18f51",
+      "source": "src/sprites/astra-barista/front.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=characters&id=the-unflappable-barista-c18f51"
+    },
+    {
+      "title": "Takeaway coffee cup",
+      "category": "props",
+      "slug": "takeaway-coffee-cup-150ac1",
+      "source": "src/props/astra-coffee-cup/prop.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=props&id=takeaway-coffee-cup-150ac1"
+    },
+    {
+      "title": "Desk telephone",
+      "category": "props",
+      "slug": "desk-telephone-6b5749",
+      "source": "src/props/astra-desk-phone/prop.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=props&id=desk-telephone-6b5749"
+    },
+    {
+      "title": "Battered briefcase",
+      "category": "props",
+      "slug": "battered-briefcase-cc23f0",
+      "source": "src/props/astra-briefcase/prop.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=props&id=battered-briefcase-cc23f0"
+    },
+    {
+      "title": "The corner café",
+      "category": "backgrounds",
+      "slug": "the-corner-caf-16efb1",
+      "source": "src/backgrounds/astra-corner-cafe/landscape.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=backgrounds&id=the-corner-caf-16efb1"
+    },
+    {
+      "title": "The bus that never comes",
+      "category": "backgrounds",
+      "slug": "the-bus-that-never-comes-6df197",
+      "source": "src/backgrounds/astra-bus-stop/landscape.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=backgrounds&id=the-bus-that-never-comes-6df197"
+    },
+    {
+      "title": "The skeptical health inspector",
+      "category": "characters",
+      "slug": "the-skeptical-health-inspector-1bce66",
+      "source": "docs/media/health-inspector/asset.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=characters&id=the-skeptical-health-inspector-1bce66"
+    },
+    {
+      "title": "The tired pelican stagehand",
+      "category": "characters",
+      "slug": "the-tired-pelican-stagehand-533cb6",
+      "source": "svg-prompt-lab/study/runs/astra-isolated/review/t003/asset.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=characters&id=the-tired-pelican-stagehand-533cb6"
+    },
+    {
+      "title": "The mushroom chef",
+      "category": "characters",
+      "slug": "the-mushroom-chef-8562d6",
+      "source": "svg-prompt-lab/study/runs/astra-isolated/review/t008/asset.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=characters&id=the-mushroom-chef-8562d6"
+    },
+    {
+      "title": "Underwater laundromat",
+      "category": "backgrounds",
+      "slug": "underwater-laundromat-fab123",
+      "source": "svg-prompt-lab/study/runs/astra-isolated/review/t023/asset.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=backgrounds&id=underwater-laundromat-fab123"
+    },
+    {
+      "title": "Moon office",
+      "category": "backgrounds",
+      "slug": "moon-office-485a1f",
+      "source": "svg-prompt-lab/study/runs/astra-isolated/review/t028/asset.svg",
+      "model": "GPT-6 Astra",
+      "url": "https://pelicans.art/community.html?type=backgrounds&id=moon-office-485a1f"
+    }
+  ]
+}

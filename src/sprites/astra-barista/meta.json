@@ -1,0 +1,10 @@
+{
+  "name": "The unflappable barista",
+  "description": "A wry human caf\u00e9 worker with an apron and excellent patience.",
+  "model": "GPT-6 Astra",
+  "defaultScale": 1,
+  "anchorPoint": [
+    0.5,
+    1
+  ]
+}

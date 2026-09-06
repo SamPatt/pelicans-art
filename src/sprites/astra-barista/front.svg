@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="none" stroke="#293c3e" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+<title>The unflappable barista</title>
+<desc>A young human café worker with dark wavy hair, a rust shirt and teal apron, giving an amused sideways glance.</desc>
+<g id="body">
+<path d="M35 112L32 140H44L50 118L56 140H68L65 111" fill="#293c3e"/>
+<path d="M32 137Q23 140 22 145H45V138M56 138V145H78Q76 140 68 137" fill="#293c3e"/>
+<path d="M34 60L62 60Q77 64 80 78L69 84L65 75L69 115H28L32 77L26 89L16 84Q17 67 34 60Z" fill="#ba6448"/>
+<path d="M41 51L40 65Q49 73 58 64L57 50" fill="#d49c71"/>
+<path d="M36 64L39 80H60L61 64M38 79L33 115H68L61 79Z" fill="#497e76"/>
+<path d="M40 94H60L58 105H42Z" fill="#f1e4c9"/>
+<path d="M43 99H54" stroke-width="1"/>
+<path d="M16 82Q10 97 21 101Q30 100 35 90L30 85L21 92L26 87" fill="#d49c71"/>
+<path d="M72 82L78 92L66 96L67 103Q85 103 87 93L80 79" fill="#d49c71"/>
+<path d="M68 95L61 94Q57 96 60 99L67 103" fill="#d49c71"/>
+<path d="M23 91L27 95M26 89L30 93" stroke-width=".8"/>
+</g>
+<g id="head-top">
+<path d="M29 35Q19 28 25 20Q22 9 34 12Q40 3 48 9Q59 1 65 12Q79 10 75 23Q83 35 71 44L30 43Z" fill="#293c3e"/>
+<path d="M30 27Q40 31 48 18Q57 30 70 26L68 45Q64 58 51 61Q35 57 31 45Z" fill="#d49c71"/>
+<path d="M31 36Q23 31 25 41Q26 47 33 46M69 35Q78 31 75 42Q73 47 67 46" fill="#d49c71"/>
+<path d="M28 23Q36 25 42 18M48 14Q54 20 61 20" stroke="#497e76" stroke-width="1.5"/>
+<ellipse id="eye-left-white" cx="40" cy="36" rx="5" ry="4" fill="#f1e4c9" stroke="none"/>
+<ellipse id="eye-right-white" cx="60" cy="35" rx="5" ry="4.5" fill="#f1e4c9" stroke="none"/>
+<circle id="eye-left-pupil" class="pupil" cx="42" cy="36" r="2" fill="#293c3e" stroke="none"/>
+<circle id="eye-right-pupil" class="pupil" cx="62" cy="35" r="2" fill="#293c3e" stroke="none"/>
+<path id="brow-left" d="M35 29L44 30" stroke-width="2"/>
+<path id="brow-right" d="M55 28Q60 24 65 27" stroke-width="2"/>
+<path d="M51 34L48 43L53 43" stroke-width="1.2"/>
+<path d="M33 44L35 49M65 43L63 49" stroke="#ba6448" stroke-width="2"/>
+</g>
+<g id="head-bottom">
+<path id="mouth-closed" d="M43 50Q50 54 59 48" stroke-width="1.5"/>
+<ellipse id="mouth-open" cx="51" cy="50" rx="5" ry="3" fill="#293c3e" opacity="0"/>
+</g>
+</svg>

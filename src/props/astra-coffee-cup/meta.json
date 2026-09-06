@@ -1,0 +1,14 @@
+{
+  "name": "Takeaway coffee",
+  "description": "An oversized terracotta takeaway cup with a cream lid and an off-center coffee-bean sleeve.",
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 1
+}

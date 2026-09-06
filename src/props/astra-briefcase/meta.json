@@ -1,0 +1,14 @@
+{
+  "name": "Battered briefcase",
+  "description": "A weathered leather briefcase with brass clasps, a travel sticker and a repaired corner.",
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 1
+}
