@@ -5,7 +5,10 @@ import { renderSharePage } from './share-page.js';
 const CATEGORIES = ['characters', 'props', 'backgrounds', 'skits', 'published', 'voices'];
 const MAX_PAYLOAD = 3 * 1024 * 1024; // 3MB
 const USERNAME_RE = /^[a-zA-Z0-9_-]{1,30}$/;
-const SVG_DANGEROUS = /<\s*(script|foreignObject|iframe|embed|object)\b/i;
+// Reject active content even when XML namespace prefixes disguise its tag name;
+// consumers must not depend on inline DOM sanitization.
+const SVG_DANGEROUS = /<\s*(?:[\w.-]+:)?(?:script|foreignObject|iframe|embed|object|set|discard)\b/i;
+const SVG_PREFIXED_ELEMENT = /<\s*\/?\s*[^\s<>/=:]+:/u;
 const SVG_EVENT_HANDLER = /\bon\w+\s*=/i;
 const SVG_URL_ATTRIBUTE = /\b(?:href|xlink:href|src)\s*=\s*(['"])(.*?)\1/gi;
 const SVG_CSS_URL = /url\(\s*(['"]?)(.*?)\1\s*\)/gi;
@@ -47,8 +50,24 @@ function generateSlug(name) {
 export function validateSvg(svg) {
   if (typeof svg !== 'string' || !svg.includes('<svg')) return 'Invalid SVG: must contain <svg tag';
   if (SVG_DANGEROUS.test(svg)) return 'Invalid SVG: dangerous tags not allowed';
+  // Preserve the bundled robot's opacity blink, but never permit animation to
+  // change links, style, or other security-sensitive attributes.
+  for (const match of svg.matchAll(/<\s*(animate\w*)\b([^>]*)>/gi)) {
+    const attributes = [...match[2].matchAll(/(?:^|\s)attributeName\s*=\s*(['"])(.*?)\1/g)];
+    if (match[1] !== 'animate' || attributes.length !== 1 || attributes[0][2] !== 'opacity') return 'Invalid SVG: only opacity animation is allowed';
+  }
+  if (SVG_PREFIXED_ELEMENT.test(svg)) return 'Invalid SVG: namespace-prefixed elements not allowed';
+  if (/<!\s*(?:DOCTYPE|ENTITY)\b|<\?(?!xml\s)/i.test(svg)) return 'Invalid SVG: document declarations and processing instructions not allowed';
+  if (/\bxml:base\s*=/i.test(svg)) return 'Invalid SVG: base URLs not allowed';
+  for (const match of svg.matchAll(/\bxmlns(?::([^\s<>/=:]+))?\s*=\s*(['"])(.*?)\2/giu)) {
+    const expected = match[1] === 'xlink' ? 'http://www.w3.org/1999/xlink' : !match[1] ? 'http://www.w3.org/2000/svg' : null;
+    if (match[3] !== expected) return 'Invalid SVG: unsupported namespace';
+  }
   if (SVG_EVENT_HANDLER.test(svg)) return 'Invalid SVG: inline event handlers not allowed';
   if (/@import\b/i.test(svg)) return 'Invalid SVG: CSS imports not allowed';
+  for (const match of svg.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style\s*>|\bstyle\s*=\s*(['"])(.*?)\2/gi)) {
+    if (/\\|&#(?:x0*5c|0*92);/i.test(match[1] ?? match[3])) return 'Invalid SVG: escaped CSS not allowed';
+  }
 
   for (const match of svg.matchAll(SVG_URL_ATTRIBUTE)) {
     if (!isSafeSvgReference(match[2])) return 'Invalid SVG: external references not allowed';
@@ -646,7 +665,15 @@ async function handleGetFile(env, category, slug, filename) {
     ...corsHeaders(),
     'Content-Type': obj.httpMetadata?.contentType || 'application/octet-stream',
     'Cache-Control': 'public, max-age=86400',
+    'X-Content-Type-Options': 'nosniff',
   };
+
+  // Applies to old stored objects too: block script execution and external
+  // resource loads, and sandbox document capabilities if validation missed content.
+  if (/\.svg$/i.test(key || '') || /^image\/svg\+xml(?:;|$)/i.test(headers['Content-Type'])) {
+    headers['Content-Type'] = 'image/svg+xml; charset=utf-8';
+    headers['Content-Security-Policy'] = "sandbox; default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+  }
 
   if ((category === 'published' || category === 'skits') && assetMetadata[key]) {
     const value = JSON.parse(await obj.text());

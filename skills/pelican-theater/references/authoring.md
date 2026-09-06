@@ -23,6 +23,8 @@ Assets maps:
 
 Build resolves paths inside the project directory (including symlink targets). It rejects external SVG references/executable markup. Embedded base64 media is accepted. Output `output/project.json` is a self-contained player/GUI bundle, not the source configuration file of the same basename. `.cache/` stores reusable speech; `output/build-manifest.json` records hashes and dialogue mapping. Keep all source files for revisions.
 
+For new artwork, read [SVG art direction](art-direction.md); preserve the user’s style choices and existing assets when revising.
+
 SVG actors need `viewBox="0 0 100 150"` and body/head groups: `body`, `head-top`, `head-bottom`. Eye IDs: `eye-left-white`, `eye-right-white`, `eye-left-pupil`, `eye-right-pupil` (pupils have class `pupil`). Brows: `brow-left`, `brow-right`. Mouth: `mouth-closed`, `mouth-open` (initial opacity 0), aligned vertically. Use the initialized SVG as a structural template. Backgrounds normally use 1280×720 or 720×1280. The runtime's `docs/SPRITE-GUIDE.md` contains further animation details.
 
 Common script actions:

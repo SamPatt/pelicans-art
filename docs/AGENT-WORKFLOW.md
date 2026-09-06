@@ -2,7 +2,7 @@
 
 Copy the prompt at [Create with your agent](https://pelicans.art/agent.html) into a file-and-shell capable agent. It retrieves the public skill ZIP and receipt first, then fetches the tested runtime commit using existing Git access. You do not need to clone or install the skill manually. In an existing checkout, the agent can read `skills/pelican-theater/SKILL.md` directly. It writes SVGs and skit JSON directly, generates local voices, and renders with the same player as the GUI. No OpenRouter or other LLM API call is made by the CLI. Your agent's own model usage remains separate.
 
-The downloadable skill pins a tested runtime commit in its release receipt; the repository remains private. Use authenticated Git access or a checkout supplied by the owner. Installing the skill alone does not grant access to the runtime.
+The downloadable skill pins a tested runtime commit in its release receipt. Public checkouts need no credentials; restricted checkouts require existing Git access or a checkout supplied by the owner. Installing the skill does not bypass repository access controls.
 
 ## Commands
 

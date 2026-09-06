@@ -17,7 +17,7 @@ The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https:/
 
 Start with an agent that can edit files and run shell commands. It writes artwork and dialogue directly, then uses the CLI to synthesize local speech and render an MP4. No additional LLM API key is needed. The companion Editor provides visual changes, optional private Hermes chat, voice updates, and MP4 rendering through your local server; watching needs no setup.
 
-The repository is currently private. Testing requires authenticated Git access or an owner-supplied checkout; the downloadable skill alone does not provide the runtime.
+The skill fetches the runtime from this repository. Public checkouts need no credentials; restricted checkouts require existing Git access or an owner-supplied checkout. The skill download does not bypass repository access controls.
 
 ## What works
 

@@ -1,55 +1,44 @@
 # Public release review
 
-Reviewed: 2026-08-25
+Reviewed: 2026-09-06. Scope: source publication, agent/Editor onboarding, installation boundaries, dependency and reachable-history checks, and the Pouch SVG delivery boundary. This is a targeted review, not an exhaustive security or legal audit.
 
 ## Verdict
 
-The live viewer, browser studio, bundled skits, and reproducible capture pipeline are functional. The project is ready for a private demo and for sharing a direct video with Simon Willison. The Git history rewrite and post-rewrite verification are complete; keep the repository private until the remaining content and community-data decisions below are made.
+The source release candidate is prepared, with the requested art-direction guide and a fix for a Pouch SVG validation bypass. Keep repository visibility private until the candidate is merged and the Worker protection is deployed and verified. Public source availability and unrestricted community-upload promotion are separate decisions.
 
-## Verified
+The primary workflow is direct SVG/JSON authoring through an agent and the CLI, with a companion Editor. No additional LLM API key is needed. The Description remains the flagship. The owner has already chosen to retain the legacy parody demos; that decision is not reopened here. Code and creative assets retain their separate existing terms.
 
-- `https://pelicans.art/` returns successfully and the public homepage renders.
-- The local authoring server binds to `127.0.0.1` and exposes a health check.
-- All six bundled skits load in Chromium.
-- A complete playback of every bundled skit was captured.
-- All 75 expected dialogue lines were observed and muxed into the videos.
-- Captures contain H.264 video and AAC audio at the intended landscape or portrait resolution.
-- Capture audio is normalized to approximately -16 LUFS.
-- Desktop and 390×844 homepage layouts pass automated checks.
-- Current root and server production dependency audits report zero vulnerabilities.
-- The exposed GitHub token has been revoked by the account owner.
-- All remote branches were rewritten with `git-filter-repo` 2.47.0. The token and every historical `node_modules/` path now produce zero matches, and the private GitHub remote points at the verified rewritten commits.
-- A complete pre-rewrite bundle is retained outside the repository at `/home/nondescript/code_repos/sampatt/pelicans-art-pre-rewrite-2026-08-25.bundle`. It contains the revoked credential and must remain private.
-- DOMPurify now sanitizes generated, imported, and community SVG before inline rendering; metadata and dialogue shown by the community gallery are HTML-escaped.
-- The source code has an MIT license, with separate asset terms and third-party notices.
-- A stable 32-second H.264/AAC render of The Box is linked directly from the homepage.
-- The homepage and technical tour explain the model-to-SVG-to-JSON-to-video pipeline.
+## Included in this candidate
 
-## Release blockers
+- A shared art-direction reference for new characters, props and backgrounds, linked from both agent artwork paths and the sprite guide. It adds silhouette, focal hierarchy, restrained palette, readable shape separation and a rendered inspection step while honoring user styles and existing artwork.
+- Portable skill 1.0.11, preserving the published 1.0.10 ZIP/receipt. The new package includes the guide and uses a tested release-candidate runtime revision. The CLI, speech dependencies, model pins and private authoring server are unchanged from the previously verified runtime.
+- Neutral repository-access copy that works before and after visibility changes, and removal of stale Browser Studio troubleshooting from the current Editor instructions.
+- Worker rejection of namespace-prefixed active SVG content (including Unicode prefixes), unsafe namespace/declaration/base/CSS constructs, and unsafe animation mutations. These are conservative lexical checks, not a complete XML parser. Ordinary shipped SVGs remain supported.
+- Sandboxed CSP and nosniff on raw SVG responses, including existing stored objects. This adds protection for direct SVG navigation that inline DOMPurify alone did not provide.
+- Loopback binding in the retained legacy static-server service template.
 
-1. **Decide what to do with third-party character demos.** Batman, Superman, Lucky Charms, Voldemort, Trump, and similar experiments are excluded from the MIT asset grant and no longer featured, but some remain in history or demo data. Remove them from the public release if you want the cleanest licensing story, or explicitly accept the parody/fair-use uncertainty.
-2. **Audit already-stored community data.** New uploads receive stronger SVG URL checks and all browser rendering is sanitized, but existing R2 objects should still be scanned or re-uploaded before inviting broad community submissions.
-3. **Ask GitHub Support to clear cached sensitive-data views if required.** There are no pull requests in this repository and the token is revoked, which limits exposure, but GitHub may retain cached commit/blob views outside ordinary refs. Provide the first changed commit `a75ff2b2864383421fd16030ba687334e1bb29cd` without including the token.
-4. **Keep the authoring server private.** It has powerful asset, voice, publishing, and deletion APIs without user authentication. The static GitHub Pages deployment is appropriate for public traffic; do not expose the Express server directly.
+## Verified locally
 
-## High-priority improvements
+- Full suite: 47 browser, 26 server, 27 Worker and 42 agent/CLI tests passed (142 total).
+- All 77 shipped SVGs remain accepted by the tightened Worker validation. Regression tests cover upload rejection before storage and restrictive headers on previously stored unsafe SVGs.
+- Four npm audits, including development dependencies, report zero known vulnerabilities: root, server, Worker and optional SVG lab.
+- Targeted credential scan across 336 reachable commits / 1,688 blobs at audit start found no common credential/private-key signatures. No historical dependency environments, secret environment files or runtime caches were found. This does not cover inaccessible GitHub cached/dangling objects or establish that every possible secret format is absent.
+- Existing skill 1.0.10 remains byte-for-byte unchanged. New skill contents match their source and the ZIP checksum matches its receipt. Skill frontmatter validation passes.
+- The SVG prompting study retains 48 generated assets, both current controls, provenance and method-hidden review. It is supporting evidence, not a claim of a universally superior prompt.
 
-- Consider a second pass on the 16-second Pelican Benchmark script after outside feedback; its concise model/tool joke now serves as the flagship.
-- Refactor the 325 KB studio script and 121 KB player script into testable modules after the public demo; this is maintainability work, not a prerequisite for showing the concept.
+## Installation evidence and limits
 
-## Skit review
+See [CLI verification](CLI-VERIFICATION.md) and [Editor testing](EDITOR-TESTING.md). Native ARM64 installation, real Pocket speech, dialogue revision and H.264/AAC rendering passed in GitHub [run 34042378085](https://github.com/SamPatt/pelicans-art/actions/runs/34042378085). The published main revision `38e97cc` also passed Test, ARM64 installation and Pages deployment. The installer/server/CLI and pinned speech inputs in this candidate are identical to that verified runtime; this review does not claim another fresh Hermes VPS installation.
 
-| Skit | Duration | Review |
-|---|---:|---|
-| The Box | 31.6s | Best current flagship: original premise, clean staging, strongest structure, no third-party character dependency. |
-| The Interview | 27.7s | Safe and compact, but visually sparse and the ending is softer. |
-| Bats Don't Eat Lettuce | 54.7s | Strong visual identity and portrait format, but too long for the premise and uses Batman/Superman. |
-| Lucky Charms | 35.8s | Clear escalation, but depends on Lucky Charms/General Mills branding. |
-| The Finest Cuisine | 71.5s | Functional animation and prop work, but long, political, impersonation-heavy, and repetitive. |
-| The Negotiation | 60.5s | Technically works, but should not be used for outreach because the robber depiction risks reading as a racial stereotype. |
+Setup remains non-root, isolated, hash-locked and explicit about OS-level changes. Services bind privately; origin checks are not user authentication. Linux x64 and ARM64 are the verified local Pocket targets. macOS and physical Safari remain unverified beyond the documented scope.
 
-## Suggested Simon outreach
+## Before changing visibility
 
-> Your pelican-on-a-bicycle SVG test sent me down a rabbit hole: I built a browser studio where generated SVG characters become reusable actors with expressions, blocking, props, camera cuts, voices, and a constrained JSON timeline. It now has a reproducible exporter that turns a skit into a captioned H.264/AAC video. Here is a 32-second original example, plus the source and a short explanation of the SVG animation contract. I would love to know which part you think is the most interesting test of the models: drawing the actors, directing the timeline, or keeping the whole thing editable as SVG.
+1. Push the completed release branch and require its final GitHub Test run to pass; merge the candidate into main. Do not restore pre-rewrite history from an old clone.
+2. Deploy the Worker update and verify CSP/nosniff on a real SVG URL, plus ordinary Pouch rendering. No live exploit upload is needed. The local fix does not protect the live Worker until deployed; old browser/CDN responses may need revalidation.
+3. Verify Pages publishes skill 1.0.11, its receipt/checksum and the updated agent prompt. Check final main Test and Pages results. Packaging locally is not a deployment.
+4. Change repository visibility only on the owner's explicit instruction. Review GitHub secret scanning and private vulnerability reporting availability in the repository settings: the private-repository API did not expose their enabled state during this audit.
 
-Lead with the video, then the public site, then the repository/technical write-up. Avoid asking for promotion; ask the concrete technical question.
+## Before unrestricted community promotion
+
+The Pouch still accepts unauthenticated uploads without application-level rate limiting or an ownership/moderation workflow. Its asset reuse policy also needs clarification before encouraging broad asset exchange. Those are service-launch concerns documented in [Public readiness](PUBLIC-READINESS.md); this change does not alter asset licenses or community ownership. Keep the powerful local authoring server private.

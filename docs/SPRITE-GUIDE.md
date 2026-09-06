@@ -2,6 +2,10 @@
 
 Rules for creating character sprites for AI Improv Theater.
 
+## Art direction
+
+Use the [SVG art-direction prompt](../skills/pelican-theater/references/art-direction.md) for new artwork: a memorable silhouette, clear focal feature, restrained palette, expressive contours and readable separation between shapes. Keep a user-requested style or an existing character’s appearance when revising. This is visual guidance; the animation structure below remains required. Inspect the rendered result at normal and phone size.
+
 ## File Structure
 
 Each character needs at minimum:

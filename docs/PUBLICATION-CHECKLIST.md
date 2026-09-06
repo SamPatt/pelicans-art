@@ -1,38 +1,36 @@
 # Public repository checklist
 
-The GitHub repository is intentionally still private. Complete this list immediately before changing visibility.
+Use the [current release review](RELEASE-REVIEW.md) for evidence and remaining deployment steps. Repository visibility is a separate owner-authorized action.
 
-## Already complete
+## Prepared
 
-- Revoked the exposed HistorAI personal access token.
-- Rewrote both remote branches to remove the token and historical `node_modules/` objects.
-- Verified zero credential-pattern matches and zero `node_modules/` paths across reachable history.
-- Stored and verified a complete private pre-rewrite Git bundle.
-- Added MIT source licensing, separate creative-asset terms, third-party notices, a security policy, and contributor instructions.
-- Added CI for browser, server, and community Worker tests; the rewritten `main` run passes.
-- Sanitized inline SVG, escaped community metadata, and strengthened Worker-side SVG rejection.
-- Added a technical tour, a captioned pelican bicycle skit, a second original example, and direct stable video URLs.
-- Verified the public Pages deployment and HTTPS media responses.
+- MIT source license, separate asset terms, third-party notices, security policy and contributor instructions.
+- Previously exposed token revoked and reachable history rewritten; retain pre-rewrite backups privately and never push old history back into this repository.
+- Owner acceptance of the legacy parody demos recorded. No further content decision is required for those demos.
+- Agent-first installation, standalone SVGs, voiced CLI creation/revision/rendering, companion Editor and immutable downloadable skill releases.
+- Verified isolated Linux x64/ARM64 Pocket setup; documented platform limits and service/cleanup boundaries.
+- Current art-direction guidance and a Pouch raw-SVG security fix, with regression coverage.
 
-## Decisions still required
+## Final release sequence
 
-- Remove third-party-character/brand/public-figure demos from the public tree, or explicitly accept their separate, uncertain status described in `ASSET-LICENSE.md`.
-- Scan or replace existing community R2 objects before actively soliciting uploads.
-- Decide whether community uploads should remain anonymous/open or gain moderation, rate limits, and takedown/reporting controls.
-- Ask GitHub Support whether cached views need purging for the revoked credential; mention commit `a75ff2b2864383421fd16030ba687334e1bb29cd`, never the token itself.
-- Enable GitHub secret scanning after visibility changes if it is unavailable for the private repository plan.
-- Tell anyone with an older clone to discard it and clone again. Never merge or push an old clone into the rewritten repository.
+1. Commit and push the release candidate; require the final branch Test workflow to pass.
+2. Merge into main, deploy the Worker security patch, and verify real SVG response protections and normal Pouch display.
+3. Confirm main Test and Pages deployment pass, and the live agent prompt downloads skill 1.0.11 with the matching receipt checksum.
+4. On owner approval, change repository visibility. Check available GitHub secret-scanning and private-vulnerability-reporting settings afterward; do not infer their state from unavailable private-plan API metadata.
+5. If needed, follow up with GitHub Support about cached views of the revoked credential. Never include the credential in a request or public issue.
 
-## Final verification
+## Community-service follow-up
+
+Before soliciting unrestricted uploads, address upload abuse limits, ownership/moderation and reuse policy, and review existing stored community content. These are separate from publishing the local software's source. Keep the authoring server behind loopback, a tunnel or authenticated private access.
+
+## Recheck after changes
 
 ```bash
-npm ci
-npm --prefix server ci
-npm --prefix worker ci
 npm test
 npm audit
 npm --prefix server audit
 npm --prefix worker audit
+npm --prefix svg-prompt-lab audit
 ```
 
-Confirm the GitHub Actions **Test** and **Deploy to GitHub Pages** runs pass for the final `main` commit, then test the homepage, technical tour, interactive flagship, and both MP4 links on a phone before changing visibility.
+Use the release commit's CI results, not a prior green commit. Retain test logs and distinguish fixture checks from real speech and physical-device testing.

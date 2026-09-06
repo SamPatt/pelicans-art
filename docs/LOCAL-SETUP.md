@@ -114,13 +114,15 @@ PORT=4173
 HOST=127.0.0.1
 ```
 
-### The editor opens in Browser Studio
+### Open the companion Editor
 
-Use `http://127.0.0.1:3000/editor?mode=server`. Check `http://127.0.0.1:3000/api/health` if server mode still does not load.
+Use `http://127.0.0.1:3000/editor` and open an agent-created `output/project.json`. Check `http://127.0.0.1:3000/api/health` if the private server is unavailable.
 
-### AI generation is unavailable
+### Agent chat is unavailable
 
-Server-mode AI generation requires a reachable OpenClaw gateway and `OPENCLAW_TOKEN`. Browser Studio can instead call OpenAI, OpenRouter, or Anthropic directly with a user-supplied key.
+The Editor works without a connection: export the project and continue in your agent chat. Optional in-editor chat requires the private Hermes connection described in [Editor](EDITOR.md), including explicit server enablement and a working Hermes ACP executable.
+
+The retained `/legacy-studio.html` has the previous browser-provider and OpenClaw workflows; they are not prerequisites for the companion Editor or agent CLI.
 
 ### Voice preview fails
 

@@ -4,7 +4,7 @@ Use this path when the user wants a character, prop, background, illustration, o
 
 Use an existing runtime checkout. If preview dependencies are missing, follow the installation reference with `setup --check --svg`, then `setup --svg`. This needs Node/npm and Chromium, but not Python, FFmpeg, a speech service, or the authoring server. Host browser libraries still require the explicit permission described in installation. Do not run the speech doctor for this path.
 
-Write the requested SVG into a new source file. Use a valid SVG namespace and a finite positive viewBox. Keep artwork self-contained and static: no scripts, event handlers, external fonts/images, CSS imports/escapes, or animation elements. Paths, gradients, masks, clipping, local references, and embedded raster images are supported. For an animated-theater character, read the character structure in `references/authoring.md` and the runtime's `docs/SPRITE-GUIDE.md`; include its required body/head/eye/mouth IDs. An ordinary illustration does not require character IDs.
+Read [SVG art direction](art-direction.md) before drawing. Write the requested SVG into a new source file. Use a valid SVG namespace and a finite positive viewBox. Keep artwork self-contained and static: no scripts, event handlers, external fonts/images, CSS imports/escapes, or animation elements. Paths, gradients, masks, clipping, local references, and embedded raster images are supported. For an animated-theater character, read the character structure in `references/authoring.md` and the runtime's `docs/SPRITE-GUIDE.md`; include its required body/head/eye/mouth IDs. An ordinary illustration does not require character IDs.
 
 ```sh
 node scripts/theater.mjs svg data/artwork/pelican-v1 \

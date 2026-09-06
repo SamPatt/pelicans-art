@@ -1,5 +1,7 @@
 # Repository preparation — September 5, 2026
 
+> Historical checkpoint. See [current release review](RELEASE-REVIEW.md) for subsequent agent, Editor, installation and security verification.
+
 ## Status
 
 Prepared on `codex/release-prep`. Repository visibility remains private. These changes are not a site deployment and do not change the repository name: the `ai-improv-theater` local directory points to `SamPatt/pelicans-art`, which includes both the studio server and public site.

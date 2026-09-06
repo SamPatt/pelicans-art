@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=openclaw
 WorkingDirectory=/home/openclaw/.openclaw/workspace/projects/ai-improv-theater/src
-ExecStart=/usr/bin/python3 -m http.server 8080
+ExecStart=/usr/bin/python3 -m http.server 8080 --bind 127.0.0.1
 Restart=on-failure
 RestartSec=5
 
