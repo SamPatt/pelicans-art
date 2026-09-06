@@ -2,7 +2,7 @@
 
 Verified on 2026-09-06:
 
-- `npm test`: 45 browser, 26 server, 11 Worker, and 28 CLI tests passed.
+- `npm test`: 47 browser, 26 server, 11 Worker, and 28 CLI tests passed.
 - Chromium layouts at 1280, 390, and 320 pixels: no horizontal overflow; full-frame playback with controls beneath it.
 - Real Hermes ACP on the existing private VPS: streamed a proposed title edit, required Apply, applied it in a phone-sized browser, and disconnected without browser errors. No VPS installation or service changes were needed.
 - Editor export → fresh CLI import → render: eight supplied recordings retained, zero generated; H.264 1280×720 / AAC output. Reviewed opening and late-reveal frames and capture timing manifests.
@@ -22,3 +22,5 @@ Chromium mobile emulation does not replace a hands-on Safari/Android check. Publ
 Connected voice/render verification: real Hermes proposed revised dialogue plus a render action; Apply generated one Pocket 2.1 recording, preserved seven supplied recordings, returned updated audio to preview, and downloaded a complete MP4 on a phone-sized private HTTPS page. Tests also verify duration and measured frequency for independent tempo/pitch, job cancellation, external-asset rejection, and newer-edit protection.
 
 Selected-voice regression: edited officerPlain’s line in a phone-sized private Editor while keeping javert selected. Real Pocket synthesis returned the updated recording; all seven unrelated recordings were byte-for-byte preserved. The pinned voice catalog includes all 26 April presets. Model weights, tokenizer, voice revision, generation settings, and the existing profile fingerprint remain unchanged.
+
+Direct selection chat: a real Hermes request sent from the character inspector proposed and applied a title change. The closed-chat header retained its connected indicator. Browser tests also cover fatal disconnect recovery and selection from all 26 pinned presets.

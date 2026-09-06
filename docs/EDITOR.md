@@ -8,7 +8,7 @@ Open [pelicans.art/editor.html](https://pelicans.art/editor.html) on a desktop o
 4. **Play skit** previews existing audio with captions. Playback never calls a model or speech provider. Changing a line removes its stale recording and marks it **Voice needs update**. Reordering lines preserves the recordings belonging to them.
 5. **Export project** saves an editable JSON bundle. On a private installation, **Update voices** generates missing recordings and **Render video** updates voices then produces a downloadable MP4. These buttons use the server; public static editing still works without it. Export remains available for continuing in any agent chat.
 
-**Copy request for your agent** includes your selected character or scene, the current script, and the project revision. Paste it into any agent chat and attach the export if the agent does not already have it. Browser storage saves the current project on this device; exporting is your portable backup. There is no cross-device sync.
+**Send request to Hermes** appears beside the selection note when connected and sends that note with the selected character/scene directly into chat. Replies and proposed edits appear in the chat panel. The header shows connecting, connected, working, or disconnected status even when chat is closed. Copy remains available as a secondary action. When disconnected, **Copy request for your agent** includes your selected character or scene, the current script, and the project revision. Paste it into any agent chat and attach the export if the agent does not already have it. Browser storage saves the current project on this device; exporting is your portable backup. There is no cross-device sync.
 
 ## Optional Hermes chat
 
@@ -34,3 +34,5 @@ Jobs run in isolated temporary directories, with two concurrent jobs permitted, 
 ## Compatibility and rollback
 
 Old `sprite-editor.html` links redirect to Editor. The previous interface remains at `legacy-studio.html` for migration/rollback and has no link in the normal product flow. Its integration tests remain separate from the new Editor tests. Existing project files and recordings are not migrated in place.
+
+The voice dropdown lists the pinned presets. See [Pocket voice sources](POCKET-VOICES.md) for audition libraries and how additional voices can be evaluated and pinned.

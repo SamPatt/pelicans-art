@@ -5,6 +5,8 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 import hashlib, json
 root = Path(__file__).resolve().parent.parent
 source = root / 'skills/pelican-theater'
+# Publish the same immutable catalog used by the speech service.
+(root / 'src/pocket-voices.json').write_bytes((root / 'scripts/theater/pocket-voices.json').read_bytes())
 out = root / 'src/downloads'
 out.mkdir(exist_ok=True)
 version = '1.0.6'
