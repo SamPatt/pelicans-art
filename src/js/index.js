@@ -16,18 +16,18 @@
       btn.setAttribute('aria-pressed', 'true');
 
       // Reload iframe with new skit
-      const params = new URLSearchParams({ embed: '1', captions: '1' });
+      const params = new URLSearchParams({ embed: '1', captions: '1', controls: 'below', layout: 'clean-controls' });
       params.set(skitUrl ? 'url' : 'skit', skitUrl || skitName);
       skitFrame.src = `skit-player.html?${params}`;
     });
 
     // Listen for orientation changes from embedded skit player
     window.addEventListener('message', (e) => {
-      if (e.data?.type === 'skit-orientation') {
+      if (e.origin === location.origin && e.source === skitFrame.contentWindow && e.data?.type === 'skit-orientation') {
         if (e.data.orientation === 'portrait') {
-          skitFrame.classList.add('portrait');
+          skitFrame.parentElement.classList.add('portrait');
         } else {
-          skitFrame.classList.remove('portrait');
+          skitFrame.parentElement.classList.remove('portrait');
         }
       }
     });

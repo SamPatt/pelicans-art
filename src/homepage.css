@@ -351,23 +351,25 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
 }
 
 .stage-container {
-  background:#111c27;
-  border-radius:18px;
-  overflow:hidden;
-  border:3px solid var(--ink)
+  position:relative;
+  aspect-ratio:16/9;
+  margin-bottom:56px;
 }
 
 #skitFrame {
+  position:absolute;
   display:block;
   border:0;
   width:100%;
-  aspect-ratio:16/9
+  height:calc(100% + 56px);
+  background:transparent
 }
 
-#skitFrame.portrait {
+.stage-container.portrait {
   aspect-ratio:9/16;
   max-width:450px;
-  margin:auto
+  margin-left:auto;
+  margin-right:auto
 }
 
 .script-selector {
