@@ -191,7 +191,8 @@ function createMp4({ rawVideo, output, trimStart, duration, audioFiles }) {
 async function captureSkit(browser, skitId, options) {
   const response = await fetch(`${options.baseUrl}/published/${encodeURIComponent(skitId)}.json`);
   if (!response.ok) throw new Error(`Published skit not found: ${skitId} (${response.status})`);
-  const skit = await response.json();
+  const skitRaw = await response.text();
+  const skit = JSON.parse(skitRaw);
   const portrait = skit.stage?.orientation === 'portrait';
   const viewport = portrait ? { width: 720, height: 1280 } : { width: 1280, height: 720 };
   const outputDir = path.join(options.output, skitId);
@@ -273,6 +274,7 @@ async function captureSkit(browser, skitId, options) {
     title: skit.meta?.title || skitId,
     orientation: portrait ? 'portrait' : 'landscape',
     capturedAt: new Date().toISOString(),
+    bundleSha256: require('node:crypto').createHash('sha256').update(skitRaw).digest('hex'),
     playbackSeconds,
     capturedDialogueLines: timeline.length,
     expectedDialogueLines: skit.script.filter(beat => beat.do === 'say').length,

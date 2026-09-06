@@ -141,7 +141,7 @@ export async function buildProject(directory) {
   await writeJson(bundlePath,bundle);
   const revision = await run('git',['rev-parse','HEAD'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>b.toString().trim()).catch(()=> 'Unknown');
   const workingTreeDirty = await run('git',['status','--porcelain'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>Boolean(b.toString().trim())).catch(()=>null);
-  const manifest = {version:1,revision,workingTreeDirty,...(config.tts.profile?{configuredSpeech:{profile:config.tts.profile,profileHash:config.tts.profileHash}}:{}),model:bundle.meta.model,assets:hashes,lines,generated,reused,pathBase:'project',bundle:'output/project.json'};
+  const manifest = {version:1,revision,workingTreeDirty,sourceHashes:{skit:hash(await fs.readFile(path.join(root,'skit.json'))),config:hash(await fs.readFile(path.join(root,'project.json')))},...(config.tts.profile?{configuredSpeech:{profile:config.tts.profile,profileHash:config.tts.profileHash}}:{}),model:bundle.meta.model,assets:hashes,lines,generated,reused,pathBase:'project',bundle:'output/project.json'};
   await writeJson(path.join(out,'build-manifest.json'),manifest);
   return {...manifest,bundle:bundlePath};
 }

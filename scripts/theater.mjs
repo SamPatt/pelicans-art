@@ -9,23 +9,30 @@ import { run as installRun } from './theater/project.mjs';
 import { json, writeJson, run, loadProject, buildProject } from './theater/project.mjs';
 import { pocketDefaults } from './theater/pocket.mjs';
 import { deliverSvg } from './theater/svg.mjs';
+import {searchAssets,addAsset} from './theater/assets.mjs';
+import {previewProject,inspectProject,packageProject} from './theater/workflow.mjs';
 import { preflight, checkVenv } from './theater/install-safety.mjs';
 import { probeSpeech } from './theater/readiness.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), require = createRequire(import.meta.url);
 const args = process.argv.slice(2), command = args.shift();
+const assetAction=command==='assets'?args.shift():null;
 let flags, directory;
 function parseOptions() {
   const commands = {
     setup: {tts:'boolean',python:'string',check:'boolean',svg:'boolean'}, doctor: {json:'boolean',endpoint:'string',wait:'string'},
-    svg: {source:'string',kind:'string',model:'string',title:'string'}, init: {silent:'boolean'}, import: {bundle:'string'}, validate: {}, build: {},
-    render: {port:'string',output:'string'}, help: {}, '--help': {}
+    svg: {source:'string',kind:'string',model:'string',title:'string',description:'string',tags:'string',author:'string'}, init: {silent:'boolean'}, import: {bundle:'string'}, validate: {}, build: {},
+    render: {port:'string',output:'string'},
+    assets:{source:'string',query:'string',category:'string',limit:'string','max-pages':'string',id:'string',name:'string',orientation:'string'},
+    preview:{serve:'boolean',port:'string','base-url':'string'},inspect:{'render-dir':'string'},package:{'render-dir':'string'}, help: {}, '--help': {}
   };
   if (command && !Object.hasOwn(commands,command)) throw new Error(`Unknown command ${command}`);
   const options = Object.fromEntries(Object.entries({help:'boolean',...commands[command]}).map(([name,type])=>[name,{type}]));
   const parsed = parseArgs({args,options,allowPositionals:true,strict:true});
   flags = new Map(Object.entries(parsed.values));
-  const acceptsDirectory = ['svg','init','import','validate','build','render'].includes(command);
+  const acceptsDirectory = (['svg','init','import','validate','build','render','preview','inspect','package'].includes(command)||(command==='assets'&&assetAction==='add'));
   if (parsed.positionals.length > (acceptsDirectory ? 1 : 0)) throw new Error('Unexpected positional arguments; provide one project directory for project commands');
+  if(command==='preview'&&flags.has('serve')&&flags.has('base-url'))throw Error('Use --serve or --base-url, not both');
+  if(command==='assets'&&!['search','add'].includes(assetAction))throw Error('Use assets search or assets add');
   if (command==='setup' && flags.has('svg') && (flags.has('tts') || flags.has('python'))) throw new Error('--svg cannot be combined with --tts or --python');
   if (command==='svg' && !flags.has('help') && parsed.positionals.length!==1) throw new Error('svg requires a new output directory');
   directory = path.resolve(parsed.positionals[0] || 'data/projects/my-skit');
@@ -162,7 +169,11 @@ async function render() {
 }
 try {
   parseOptions();
-  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|svg|init|import|validate|build|render> [project-directory]',setup:'setup [--check] [--svg | --tts --python python3.12]: preflight then local npm/Chromium; locked Pocket requires Linux x64 or ARM64 glibc 2.28+ and Python 3.12. --svg installs only root npm/Chromium for standalone artwork, without FFmpeg/Python/TTS. --check makes no installation changes. Missing OS packages require explicit user opt-in.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',svg:'svg new-output-directory --source drawing.svg [--kind artwork|character|background|prop] [--model MODEL] [--title TITLE]: validate and deliver SVG + PNG preview; the agent authors the SVG directly.',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
+  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|assets|svg|init|import|validate|build|preview|render|inspect|package> [project-directory]',setup:'setup [--check] [--svg | --tts --python python3.12]: preflight then local npm/Chromium; locked Pocket requires Linux x64 or ARM64 glibc 2.28+ and Python 3.12. --svg installs only root npm/Chromium for standalone artwork, without FFmpeg/Python/TTS. --check makes no installation changes. Missing OS packages require explicit user opt-in.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',svg:'svg new-output-directory --source drawing.svg [--kind artwork|character|background|prop] [--model MODEL] [--title TITLE] [--description TEXT] [--tags TAGS] [--author NAME]: validate and deliver SVG + PNG preview; the agent authors the SVG directly.',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',assets:'assets search --query TEXT [--source all|local|pouch] [--category characters|props|backgrounds] [--limit N] [--max-pages N]; assets add project --source local|pouch --category CATEGORY --id ID [--name NAME] [--orientation portrait|landscape]',preview:'preview project [--serve --port PORT | --base-url EXISTING_SERVER_ORIGIN]: build and capture a stage PNG; --serve keeps a loopback server alive until Ctrl-C; --base-url uses your already-running theater server.',inspect:'inspect project [--render-dir DIR]: inspect existing render; frames, contact sheet, decode and coverage checks. Does not render.',package:'package project [--render-dir DIR]: archive source, bundle and completed render; return MIME types, sizes and checksums. No upload.',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
+  else if(command==='assets'){const options=Object.fromEntries(flags);if(options.limit!==undefined)options.limit=Number(options.limit);if(options['max-pages']!==undefined)options.maxPages=Number(options['max-pages']);report(assetAction==='search'?await searchAssets(options):await addAsset(directory,options));}
+  else if(command==='preview'){const result=await previewProject(directory,{serve:flags.has('serve'),port:flags.get('port'),baseUrl:flags.get('base-url')});const {close,...output}=result;report(output);if(close){let stopping=false;const stop=async()=>{if(stopping)return;stopping=true;await close();};process.once('SIGINT',stop);process.once('SIGTERM',stop);}}
+  else if(command==='inspect'){const result=await inspectProject(directory,{renderDir:flags.get('render-dir')});report(result);if(!result.ok)process.exitCode=1;}
+  else if(command==='package')report(await packageProject(directory,{renderDir:flags.get('render-dir')}));
   else if(command==='doctor')await doctor();
   else if(command==='setup')await setup();
   else if(command==='svg')report(await deliverSvg(directory,Object.fromEntries(flags)));

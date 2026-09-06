@@ -21,6 +21,37 @@ export function assetModel(body) {
   return typeof value === 'string' && value.trim() ? value.trim().slice(0, 120) : 'Unknown';
 }
 
+// Search descriptions are author-supplied context, never executable instructions.
+// Byte limits keep the complete R2 custom metadata safely below its 2 KB limit.
+function metadataText(value, maxBytes) {
+  if (typeof value !== 'string') return '';
+  let result = '';
+  for (const character of value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim()) {
+    if (new TextEncoder().encode(result + character).length > maxBytes) break;
+    result += character;
+  }
+  return result;
+}
+export function assetSearchMetadata(body = {}, category = '') {
+  const meta = body.meta || body.skit?.meta || body.published?.meta || {};
+  const rawTags = body.tags ?? meta.tags;
+  const tags = [];
+  if (Array.isArray(rawTags)) for (const value of rawTags) {
+    const tag = metadataText(value, 40);
+    if (tag && !tags.includes(tag)) tags.push(tag);
+    if (tags.length === 8) break;
+  }
+  return {category, description: metadataText(body.description ?? meta.description, 600), tags};
+}
+function commonAssetMetadata(body, category, name) {
+  const search = assetSearchMetadata(body, category);
+  return {model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(),
+    assetName: metadataText(name, 180), ...search, tags: JSON.stringify(search.tags)};
+}
+function storedTags(value) {
+  try {return assetSearchMetadata({tags: JSON.parse(value || '[]')}).tags;} catch {return [];}
+}
+
 function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
@@ -186,9 +217,11 @@ function validateProp(body) {
 }
 
 function validateBackground(body) {
-  if (!body.landscape_svg) return 'landscape_svg is required';
-  const svgErr = validateSvg(body.landscape_svg);
-  if (svgErr) return svgErr;
+  if (!body.landscape_svg && !body.portrait_svg) return 'landscape_svg or portrait_svg is required';
+  if (body.landscape_svg) {
+    const svgErr = validateSvg(body.landscape_svg);
+    if (svgErr) return svgErr;
+  }
   if (body.portrait_svg) {
     const pErr = validateSvg(body.portrait_svg);
     if (pErr) return 'portrait_svg: ' + pErr;
@@ -262,9 +295,11 @@ async function storeCharacter(bucket, slug, body) {
   // Use provided meta or extract from SVG
   const charMeta = {
     ...(body.meta || extractMetaFromSvg(variants.front) || {}),
+    ...assetSearchMetadata(body, 'characters'),
+    model: assetModel(body),
     variants: variantNames
   };
-  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: charMeta.name, category: 'characters' };
+  const commonMeta = commonAssetMetadata(body, 'characters', charMeta.name);
 
   for (const [variantName, svg] of Object.entries(variants)) {
     await bucket.put(`characters/${slug}/${variantName}.svg`, svg, {
@@ -279,8 +314,8 @@ async function storeCharacter(bucket, slug, body) {
 
 async function storeProp(bucket, slug, body) {
   // Use provided meta or extract from SVG
-  const propMeta = body.meta || extractMetaFromSvg(body.svg) || {};
-  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: propMeta.name, category: 'props' };
+  const propMeta = {...(body.meta || extractMetaFromSvg(body.svg) || {}), ...assetSearchMetadata(body, 'props'), model: assetModel(body)};
+  const commonMeta = commonAssetMetadata(body, 'props', propMeta.name);
   await bucket.put(`props/${slug}/prop.svg`, body.svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
   // Store meta.json for backwards compatibility
   await bucket.put(`props/${slug}/meta.json`, JSON.stringify(propMeta, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
@@ -288,28 +323,29 @@ async function storeProp(bucket, slug, body) {
 }
 
 async function storeBackground(bucket, slug, body) {
-  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.name, category: 'backgrounds' };
-  await bucket.put(`backgrounds/${slug}/landscape.svg`, body.landscape_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
+  const commonMeta = commonAssetMetadata(body, 'backgrounds', body.name);
+  if (body.landscape_svg) await bucket.put(`backgrounds/${slug}/landscape.svg`, body.landscape_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
   if (body.portrait_svg) {
     await bucket.put(`backgrounds/${slug}/portrait.svg`, body.portrait_svg, { customMetadata: commonMeta, httpMetadata: { contentType: 'image/svg+xml' } });
   }
-  return { slug, files: ['landscape.svg', body.portrait_svg ? 'portrait.svg' : null].filter(Boolean) };
+  await bucket.put(`backgrounds/${slug}/meta.json`, JSON.stringify({...body.meta, name: body.name, model: assetModel(body), ...assetSearchMetadata(body, 'backgrounds')}, null, 2), {customMetadata: commonMeta, httpMetadata: {contentType: 'application/json'}});
+  return { slug, files: [body.landscape_svg ? 'landscape.svg' : null, body.portrait_svg ? 'portrait.svg' : null, 'meta.json'].filter(Boolean) };
 }
 
 async function storeSkit(bucket, slug, body) {
-  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.skit.meta.title, category: 'skits' };
+  const commonMeta = commonAssetMetadata(body, 'skits', body.skit.meta.title);
   await bucket.put(`skits/${slug}.json`, JSON.stringify(body.skit, null, 2), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
   return { slug, files: [`${slug}.json`] };
 }
 
 async function storePublished(bucket, slug, body) {
-  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.published.meta.title, category: 'published' };
+  const commonMeta = commonAssetMetadata(body, 'published', body.published.meta.title);
   await bucket.put(`published/${slug}.json`, JSON.stringify(body.published), { customMetadata: commonMeta, httpMetadata: { contentType: 'application/json' } });
   return { slug, files: [`${slug}.json`] };
 }
 
 async function storeVoice(bucket, slug, body) {
-  const commonMeta = { model: assetModel(body), username: body.username, uploadedAt: new Date().toISOString(), assetName: body.name || slug, category: 'voices' };
+  const commonMeta = commonAssetMetadata(body, 'voices', body.name || slug);
 
   // Support both WAV audio and processed safetensors
   if (body.safetensors_base64) {
@@ -381,7 +417,16 @@ async function listCategory(bucket, category, cursor, limit) {
     for (let i = skip; i < objects.length; i++) {
       const obj = objects[i];
       // For voices, accept both .wav and .safetensors
-      if (suffix === null) {
+      if (category === 'backgrounds') {
+        if (!obj.key.endsWith('/landscape.svg') && !obj.key.endsWith('/portrait.svg')) continue;
+        if (obj.key.endsWith('/portrait.svg')) {
+          const landscapeKey = obj.key.replace(/portrait\.svg$/, 'landscape.svg');
+          // Prefer landscape as the index when both exist. A storage lookup
+          // also deduplicates variants split across R2 or API cursor pages.
+          const landscape = typeof bucket.head === 'function' ? await bucket.head(landscapeKey) : await bucket.get(landscapeKey);
+          if (landscape) continue;
+        }
+      } else if (suffix === null) {
         if (!obj.key.endsWith('.wav') && !obj.key.endsWith('.safetensors')) continue;
       } else if (!obj.key.endsWith(suffix)) {
         continue;
@@ -392,6 +437,10 @@ async function listCategory(bucket, category, cursor, limit) {
         slug: extractSlug(category, obj.key),
         name: meta.assetName || obj.key,
         username: meta.username || 'unknown',
+        category,
+        searchMetadata: Object.hasOwn(meta, 'description') && Object.hasOwn(meta, 'tags'),
+        description: metadataText(meta.description, 600),
+        tags: storedTags(meta.tags),
         model: assetMetadata[obj.key]?.model || meta.model || 'Unknown',
         uploadedAt: meta.uploadedAt || obj.uploaded?.toISOString(),
         size: obj.size,
@@ -620,9 +669,13 @@ async function handleUpload(request, env, category) {
   }
   if (validationErr) return err(validationErr);
 
+  if ((category === 'characters' || category === 'props') && (!body.meta || typeof body.meta !== 'object')) body.meta = extractMetaFromSvg(category === 'characters' ? body.variants.front : body.svg) || {};
   body.model = assetModel(body);
+  const search = assetSearchMetadata(body, category);
+  body.description = search.description;
+  body.tags = search.tags;
   for (const meta of [body.meta, body.skit?.meta, body.published?.meta]) {
-    if (meta && typeof meta === 'object') meta.model = body.model;
+    if (meta && typeof meta === 'object') Object.assign(meta, search, {model: body.model});
   }
 
   const name = body.name || body.meta?.name || body.skit?.meta?.title || body.published?.meta?.title || category;
@@ -666,6 +719,10 @@ async function handleGetMeta(env, category, slug) {
 
   if (category !== 'voices') {
     obj = await env.BUCKET.get(key);
+    if (!obj && category === 'backgrounds') {
+      key = `${category}/${slug}/portrait.svg`;
+      obj = await env.BUCKET.get(key);
+    }
   }
   if (!obj) return err('Not found', 404);
 
@@ -685,9 +742,11 @@ async function handleGetMeta(env, category, slug) {
 
   return json({
     slug,
-    category,
     ...bodyMeta,
+    category,
     name: bodyMeta.name || wrapperMeta.assetName || slug,
+    description: metadataText(wrapperMeta.description ?? bodyMeta.description, 600),
+    tags: wrapperMeta.tags ? storedTags(wrapperMeta.tags) : assetSearchMetadata(bodyMeta).tags,
     model: assetMetadata[key]?.model || wrapperMeta.model || bodyMeta.model || 'Unknown',
     username: wrapperMeta.username,
     uploadedAt: wrapperMeta.uploadedAt,

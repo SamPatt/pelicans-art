@@ -11,6 +11,8 @@ node scripts/theater.mjs svg data/artwork/pelican-v1 \
   --source /path/to/pelican.svg \
   --kind character \
   --title "Pelican stage manager" \
+  --description "White pelican in a teal waistcoat, holding a clipboard, skeptical expression" \
+  --tags "pelican,theater,clipboard" \
   --model "actual generation model"
 ```
 
@@ -18,6 +20,7 @@ Choose `--kind artwork` (the default), `character`, `background`, or `prop`. Mod
 
 The command validates the SVG and produces:
 
+- `meta.json`: category, name, description, tags, model, and optional author for search and authorized Pouch uploads.
 - `asset.svg`: the exact editable artwork.
 - `preview.png`: a transparent PNG with the full viewBox, longest edge 1024 pixels.
 - `manifest.json`: title, kind, model, runtime revision, relative filenames, MIME types, sizes, and SHA-256 hashes.

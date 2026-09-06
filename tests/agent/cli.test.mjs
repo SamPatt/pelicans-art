@@ -63,3 +63,15 @@ test('doctor reports platform and isolated Pocket runtime separately from system
  assert.equal(typeof result.pocketRuntime.installed,'boolean');assert.ok(path.isAbsolute(result.pocketRuntime.python));
  if(result.pocketRuntime.installed){assert.equal(result.pocketRuntime.ok,true);assert.match(result.pocketRuntime.pythonVersion,/^3\./);assert.match(result.pocketRuntime.version,/^\d+\./);}
 });
+
+test('preview, inspect and package deliver portable artifacts and reject changed sources',async t=>{
+ const root=await project(t),skit=await json(path.join(root,'skit.json'));skit.script=[{do:'pause',duration:0.3}];await writeJson(path.join(root,'skit.json'),skit);
+ const preview=await invoke(['preview',root]);assert.equal(preview.ok,true,preview.error);assert.equal(preview.url,null);assert.ok((await fs.stat(preview.cover)).size>100);
+ t.after(()=>fs.rm(path.dirname(preview.preview),{recursive:true,force:true}));
+ const render=await invoke(['render',root]);assert.equal(render.ok,true,render.error);
+ const inspected=await invoke(['inspect',root]);assert.equal(inspected.ok,true,inspected.error);assert.ok(inspected.frames.length>=2);assert.equal(inspected.streams.find(s=>s.type==='video').width,1280);
+ await fs.mkdir(path.join(root,'.cache'),{recursive:true});await fs.writeFile(path.join(root,'.cache','secret'),'do not deliver');
+ const packaged=await invoke(['package',root]);assert.equal(packaged.ok,true,packaged.error);assert.ok(packaged.entries.includes('project/output/project.json'));assert.ok(packaged.entries.includes('project/skit.json'));assert.ok(!packaged.entries.some(x=>x.includes('.cache')));
+ const {run}=await import('../../scripts/theater/project.mjs');assert.equal((await run('python3',['-c','import zipfile,sys; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; print(len(z.namelist()))',packaged.archive.path])).toString().trim(),String(packaged.entries.length));
+ skit.meta.title='Changed title';await writeJson(path.join(root,'skit.json'),skit);const stale=await invoke(['package',root]);assert.equal(stale.code,1);assert.match(stale.error,/Source changed/);
+});

@@ -96,3 +96,20 @@ Run `node scripts/theater.mjs setup --check --tts --python python3.12` before in
 ## Plan before production
 
 The agent walks through format (portrait 9:16 or landscape 16:9), character appearances and voices, setting, scene beats, and exact dialogue in chat. It incorporates feedback and waits for approval before generating finished SVGs, speech, or video. No storyboard file or Editor is required. An already approved plan counts, and explicit requests to skip review are respected. Keep the same project and cache for revisions; review a built bundle through an accessible player when a new MP4 is unnecessary.
+
+## Search assets and iterate without custom helper scripts
+
+The portable skill now includes [asset discovery and workflow tools](../skills/pelican-theater/references/workflow-tools.md). Search before the chat proposal, inspect candidate previews, and agree which artwork to reuse, adapt, or create.
+
+```sh
+node scripts/theater.mjs assets search --query "coffee" --source all
+node scripts/theater.mjs assets add data/projects/my-skit --source local --category props --id astra-coffee-cup --name coffee
+node scripts/theater.mjs preview data/projects/my-skit --serve
+node scripts/theater.mjs render data/projects/my-skit
+node scripts/theater.mjs inspect data/projects/my-skit
+node scripts/theater.mjs package data/projects/my-skit
+```
+
+`preview` avoids MP4 capture and reuses cached speech. `inspect` checks the existing video and creates review images. `package` makes the source ZIP and returns attachment paths, MIME types, sizes, and hashes; it refuses stale renders. Local preview links require an existing authorized delivery route for mobile users.
+
+New SVG deliveries emit `meta.json` with category, description, tags, and model. Keep that metadata with the artwork and include it when uploading to the Pouch. Pouch search results expose those fields for new uploads and tolerate incomplete legacy metadata. Imports preserve source attribution and metadata; generation and packaging do not upload automatically.

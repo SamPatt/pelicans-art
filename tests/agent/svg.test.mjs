@@ -15,10 +15,10 @@ async function fixture(t){const root=await fs.mkdtemp(path.join(os.tmpdir(),'svg
 const art='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100"><rect width="200" height="100" fill="#f8e7bd"/><circle cx="100" cy="50" r="35" fill="#19616b"/></svg>';
 test('standalone SVG delivers original artwork, correctly sized PNG and portable metadata without a skit',async t=>{
  const root=await fixture(t),source=path.join(root,'drawing.svg'),dest=path.join(root,'first version');await fs.writeFile(source,art);
- const result=await invoke(['svg',dest,'--source',source,'--model','GPT-6 Astra','--title','A round audition']);assert.equal(result.code,0,result.error);
+ const result=await invoke(['svg',dest,'--source',source,'--model','GPT-6 Astra','--title','A round audition','--description','A teal circle on cream.','--tags','abstract,teal','--author','Test artist']);assert.equal(result.code,0,result.error);
  assert.equal(await fs.readFile(result.svg,'utf8'),art);
  const png=await fs.readFile(result.preview);assert.equal(png.subarray(1,4).toString(),'PNG');assert.equal(png.readUInt32BE(16),1024);assert.equal(png.readUInt32BE(20),512);
- const m=JSON.parse(await fs.readFile(result.manifest));assert.equal(m.model,'GPT-6 Astra');assert.equal(m.kind,'artwork');assert.equal(m.files[0].sha256,hash(Buffer.from(art)));assert.equal(m.files[1].sha256,hash(png));assert.ok(m.files.every(f=>!path.isAbsolute(f.path)));assert.deepEqual((await fs.readdir(dest)).sort(),['asset.svg','manifest.json','preview.png']);
+ const m=JSON.parse(await fs.readFile(result.manifest));assert.equal(m.model,'GPT-6 Astra');assert.equal(m.description,'A teal circle on cream.');assert.deepEqual(m.tags,['abstract','teal']);assert.equal(m.category,'artwork');const meta=JSON.parse(await fs.readFile(result.meta));assert.equal(meta.author,'Test artist');assert.equal(meta.name,m.title);assert.equal(m.kind,'artwork');assert.equal(m.files[0].sha256,hash(Buffer.from(art)));assert.equal(m.files[1].sha256,hash(png));assert.ok(m.files.every(f=>!path.isAbsolute(f.path)));assert.deepEqual((await fs.readdir(dest)).sort(),['asset.svg','manifest.json','meta.json','preview.png']);
  const repeat=await invoke(['svg',dest,'--source',source]);assert.equal(repeat.code,1);assert.equal(await fs.readFile(result.svg,'utf8'),art);
 });
 test('invalid, executable, external and malformed artwork does not create a delivery',async t=>{
@@ -38,4 +38,10 @@ test('SVG setup preflight needs neither FFmpeg nor Python and rejects mixed setu
  await preflight(root,{tts:false,svgOnly:true,run:async command=>{calls.push(command);if(command!=='npm')throw Error('unexpected dependency');return Buffer.from('10');}});
  assert.deepEqual(calls,['npm']);assert.deepEqual(await fs.readdir(root),[]);
  for(const args of [['setup','--svg','--tts'],['setup','--svg','--python','python3.12'],['svg','--source','drawing.svg']])assert.equal((await invoke(args)).code,1);
+});
+test('missing search metadata uses SVG title and description without invented appearance claims',async t=>{
+ const root=await fixture(t),source=path.join(root,'drawing.svg');
+ await fs.writeFile(source,art.replace('><rect','><title>Blue &amp; round</title><desc>A plain circle.</desc><rect'));
+ const r=await invoke(['svg',path.join(root,'out'),'--source',source]);assert.equal(r.code,0,r.error);
+ assert.equal(r.title,'Blue & round');assert.equal(r.description,'A plain circle.');assert.deepEqual(r.tags,[]);
 });

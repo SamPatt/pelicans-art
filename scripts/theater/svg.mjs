@@ -1,14 +1,14 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {validateSvg} from '../../worker/community-worker.js';
+import {validateSvg,assetSearchMetadata} from '../../worker/community-worker.js';
 import {validateSpriteSvg} from '../../server/middleware/validate.js';
 import {hash,run} from './project.mjs';
 
-export async function deliverSvg(directory,{source,kind='artwork',model='Unknown',title='Untitled SVG'}) {
+export async function deliverSvg(directory,{source,kind='artwork',model='Unknown',title,description,tags=[],author}) {
   if (!source) throw new Error('svg requires --source /path/to/agent-authored.svg');
   if (!['artwork','character','background','prop'].includes(kind)) throw new Error('--kind must be artwork, character, background, or prop');
-  if (!model.trim() || model.length>200 || !title.trim() || title.length>300) throw new Error('Provide a nonempty model (up to 200 characters) and title (up to 300 characters)');
+  if (typeof model!=='string' || !model.trim() || model.length>200 || (title!==undefined && (typeof title!=='string' || !title.trim() || title.length>300))) throw new Error('Provide a nonempty model (up to 200 characters) and title (up to 300 characters)');
   const output=path.resolve(directory);
   if (await fs.lstat(output).then(()=>true).catch(e=>{if(e.code==='ENOENT')return false;throw e;})) throw new Error('Choose a new output directory; existing SVG deliveries are never overwritten.');
   const input=path.resolve(source);
@@ -18,7 +18,8 @@ export async function deliverSvg(directory,{source,kind='artwork',model='Unknown
   if (/<!DOCTYPE|<!ENTITY|<\?xml-stylesheet/i.test(svg)) throw new Error('SVG document declarations and external stylesheets are not supported');
   const {chromium}=await import('@playwright/test');
   const browser=await chromium.launch({headless:true});
-  let png,dimensions,warnings=[];
+  let png,dimensions,warnings=[],search;
+  const category={character:'characters',prop:'props',background:'backgrounds',artwork:'artwork'}[kind];
   try {
     const context=await browser.newContext({deviceScaleFactor:1,serviceWorkers:'block'});
     await context.route('**/*',route=>route.abort());
@@ -38,8 +39,10 @@ export async function deliverSvg(directory,{source,kind='artwork',model='Unknown
       }
       const box=root.getAttribute('viewBox')?.trim().split(/[\s,]+/).map(Number);
       if(!box||box.length!==4||!box.every(Number.isFinite)||box[2]<=0||box[3]<=0) throw new Error('SVG requires a finite viewBox with positive width and height');
-      return {serialized:new XMLSerializer().serializeToString(doc),box};
+      return {serialized:new XMLSerializer().serializeToString(doc),box,title:root.querySelector(':scope > title')?.textContent,description:root.querySelector(':scope > desc')?.textContent};
     },svg);
+    title=(title || parsed.title?.trim() || 'Untitled SVG').slice(0,300);
+    search=assetSearchMetadata({description:description ?? parsed.description,tags:typeof tags==='string' ? tags.split(',') : tags},category);
     const decodedUnsafe=validateSvg(parsed.serialized);if(decodedUnsafe)throw new Error(decodedUnsafe);
     if(kind==='character') {
       const validation=validateSpriteSvg(parsed.serialized);
@@ -56,13 +59,17 @@ export async function deliverSvg(directory,{source,kind='artwork',model='Unknown
   const revision=await run('git',['rev-parse','HEAD'],{cwd:root}).then(b=>b.toString().trim()).catch(()=> 'Unknown');
   const workingTreeDirty=await run('git',['status','--porcelain'],{cwd:root}).then(b=>Boolean(b.toString().trim())).catch(()=>null);
   const files=[{path:'asset.svg',mimeType:'image/svg+xml',size:bytes.length,sha256:hash(bytes)},{path:'preview.png',mimeType:'image/png',size:png.length,sha256:hash(png),...dimensions}];
-  const manifest={version:1,title,model,kind,pathBase:'manifest',runtime:{source:'SamPatt/pelicans-art',revision,workingTreeDirty},files,warnings};
+  const metadata={name:title,title,model,kind,...search,...(typeof author==='string' && author.trim() ? {author:author.trim().slice(0,200)} : {})};
+  const metaBytes=Buffer.from(JSON.stringify(metadata,null,2)+'\n');
+  files.push({path:'meta.json',mimeType:'application/json',size:metaBytes.length,sha256:hash(metaBytes)});
+  const manifest={version:1,...metadata,pathBase:'manifest',runtime:{source:'SamPatt/pelicans-art',revision,workingTreeDirty},files,warnings};
   await fs.mkdir(path.dirname(output),{recursive:true});
   await fs.mkdir(output); // Exclusive creation; never replace a previous delivery or source.
   try {
     await fs.writeFile(path.join(output,'asset.svg'),bytes,{flag:'wx'});
     await fs.writeFile(path.join(output,'preview.png'),png,{flag:'wx'});
+    await fs.writeFile(path.join(output,'meta.json'),metaBytes,{flag:'wx'});
     await fs.writeFile(path.join(output,'manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
   } catch(error) {await fs.rm(output,{recursive:true,force:true});throw error;}
-  return {ok:true,title,model,kind,svg:path.join(output,'asset.svg'),preview:path.join(output,'preview.png'),manifest:path.join(output,'manifest.json'),files:files.map(f=>({...f,path:path.join(output,f.path)})),warnings};
+  return {ok:true,...metadata,meta:path.join(output,'meta.json'),svg:path.join(output,'asset.svg'),preview:path.join(output,'preview.png'),manifest:path.join(output,'manifest.json'),files:files.map(f=>({...f,path:path.join(output,f.path)})),warnings};
 }

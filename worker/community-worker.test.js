@@ -176,3 +176,69 @@ test('moderation requires the admin key and deletes only the exact published ass
   assert.equal((await worker.fetch(new Request(url,{method:'DELETE',headers:{'X-Admin-Key':'test-only-key'}}),env)).status,200);
   assert.deepEqual(deleted,['published/probe.json']);
 });
+
+test('search context survives uploads, listing, and metadata endpoints without requiring legacy fields', async () => {
+  for (const [category, payload] of Object.entries({
+    characters:{meta:{name:'Actor'},variants:{front:safeSvg}},
+    props:{meta:{name:'Phone'},svg:safeSvg},
+    backgrounds:{name:'Cafe',landscape_svg:safeSvg}
+  })) {
+    const objects=new Map();
+    const env={...uploadLimits,BUCKET:{
+      put:async(key,body,options)=>objects.set(key,{key,...options,size:body.length,text:async()=>body}),
+      get:async key=>objects.get(key),
+      list:async()=>({objects:[...objects.values()],truncated:false})
+    }};
+    const response=await worker.fetch(new Request(`https://example.com/api/community/${category}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...payload,username:'test',description:'A useful scene asset.',tags:['cafe','warm','cafe',42,null]})}),env);
+    assert.equal(response.status,201);
+    const {slug}=await response.json();
+    const listed=await (await worker.fetch(new Request(`https://example.com/api/community/${category}`),env)).json();
+    assert.equal(listed.items.length,1);
+    const item=listed.items[0];
+    assert.equal(item.description,'A useful scene asset.');assert.equal(item.category,category);assert.deepEqual(item.tags,['cafe','warm']);assert.equal(item.model,'Unknown');
+    const stored=JSON.parse(await objects.get(`${category}/${slug}/meta.json`).text());
+    assert.equal(stored.description,item.description);assert.deepEqual(stored.tags,item.tags);
+    const detail=await (await worker.fetch(new Request(`https://example.com/api/community/${category}/${slug}`),env)).json();
+    assert.equal(detail.description,item.description);assert.deepEqual(detail.tags,item.tags);
+  }
+});
+
+import {assetSearchMetadata} from './community-worker.js';
+test('search metadata rejects nontext values and bounds Unicode metadata size',()=>{
+  assert.deepEqual(assetSearchMetadata({description:{bad:true},tags:'not-an-array'},'props'),{category:'props',description:'',tags:[]});
+  const search=assetSearchMetadata({description:'😀'.repeat(1000),tags:Array.from({length:20},(_,i)=>String(i)+'😀'.repeat(100))});
+  assert.ok(new TextEncoder().encode(search.description).length<=600);assert.equal(search.tags.length,8);
+  assert.ok(search.tags.every(tag=>new TextEncoder().encode(tag).length<=40));
+});
+
+test('list distinguishes indexed search metadata from legacy empty defaults',async()=>{
+  const objects=[{key:'props/old/meta.json',customMetadata:{}},{key:'props/new/meta.json',customMetadata:{description:'',tags:'[]'}}];
+  const env={BUCKET:{list:async()=>({objects,truncated:false})}};
+  const {items}=await (await worker.fetch(new Request('https://example.com/api/community/props'),env)).json();
+  assert.equal(items[0].searchMetadata,false);assert.equal(items[1].searchMetadata,true);
+  assert.equal(items[0].description,'');assert.deepEqual(items[0].tags,[]);
+});
+
+test('portrait-only backgrounds are listed and dual variants deduplicated across storage and API pages',async()=>{
+  const keys=['backgrounds/both/landscape.svg','backgrounds/both/portrait.svg','backgrounds/portrait/portrait.svg'];
+  const objects=keys.map(key=>({key,customMetadata:{assetName:key.split('/')[1]}}));
+  const env={BUCKET:{
+    head:async key=>objects.find(obj=>obj.key===key),
+    get:async key=>objects.find(obj=>obj.key===key),
+    list:async({cursor})=>{const i=Number(cursor||0);return {objects:[objects[i]],truncated:i<2,cursor:String(i+1)};}
+  }};
+  const first=await (await worker.fetch(new Request('https://example.com/api/community/backgrounds?limit=1'),env)).json();
+  assert.deepEqual(first.items.map(item=>item.slug),['both']);assert.equal(first.hasMore,true);
+  const next=await (await worker.fetch(new Request(`https://example.com/api/community/backgrounds?limit=1&cursor=${first.cursor}`),env)).json();
+  assert.deepEqual(next.items.map(item=>item.slug),['portrait']);assert.equal(next.hasMore,false);
+  const detail=await (await worker.fetch(new Request('https://example.com/api/community/backgrounds/portrait'),env)).json();
+  assert.equal(detail.name,'portrait');
+});
+
+test('portrait-only uploads preserve their actual orientation without inventing landscape artwork',async()=>{
+  const records=[];const env={...uploadLimits,BUCKET:{put:async(...args)=>records.push(args)}};
+  const response=await worker.fetch(new Request('https://example.com/api/community/backgrounds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'test',name:'Tall room',portrait_svg:safeSvg})}),env);
+  assert.equal(response.status,201);
+  const {files}=await response.json();assert.deepEqual(files,['portrait.svg','meta.json']);
+  assert.ok(records.every(([key])=>!key.endsWith('landscape.svg')));
+});
