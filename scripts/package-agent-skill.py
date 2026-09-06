@@ -9,7 +9,7 @@ source = root / 'skills/pelican-theater'
 (root / 'src/pocket-voices.json').write_bytes((root / 'scripts/theater/pocket-voices.json').read_bytes())
 out = root / 'src/downloads'
 out.mkdir(exist_ok=True)
-version = '1.0.11'
+version = '1.0.12'
 # Runtime verified by the full CLI rehearsal; packaging edits do not advance it.
 runtime_ref = 'c9e4bf0802502059a1dafeada2dec058dc5be46e'
 target = out / f'pelican-theater-{version}.zip'

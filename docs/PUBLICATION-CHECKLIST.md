@@ -1,6 +1,6 @@
 # Public repository checklist
 
-Use the [current release review](RELEASE-REVIEW.md) for evidence and remaining deployment steps. Repository visibility is a separate owner-authorized action.
+Use the [current release review](RELEASE-REVIEW.md) for evidence. The owner-authorized public release completed on September 6, 2026.
 
 ## Prepared
 
@@ -11,13 +11,15 @@ Use the [current release review](RELEASE-REVIEW.md) for evidence and remaining d
 - Verified isolated Linux x64/ARM64 Pocket setup; documented platform limits and service/cleanup boundaries.
 - Current art-direction guidance and a Pouch raw-SVG security fix, with regression coverage.
 
-## Final release sequence
+## Completed release
 
-1. Commit and push the release candidate; require the final branch Test workflow to pass.
-2. Merge into main, deploy the Worker security patch, and verify real SVG response protections and normal Pouch display.
-3. Confirm main Test and Pages deployment pass, and the live agent prompt downloads skill 1.0.11 with the matching receipt checksum.
-4. On owner approval, change repository visibility. Check available GitHub secret-scanning and private-vulnerability-reporting settings afterward; do not infer their state from unavailable private-plan API metadata.
-5. If needed, follow up with GitHub Support about cached views of the revoked credential. Never include the credential in a request or public issue.
+- Release `9e2c63d` merged into main; branch and main Test workflows passed.
+- Worker security and upload controls deployed; real SVG headers and normal Pouch display verified.
+- Pages deployed; live agent prompt, downloadable skill and receipt checksum verified.
+- Repository made public with owner authorization; anonymous access verified.
+- GitHub secret scanning, push protection, private vulnerability reporting and dependency alerts enabled.
+
+For future releases, commit and test the candidate, deploy affected services, and verify live pages and immutable skill receipts. Never restore pre-rewrite history from an old clone or publish private backups.
 
 ## Community-service follow-up
 

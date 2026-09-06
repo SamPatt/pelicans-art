@@ -4,7 +4,7 @@ Reviewed: 2026-09-06. Scope: source publication, agent/Editor onboarding, instal
 
 ## Verdict
 
-The source release candidate is prepared, with the requested art-direction guide and a fix for a Pouch SVG validation bypass. Keep repository visibility private until the candidate is merged and the Worker protection is deployed and verified. Public source availability and unrestricted community-upload promotion are separate decisions.
+The repository is public as of September 6, 2026. Release `9e2c63d` was merged into main, the Worker protections were deployed and verified, and GitHub Pages published the updated site. Anonymous repository access and the skill receipt’s pinned runtime were verified. Source publication and ongoing community-upload moderation remain separate responsibilities.
 
 The primary workflow is direct SVG/JSON authoring through an agent and the CLI, with a companion Editor. No additional LLM API key is needed. The Description remains the flagship. The owner has already chosen to retain the legacy parody demos; that decision is not reopened here. Code and creative assets retain their separate existing terms.
 
@@ -33,12 +33,12 @@ See [CLI verification](CLI-VERIFICATION.md) and [Editor testing](EDITOR-TESTING.
 
 Setup remains non-root, isolated, hash-locked and explicit about OS-level changes. Services bind privately; origin checks are not user authentication. Linux x64 and ARM64 are the verified local Pocket targets. macOS and physical Safari remain unverified beyond the documented scope.
 
-## Before changing visibility
+## Publication completed
 
-1. Push the completed release branch and require its final GitHub Test run to pass; merge the candidate into main. Do not restore pre-rewrite history from an old clone.
-2. Deploy the Worker update and verify CSP/nosniff on a real SVG URL, plus ordinary Pouch rendering. No live exploit upload is needed. The local fix does not protect the live Worker until deployed; old browser/CDN responses may need revalidation.
-3. Verify Pages publishes skill 1.0.11, its receipt/checksum and the updated agent prompt. Check final main Test and Pages results. Packaging locally is not a deployment.
-4. Change repository visibility only on the owner's explicit instruction. Review GitHub secret scanning and private vulnerability reporting availability in the repository settings: the private-repository API did not expose their enabled state during this audit.
+- Release and main CI passed for `9e2c63d`; all 148 local tests passed, including upload-control and moderation regression coverage.
+- The live Worker serves SVGs with CSP/nosniff, and Pouch SVG rendering and sharing actions passed a mobile-viewport browser check.
+- GitHub Pages and skill download/checksum verification passed. The current download is skill 1.0.12, which removes private-repository setup instructions; earlier immutable releases remain available for reproducibility.
+- Public visibility, anonymous access, secret scanning, push protection, private vulnerability reporting, and dependency alerts were verified enabled. No open secret alerts were reported at publication; monitoring continues.
 
 ## Before unrestricted community promotion
 

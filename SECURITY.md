@@ -8,4 +8,4 @@ Never commit `.env` files, API keys, systemd credentials, private voice recordin
 
 The community Pouch Worker is a separate service. Its anonymous upload endpoint has per-network and shared upload throttles, a 3 MB streaming body limit, and a fail-closed upload pause. SVG delivery is sandboxed. Rate limits are approximate and per Cloudflare location, not a global quota. See [Pouch moderation](docs/POUCH-MODERATION.md) for reporting, authenticated administrator removal, and operational limits. Upload names are not verified identities.
 
-Report suspected vulnerabilities through GitHub's private vulnerability reporting if enabled, or contact the repository owner privately. Do not post credentials or exploit details in a public issue.
+Report suspected vulnerabilities through [GitHub’s private vulnerability reporting](https://github.com/SamPatt/pelicans-art/security/advisories/new), which is enabled, or contact the repository owner privately. Do not post credentials or exploit details in a public issue.

@@ -1,6 +1,6 @@
 # Chat-driven skits and installation skill
 
-Proposed September 5, 2026. The portable skill, CLI, GUI entry and local installation/render tests are now implemented; see AGENT-WORKFLOW.md. The Hermes fresh-session rehearsal remains the next stage. This document records the design rationale.
+Proposed September 5, 2026. The portable skill, CLI, GUI entry and local installation/render tests are now implemented; see AGENT-WORKFLOW.md. The Hermes rehearsal and public release have since completed; see CLI-VERIFICATION.md and RELEASE-REVIEW.md. This document records the design rationale.
 
 ## Product outcome
 
@@ -10,7 +10,7 @@ The skill should also handle installation, revisions, rendering existing project
 
 ## Skill packaging
 
-Use one portable `skills/pelican-theater/SKILL.md`, with standard name/description frontmatter and a short workflow. Keep setup, authoring contract, and output troubleshooting in references loaded only when needed. Package supporting files together; don't assume every installed Hermes version fetches relative references from a single SKILL.md URL. During private testing, install the skill directory from a checkout at a fixed revision. Later provide a versioned downloadable skill bundle and a copyable invocation on the website.
+Use one portable `skills/pelican-theater/SKILL.md`, with standard name/description frontmatter and a short workflow. Keep setup, authoring contract, and output troubleshooting in references loaded only when needed. Package supporting files together; don't assume every installed Hermes version fetches relative references from a single SKILL.md URL. Early private testing installed the skill directory from a checkout at a fixed revision. The public website now provides a versioned skill bundle and a copyable invocation.
 
 Use host-native installation when available, otherwise copy the complete skill folder into the host's supported skill root. Check the installed host's help/version; don't assume current web docs match an older VPS release. Do not use symlinks that escape a host's permitted skill root. A generic file-and-shell agent can simply read the entrypoint and references.
 
@@ -19,7 +19,7 @@ Avoid prerequisite gates that hide the skill when Node, FFmpeg, or Python is mis
 ## Runtime installation
 
 1. Inspect the actual execution environment: OS/architecture, writable project directory, Node/npm, Python/uv, FFmpeg/ffprobe, Chromium availability, CPU/RAM/disk, existing speech endpoints and occupied ports. In a container, check inside that container, not just the gateway host. Record versions without collecting credentials.
-2. Use the pinned tested repo revision. While private, use existing authenticated Git access or a read-only checkout supplied for the test. Keep tokens out of prompts, URLs, and skill files. Never change GitHub visibility as part of installation.
+2. Use the pinned tested repo revision. The repository is now public: fetch over HTTPS without credentials. Early private-repository testing used existing authenticated Git access. Keep tokens out of prompts, URLs, and skill files. Never change GitHub visibility as part of installation.
 3. Install root and server npm lockfiles. Install only Chromium for capture. The Worker and SVG lab are not needed for making a video.
 4. Reuse an existing speech service only after verifying its protocol and a short synthesis. Otherwise install a pinned Pocket TTS version in its own Python environment, using CPU PyTorch wheels on Linux. Reuse the model cache and keep the model loaded for a batch of lines. Start on a free loopback port and point the project config there. Do not upgrade an agent's own Python environment.
 5. Default to scoped processes for a render job. Offer a generated user service for a persistent studio; don't copy the existing machine-specific `pocket-tts-server.service`. Repeated setup should preserve working endpoints and user configuration and report what changed.
@@ -71,7 +71,7 @@ Do not operate the VPS until implementation is ready and the user proceeds with 
 4. Verify the delivered MP4 plays on the user's phone, not merely that a file exists on the VPS. Record resource use, install/render time, actions taken, and any intervention.
 5. Request a single-line/pause revision, verify unchanged audio is reused, rerun setup to check idempotence, and import the resulting project into the GUI.
 6. Separately test the default Pocket installation in a clean environment if the VPS already had usable TTS. A successful reuse path does not prove fresh installation works.
-7. Fix demonstrated failures in commands or references, then repeat the failing scenario. Keep the repo private until the user chooses publication.
+7. Fix demonstrated failures in commands or references, then repeat the failing scenario. The owner authorized publication and the repository became public on September 6, 2026.
 
 ## Research basis
 

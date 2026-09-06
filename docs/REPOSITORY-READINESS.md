@@ -4,7 +4,7 @@
 
 ## Status
 
-Prepared on `codex/release-prep`. Repository visibility remains private. These changes are not a site deployment and do not change the repository name: the `ai-improv-theater` local directory points to `SamPatt/pelicans-art`, which includes both the studio server and public site.
+At this historical checkpoint, preparation was on `codex/release-prep` and the repository was private. It became public on September 6, 2026. The changes recorded below were not a site deployment and do not change the repository name: the `ai-improv-theater` local directory points to `SamPatt/pelicans-art`, which includes both the studio server and public site.
 
 ## Included work
 
