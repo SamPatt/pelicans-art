@@ -81,12 +81,13 @@ export async function loadProject(directory) {
   if (errors.length) throw new Error(errors.join('\n'));
   return { root, skit, config, assets, hashes, warnings: validation.warnings };
 }
-async function audioProbe(buffer) {
-  await run('ffprobe', ['-v','error','-i','pipe:0','-show_entries','stream=codec_type','-of','json'], { input: buffer }).then(raw => {
+async function audioProbe(buffer, signal) {
+  await run('ffprobe', ['-v','error','-i','pipe:0','-show_entries','stream=codec_type','-of','json'], { input: buffer, ...(signal ? {signal} : {}) }).then(raw => {
     if (!JSON.parse(raw).streams?.some(s => s.codec_type === 'audio')) throw new Error('Speech response contains no decodable audio');
   });
 }
-export async function synthesize(tts, text, voice) {
+export async function synthesize(tts, text, voice, {timeoutMs=120_000}={}) {
+  const signal = AbortSignal.timeout(Math.max(1,Math.ceil(timeoutMs)));
   const endpoint = new URL(tts.endpoint);
   if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) throw new Error('Use an HTTP(S) speech endpoint without URL credentials');
   let body, headers = {};
@@ -96,11 +97,18 @@ export async function synthesize(tts, text, voice) {
   }
   if (tts.engine === 'pocket') { body = new FormData(); body.append('text', `, ${text}`); body.append('voice_url', voice); }
   else { headers['Content-Type'] = 'application/json'; body = JSON.stringify(tts.engine === 'piper' ? { text, voice, rate:16000, depth:16, format:'linear' } : { input:text,voice,model:tts.model,response_format:'wav',speed:tts.speed || 1 }); }
-  const response = await fetch(endpoint, { method:'POST',headers,body,redirect:'error',signal:AbortSignal.timeout(120_000) });
-  if (!response.ok) throw new Error(`Speech endpoint returned ${response.status}`);
+  const response = await fetch(endpoint, { method:'POST',headers,body,redirect:'error',signal });
+  if (!response.ok) throw Object.assign(new Error(`Speech endpoint returned ${response.status}`), {status:response.status});
   const chunks = []; let size = 0;
   for await (const chunk of response.body) { size += chunk.length; if (size > 20*1024*1024) throw new Error('Speech response exceeds 20 MB'); chunks.push(Buffer.from(chunk)); }
-  const buffer = Buffer.concat(chunks); await audioProbe(buffer); return buffer;
+  const buffer = Buffer.concat(chunks);
+  try { await audioProbe(buffer, signal); }
+  catch(error) {
+    if (signal.aborted) throw signal.reason;
+    if (error.code === 'ENOENT') throw error;
+    throw Object.assign(new Error('Speech response is not decodable audio'), {code:'INVALID_AUDIO'});
+  }
+  return buffer;
 }
 export async function buildProject(directory) {
   const project = await loadProject(directory), { root, skit, config, assets, hashes } = project;
@@ -124,7 +132,7 @@ export async function buildProject(directory) {
   await writeJson(bundlePath,bundle);
   const revision = await run('git',['rev-parse','HEAD'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>b.toString().trim()).catch(()=> 'Unknown');
   const workingTreeDirty = await run('git',['status','--porcelain'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>Boolean(b.toString().trim())).catch(()=>null);
-  const manifest = {version:1,revision,workingTreeDirty,model:bundle.meta.model,assets:hashes,lines,generated,reused,bundle:bundlePath};
+  const manifest = {version:1,revision,workingTreeDirty,model:bundle.meta.model,assets:hashes,lines,generated,reused,pathBase:'project',bundle:'output/project.json'};
   await writeJson(path.join(out,'build-manifest.json'),manifest);
-  return manifest;
+  return {...manifest,bundle:bundlePath};
 }

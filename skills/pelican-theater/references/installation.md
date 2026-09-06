@@ -20,37 +20,38 @@ The complete skill folder contains SKILL.md and references. Copy/install the fol
 
 Supported initial installation path: Linux and macOS, or Linux through WSL. Node 22+, Python 3.10–3.13 for the pinned Pocket stack, FFmpeg/ffprobe, and Playwright Chromium. Prefer Python 3.12 for a new isolated environment. Do not replace system Python or an agent's Python environment.
 
-From the checkout:
+Choose **one** setup path after inspecting existing speech services:
+
+- If a compatible speech service is already verified, or the user explicitly wants captions only, run `node scripts/theater.mjs setup`.
+- If local Pocket is needed, run `node scripts/theater.mjs setup --tts --python python3.12` (select an installed compatible interpreter). This includes normal setup; do not run `setup` first.
+
+Both install root/server npm lockfiles and Chromium. On Linux, install missing browser OS libraries with Playwright's `install-deps chromium` through the normal permission flow. Install FFmpeg through the OS package manager if absent. Worker dependencies are unnecessary for video creation. Setup reconciles this checkout's locked dependency tree, so run it only in the theater checkout.
+
+`setup --tts` adds a dedicated `.runtime/pocket-tts` environment with Pocket 1.0.3 and CPU Torch 2.8.0 on Linux. First use downloads model/voice weights. It installs dependencies but starts no service. Output includes the actual isolated Python/version, `tts.executable`, `tts.serveCommand` as an argument array, the default endpoint, and `tts.readiness` with an executable and argument array.
+
+Start and verify a scoped Pocket process:
+
+1. Confirm the selected loopback port is free; choose another if occupied.
+2. Launch `tts.executable` with the `tts.serveCommand` argument array, changing its port if needed. Use a process tool's executable/argv fields; do not interpolate an unquoted path into a shell command.
+3. Run the emitted readiness executable and args, adjusting the endpoint if you selected another port. Equivalent command from the checkout:
+
+   ```sh
+   node scripts/theater.mjs doctor --endpoint http://127.0.0.1:8001/tts --wait 120 --json
+   ```
+
+4. Require `speech.ok: true`. This probe performs synthesis and decodes the response with ffprobe. It waits within one deadline for retryable connection failures; HTTP errors and invalid audio fail immediately. Read `kind`, `code`/`status`, `attempts`, and `elapsedMs` on failure. A timeout does not prove that a model is loading: inspect the service logs before retrying.
+5. Set the project's complete `tts.endpoint`, including `/tts`, and keep the service alive through builds. Stop only the scoped process you started when the task no longer needs it. Do not stop preexisting speech services.
+
+Without `--wait`, doctor performs one speech attempt. `--wait` is in seconds (0–300), not a per-attempt timeout. Its `pocketRuntime` reports the isolated interpreter separately from the system `checks.python3`. The default endpoint and readiness args emitted by setup are suggestions, not a claim that port 8001 is available or a server is running.
+
+Create and render after readiness succeeds:
 
 ```sh
-node scripts/theater.mjs setup
-```
-
-This installs root/server npm lockfiles and Chromium. On Linux, install missing Chromium OS libraries with the installed Playwright's `install-deps chromium` command using the environment's normal permission flow. Install FFmpeg via the OS package manager if absent. Worker dependencies are not required for video creation. Use `doctor --json` for actionable missing requirements.
-
-If no compatible local speech service exists:
-
-```sh
-node scripts/theater.mjs setup --tts
-```
-
-This uses a dedicated `.runtime/pocket-tts` virtual environment and pinned Pocket TTS 1.0.3. Linux installs Torch 2.8.0 from its CPU index before Pocket. First use downloads model/voice weights, so check disk/network and allow time. The command installs dependencies, not a running service. It preserves project configuration. Re-running npm setup reconciles the locked dependency tree; don't run it in another application's environment.
-
-Start a scoped process using the absolute executable path reported by setup:
-
-```sh
-.runtime/pocket-tts/bin/pocket-tts serve --host 127.0.0.1 --port 8001
-```
-
-Check the port first; choose another free loopback port if occupied. Set `project.json`'s complete `tts.endpoint`, including `/tts`, accordingly. Keep this process alive while building lines so weights stay loaded. Reuse a healthy existing service. A persistent service is optional: if requested, generate a service for the actual user/path; do not copy the repository's old machine-specific service file. Never replace Hermes's own TTS configuration as an installation shortcut.
-
-Verify:
-
-```sh
-node scripts/theater.mjs doctor --endpoint http://127.0.0.1:8001/tts --json
 node scripts/theater.mjs init data/projects/smoke-test
 node scripts/theater.mjs render data/projects/smoke-test
 ```
+
+A persistent service is optional and requires a user request. Never replace Hermes's own TTS configuration or another service as an installation shortcut.
 
 If the user requested voice, missing speech is a failure to fix, not permission to switch silently to captions. Explicit caption-only projects use `init ... --silent`.
 

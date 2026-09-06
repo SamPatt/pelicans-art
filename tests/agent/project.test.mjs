@@ -119,3 +119,11 @@ test('changing the speech model invalidates the cache even when text and voices 
  assert.equal((await buildProject(root)).generated,3);await config(root,endpoint,{model:'new-model'});assert.equal((await buildProject(root)).generated,3);assert.equal(count,6);
  assert.equal((await buildProject(root)).reused,3);assert.equal(count,6);
 });
+
+test('saved build manifest resolves after moving delivery files while CLI paths stay absolute',async t=>{
+ const root=await fixture(t);await config(root,'',{engine:'none'});const result=await buildProject(root);
+ assert.ok(path.isAbsolute(result.bundle));const manifest=await json(path.join(root,'output/build-manifest.json'));
+ assert.equal(manifest.bundle,'output/project.json');assert.equal(manifest.pathBase,'project');assert.ok(!JSON.stringify(manifest).includes(root));
+ const delivery=await fs.mkdtemp(path.join(os.tmpdir(),'theater-relocated-'));t.after(()=>fs.rm(delivery,{recursive:true,force:true}));await fs.cp(path.join(root,'output'),path.join(delivery,'output'),{recursive:true});
+ const moved=await json(path.join(delivery,'output/build-manifest.json'));assert.equal((await json(path.resolve(delivery,moved.bundle))).meta.title,'The Return');
+});

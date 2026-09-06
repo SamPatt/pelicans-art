@@ -50,3 +50,11 @@ The full `npm test` suite also covers 35 browser, 14 server, and 11 Worker tests
 - Real third-party Piper/OpenAI-compatible services and any host-specific authentication.
 
 No LLM API was called. No VPS configuration was changed. Temporary test speech services were stopped after use.
+
+## Readiness and delivery release follow-up
+
+The post-Hermes reliability pass brings the suite to 86 passing tests: 35 browser, 14 server, 11 Worker, and 26 CLI. New coverage verifies delayed listeners, one overall readiness deadline, immediate HTTP/invalid-audio failures, connected-response timeouts, credential-safe diagnostics, separate isolated Pocket diagnostics, and build-manifest relocation.
+
+A real startup test launched Pocket directly from setup's executable/argv output and immediately ran its emitted readiness command. Speech succeeded on attempt 4 after 4190 ms, followed by a complete three-line voiced MP4 with clean capture diagnostics. The setup report correctly identified the isolated Python as 3.12.8 while system Python was 3.12.3. Saved build metadata used `pathBase: "project"` and `bundle: "output/project.json"`; immediate CLI results retained absolute attachment paths. Local evidence: ignored `artifacts/agent-workflow/readiness-release.json`.
+
+The new skill chooses one setup path, explicitly waits after starting Pocket, and defines delivery ZIP contents without caches. Fresh Hermes retesting remains user-operated. Use a new session, a new checkout/install directory, and a newly started scoped Pocket process; preserve the prior project, model cache, and Git credentials. This tests a fresh application install without requiring system-package removal or another cold model download.

@@ -17,7 +17,7 @@ async function invoke(args,cwd=os.tmpdir(),env=process.env) {
 async function project(t){const root=await fs.mkdtemp(path.join(os.tmpdir(),'theater cli spaces '));t.after(()=>fs.rm(root,{recursive:true,force:true}));assert.equal((await invoke(['init',root,'--silent'])).ok,true);return root;}
 
 test('CLI rejects misspelled, missing and misplaced options before creating files',async()=>{
- for(const args of [['init','--slient'],['render','--output'],['render','--port','abc'],['render','--port','-1'],['render','--port','65536'],['init','one','two'],['doctor','--silent'],['build','--tts']]) {
+ for(const args of [['init','--slient'],['render','--output'],['render','--port','abc'],['render','--port','-1'],['render','--port','65536'],['init','one','two'],['doctor','--silent'],['build','--tts'],['doctor','--wait','120'],['doctor','--endpoint','http://localhost','--wait','-1'],['doctor','--endpoint','http://localhost','--wait','301']]) {
   const result=await invoke(args);assert.equal(result.code,1,JSON.stringify(args));assert.equal(result.ok,false,JSON.stringify(args));assert.equal(typeof result.error,'string');
  }
 });
@@ -56,4 +56,10 @@ test('doctor reports missing system tools with a failing exit code and actionabl
  assert.equal(result.code,1);assert.equal(result.ok,false);assert.equal(result.checks.node.ok,true);
  assert.equal(result.checks.ffmpeg.ok,false);assert.match(result.checks.ffmpeg.fix,/Install ffmpeg/);
  assert.equal(result.checks.ffprobe.ok,false);assert.equal(result.speechChecked,false);
+});
+
+test('doctor reports platform and isolated Pocket runtime separately from system Python',async()=>{
+ const result=await invoke(['doctor','--json']);assert.equal(result.code,0);assert.equal(result.platform,process.platform);assert.equal(result.architecture,process.arch);
+ assert.equal(typeof result.pocketRuntime.installed,'boolean');assert.ok(path.isAbsolute(result.pocketRuntime.python));
+ if(result.pocketRuntime.installed){assert.equal(result.pocketRuntime.ok,true);assert.match(result.pocketRuntime.pythonVersion,/^3\./);assert.match(result.pocketRuntime.version,/^\d+\./);}
 });

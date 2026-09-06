@@ -1,17 +1,21 @@
 ---
 name: pelican-theater
-description: Install the pelicans.art theater and create, revise, or render voiced SVG comedy skits directly from agent chat. Use for finished animated videos, editable skit projects, or local theater setup; the GUI and OpenRouter are optional.
+description: Install the theater and make voiced SVG skits from chat.
 ---
 
 # Pelican theater
 
 Turn a user's skit request into SVG artwork, a script, local dialogue audio, and an MP4. Write SVG and JSON directly with your current model. The theater does not need a second LLM connection. Honor a request for brainstorming without starting production; otherwise proceed with reasonable creative defaults.
 
+## When to use
+
+Use for local theater installation, direct SVG character creation, skit authoring and revisions, or rendering an editable project into a voiced video. The GUI and a second LLM connection are optional.
+
 ## Find or install the runtime
 
 Locate the user's existing `SamPatt/pelicans-art` checkout (`ai-improv-theater` may be its local directory name). It must contain `scripts/theater.mjs`. For a fresh installation, missing dependencies, or a different agent host, read [installation](references/installation.md). For a downloaded release, use the tested runtime commit in the accompanying receipt's `ref` field. Fetch the runtime yourself when it is missing; the user should not need to clone it first. Record the resolved Git commit in the output manifest. Never infer that installing this skill grants access to the private repository.
 
-Run `node scripts/theater.mjs doctor --json` from the checkout. If speech is needed, include `--endpoint` with the actual Pocket-compatible endpoint, or test the chosen speech adapter through a short build. Success without a speech probe does not establish voice readiness.
+For a fresh voiced install, choose the setup branch in [installation](references/installation.md) first: `setup --tts` includes ordinary setup; do not run both. Reuse a verified compatible speech service when available. Run `doctor --json` to diagnose missing tools. After starting Pocket, run `doctor --endpoint <actual-url> --wait 120 --json`; success means actual synthesis returned decodable audio. For other adapters, verify through a short build. A port opening or doctor without speech does not establish voice readiness.
 
 ## Create or revise
 

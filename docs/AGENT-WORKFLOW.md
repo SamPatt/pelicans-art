@@ -9,13 +9,11 @@ The downloadable skill pins a tested runtime commit in its release receipt; the 
 Run from the repository root. `node scripts/theater.mjs help` describes options. Commands write JSON to stdout and return nonzero for failure.
 
 ```sh
-node scripts/theater.mjs setup
-node scripts/theater.mjs doctor --json
-# Optional fresh isolated Pocket TTS install:
-node scripts/theater.mjs setup --tts
+# Choose ONE: setup with an existing speech service, or setup --tts for new local Pocket.
+node scripts/theater.mjs setup --tts --python python3.12
 # Start the executable reported by setup, bound to localhost.
 # After the speech server is running:
-node scripts/theater.mjs doctor --endpoint http://127.0.0.1:8001/tts --json
+node scripts/theater.mjs doctor --endpoint http://127.0.0.1:8001/tts --wait 120 --json
 node scripts/theater.mjs init data/projects/my-skit
 node scripts/theater.mjs validate data/projects/my-skit
 node scripts/theater.mjs render data/projects/my-skit
@@ -27,9 +25,11 @@ Edit `skit.json` and `assets/` in the created project. Set `meta.model` and asse
 
 `build` is available separately from `render`. Speech is cached by text, voice, engine/model and delivery configuration. Unchanged lines survive a camera/pause edit. Supplied audio files are accepted in `skit.json`'s `assets.audio`; the agent must replace/remove a supplied recording when editing its text.
 
+`setup --tts` includes normal setup. Its JSON contains the actual isolated Python/Pocket versions, `tts.executable`, `tts.serveCommand` argv, endpoint, and `tts.readiness` executable/args. Doctor reports platform/architecture and `pocketRuntime` separately from system Python. `doctor --endpoint ... --wait 120` verifies real decodable speech within one overall wait deadline. Without `--wait` it makes one attempt. HTTP errors and invalid audio fail immediately; connection failures report cause codes. A timeout does not establish that a model is loading.
+
 ## Outputs and editing
 
-The render result identifies the MP4, thumbnail, capture manifest, and self-contained `output/project.json` bundle. The manifest checks complete voiced dialogue and H.264/AAC output. Caption-only mode is explicit. Keep the source directory and cache for future edits.
+The render result identifies the MP4, thumbnail, capture manifest, and self-contained `output/project.json` bundle with absolute local paths for attachment tools. Saved build manifests use `pathBase: "project"` and paths relative to the source project root; capture media filenames are relative to the capture manifest. The manifest checks complete voiced dialogue and H.264/AAC output. Caption-only mode is explicit. Keep the source directory and cache for future edits.
 
 Browser Studio has an **Import agent project** button. Choose the built bundle. Imported recordings are reused for unchanged text/casting when you Render and Download again. Changed lines need configured speech or will be unvoiced in captions-only mode. Browser backups also preserve the imported project.
 
@@ -56,7 +56,7 @@ The installer prefers an existing `uv` for isolated Python installation, with st
 
 ## Implementation verification — September 5, 2026
 
-The subsequent [full CLI verification](CLI-VERIFICATION.md) expands this to 79 passing tests, including 19 CLI tests, and verifies a fresh application installation with an empty speech-model cache. The earlier checks below record the initial implementation.
+The subsequent [full CLI verification](CLI-VERIFICATION.md) now covers 86 passing tests, including 26 CLI tests, and verifies a fresh application installation with an empty speech-model cache. The earlier checks below record the initial implementation.
 
 70 tests pass: 35 browser, 14 server, 11 Worker, and 10 CLI tests. CLI checks cover unsafe/missing assets, actual outside-file and symlink containment, malformed actions, interrupted speech recovery, corrupt-cache repair, edited imported dialogue and recasting, speech adapter requests and redirect handling, retryable imports, and actual caption-only and voiced MP4 capture. The voiced capture imports The Description with its props and costume variants and muxes all eight recorded lines as H.264/AAC. Browser tests cover real homepage-to-tour-to-agent clicks at five widths, the phone entry page, downloadable skill, import and recorded-audio export.
 
@@ -65,3 +65,5 @@ A fresh isolated Python runtime installed Pocket TTS 1.0.3 with Torch 2.8.0+cpu 
 The versioned skill archive matches its four source files and SHA-256 receipt; skill frontmatter validation passed. Opening/reveal frames and phone/desktop entry-page layouts were inspected. These checks do not substitute for the pending fresh Hermes-session and phone-delivery rehearsal. The Hermes VPS remains untouched. Site copy now recommends agent/CLI creation; Browser Studio remains an optional editor.
 
 A further real Pocket rehearsal created three lines using Marius and Alba, changed one line, generated exactly one replacement while reusing two, and rendered all three lines with clean capture diagnostics. Local evidence is in ignored `artifacts/agent-workflow/revision-rehearsal.json`. This used the existing model cache and does not establish fresh Hermes installation or chat attachment delivery.
+
+For the editable ZIP layout and exclusions, see the skill's [delivery reference](../skills/pelican-theater/references/delivery.md). Keep caches locally, but omit them from delivery.

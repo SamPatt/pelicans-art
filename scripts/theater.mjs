@@ -5,13 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { parseArgs } from 'node:util';
-import { json, writeJson, run, loadProject, buildProject, synthesize } from './theater/project.mjs';
+import { json, writeJson, run, loadProject, buildProject } from './theater/project.mjs';
+import { probeSpeech } from './theater/readiness.mjs';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), require = createRequire(import.meta.url);
 const args = process.argv.slice(2), command = args.shift();
 let flags, directory;
 function parseOptions() {
   const commands = {
-    setup: {tts:'boolean',python:'string'}, doctor: {json:'boolean',endpoint:'string'},
+    setup: {tts:'boolean',python:'string'}, doctor: {json:'boolean',endpoint:'string',wait:'string'},
     init: {silent:'boolean'}, import: {bundle:'string'}, validate: {}, build: {},
     render: {port:'string',output:'string'}, help: {}, '--help': {}
   };
@@ -22,6 +23,7 @@ function parseOptions() {
   const acceptsDirectory = ['init','import','validate','build','render'].includes(command);
   if (parsed.positionals.length > (acceptsDirectory ? 1 : 0)) throw new Error('Unexpected positional arguments; provide one project directory for project commands');
   directory = path.resolve(parsed.positionals[0] || 'data/projects/my-skit');
+  if (flags.has('wait') && (!flags.has('endpoint') || !/^\d+$/.test(flags.get('wait')) || Number(flags.get('wait'))>300)) throw new Error('--wait requires --endpoint and an integer number of seconds from 0 to 300');
   if (flags.has('port') && (!/^\d+$/.test(flags.get('port')) || Number(flags.get('port')) > 65535)) throw new Error('--port must be an integer from 0 to 65535');
 }
 const report = value => process.stdout.write(JSON.stringify(value,null,2)+'\n');
@@ -33,11 +35,19 @@ async function doctor() {
   checks.node.ok = Number(process.versions.node.split('.')[0]) >= 22;
   try { const {chromium}=require('@playwright/test'); const browser=await chromium.launch({headless:true}); await browser.close(); checks.chromium={ok:true}; }
   catch { checks.chromium={ok:false,fix:'Run npm run theater -- setup; Linux may also need npx playwright install-deps chromium'}; }
-  if (flags.has('endpoint')) {
-    try { await synthesize({engine:'pocket',endpoint:flags.get('endpoint')},'The theater is ready.','alba'); checks.speech={ok:true}; }
-    catch(error){ checks.speech={ok:false,message:error.message}; }
-  }
-  const ok=Object.values(checks).every(c=>c.ok); report({ok,checks,speechChecked:flags.has('endpoint')}); if(!ok)process.exitCode=1;
+  const pocket = await pocketRuntime();
+  if (flags.has('endpoint')) checks.speech=await probeSpeech(flags.get('endpoint'),{waitMs:Number(flags.get('wait') || 0)*1000});
+  const ok=Object.values(checks).every(c=>c.ok); report({ok,checks,platform:process.platform,architecture:process.arch,pocketRuntime:pocket,speechChecked:flags.has('endpoint')}); if(!ok)process.exitCode=1;
+}
+async function pocketRuntime() {
+  const directory=path.join(ROOT,'.runtime/pocket-tts');
+  const executable=path.join(directory,'bin/pocket-tts'), python=path.join(directory,'bin/python');
+  const exists=await fs.access(executable,fs.constants.X_OK).then(()=>true).catch(()=>false);
+  if (!exists) return {installed:false,executable,python};
+  try {
+    const details=JSON.parse((await run(python,['-c','import sys,json,importlib.metadata;print(json.dumps({"pythonVersion":sys.version.split()[0],"version":importlib.metadata.version("pocket-tts")}))'])).toString());
+    return {installed:true,ok:true,executable,python,...details};
+  } catch { return {installed:true,ok:false,executable,python,message:'Could not inspect the isolated Pocket runtime'}; }
 }
 async function setup() {
   console.error('Installing locked theater dependencies…');
@@ -63,7 +73,11 @@ async function setup() {
       : run(python,['-m','pip','install',...packages]);
     await install(['torch==2.8.0',...(process.platform==='linux'?['--index-url','https://download.pytorch.org/whl/cpu']:[])]);
     await install(['pocket-tts==1.0.3']);
-    tts={version:'1.0.3',command:`${path.join(env,'bin/pocket-tts')} serve --host 127.0.0.1 --port 8001`};
+    const runtime=await pocketRuntime();
+    if (!runtime.ok) throw new Error('Installed Pocket runtime could not be verified');
+    const serveCommand=['serve','--host','127.0.0.1','--port','8001'];
+    tts={...runtime,engine:'pocket',serveCommand,endpoint:'http://127.0.0.1:8001/tts',
+      readiness:{executable:process.execPath,args:[path.join(ROOT,'scripts/theater.mjs'),'doctor','--endpoint','http://127.0.0.1:8001/tts','--wait','120','--json']}};
   }
   report({ok:true,tts,message:'Dependencies installed. Run doctor with --endpoint to verify speech; TTS is not started automatically.'});
 }
@@ -120,7 +134,7 @@ async function render() {
 }
 try {
   parseOptions();
-  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|init|import|validate|build|render> [project-directory]',setup:'setup [--tts] installs npm/Chromium, optionally isolated Pocket TTS (Linux/macOS; use WSL on Windows). Install FFmpeg with your OS package manager.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--json]',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
+  if(flags.has('help')||!command||command==='help'||command==='--help')report({usage:'node scripts/theater.mjs <setup|doctor|init|import|validate|build|render> [project-directory]',setup:'setup [--tts] installs npm/Chromium, optionally isolated Pocket TTS (Linux/macOS; use WSL on Windows). Install FFmpeg with your OS package manager.',doctor:'doctor [--endpoint http://127.0.0.1:8001/tts] [--wait SECONDS] [--json]',init:'init path [--silent]',import:'import path --bundle /path/to/project.json',validate:'validate path',build:'build path',render:'render path [--port PORT] [--output PATH]',output:'JSON on stdout; errors return exit code 1. No LLM provider calls.'});
   else if(command==='doctor')await doctor();
   else if(command==='setup')await setup();
   else if(command==='init')await init();
