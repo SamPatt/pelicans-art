@@ -103,7 +103,7 @@ async function importBundle() {
   // Validate in a staging directory; failed imports leave the destination empty for retry.
   const staging = await fs.mkdtemp(path.join(directory, '.import-'));
   try {
-    bundle.audioBindings = Object.fromEntries(bundle.script.filter(b=>b?.do==='say').map((b,i)=>[`line-${i}`,{line:b.line,who:b.who,voice:bundle.cast[b.who]?.voice}]));
+    bundle.audioBindings = Object.fromEntries(bundle.script.filter(b=>b?.do==='say').map((b,i)=>[`line-${i}`,{line:b.line,who:b.who,voice:bundle.cast[b.who]?.voice,tempo:bundle.cast[b.who]?.voiceTempo??1,pitch:bundle.cast[b.who]?.voicePitch??0}]));
     await writeJson(path.join(staging,'skit.json'),bundle);
     await writeJson(path.join(staging,'project.json'),{version:1,tts:bundle.captionOnly === true ? {engine:'none'} : pocketDefaults()});
     await loadProject(staging);

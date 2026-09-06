@@ -36,7 +36,7 @@ export async function readAsset(root, source, kind) {
 const dataUrl = ({ data, mime }) => `data:${mime};base64,${data.toString('base64')}`;
 function recordingMatches(skit, id, beat, voice) {
   const binding = skit.audioBindings?.[id];
-  return !binding || (binding.line === beat.line && binding.who === beat.who && binding.voice === voice);
+  return !binding || (binding.line === beat.line && binding.who === beat.who && binding.voice === voice && (binding.tempo??1)===(skit.cast[beat.who].voiceTempo??1) && (binding.pitch??0)===(skit.cast[beat.who].voicePitch??0));
 }
 export async function loadProject(directory) {
   const root = path.resolve(directory), skit = await json(path.join(root, 'skit.json'));
@@ -123,13 +123,16 @@ export async function buildProject(directory) {
       const media = await readAsset(root,supplied[id],'audio'); await audioProbe(media.data); assets.audio[id] = dataUrl(media); lines.push({id,text:beat.line,voice,source:'supplied',hash:hash(media.data)}); continue;
     }
     if (config.tts.engine === 'none') { lines.push({id,text:beat.line,source:'captions'}); continue; }
-    const key = hash(JSON.stringify({ text:beat.line,voice,tts:config.tts }));
+    const tempo=skit.cast[beat.who].voiceTempo??1,pitch=skit.cast[beat.who].voicePitch??0;
+    if(!Number.isFinite(tempo)||tempo<.5||tempo>2||!Number.isFinite(pitch)||pitch< -12||pitch>12)throw Error('Voice tempo must be 0.5–2 and pitch -12–12 semitones');
+    const key = hash(JSON.stringify({ text:beat.line,voice,tts:config.tts,...(tempo!==1||pitch!==0?{tempo,pitch}:{}) }));
     const file = path.join(cache,`${key}.mp3`); let audio;
     try { audio = await fs.readFile(file); await audioProbe(audio); reused++; }
-    catch { const raw = await synthesize(config.tts,beat.line,voice); audio = await run('ffmpeg',['-v','error','-i','pipe:0','-f','mp3','-ac','1','-b:a','96k','pipe:1'],{input:raw}); await fs.writeFile(file,audio); generated++; }
+    catch { const raw = await synthesize(config.tts,beat.line,voice); audio = await run('ffmpeg',['-v','error','-i','pipe:0',...(tempo!==1||pitch!==0?['-af',`aresample=48000,asetrate=${48000*2**(pitch/12)},aresample=48000,atempo=${Math.sqrt(tempo/2**(pitch/12))},atempo=${Math.sqrt(tempo/2**(pitch/12))}`]:[]),'-f','mp3','-ac','1','-b:a','96k','pipe:1'],{input:raw}); await fs.writeFile(file,audio); generated++; }
     assets.audio[id] = dataUrl({data:audio,mime:'audio/mpeg'}); lines.push({id,text:beat.line,voice,source:config.tts.engine,model:config.tts.model || 'Unknown',...(config.tts.profileHash?{profileHash:config.tts.profileHash}:{}),hash:hash(audio),cacheKey:key});
   }
-  const bundle = {...skit,captionOnly:config.tts.engine === 'none',meta:{...skit.meta,model:skit.meta?.model || 'Unknown'},assets,publishedAt:new Date().toISOString()};
+  const audioBindings=Object.fromEntries(skit.script.filter(b=>b.do==='say').map((b,i)=>[`line-${i}`,{line:b.line,who:b.who,voice:skit.cast[b.who].voice,tempo:skit.cast[b.who].voiceTempo??1,pitch:skit.cast[b.who].voicePitch??0}]));
+  const bundle = {...skit,audioBindings,captionOnly:config.tts.engine === 'none',meta:{...skit.meta,model:skit.meta?.model || 'Unknown'},assets,publishedAt:new Date().toISOString()};
   const bundlePath = path.join(out,'project.json');
   await writeJson(bundlePath,bundle);
   const revision = await run('git',['rev-parse','HEAD'],{cwd:path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..')}).then(b=>b.toString().trim()).catch(()=> 'Unknown');

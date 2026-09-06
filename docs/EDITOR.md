@@ -5,8 +5,8 @@ Open [pelicans.art/editor.html](https://pelicans.art/editor.html) on a desktop o
 1. Choose **Open project** and select the agent's built `output/project.json` or a previous Editor export. The original file is unchanged. **Try The Description** provides a recorded sample.
 2. Select a character on the stage or in the cast list. Drag it, or enter its opening position and size. Playback applies the existing camera shots and stage directions; the layout view shows the opening cast plus a selected later character.
 3. Select a dialogue line or pause. Save your change, insert a pause, move an action, or remove it. Undo/Redo covers these edits. Stage directions are preserved and can be shown when needed.
-4. **Play skit** previews existing audio with captions. It never calls a model or speech provider. Changing a line removes its stale recording and marks it **Voice needs update**. Reordering lines preserves the recordings belonging to them.
-5. **Export project** saves an editable JSON bundle. Send the latest export to your agent for new speech and a rendered MP4. The browser Editor does not render a new MP4 itself.
+4. **Play skit** previews existing audio with captions. Playback never calls a model or speech provider. Changing a line removes its stale recording and marks it **Voice needs update**. Reordering lines preserves the recordings belonging to them.
+5. **Export project** saves an editable JSON bundle. On a private installation, **Update voices** generates missing recordings and **Render video** updates voices then produces a downloadable MP4. These buttons use the server; public static editing still works without it. Export remains available for continuing in any agent chat.
 
 **Copy request for your agent** includes your selected character or scene, the current script, and the project revision. Paste it into any agent chat and attach the export if the agent does not already have it. Browser storage saves the current project on this device; exporting is your portable backup. There is no cross-device sync.
 
@@ -25,7 +25,11 @@ The first release supports proposed title, dialogue, pause, character position/s
 
 Review the reply, then **Apply proposed edits**. All edits are validated and applied as one undoable change. If the project changed while Hermes was responding, the proposal is rejected: ask again with current context. **Stop** cancels a turn; **Disconnect** ends the ACP process. Sessions expire after 30 minutes without requests. Closing the chat panel hides it; use Disconnect to end the session.
 
-New audio and final video rendering remain in the ordinary agent/CLI workflow. Export the project and continue there. The chat does not claim to have regenerated recordings.
+Hermes can propose `action: "voices"` or `action: "render"` alongside edits (or with an empty changes array). Applying the proposal uses the same server jobs as the buttons. The updated bundle loads back into the preview, and rendering offers an MP4 download. Character controls include voice preset, independent tempo (0.5–2×), and pitch (-12–12 semitones); changing these invalidates only that character’s recordings. Tempo/pitch are applied to the generated audio and travel with the exported project.
+
+The server reuses the CLI build/render pipeline with the pinned Pocket profile. Start the installed Pocket service using the command emitted by `setup --tts` and verify it with `doctor --endpoint http://127.0.0.1:8001/tts --wait 120`. By default the Editor uses `TTS_URL` plus `/tts`. For another already configured compatible engine, `HERMES_EDITOR_TTS_CONFIG` names a server-local JSON file containing the CLI **tts object** (engine, endpoint, and any model/credential environment references). Browser requests cannot choose endpoints or executables. Use preset names supported by that engine; the default April Pocket presets are marius, jean, and alba. An unavailable speech service fails the job without changing the project.
+
+Jobs run in isolated temporary directories, with two concurrent jobs permitted, a 15-minute process limit, and a 24-hour download lifetime. A server restart ends access to old job links. Download artifacts before leaving. **Stop job** cancels the active job. If the project changes during work, the completed snapshot stays downloadable without replacing newer edits. No job publishes to the Pouch automatically.
 
 ## Compatibility and rollback
 

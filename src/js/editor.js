@@ -1,7 +1,7 @@
 import {prepareProject,applyChanges,voiceNeeds,contextFor,copyRequest} from './editor-project.mjs';
 const $=id=>document.getElementById(id);
 const el=(tag,attrs={},value)=>{const n=document.createElement(tag);for(const [k,v]of Object.entries(attrs))if(k==='class')n.className=v;else n.setAttribute(k,v);if(value!==undefined)n.textContent=value;return n;};
-let project=null,selection={kind:'scene'},undo=[],redo=[],previewUrl,session=null,after=0,pollTimer,busy=false,proposal=null,proposalRevision,agentText='',agentNode=null;
+let project=null,selection={kind:'scene'},undo=[],redo=[],previewUrl,session=null,after=0,pollTimer,busy=false,proposal=null,proposalRevision,agentText='',agentNode=null,proposalAction=null,jobId=null,jobRunning=false,voicePresets=null;
 const notice=message=>{$('notice').textContent=message;};
 const decoder=new TextDecoder(),encoder=new TextEncoder();
 function decode(data){return decoder.decode(Uint8Array.from(atob(data.split(',')[1]),c=>c.charCodeAt(0)));}
@@ -24,7 +24,7 @@ function update(changes){try{const next=applyChanges(project,changes);undo.push(
 function select(value){selection=value;if(value.kind==='beat'&&matchMedia('(max-width:650px)').matches)document.querySelector('.inspector').scrollIntoView({block:'start'});renderSelection();renderBeats();renderCast();for(const actor of $('layout-stage').querySelectorAll('.actor'))actor.classList.toggle('selected',selection.kind==='character'&&actor.dataset.character===selection.id);}
 function load(input){const next=sanitizeProject(input);stopPreview();project=next;undo=[];redo=[];selection={kind:'scene'};proposal=null;$('apply-proposal').hidden=true;render();save();notice('Project opened. Your original file is unchanged.');}
 function render(){
- $('welcome').hidden=!!project;$('workspace').hidden=!project;$('export-project').disabled=!project;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;if(!project)return;
+ $('welcome').hidden=!!project;$('workspace').hidden=!project;$('export-project').disabled=!project;$('update-voices').disabled=!project||jobRunning;$('render-video').disabled=!project||jobRunning;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;if(!project)return;
  if(selection.kind==='beat'&&!project.script[selection.index])selection={kind:'scene'};
  $('project-title').value=project.meta.title;const missing=voiceNeeds(project).length;$('voice-status').textContent=missing?`${missing} line${missing===1?'':'s'} need${missing===1?'s':''} an updated recording. Preview uses captions for these lines.`:'Recorded dialogue is preserved.';
  renderStage();renderCast();renderSelection();renderBeats();
@@ -57,6 +57,9 @@ function renderSelection(){
  if(selection.kind==='character'){
   const c=project.cast[selection.id];$('selection-title').textContent=selection.id;box.append(el('p',{class:'quiet'},'Opening position. Later stage directions still play as written.'));
   const coords=el('div',{class:'coordinates'});box.append(coords);const x=inputField(coords,'Across (%)',c.startX??c.x??50,'number',{min:0,max:100,step:1}),y=inputField(coords,'Down (%)',c.startY??c.y??88,'number',{min:0,max:100,step:1}),scale=inputField(box,'Size',c.scale||1,'number',{min:.1,max:3,step:.05});action(box,'Update position',()=>update([{op:'position',character:selection.id,x:+x.value,y:+y.value,scale:+scale.value}]));
+  const voice=inputField(box,'Voice preset',c.voice||'marius','text',{maxlength:64}),tempo=inputField(box,'Voice tempo',c.voiceTempo??1,'number',{min:.5,max:2,step:.05}),pitch=inputField(box,'Voice pitch (semitones)',c.voicePitch??0,'number',{min:-12,max:12,step:.5});
+  box.append(el('p',{class:'quiet'},'Presets include marius, jean and alba. Tempo and pitch are independent. Saving marks this character’s recordings for update.'));
+  action(box,'Save voice settings',()=>update([{op:'voice',character:selection.id,voice:voice.value,tempo:+tempo.value,pitch:+pitch.value}]));
  }else if(selection.kind==='beat'){
   const b=project.script[selection.index];$('selection-title').textContent=b.do==='say'?`${b.who}’s line`:b.do==='pause'?'A pause':`Stage direction: ${b.do}`;
   if(b.do==='say'){const line=inputField(box,'Dialogue',b.line,'textarea',{maxlength:4000});action(box,'Save line',()=>update([{op:'dialogue',index:selection.index,text:line.value}]));}
@@ -83,14 +86,39 @@ function chatBusy(value){busy=value;$('send-chat').disabled=value;$('cancel-chat
 async function disconnect(){clearTimeout(pollTimer);if(session)await api(`/sessions/${session}`,'DELETE').catch(()=>{});session=null;chatBusy(false);$('chat-form').hidden=true;$('connection-status').textContent='Disconnected. Your project is still saved here.';}
 $('connect').onclick=async()=>{
  $('chat-panel').hidden=false;if(session)return;$('connection-status').textContent='Checking your private agent connection…';$('connection-help').hidden=true;
- try{const status=await api('/status');if(!status.enabled){$('connection-help').hidden=false;$('connection-status').textContent='Connect from the Editor running alongside Hermes.';return;}const connection=await api('/sessions','POST',{});session=connection.id;after=0;$('connection-status').textContent='Connected to Hermes. This is a new project conversation using your existing Hermes setup.';$('chat-form').hidden=false;poll();}catch(e){$('connection-status').textContent=e.message;$('connection-help').hidden=false;}
+ try{const status=await api('/status');voicePresets=status.voicePresets;if(!status.enabled){$('connection-help').hidden=false;$('connection-status').textContent='Connect from the Editor running alongside Hermes.';return;}const connection=await api('/sessions','POST',{});session=connection.id;after=0;$('connection-status').textContent='Connected to Hermes. This is a new project conversation using your existing Hermes setup.';$('chat-form').hidden=false;poll();}catch(e){$('connection-status').textContent=e.message;$('connection-help').hidden=false;}
 };
 $('close-chat').onclick=()=>{$('chat-panel').hidden=true;};$('disconnect').onclick=disconnect;$('cancel-chat').onclick=()=>api(`/sessions/${session}/cancel`,'POST',{}).catch(e=>chatMessage(e.message));
-$('chat-form').onsubmit=async event=>{event.preventDefault();if(busy)return;if(!project){chatMessage('Open a project first so Hermes has a scene to work with.');return;}const request=$('chat-input').value.trim();if(!request)return;proposal=null;proposalRevision=project.editor.revision;$('apply-proposal').hidden=true;chatMessage(request,'user');agentText='';agentNode=chatMessage('');chatBusy(true);$('chat-input').value='';const context=contextFor(project,selection);if(selection.kind==='character'){const key=project.cast[selection.id].sprite+'-front';context.selectedSvg={name:key,svg:decode(project.assets.sprites[key])};}try{await api(`/sessions/${session}/messages`,'POST',{request,context});}catch(e){chatMessage(e.message);chatBusy(false);}};
-async function poll(){if(!session)return;try{const result=await api(`/sessions/${session}/events?after=${after}`);for(const event of result.events){after=event.id;if(event.type==='text'){agentText+=event.text;if(!agentNode)agentNode=chatMessage('');agentNode.textContent=agentText;}else if(event.type==='permission')showPermission(event);else if(event.type==='error'){chatMessage(event.message);chatBusy(false);$('permission').hidden=true;if(event.fatal){session=null;$('chat-form').hidden=true;$('connection-status').textContent='Connection ended. Reconnect to start a new conversation.';}}else if(event.type==='done'){chatBusy(false);$('permission').hidden=true;try{const block=agentText.match(/```(?:json)?\s*([\s\S]*?)```/);const parsed=JSON.parse(block?block[1]:agentText);if(Array.isArray(parsed.changes)&&parsed.changes.length){proposal=parsed.changes;$('apply-proposal').hidden=false;}}catch{}if(!proposal)chatMessage('You can continue the conversation or copy a request to your usual agent chat.');}}}catch(e){chatMessage(e.message);session=null;chatBusy(false);$('chat-form').hidden=true;$('connection-status').textContent='Connection ended. Reconnect to start a new conversation.';}if(session)pollTimer=setTimeout(poll,800);}
+$('chat-form').onsubmit=async event=>{event.preventDefault();if(busy)return;if(!project){chatMessage('Open a project first so Hermes has a scene to work with.');return;}const request=$('chat-input').value.trim();if(!request)return;proposal=null;proposalAction=null;proposalRevision=project.editor.revision;$('apply-proposal').hidden=true;chatMessage(request,'user');agentText='';agentNode=chatMessage('');chatBusy(true);$('chat-input').value='';const context=contextFor(project,selection);context.availableVoicePresets=voicePresets;if(selection.kind==='character'){const key=project.cast[selection.id].sprite+'-front';context.selectedSvg={name:key,svg:decode(project.assets.sprites[key])};}try{await api(`/sessions/${session}/messages`,'POST',{request,context});}catch(e){chatMessage(e.message);chatBusy(false);}};
+async function poll(){if(!session)return;try{const result=await api(`/sessions/${session}/events?after=${after}`);for(const event of result.events){after=event.id;if(event.type==='text'){agentText+=event.text;if(!agentNode)agentNode=chatMessage('');agentNode.textContent=agentText;}else if(event.type==='permission')showPermission(event);else if(event.type==='error'){chatMessage(event.message);chatBusy(false);$('permission').hidden=true;if(event.fatal){session=null;$('chat-form').hidden=true;$('connection-status').textContent='Connection ended. Reconnect to start a new conversation.';}}else if(event.type==='done'){chatBusy(false);$('permission').hidden=true;try{const block=agentText.match(/```(?:json)?\s*([\s\S]*?)```/);const parsed=JSON.parse(block?block[1]:agentText);if(Array.isArray(parsed.changes)&&(parsed.changes.length||['voices','render'].includes(parsed.action))){proposal=parsed.changes;proposalAction=['voices','render'].includes(parsed.action)?parsed.action:null;$('apply-proposal').hidden=false;}}catch{}if(!proposal)chatMessage('You can continue the conversation or copy a request to your usual agent chat.');}}}catch(e){chatMessage(e.message);session=null;chatBusy(false);$('chat-form').hidden=true;$('connection-status').textContent='Connection ended. Reconnect to start a new conversation.';}if(session)pollTimer=setTimeout(poll,800);}
 function showPermission(event){const box=$('permission');box.replaceChildren(el('p',{},event.title||'Hermes requests permission.'));for(const option of event.options.filter(o=>o.kind==='allow_once'||o.kind==='reject_once'))action(box,option.name,async()=>{try{await api(`/sessions/${session}/permission`,'POST',{requestId:event.requestId,optionId:option.optionId});box.hidden=true;}catch(e){chatMessage(e.message);}});box.hidden=false;}
 $('apply-proposal').onclick=()=>{
  if(!proposal)return;if(project.editor.revision!==proposalRevision){chatMessage('Your project changed after this request. Ask Hermes again using the latest project; these edits were not applied.');$('apply-proposal').hidden=true;return;}
- try{const changes=proposal.map(c=>c.op==='sprite'?{...c,data:encode(safeSvg(c.svg))}:c);if(update(changes)){$('apply-proposal').hidden=true;chatMessage('Edits applied. Preview them on the stage; Undo will restore your previous version.');}}catch(e){chatMessage(e.message);}
+ try{const changes=proposal.map(c=>c.op==='sprite'?{...c,data:encode(safeSvg(c.svg))}:c);if(!changes.length||update(changes)){$('apply-proposal').hidden=true;chatMessage('Proposal applied. Undo restores your previous edits.');if(proposalAction)startJob(proposalAction);}}catch(e){chatMessage(e.message);}
 };
 (async()=>{try{const database=await db();const saved=await new Promise((resolve,reject)=>{const r=database.transaction('projects').objectStore('projects').get('current');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});database.close();if(saved)load(saved);}catch{notice('Device storage is unavailable. You can still open and export projects.');}})();
+
+async function startJob(operation){
+ if(!project||jobRunning)return;
+ const revision=project.editor.revision;
+ jobRunning=true;$('update-voices').disabled=true;$('render-video').disabled=true;$('job-status').textContent=operation==='voices'?'Updating missing recordings…':'Updating voices and rendering the video…';$('job-project').hidden=true;$('job-video').hidden=true;
+ try{
+  const status=await api('/status');if(!status.jobs)throw Error('Open your private connected Editor to update voices or render video.');
+  const job=await api('/jobs','POST',{project,operation});jobId=job.id;$('stop-job').hidden=false;
+  while(jobId===job.id){
+   await new Promise(resolve=>setTimeout(resolve,1000));
+   const state=await api(`/jobs/${job.id}`);if(jobId!==job.id)break;
+   if(state.status==='failed')throw Error(state.message);
+   if(state.status!=='ready')continue;
+   const result=await api(`/jobs/${job.id}/project`);
+   const projectLink=$('job-project');projectLink.href=`/api/editor-agent/jobs/${job.id}/project`;projectLink.download='updated-project.json';projectLink.hidden=false;
+   if(operation==='render'){$('job-video').href=`/api/editor-agent/jobs/${job.id}/video`;$('job-video').hidden=false;}
+   if(project.editor.revision===revision){const next=sanitizeProject(result);undo.push(project);if(undo.length>20)undo.shift();redo=[];project=next;stopPreview();render();await save();$('job-status').textContent=operation==='voices'?'Recordings updated. Play your skit to hear them.':'Video ready. The preview also has your updated recordings.';}
+   else $('job-status').textContent='Finished the earlier project snapshot. Your newer edits are unchanged; download the result or run another job.';
+   break;
+  }
+ }catch(e){$('job-status').textContent=e.message;}
+ finally{jobId=null;jobRunning=false;$('stop-job').hidden=true;$('update-voices').disabled=!project;$('render-video').disabled=!project;}
+}
+$('update-voices').onclick=()=>startJob('voices');$('render-video').onclick=()=>startJob('render');
+$('stop-job').onclick=async()=>{if(!jobId)return;const id=jobId;jobId=null;await api(`/jobs/${id}`,'DELETE').catch(()=>{});$('job-status').textContent='Job stopped. Your project is unchanged.';};

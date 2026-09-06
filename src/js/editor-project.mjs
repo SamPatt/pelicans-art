@@ -16,14 +16,14 @@ export function prepareProject(input){
  p.editor={version:1,revision:id(),beatIds:validIds?oldIds:p.script.map(id)};
  // Imported recordings with explicit stale bindings must never be played as current dialogue.
  let line=0;
- for(const b of p.script){if(b.do!=='say')continue;const key=`line-${line++}`,binding=p.audioBindings?.[key];if(binding&&(binding.line!==b.line||binding.who!==b.who||binding.voice!==p.cast[b.who]?.voice))delete p.assets.audio[key];}
+ for(const b of p.script){if(b.do!=='say')continue;const key=`line-${line++}`,binding=p.audioBindings?.[key];if(binding&&(binding.line!==b.line||binding.who!==b.who||binding.voice!==p.cast[b.who]?.voice||(binding.tempo??1)!==(p.cast[b.who]?.voiceTempo??1)||(binding.pitch??0)!==(p.cast[b.who]?.voicePitch??0)))delete p.assets.audio[key];}
  return p;
 }
 export function voiceNeeds(p){let line=0;return p.script.filter(b=>b.do==='say').map(b=>({beat:b,key:`line-${line++}`})).filter(({key})=>!p.captionOnly&&!p.assets.audio[key]);}
 export function applyChanges(project,changes){
  if(!Array.isArray(changes)||!changes.length||changes.length>100)throw Error('An edit must contain 1–100 changes.');
  const p=clone(project), recordings=new Map();let line=0;
- project.script.forEach((b,i)=>{if(b.do==='say'){recordings.set(project.editor.beatIds[i],{beat:b,voice:project.cast[b.who]?.voice,audio:project.assets.audio[`line-${line++}`]});}});
+ project.script.forEach((b,i)=>{if(b.do==='say'){recordings.set(project.editor.beatIds[i],{beat:b,voice:project.cast[b.who]?.voice,tempo:project.cast[b.who]?.voiceTempo??1,pitch:project.cast[b.who]?.voicePitch??0,audio:project.assets.audio[`line-${line++}`]});}});
  const beat=index=>{if(!Number.isInteger(index)||index<0||index>=p.script.length)throw Error('That scene action no longer exists.');return p.script[index];};
  for(const c of changes){
   if(!c||typeof c!=='object')throw Error('Invalid edit.');
@@ -36,13 +36,14 @@ export function applyChanges(project,changes){
    case 'removeBeat':beat(c.index);p.script.splice(c.index,1);p.editor.beatIds.splice(c.index,1);break;
    case 'moveBeat':{beat(c.from);beat(c.to);const [b]=p.script.splice(c.from,1),[key]=p.editor.beatIds.splice(c.from,1);p.script.splice(c.to,0,b);p.editor.beatIds.splice(c.to,0,key);break;}
    case 'position':{if(!own(p.cast,c.character))throw Error('Select a character.');const actor=p.cast[c.character];for(const k of ['x','y','scale'])if(c[k]!==undefined){actor[k]=number(c[k],k==='scale'?0.1:0,k==='scale'?3:100,k);if(k==='x'&&own(actor,'startX'))actor.startX=actor.x;if(k==='y'&&own(actor,'startY'))actor.startY=actor.y;}break;}
+   case 'voice':{if(!own(p.cast,c.character))throw Error('Select a character.');const actor=p.cast[c.character];if(c.voice!==undefined){if(!/^[a-zA-Z0-9_-]{1,64}$/.test(c.voice))throw Error('Choose a preset voice name.');actor.voice=c.voice;}if(c.tempo!==undefined){actor.voiceTempo=number(c.tempo,.5,2,'Tempo');actor.speed=1;}if(c.pitch!==undefined){actor.voicePitch=number(c.pitch,-12,12,'Pitch');actor.pitch=0;}p.captionOnly=false;break;}
    case 'background':if(!own(p.assets.backgrounds,c.name))throw Error('Choose an existing backdrop.');p.stage.background=c.name;{const opening=p.script.find(b=>b.do==='background');if(opening)opening.name=c.name;}break;
    case 'sprite':if(!own(p.assets.sprites,c.name)||typeof c.data!=='string'||!c.data.startsWith('data:image/svg+xml;base64,'))throw Error('Choose an existing SVG character.');p.assets.sprites[c.name]=c.data;break;
    default:throw Error(`The Editor cannot apply “${c.op}”. Ask for dialogue, pause, position, title, background, or sprite edits.`);
   }
  }
  p.assets.audio={};p.audioBindings={};line=0;
- p.script.forEach((b,i)=>{if(b.do!=='say')return;const key=`line-${line++}`,old=recordings.get(p.editor.beatIds[i]);if(old?.audio&&old.beat.line===b.line&&old.beat.who===b.who&&old.voice===p.cast[b.who]?.voice){p.assets.audio[key]=old.audio;p.audioBindings[key]={line:b.line,who:b.who,voice:p.cast[b.who]?.voice};}});
+ p.script.forEach((b,i)=>{if(b.do!=='say')return;const key=`line-${line++}`,old=recordings.get(p.editor.beatIds[i]);if(old?.audio&&old.beat.line===b.line&&old.beat.who===b.who&&old.voice===p.cast[b.who]?.voice&&old.tempo===(p.cast[b.who]?.voiceTempo??1)&&old.pitch===(p.cast[b.who]?.voicePitch??0)){p.assets.audio[key]=old.audio;p.audioBindings[key]={line:b.line,who:b.who,voice:p.cast[b.who]?.voice,tempo:p.cast[b.who]?.voiceTempo??1,pitch:p.cast[b.who]?.voicePitch??0};}});
  p.editor.revision=id();return p;
 }
 export function contextFor(p,selection){

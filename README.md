@@ -15,7 +15,7 @@ The project grew out of [Simon Willison's pelican-on-a-bicycle LLM test](https:/
 | Edit visually or remix | [Editor](https://pelicans.art/editor.html) | None; open an agent-created project |
 | Develop, capture, or use custom voices | [Run locally](docs/LOCAL-SETUP.md) | Node.js and optional media tools |
 
-Start with an agent that can edit files and run shell commands. It writes artwork and dialogue directly, then uses the CLI to synthesize local speech and render an MP4. No additional LLM API key is needed. The companion Editor provides visual changes and optional private Hermes chat; watching needs no setup.
+Start with an agent that can edit files and run shell commands. It writes artwork and dialogue directly, then uses the CLI to synthesize local speech and render an MP4. No additional LLM API key is needed. The companion Editor provides visual changes, optional private Hermes chat, voice updates, and MP4 rendering through your local server; watching needs no setup.
 
 The repository is currently private. Testing requires authenticated Git access or an owner-supplied checkout; the downloadable skill alone does not provide the runtime.
 
