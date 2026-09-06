@@ -20,3 +20,5 @@ Verified on 2026-09-06:
 Chromium mobile emulation does not replace a hands-on Safari/Android check. Public Editor chat intentionally requires a private installation. Connected installations now run voice updates and MP4 rendering through the Editor’s private server. The old Studio is retained at `/legacy-studio.html` for rollback.
 
 Connected voice/render verification: real Hermes proposed revised dialogue plus a render action; Apply generated one Pocket 2.1 recording, preserved seven supplied recordings, returned updated audio to preview, and downloaded a complete MP4 on a phone-sized private HTTPS page. Tests also verify duration and measured frequency for independent tempo/pitch, job cancellation, external-asset rejection, and newer-edit protection.
+
+Selected-voice regression: edited officerPlain’s line in a phone-sized private Editor while keeping javert selected. Real Pocket synthesis returned the updated recording; all seven unrelated recordings were byte-for-byte preserved. The pinned voice catalog includes all 26 April presets. Model weights, tokenizer, voice revision, generation settings, and the existing profile fingerprint remain unchanged.

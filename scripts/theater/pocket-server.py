@@ -12,6 +12,7 @@ import threading
 PROFILE_FILE = Path(__file__).with_name('pocket-profile.json')
 PROFILE = json.loads(PROFILE_FILE.read_text())
 PROFILE_HASH = hashlib.sha256(json.dumps(PROFILE, separators=(',', ':')).encode()).hexdigest()
+VOICE_CATALOG = json.loads(Path(__file__).with_name('pocket-voices.json').read_text())
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACTS = ROOT / '.runtime' / 'pocket-april-presets'
 
@@ -30,7 +31,9 @@ def prepare():
     if digest.hexdigest() != PROFILE['model_sha256']:
         raise RuntimeError('Pinned model SHA-256 mismatch; refusing to load')
     tokenizer = hf_hub_download(PROFILE['model_repository'], PROFILE['tokenizer_file'], revision=PROFILE['tokenizer_revision'])
-    voices = {name: hf_hub_download(PROFILE['voice_repository'], f"{PROFILE['voice_directory']}/{name}.safetensors", revision=PROFILE['voice_revision']) for name in PROFILE['voices']}
+    if (VOICE_CATALOG['repository'], VOICE_CATALOG['revision'], VOICE_CATALOG['directory']) != (PROFILE['voice_repository'], PROFILE['voice_revision'], PROFILE['voice_directory']):
+        raise RuntimeError('Voice catalog does not match the pinned profile')
+    voices = {name: hf_hub_download(VOICE_CATALOG['repository'], f"{VOICE_CATALOG['directory']}/{name}.safetensors", revision=VOICE_CATALOG['revision']) for name in VOICE_CATALOG['voices']}
     config = yaml.safe_load((CONFIGS_DIR / f"{PROFILE['language_config']}.yaml").read_text())
     config['weights_path'] = model
     # Both paths point at the verified local file. There is no remote fallback.
@@ -39,7 +42,7 @@ def prepare():
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     config_path = ARTIFACTS / 'config.yaml'
     config_path.write_text(yaml.safe_dump(config))
-    receipt = {'profile': PROFILE, 'profileHash': PROFILE_HASH, 'config': str(config_path), 'voices': voices}
+    receipt = {'profile': PROFILE, 'profileHash': PROFILE_HASH, 'config': str(config_path), 'voices': voices, 'voiceCatalog': VOICE_CATALOG}
     (ARTIFACTS / 'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
     return receipt
 
@@ -59,23 +62,25 @@ def serve(port):
     model = TTSModel.load_model(config=receipt['config'], temp=PROFILE['temperature'], lsd_decode_steps=PROFILE['decode_steps'], eos_threshold=float(PROFILE['eos_threshold']), quantize=False)
     model.has_voice_cloning = False
     model.to('cpu')
-    states = {name: model.get_state_for_audio_prompt(file) for name, file in receipt['voices'].items()}
+    states = {}  # Load preset states on demand to keep idle memory bounded.
     lock = threading.Lock()
     app = FastAPI()
 
     @app.get('/health')
     def health():
-        return {'ok': True, 'profile': PROFILE, 'profileHash': PROFILE_HASH, 'torch': torch.__version__, 'threads': torch.get_num_threads()}
+        return {'ok': True, 'profile': PROFILE, 'profileHash': PROFILE_HASH, 'torch': torch.__version__, 'threads': torch.get_num_threads(), 'voicePresets': list(receipt['voices'])}
 
     @app.post('/tts')
     def tts(text: str = Form(...), voice_url: str = Form('alba'), x_pelican_pocket_profile: str | None = Header(None)):
         if x_pelican_pocket_profile and x_pelican_pocket_profile != PROFILE_HASH:
             raise HTTPException(409, 'Pocket profile mismatch; use the runtime matching project.json')
-        if voice_url not in states:
-            raise HTTPException(400, 'Use a preset voice: marius, jean, or alba. Voice cloning is not enabled.')
+        if voice_url not in receipt['voices']:
+            raise HTTPException(400, 'Unknown preset voice. Use a name from /health voicePresets. Voice cloning is not enabled.')
         if not text.strip() or len(text) > 4000:
             raise HTTPException(400, 'Text must contain 1–4000 characters')
         with lock:
+            if voice_url not in states:
+                states[voice_url] = model.get_state_for_audio_prompt(receipt['voices'][voice_url])
             random.seed(PROFILE['seed'])
             np.random.seed(PROFILE['seed'])
             torch.manual_seed(PROFILE['seed'])

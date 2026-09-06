@@ -1,3 +1,4 @@
+import {availableVoicePresets} from '../../scripts/theater/pocket.mjs';
 import express from 'express';
 import {randomUUID} from 'node:crypto';
 import {EditorJobs,speechConfig} from '../services/editor-jobs.js';
@@ -5,7 +6,7 @@ import {EditorAgent} from '../services/editor-agent.js';
 export function createEditorAgentRouter({enabled=()=>process.env.HERMES_EDITOR_ENABLED==='1',createAgent=()=>new EditorAgent({command:process.env.HERMES_EDITOR_COMMAND||'hermes',sessionCwd:process.env.HERMES_EDITOR_CWD||process.cwd()})}={}){
  const router=express.Router(),sessions=new Map(),jobs=new EditorJobs();
  const prune=setInterval(()=>{for(const[id,s]of sessions)if(Date.now()-s.touched>30*60*1000){s.agent.close();sessions.delete(id);}},60000);prune.unref();
- router.get('/status',async(req,res)=>{const config=enabled()?await speechConfig().catch(()=>null):null;res.json({enabled:enabled(),agent:'Hermes',jobs:enabled(),voicePresets:config?.profile?.voices||null});});
+ router.get('/status',async(req,res)=>{const config=enabled()?await speechConfig().catch(()=>null):null;res.json({enabled:enabled(),agent:'Hermes',jobs:enabled(),voicePresets:availableVoicePresets(config)});});
  router.use((req,res,next)=>{
   const host=(req.headers.host||'').toLowerCase();
   let configured='';try{configured=new URL(process.env.HERMES_EDITOR_ORIGIN||'').host;}catch{}

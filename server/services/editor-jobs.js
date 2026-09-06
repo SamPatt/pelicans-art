@@ -5,7 +5,7 @@ import {randomUUID} from 'node:crypto';
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {prepareProject} from '../../src/js/editor-project.mjs';
-import {pocketDefaults} from '../../scripts/theater/pocket.mjs';
+import {pocketDefaults,availableVoicePresets} from '../../scripts/theater/pocket.mjs';
 import {TTS_URL} from '../config.js';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 export async function speechConfig(){
@@ -29,7 +29,8 @@ export class EditorJobs {
   try{
    job.directory=await fs.mkdtemp(path.join(os.tmpdir(),'pelican-editor-'));
    const tts=await this.config();
-   if(tts.profile?.voices&&!project.captionOnly){let line=0;for(const beat of project.script){if(beat.do!=='say')continue;const missing=!project.assets.audio[`line-${line++}`],voice=project.cast[beat.who]?.voice;if(missing&&!tts.profile.voices.includes(voice))throw Error(`Choose an available voice for ${beat.who} before updating recordings: ${tts.profile.voices.join(', ')}. Existing recordings are unchanged.`);}}
+   const presets=availableVoicePresets(tts);
+   if(presets&&!project.captionOnly){let line=0;for(const beat of project.script){if(beat.do!=='say')continue;const missing=!project.assets.audio[`line-${line++}`],voice=project.cast[beat.who]?.voice;if(missing&&!presets.includes(voice))throw Error(`Choose an available voice for ${beat.who} before updating recordings: ${presets.join(', ')}. Existing recordings are unchanged.`);}}
    // Configuration and executable are server-owned; the browser never supplies endpoints or paths.
    await fs.writeFile(path.join(job.directory,'project.json'),JSON.stringify({version:1,tts:project.captionOnly?{engine:'none'}:tts}));
    await fs.writeFile(path.join(job.directory,'skit.json'),JSON.stringify(project));

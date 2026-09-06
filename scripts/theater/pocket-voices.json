@@ -1,0 +1,33 @@
+{
+  "repository": "kyutai/pocket-tts-without-voice-cloning",
+  "revision": "e041936c75475d350b405bc870bcf7c22da4e9e6",
+  "directory": "languages/english_2026-04/embeddings",
+  "voices": [
+    "alba",
+    "anna",
+    "azelma",
+    "bill_boerst",
+    "caro_davy",
+    "charles",
+    "cosette",
+    "eponine",
+    "estelle",
+    "eve",
+    "fantine",
+    "george",
+    "giovanni",
+    "jane",
+    "javert",
+    "jean",
+    "juergen",
+    "lola",
+    "marius",
+    "mary",
+    "michael",
+    "paul",
+    "peter_yearsley",
+    "rafael",
+    "stuart_bell",
+    "vera"
+  ]
+}
