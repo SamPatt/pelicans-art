@@ -129,6 +129,7 @@ async function extractAudioFiles(skit, timeline, tempDir) {
       effectivePlaybackRate: Number(event.effectivePlaybackRate) || 1,
       volume: Number.isFinite(Number(event.volume)) ? Number(event.volume) : 1,
       index,
+      durationSeconds: Number.isFinite(event.durationSeconds) && event.durationSeconds > 0 ? event.durationSeconds : null,
       text: event.text
     });
   }
@@ -291,6 +292,7 @@ async function captureSkit(browser, skitId, options) {
     dialogueTiming: audioFiles.map(audio => ({
       lineIndex: audio.index,
       offsetMs: audio.delayMs,
+      durationSeconds: audio.durationSeconds,
       effectivePlaybackRate: audio.effectivePlaybackRate,
       volume: audio.volume
     })),

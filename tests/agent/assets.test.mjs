@@ -58,3 +58,10 @@ test('Pouch portrait filter checks the actual file instead of guessing from land
  globalThis.fetch=async url=>String(url).endsWith('portrait.svg')?new Response('',{status:404}):new Response(JSON.stringify({items:[{slug:'wide-only',key:'backgrounds/wide-only/landscape.svg',searchMetadata:true}],hasMore:false}));
  assert.equal((await searchAssets({source:'pouch',category:'backgrounds',orientation:'portrait'})).items.length,0);
 });
+
+test('multi-concept discovery finds separate assets and ranks combined matches before partial matches',async t=>{
+ const prior=globalThis.fetch;t.after(()=>globalThis.fetch=prior);
+ globalThis.fetch=async()=>new Response(JSON.stringify({items:[{slug:'duck',name:'Duck',searchMetadata:true},{slug:'captain',name:'Captain',searchMetadata:true},{slug:'ship',name:'Ship',searchMetadata:true},{slug:'captain-duck',name:'Captain duck',searchMetadata:true},{slug:'unrelated',name:'Umbrella',searchMetadata:true}],hasMore:false}));
+ const broad=await searchAssets({source:'pouch',category:'props',query:'duck captain ship duck'});assert.equal(broad.match,'any');assert.equal(broad.items.length,4);assert.equal(broad.items[0].id,'captain-duck');assert.deepEqual(broad.items[0].match.terms,['duck','captain']);
+ const narrow=await searchAssets({source:'pouch',category:'props',query:'duck captain',match:'all'});assert.deepEqual(narrow.items.map(x=>x.id),['captain-duck']);await assert.rejects(searchAssets({match:'typo'}),/match/);
+});

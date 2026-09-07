@@ -36,6 +36,12 @@ for (const orientation of ['landscape', 'portrait']) {
     await fs.writeFile(path.join(root, 'project.json'), JSON.stringify({version: 1, tts: {engine: 'pocket'}}));
     const rendered = await invoke(['render', root]);
     const manifest = JSON.parse(await fs.readFile(rendered.manifest));
+    if (orientation === 'landscape') {
+      const inspection = await invoke(['inspect', root]);
+      assert.equal(inspection.ok, true);
+      assert.ok(Math.abs(inspection.pacing.lines[0].durationSeconds - 1) < 0.05);
+      assert.deepEqual(inspection.pacing.unmeasuredLines, []);
+    }
     const folder = path.dirname(rendered.manifest);
     const video = path.join(folder, manifest.media.video);
     const [width, height] = orientation === 'portrait' ? [720, 1280] : [1280, 720];
@@ -43,6 +49,7 @@ for (const orientation of ['landscape', 'portrait']) {
     assert.equal(manifest.synchronization.gutterPixels, 32);
     assert.equal(manifest.audioLinesMuxed, 1);
     assert.equal(manifest.capturedDialogueLines, 1);
+    assert.ok(Math.abs(manifest.dialogueTiming[0].durationSeconds - 1) < 0.05, 'Capture records decoded duration for pacing without extra probes');
     assert.deepEqual(manifest.diagnostics, []);
     for (const file of [video, path.join(folder, manifest.media.cover), path.join(folder, manifest.media.still)]) {
       const probe = JSON.parse(binary('ffprobe', ['-v', 'error', '-show_streams', '-of', 'json', file]));

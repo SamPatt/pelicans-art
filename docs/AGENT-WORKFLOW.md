@@ -119,3 +119,9 @@ New SVG deliveries emit `meta.json` with category, description, tags, and model.
 Use `finish <project>` after authoring. It validates/builds, renders, checks decoding and speech coverage, makes a contact sheet, and creates an integrity-verified editable ZIP. Review the contact sheet once and listen where supported, then attach the returned files. JSON includes phase timings, report paths, and delivery hashes. Individual `render`, `inspect`, and `package` commands remain available for troubleshooting; do not repeat passed checks without a changed artifact or observed problem.
 
 Closeups now target SVG face geometry and two-shots fit the painted cast. The capture synchronization marker is recorded outside the stage and cropped from the export, preserving the opening audio. See the portable skill's authoring reference for staging rules.
+
+## Pacing and discovery (skill 1.0.17)
+
+Include a pacing proposal alongside format, cast, and dialogue: brisk, conversational, or dry with reaction pauses. Implement it through deliberate script pauses, preserving the user's chosen delivery. `finish`/`inspect` report advisory fast-line and short-gap measurements from decoded playback; these never fail a render or automatically alter speech. Missing measurements on older renders remain explicitly unknown.
+
+Asset search now matches any term by default, ranking assets matching more terms first and reporting matched terms. Use `--match all` for intentionally narrow searches. Category/orientation restrictions still apply. The authoring reference includes initial offscreen cast and visible-prop examples so covers and entrances preserve reveals.

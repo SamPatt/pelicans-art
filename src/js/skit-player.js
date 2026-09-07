@@ -2751,6 +2751,7 @@
                   text: beat.line,
                   who: beat.who,
                   effectivePlaybackRate,
+                  durationSeconds: (cached.buffer?.duration ?? cached.audio?.duration) / effectivePlaybackRate,
                   volume: cached.volume ?? 1
                 }
               }));

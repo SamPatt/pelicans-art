@@ -65,3 +65,34 @@ Cast `x` and `y` are percentages of the stage: x is the actor's horizontal cente
 Closeup, medium, and extreme-closeup shots target actual SVG eye/mouth geometry, including nested transforms and facing direction. Head groups provide a fallback; older actors without recognizable face elements use the legacy 35%-height target. Keep the documented face IDs on unconventional actors too; do not translate all artwork merely to satisfy a presumed fixed face anchor. Camera follow retains the face offset while the actor moves.
 
 A two-shot fits the visible painted cast with margins, up to 1.4x zoom; wide retains the full stage at 1x. Camera fitting cannot recover artwork placed outside the original stage. For crowded portrait scenes, reduce actor sizes or change staging rather than repeatedly changing face anchors. Check caption clearance in the contact sheet, especially on closeups. The recording synchronization marker is outside the exported frame; do not cover a corner with a postprocessing patch.
+
+## Entrances and visible props
+
+Set initial cast visibility in the cast configuration so both the opening cover and playback preserve the reveal. `x` is the final stage position; `startX` is the initial position. A `background.show` action changes visibility during playback, but does not hide actors in the pre-play cover. Props are hidden by default: use `visible: true` for a warning lamp or other prop present at the start. Animating a hidden prop does not reveal it.
+
+```json
+{
+  "cast": {
+    "captain": {"sprite":"captain", "x":36, "y":84, "voice":"jean"},
+    "duck": {"sprite":"duck", "x":68, "y":84, "startX":120, "startOffscreen":true, "voice":"marius"}
+  },
+  "props": {
+    "warning": {"prop":"alarm", "x":88, "y":12, "visible":true}
+  },
+  "script": [
+    {"do":"shot", "type":"wide"},
+    {"do":"say", "who":"captain", "line":"Activate emergency backup!"},
+    {"do":"enter", "who":"duck", "from":"right", "to":68},
+    {"do":"pause", "duration":1.5},
+    {"do":"say", "who":"duck", "line":"You called?"}
+  ]
+}
+```
+
+This is a fragment: register the actual sprite/background/prop assets in the initialized project. Entrance movement takes 1.2 seconds and runs asynchronously; add an explicit pause if the next line should wait until the entrance settles. `from: "left"` uses the left edge; use a negative `startX` for that opening position. Inspect the opening and reveal once, using the contact sheet or an optional early preview when the staging is uncertain.
+
+## Choose the comic pace before production
+
+Propose brisk, conversational, or dry with reaction pauses during chat review. These are creative choices, not new JSON fields or global playback-speed settings. Translate the agreed choice into explicit pauses at important exchanges, visual reveals, and punchlines. Start with roughly 0.4–0.7 seconds of added space at selected conversational turns, or 0.7–1.2 seconds for a dry reaction; vary deliberately rather than applying a delay to every line. The player already waits about 0.2 seconds after an ordinary sequential recording.
+
+Keep fast character delivery if intentional. When an individual recording is hard to follow, audition or revise that line instead of slowing the whole skit. Duration estimates in the proposal are approximate: compare the completed duration and `pacing` advisories with the agreed feel. Words/minute includes recording silence and is unreliable for very short utterances; a hint does not prove poor delivery. Preserve the approved script and reuse speech when changing pauses only.

@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import {assessPacing} from './pacing.mjs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createServer} from 'node:http';
@@ -53,7 +54,7 @@ export async function inspectProject(directory,{renderDir}={}){
  await run('ffmpeg',['-v','error','-i',a.video,'-f','null','-']);
  const silent=a.bundle.captionOnly===true,videoStream=a.probe.streams.find(s=>s.codec_type==='video'),orientation=a.bundle.stage.orientation||'landscape';const expectedSize=orientation==='portrait'?[720,1280]:[1280,720];
  const findings=[];if(videoStream?.width!==expectedSize[0]||videoStream?.height!==expectedSize[1])findings.push('Video dimensions do not match project orientation');if(!silent&&expected>0&&!a.probe.streams.some(s=>s.codec_type==='audio'))findings.push('Video has no audio stream');if(!silent&&(a.manifest.capturedDialogueLines!==expected||a.manifest.audioLinesMuxed!==expected))findings.push('Speech line coverage is incomplete');if(a.manifest.diagnostics?.length)findings.push(...a.manifest.diagnostics);
- const report={ok:findings.length===0,title:a.bundle.meta.title,duration:a.duration,orientation,streams:a.probe.streams.map(({codec_name,codec_type,width,height})=>({codec:codec_name,type:codec_type,width,height})),dialogue:{expected,captured:a.manifest.capturedDialogueLines,muxed:a.manifest.audioLinesMuxed},findings,frames,contactSheet:await fileInfo(sheet),video:await fileInfo(a.video),note:'Decode/timing/coverage checks are automatic. Review the images and listen to assess acting, clarity, and comedy.'};
+ const report={ok:findings.length===0,title:a.bundle.meta.title,duration:a.duration,orientation,streams:a.probe.streams.map(({codec_name,codec_type,width,height})=>({codec:codec_name,type:codec_type,width,height})),dialogue:{expected,captured:a.manifest.capturedDialogueLines,muxed:a.manifest.audioLinesMuxed},findings,pacing:assessPacing(a.bundle,a.manifest),frames,contactSheet:await fileInfo(sheet),video:await fileInfo(a.video),note:'Decode/timing/coverage checks are automatic. Review the images and listen to assess acting, clarity, and comedy.'};
  const reportFile=path.join(out,'inspection.json');await writeJson(reportFile,{...report,frames:frames.map(f=>({...f,path:path.basename(f.path)})),contactSheet:{...report.contactSheet,path:path.basename(sheet)},video:{...report.video,path:path.relative(out,a.video)}});return {...report,report:reportFile};
 }
 // ZIP writer uses the store method: no external archiver/Python dependency, no executable paths in archives.
