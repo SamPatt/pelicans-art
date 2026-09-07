@@ -1,0 +1,16 @@
+{
+  "name": "Resourceful raccoon",
+  "description": "A grey raccoon with a dark face mask and a large striped tail; nimble paws suit secretive schemes.",
+  "tags": [
+    "animal",
+    "raccoon",
+    "urban",
+    "sneaky",
+    "night"
+  ],
+  "model": "GPT-6 Astra",
+  "category": "characters",
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

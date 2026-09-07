@@ -4,8 +4,12 @@ Run these from the receipt-pinned runtime. Prefer these commands over writing on
 
 ## Discover before drawing
 
+The bundled sandbox starter library has 40 characters, 30 settings in both orientations, and 30 props. Its IDs start with `starter-`; searchable metadata describes each asset. Start with focused local searches to avoid network requests when suitable assets are already installed. `assets/starter-library/manifest.json` is the complete inventory when needed; do not dump all 100 records into chat context for every skit. Preserve included attribution and reuse permission when importing or delivering.
+
 ```sh
-node scripts/theater.mjs assets search --query "coffee" --source all --limit 12
+node scripts/theater.mjs assets search --query "teacher classroom book" --source local --limit 12
+# For gaps or more choices, search the community catalog:
+node scripts/theater.mjs assets search --query "coffee" --source pouch --limit 12
 node scripts/theater.mjs assets search --category backgrounds --source local --orientation portrait
 # Only a project selected for reuse; this does not crawl private workspaces:
 node scripts/theater.mjs assets search --source project --project data/projects/previous-skit --query cafe

@@ -1,0 +1,932 @@
+{
+  "characters/alien": {
+    "slug": "curious-alien-visitor-3a1895",
+    "uploadedAt": "2026-09-07T02:59:35.774Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "ec2963d7273f5364654e44d46e7969697d27e9ef1ec10a9e501f809af7a0dc94"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/curious-alien-visitor-3a1895"
+  },
+  "characters/astronaut": {
+    "slug": "optimistic-astronaut-dad8f5",
+    "uploadedAt": "2026-09-07T02:59:38.500Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "a7029514cedc5b9f2361121cc0677f06fd68c0783be34bf20716fba9cd389d09"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/optimistic-astronaut-dad8f5"
+  },
+  "characters/barista": {
+    "slug": "friendly-barista-92b3cf",
+    "uploadedAt": "2026-09-07T02:59:41.309Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "0ba409e6e3a0c8abf339c11bdaefc45d42894a5cd890d91cb9d01127e58277b4"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/friendly-barista-92b3cf"
+  },
+  "characters/bear": {
+    "slug": "gentle-lumbering-bear-908175",
+    "uploadedAt": "2026-09-07T02:59:44.084Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "0b29267b30225cb2d4bdfb6f71167a9224653b10680eee745de746a19ea8067d"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/gentle-lumbering-bear-908175"
+  },
+  "characters/cat": {
+    "slug": "sardonic-house-cat-3e740e",
+    "uploadedAt": "2026-09-07T02:59:46.781Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "cf02d88c33077f2a391b1d3a84b668dbfcf1b326fe58ba27b36686de8d81e563"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/sardonic-house-cat-3e740e"
+  },
+  "characters/chef": {
+    "slug": "busy-chef-fc3ac6",
+    "uploadedAt": "2026-09-07T02:59:49.455Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "54ac489b2e653530cd92feb777cec2577c88a07b2c78c2ec90cef0b8e2f05337"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/busy-chef-fc3ac6"
+  },
+  "characters/construction-worker": {
+    "slug": "resourceful-builder-7e9a9c",
+    "uploadedAt": "2026-09-07T02:59:52.159Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "f50ba1e16abf74f65f3386545832b991e666debb6a6dcbee71213b4ab7bc0cda"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/resourceful-builder-7e9a9c"
+  },
+  "characters/detective": {
+    "slug": "suspicious-detective-a14895",
+    "uploadedAt": "2026-09-07T02:59:54.834Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "90b9bf5cf3465b0c63d986f76138281f46c52b3b752baa2f80e44abcdfbd15e8"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/suspicious-detective-a14895"
+  },
+  "characters/doctor": {
+    "slug": "thoughtful-doctor-103295",
+    "uploadedAt": "2026-09-07T02:59:57.542Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "b09123e3caa2b0a6810128bb023a55ac8fd36d77a6601494d6b542140855c2db"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/thoughtful-doctor-103295"
+  },
+  "characters/dog": {
+    "slug": "loyal-scruffy-dog-fdadb1",
+    "uploadedAt": "2026-09-07T03:00:00.371Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "d9fe27ca670b7017cd69a44310138afa33f6987a49be139a4bbf581d2f1aeef4"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/loyal-scruffy-dog-fdadb1"
+  },
+  "characters/dragon": {
+    "slug": "small-dramatic-dragon-1a03ab",
+    "uploadedAt": "2026-09-07T03:00:03.311Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "c09ab828380422d630fec8c3a8aaab14d4f6425a1bc244c3bdb1719a52b25ae5"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/small-dramatic-dragon-1a03ab"
+  },
+  "characters/farmer": {
+    "slug": "steady-farmer-f3d86b",
+    "uploadedAt": "2026-09-07T03:00:06.073Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "c4bf6efe60cb9d8a3475132880547744c2fc3f5178fe9e4b3415de20b6ee14c3"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/steady-farmer-f3d86b"
+  },
+  "characters/firefighter": {
+    "slug": "resolute-firefighter-056137",
+    "uploadedAt": "2026-09-07T03:00:08.833Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "0b9a930dea42bc4871ed48db596073288909068de2686aec07570a5106973132"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/resolute-firefighter-056137"
+  },
+  "characters/fox": {
+    "slug": "smooth-talking-fox-1373bc",
+    "uploadedAt": "2026-09-07T03:00:11.595Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "db2282d4ed72c99f3076630a0117d8bd316c3e7994ef0079456a3346e80e2837"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/smooth-talking-fox-1373bc"
+  },
+  "characters/frog": {
+    "slug": "confident-pond-frog-0ad0b0",
+    "uploadedAt": "2026-09-07T03:00:14.377Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "726b7a05978ee8efd2c60b29479ea844f825e86b65e776a5f146cfb3fb26a263"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/confident-pond-frog-0ad0b0"
+  },
+  "characters/ghost": {
+    "slug": "polite-sheet-ghost-b02caa",
+    "uploadedAt": "2026-09-07T03:00:17.105Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "7849fb023b2edc206fdae3d36a00c42e22a1a0a2a8c0b6f19f618d8c8b7fefe5"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/polite-sheet-ghost-b02caa"
+  },
+  "characters/goat": {
+    "slug": "stubborn-goat-6ec167",
+    "uploadedAt": "2026-09-07T03:00:19.901Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "bf5dd2c3aa0d55104747c3180556f3eef26e79d976852db816c9c2f08829360f"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/stubborn-goat-6ec167"
+  },
+  "characters/grandfather": {
+    "slug": "dapper-grandfather-7f5638",
+    "uploadedAt": "2026-09-07T03:00:22.663Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "32e5f510ca9545a5a46fc5c5b509d4c62b121f3f880b95f6fea98c6c881753de"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/dapper-grandfather-7f5638"
+  },
+  "characters/grandmother": {
+    "slug": "spirited-grandmother-d2fc95",
+    "uploadedAt": "2026-09-07T03:00:25.450Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "e2e8f235cef0476b363d68f0d6c1725e6010e8a82fc4efbdf01a4d1bf57e3b1d"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/spirited-grandmother-d2fc95"
+  },
+  "characters/judge": {
+    "slug": "stern-judge-8488d3",
+    "uploadedAt": "2026-09-07T03:00:28.206Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "dae7abefe717960484997bebb540c4a3f2733caf2c2e27b5efa33f5a4708d801"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/stern-judge-8488d3"
+  },
+  "characters/librarian": {
+    "slug": "exacting-librarian-374c5c",
+    "uploadedAt": "2026-09-07T03:00:30.910Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "fdfc203a6d608cc34c8ead29f95c479ad5ddae7acc58cadc9fb44bac000a4d66"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/exacting-librarian-374c5c"
+  },
+  "characters/mail-carrier": {
+    "slug": "cheerful-mail-carrier-77b84f",
+    "uploadedAt": "2026-09-07T03:00:33.695Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "13997a31b094511ddb7976790b0d3d8c9f1c0314fb153a56cb9442ac3ad847cc"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/cheerful-mail-carrier-77b84f"
+  },
+  "characters/mechanic": {
+    "slug": "practical-mechanic-7dee63",
+    "uploadedAt": "2026-09-07T03:00:36.412Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "700d44b10e585eb3adeea6f462e6909ae50d7ed57bad70e878408c3c9ba29cd4"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/practical-mechanic-7dee63"
+  },
+  "characters/mouse": {
+    "slug": "plucky-little-mouse-6d60b2",
+    "uploadedAt": "2026-09-07T03:00:39.101Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "952f38b21cdb4c9bcf0bd89b1e6d191e0cbaa64c64118f73f6e646fe38ed2f8e"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/plucky-little-mouse-6d60b2"
+  },
+  "characters/musician": {
+    "slug": "cool-jazz-musician-6e2f55",
+    "uploadedAt": "2026-09-07T03:00:41.848Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "b14675d7dba562efba051ad81723a453cbcb809aa793edabbfe503439c3ecd29"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/cool-jazz-musician-6e2f55"
+  },
+  "characters/office-worker": {
+    "slug": "overworked-office-worker-8c83c6",
+    "uploadedAt": "2026-09-07T03:00:44.674Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "4f02a2b0e76c06e6aa29be138fe9f69a1927efb2805ea5f101f512d8c6497d3b"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/overworked-office-worker-8c83c6"
+  },
+  "characters/owl": {
+    "slug": "scholarly-owl-83d7c3",
+    "uploadedAt": "2026-09-07T03:00:47.378Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "540c5d5ba1a7994b07ac3876b649857cd3915db2f78a29a0a97b54ed9db4aa57"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/scholarly-owl-83d7c3"
+  },
+  "characters/penguin": {
+    "slug": "formal-penguin-c9c0ba",
+    "uploadedAt": "2026-09-07T03:00:50.183Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "7253d5406b9c695053c0840c6303fb65f9f440a5844208b385e51e64cd7b2891"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/formal-penguin-c9c0ba"
+  },
+  "characters/pirate": {
+    "slug": "swaggering-pirate-db6066",
+    "uploadedAt": "2026-09-07T03:00:52.915Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "db27ef210f695c616d8f4030616b152cce73ebdcadf25dea9a37f3b1307cf08a"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/swaggering-pirate-db6066"
+  },
+  "characters/rabbit": {
+    "slug": "anxious-rabbit-9ce033",
+    "uploadedAt": "2026-09-07T03:00:55.675Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "730ce4dd2cb560c11f0e0229023ea903b7bf1bd9f747b016eda6dbd614f17706"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/anxious-rabbit-9ce033"
+  },
+  "characters/raccoon": {
+    "slug": "resourceful-raccoon-3584be",
+    "uploadedAt": "2026-09-07T03:00:58.421Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "d0a1d5f67424c7268a32898151b08aed8e54a50b638f53b4a0ef00ed4a2b22f2"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/resourceful-raccoon-3584be"
+  },
+  "characters/robot": {
+    "slug": "helpful-box-robot-f6156c",
+    "uploadedAt": "2026-09-07T03:01:01.178Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "e29254ddbf0be4385b58f98bcd193c198bea8945c966de807977437dc43517a8"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/helpful-box-robot-f6156c"
+  },
+  "characters/royal": {
+    "slug": "pompous-monarch-d2d35f",
+    "uploadedAt": "2026-09-07T03:01:03.949Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "f30ec6b18ca1038e8c627ee5659bd885e9031cc6342166bab133a605d3f0af84"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/pompous-monarch-d2d35f"
+  },
+  "characters/scientist": {
+    "slug": "excitable-scientist-be6e70",
+    "uploadedAt": "2026-09-07T03:01:06.714Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "f91fe4fc6d347a5c5a5690c1a2b859949086a19218359224c2abbf48c966ec82"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/excitable-scientist-be6e70"
+  },
+  "characters/student": {
+    "slug": "curious-student-3c7a4c",
+    "uploadedAt": "2026-09-07T03:01:09.494Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "afa0da9e896f88340e1d589bd40cc44d71474eae1e376e8275f6eecb04e066bc"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/curious-student-3c7a4c"
+  },
+  "characters/superhero": {
+    "slug": "earnest-superhero-d73aa9",
+    "uploadedAt": "2026-09-07T03:01:12.234Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "ae4a9cda5a49c0ba5d75e9ec069f63607f01cb0177fb589b713bf9721495bb89"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/earnest-superhero-d73aa9"
+  },
+  "characters/teacher": {
+    "slug": "patient-teacher-4e503d",
+    "uploadedAt": "2026-09-07T03:01:14.962Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "af77e28475372dd1f2fb694d184a37c22df3e874e1929d79e6822e45453ec1c2"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/patient-teacher-4e503d"
+  },
+  "characters/tourist": {
+    "slug": "delighted-tourist-f41fa8",
+    "uploadedAt": "2026-09-07T03:01:17.724Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "665579fa81c414cf8e829a9e8bde5430e49c9200eecd312b58b9f712a03a72f6"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/delighted-tourist-f41fa8"
+  },
+  "characters/unicorn": {
+    "slug": "self-important-unicorn-a0e68e",
+    "uploadedAt": "2026-09-07T03:01:20.448Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "869f69d4f1186b8837b7b4a876c59a9ed8a19b69231131e8d471854c9497ab14"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/self-important-unicorn-a0e68e"
+  },
+  "characters/wizard": {
+    "slug": "distracted-wizard-714a1c",
+    "uploadedAt": "2026-09-07T03:01:23.151Z",
+    "verified": true,
+    "sha256": {
+      "front.svg": "e84d1a8b7248963eaadaa404fc5591ae933b2f386d1bd59929e9b8d926906b7f"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/characters/distracted-wizard-714a1c"
+  },
+  "backgrounds/airport-terminal": {
+    "slug": "airport-departure-lounge-87d5a0",
+    "uploadedAt": "2026-09-07T03:01:26.071Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "1922386a9c426858ad039332beff9b8cb644a5fb5bd77a1f765ea414adb77d30",
+      "portrait.svg": "818ce3a24fa95754df5d606873ef9be0edd5fe2e11abf3b1214e4127fd6d8780"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/airport-departure-lounge-87d5a0"
+  },
+  "backgrounds/alien-planet": {
+    "slug": "alien-planet-surface-966225",
+    "uploadedAt": "2026-09-07T03:01:29.085Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "c2d0d22a6d9cc68fe4d2333c02ebbe192079e04d367d844b4d1058c72acca2d7",
+      "portrait.svg": "a9afe1f63ccde5142e43280903281af848e5d9491b26fd7406804ab7978ef11e"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/alien-planet-surface-966225"
+  },
+  "backgrounds/bus-interior": {
+    "slug": "inside-a-city-bus-1a8586",
+    "uploadedAt": "2026-09-07T03:01:31.981Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "b43ecac25aa1d8d9f324c41fabe28a4c057a30992c64cdd1875b7082e437a779",
+      "portrait.svg": "0c4d49e9c1d417ad1f46c6ebb64858cf4491dfe906baeef7aa4ae58c22e3860d"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/inside-a-city-bus-1a8586"
+  },
+  "backgrounds/castle-hall": {
+    "slug": "castle-great-hall-5506c6",
+    "uploadedAt": "2026-09-07T03:01:34.892Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "40ea67f05af514a0861c72a7b2532b0df1bf77704e09333aa766904fcbc73d60",
+      "portrait.svg": "f4d766d430d08946b0b4f023a5ce4498e5082e6391c1ab05f0f5065648ed5508"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/castle-great-hall-5506c6"
+  },
+  "backgrounds/city-library": {
+    "slug": "public-library-c01694",
+    "uploadedAt": "2026-09-07T03:01:37.813Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "6af9ecdb8e51483ffd17f27173cb9450872e320f37b1109d29b405ac4aa9a00e",
+      "portrait.svg": "454c25c710d16ec0e6c80de51e01f4b07d77225a9aff62f3f8817d060aa841d2"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/public-library-c01694"
+  },
+  "backgrounds/city-street": {
+    "slug": "neighborhood-street-1b34f1",
+    "uploadedAt": "2026-09-07T03:01:40.700Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "20d56e7fe5a29dc01bc0e8ed2d471e2d1ee696e56c61c95be73a60f116c96275",
+      "portrait.svg": "fca4e63e31f3afe4e456368aecdf762c0cc0c8c370ac93318e9082cb0d440045"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/neighborhood-street-1b34f1"
+  },
+  "backgrounds/classroom": {
+    "slug": "school-classroom-66b7e6",
+    "uploadedAt": "2026-09-07T03:01:43.603Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "3fc03ecc28f5dd1fe5d52a1cf94fa650ea8592b358bb374959798fc43463a8a6",
+      "portrait.svg": "cfcc3fc43d2bf1bd29f1243e7ff7c04f4c9733272944702840ad911a6c2fa587"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/school-classroom-66b7e6"
+  },
+  "backgrounds/conference-room": {
+    "slug": "office-conference-room-83f99d",
+    "uploadedAt": "2026-09-07T03:01:46.684Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "14b3537d016b3c87ebac2e10c939191351ba00afb8117936487506f79cfb6884",
+      "portrait.svg": "688b77d6c379516fdad0c6c529c1f9fee707a36c4f899c94d7ee06582b134949"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/office-conference-room-83f99d"
+  },
+  "backgrounds/courtroom": {
+    "slug": "courtroom-2148aa",
+    "uploadedAt": "2026-09-07T03:01:49.618Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "194112704ecb44d187f35c6dd594fb5430f312c6832dd689a939b293f7992281",
+      "portrait.svg": "2e76d4f0465f18306771d7ae4c6f0a3f2a0cfe20cc910d81d7e9cd728b12d830"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/courtroom-2148aa"
+  },
+  "backgrounds/cozy-living-room": {
+    "slug": "cozy-living-room-539e06",
+    "uploadedAt": "2026-09-07T03:01:52.572Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "ea7d6c3197752c6252e8c10708a74c2c76c73281dfea41fb14d55a95e0a7a041",
+      "portrait.svg": "93b9e2f796c9edd2100c409bb223ffab603a8670f51c6a34a8e7a4fd1414f8bb"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/cozy-living-room-539e06"
+  },
+  "backgrounds/elevator-lobby": {
+    "slug": "elevator-lobby-cdcc14",
+    "uploadedAt": "2026-09-07T03:01:55.445Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "3043dc7e7bebd4268f26b019a66b424153810812b9669dfc7dfd4309921cbd7c",
+      "portrait.svg": "253d067c03fdf4973918c9b49cc543d9c8b838a1ddc6befba99c03a45573e1e9"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/elevator-lobby-cdcc14"
+  },
+  "backgrounds/farmyard": {
+    "slug": "red-barn-farmyard-ef80c0",
+    "uploadedAt": "2026-09-07T03:01:58.333Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "bd721c0f4e74d3133e64dad7431dd92284c1c8123b4af38321200ea234f54eb4",
+      "portrait.svg": "ade99cd23d42d78c574a56ec3e00ba85a9cf24d1da3ec07187fd3e9c4f98cc85"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/red-barn-farmyard-ef80c0"
+  },
+  "backgrounds/fire-station": {
+    "slug": "fire-station-garage-898cf7",
+    "uploadedAt": "2026-09-07T03:02:01.340Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "231062dbdb209aedf0fa1d243baa13445638fe9153bb41b891b22bf30e795016",
+      "portrait.svg": "fdc8bcc3199565a0583954fb690a31866fc8f0f2ec81b5470d6a769982781283"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/fire-station-garage-898cf7"
+  },
+  "backgrounds/forest-clearing": {
+    "slug": "forest-clearing-5a4b74",
+    "uploadedAt": "2026-09-07T03:02:04.223Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "97a4ab13853eb22b78a0f46c7f853434145fb2c470e7bbe39aab489c9672fbc4",
+      "portrait.svg": "b1388db3627f7f7356cfd4afe6d9a127557425eb81a0cd1f1be1dd815986d264"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/forest-clearing-5a4b74"
+  },
+  "backgrounds/grocery-store": {
+    "slug": "neighborhood-grocery-store-12ea7f",
+    "uploadedAt": "2026-09-07T03:02:07.282Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "def7518b5ff8341906d7e8a8892e90501570de4f85855aa6732a9312e4e17550",
+      "portrait.svg": "967a56178438b490e3eb91f7fbc237d9b677928657745f5b243236ff207c7c45"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/neighborhood-grocery-store-12ea7f"
+  },
+  "backgrounds/home-kitchen": {
+    "slug": "home-kitchen-db2a57",
+    "uploadedAt": "2026-09-07T03:02:10.256Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "3e7d051016cda8979534a1b175e0791aa30e927f02c0fe1cc304987025d15364",
+      "portrait.svg": "c24ce67fc9ff7cac56f71b0e56d0f40e5f08abf8f2e020359abf6582de6e8f78"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/home-kitchen-db2a57"
+  },
+  "backgrounds/hospital-waiting-room": {
+    "slug": "hospital-waiting-room-65e653",
+    "uploadedAt": "2026-09-07T03:02:13.194Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "af24255ee2928fc55d01407e481565270d57b7a03556320828979763eb232381",
+      "portrait.svg": "6f67ddf7deb1386ec547d76525ccdfd8464a634ddb5ca21876feb25d476460a2"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/hospital-waiting-room-65e653"
+  },
+  "backgrounds/laboratory": {
+    "slug": "research-laboratory-8d110a",
+    "uploadedAt": "2026-09-07T03:02:16.134Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "d3dde5c98219611d87ade144cee040ff19843a3755f424f19ca1bb9a5a6cf92e",
+      "portrait.svg": "4e6c6680363f17013f13f2f1cc44c020b9f798fb1bbe11d5a9e1377b173c74e1"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/research-laboratory-8d110a"
+  },
+  "backgrounds/limestone-cave": {
+    "slug": "limestone-cave-09d28d",
+    "uploadedAt": "2026-09-07T03:02:19.156Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "d42252646cc2139778169574eeb1289f4271ad46622dfd5e8333991577141315",
+      "portrait.svg": "4f6b4eff2f3b4d8fc36b6669a97e4d4d9e87a7ba274f8397792f694b622fc159"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/limestone-cave-09d28d"
+  },
+  "backgrounds/mountain-overlook": {
+    "slug": "mountain-overlook-fd757a",
+    "uploadedAt": "2026-09-07T03:02:22.076Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "f206f6218da658f8aa52357b318893a6a006a33ef2e092915bdad3326fddefba",
+      "portrait.svg": "1d9d8f2dfd788e2560308d2a2131513b291a6b7e40e2a46e54c6df8afb50e008"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/mountain-overlook-fd757a"
+  },
+  "backgrounds/police-station": {
+    "slug": "police-station-reception-627da7",
+    "uploadedAt": "2026-09-07T03:02:25.171Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "965edff3f1b120688a7253dcd60f39ce5315490b3ffb8f6e6f281ca0d5c41b6a",
+      "portrait.svg": "68c60d102196a8ef7a9ee2659dd09f175dfedb1a972f4322499cbcc8028ceef9"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/police-station-reception-627da7"
+  },
+  "backgrounds/restaurant-dining-room": {
+    "slug": "restaurant-dining-room-b7bf29",
+    "uploadedAt": "2026-09-07T03:02:28.042Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "2fe1c7bfe36b9ef40f34aec0992cc77efd56acb5010248168a1ac20e003e1b7d",
+      "portrait.svg": "2dd7afb66bbeb5b84e2594c996fa6e7585e8f77aa09b1e2bd5380c53dbf3ecc4"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/restaurant-dining-room-b7bf29"
+  },
+  "backgrounds/rooftop-at-night": {
+    "slug": "city-rooftop-at-night-f5acca",
+    "uploadedAt": "2026-09-07T03:02:30.941Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "16800c24af42d60b36c1ab89f815e643957e64c10f49fb8b1652fadb0b058754",
+      "portrait.svg": "d45b262c34bad994fc0d161d82db4a952bea212ee789718599e6894c9924e122"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/city-rooftop-at-night-f5acca"
+  },
+  "backgrounds/rustic-tavern": {
+    "slug": "rustic-tavern-038c20",
+    "uploadedAt": "2026-09-07T03:02:33.876Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "57abfe1f3edb67b6c2231b19dfa3f371b70451f22558f6e6ff1e784e2951b409",
+      "portrait.svg": "e36ecc77fa4b5205674ebbb93f493561eb1b8e4a9d4eebe2ae03470cb92b4a87"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/rustic-tavern-038c20"
+  },
+  "backgrounds/seaside-beach": {
+    "slug": "sunny-seaside-beach-b74d72",
+    "uploadedAt": "2026-09-07T03:02:36.835Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "15196185e3df70a110a0c5caee49ed58270008263ab6f3c3590aab8d3acf6d59",
+      "portrait.svg": "a4625de0c85d3e94e5ba9ce8e410f6a0126e163bebc5ad4b8b2672f88c4348cd"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/sunny-seaside-beach-b74d72"
+  },
+  "backgrounds/spaceship-bridge": {
+    "slug": "spaceship-bridge-797eff",
+    "uploadedAt": "2026-09-07T03:02:39.788Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "41462feb29f0080df571e8eec09a821cac72bb2ba1623da4c9ba371f4d5f07a5",
+      "portrait.svg": "dec620699c00c796d51cbfefe8e44c4ccd6e647937a445f07604577820f966ed"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/spaceship-bridge-797eff"
+  },
+  "backgrounds/theater-stage": {
+    "slug": "theater-stage-2831a8",
+    "uploadedAt": "2026-09-07T03:02:42.660Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "4183312a3adacc6e2f3c86a3750653cbea51bd4def392aa28d0d671aeaa3f740",
+      "portrait.svg": "acce2f89bdfcaa828d04477005c052ee09d711ba0f4a92e6ddf1c2892d70a8c3"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/theater-stage-2831a8"
+  },
+  "backgrounds/train-platform": {
+    "slug": "covered-train-platform-7b4758",
+    "uploadedAt": "2026-09-07T03:02:45.543Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "168577306285a6d53e1344fdf352ac95527b1f72004d3af999271bdceb93927a",
+      "portrait.svg": "8c5f6f302202383ced9d8c9972204cd3da14693f2d5dc5ae160872a6629adacf"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/covered-train-platform-7b4758"
+  },
+  "backgrounds/underwater-reef": {
+    "slug": "underwater-reef-b7bc74",
+    "uploadedAt": "2026-09-07T03:02:48.478Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "ae8826db8515122dde0666d93e31ca40ca65b1b3762d863b2f782411c4282eeb",
+      "portrait.svg": "a9633e5b69cb777a71464d4b1a4361333ecf583e60526c47bfc1009082f331e5"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/underwater-reef-b7bc74"
+  },
+  "backgrounds/woodland-campsite": {
+    "slug": "woodland-campsite-at-dusk-24b890",
+    "uploadedAt": "2026-09-07T03:02:51.335Z",
+    "verified": true,
+    "sha256": {
+      "landscape.svg": "1c4a6c89107df6f227d81a93c57caec2372f3e19c20eacfcbce4bc6387186487",
+      "portrait.svg": "e8c6f65828fc591423777350aff1d7d25f4f4d2f17c9ed1cd9a961ba012b7416"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/backgrounds/woodland-campsite-at-dusk-24b890"
+  },
+  "props/backpack": {
+    "slug": "everyday-backpack-2659cb",
+    "uploadedAt": "2026-09-07T03:02:54.084Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "efb91aca63fa86005a09c4f40e34d69a205bd5ab15e1ecda30c1e8a5327b0cea"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/everyday-backpack-2659cb"
+  },
+  "props/banana": {
+    "slug": "perfectly-suspicious-banana-3d433f",
+    "uploadedAt": "2026-09-07T03:02:56.870Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "afc222bddc34048430a656c5f13971ca946dd73da32b42f4370efeefda71e556"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/perfectly-suspicious-banana-3d433f"
+  },
+  "props/book": {
+    "slug": "well-loved-hardback-7b21d1",
+    "uploadedAt": "2026-09-07T03:02:59.635Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "6305bad970c515497f81452003e1a85c5a3560da69ee02ddfe51c88e186a4756"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/well-loved-hardback-7b21d1"
+  },
+  "props/broom": {
+    "slug": "straw-broom-9a2ed4",
+    "uploadedAt": "2026-09-07T03:03:02.349Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "4b64f20f7c516b362e7ab47b760a11e595db0dc7f5530fbc6104bbd1a19c5c8c"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/straw-broom-9a2ed4"
+  },
+  "props/cake": {
+    "slug": "celebration-cake-05ae07",
+    "uploadedAt": "2026-09-07T03:03:05.157Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "e13b89cfd6b4ff54dfe53f6aa7ce3fabb0fa6fda0a7a6b28ccac8ab6d8c96673"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/celebration-cake-05ae07"
+  },
+  "props/chair": {
+    "slug": "wooden-kitchen-chair-cf6992",
+    "uploadedAt": "2026-09-07T03:03:07.923Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "1cd76a5c756d241aba85379035b3c518139f87a8cc0cd70e3d6fe0ae398d6b2b"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/wooden-kitchen-chair-cf6992"
+  },
+  "props/clipboard": {
+    "slug": "inspection-clipboard-4ea11a",
+    "uploadedAt": "2026-09-07T03:03:10.702Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "ebbc791460552aaa71590b16b5ae221c98d2af7aed55f63206d59f6f95ffd7ac"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/inspection-clipboard-4ea11a"
+  },
+  "props/clock": {
+    "slug": "alarm-clock-cfc588",
+    "uploadedAt": "2026-09-07T03:03:13.499Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "0fdfc37589e673d510d887b204552f4ff5594096c77915660680d7c5227d10df"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/alarm-clock-cfc588"
+  },
+  "props/crown": {
+    "slug": "slightly-crooked-crown-2c6862",
+    "uploadedAt": "2026-09-07T03:03:16.206Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "c33bd7e6259399c98ef18f6869dc0d61e2bb40e058ba2efc0f1d28cf7166019b"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/slightly-crooked-crown-2c6862"
+  },
+  "props/fire-extinguisher": {
+    "slug": "fire-extinguisher-0b0234",
+    "uploadedAt": "2026-09-07T03:03:18.984Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "6995d4f689e31feebd266c335c5ebedb2cef9d8b3b4d9352da4ec36f4d559f0d"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/fire-extinguisher-0b0234"
+  },
+  "props/flashlight": {
+    "slug": "yellow-inspection-flashlight-e18fb9",
+    "uploadedAt": "2026-09-07T03:03:21.855Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "f4990138f4e377a4ed75def2223d5082192eef9c7ed578c06a40853b94d14f53"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/yellow-inspection-flashlight-e18fb9"
+  },
+  "props/gift": {
+    "slug": "big-ribbon-gift-bf7ad9",
+    "uploadedAt": "2026-09-07T03:03:24.559Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "ce2b1b94e5415742bedfa4c5fd12149bcaacc40506d23274842e4739743c41da"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/big-ribbon-gift-bf7ad9"
+  },
+  "props/hammer": {
+    "slug": "carpenter-hammer-2da51e",
+    "uploadedAt": "2026-09-07T03:03:27.241Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "ce84c5c61f4bdf4aeb656cb55dc827ec72f8a642ab86802ecc00c82df98dee33"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/carpenter-hammer-2da51e"
+  },
+  "props/keyring": {
+    "slug": "caretaker-keyring-e18cd1",
+    "uploadedAt": "2026-09-07T03:03:29.954Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "6bd79f614a829ee3e84d32093a08afb6f20457bda18296ed06a90e6ffe20aee2"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/caretaker-keyring-e18cd1"
+  },
+  "props/laptop": {
+    "slug": "stickered-laptop-ac8f7b",
+    "uploadedAt": "2026-09-07T03:03:32.657Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "ae9ca1d8d556c4f7efdafc7ae3367ebdd0a8176c1d026c8eb9ec29302599d1dc"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/stickered-laptop-ac8f7b"
+  },
+  "props/megaphone": {
+    "slug": "red-rally-megaphone-5cd7b5",
+    "uploadedAt": "2026-09-07T03:03:35.357Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "35bcfb6f0b4f7240733713faf45983941b4d5728756adfcac91a7e2b57446801"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/red-rally-megaphone-5cd7b5"
+  },
+  "props/microphone": {
+    "slug": "stand-microphone-981c6e",
+    "uploadedAt": "2026-09-07T03:03:38.084Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "fba65940272f1246d9358a164dbb872dd8f7a780e6bb3eac66deb3b6c4134346"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/stand-microphone-981c6e"
+  },
+  "props/mop-bucket": {
+    "slug": "mop-and-bucket-b78205",
+    "uploadedAt": "2026-09-07T03:03:40.820Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "0cad1df93e6728b966191e4a852fe9aec6fe196e5999a79c69e2864373256de2"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/mop-and-bucket-b78205"
+  },
+  "props/newspaper": {
+    "slug": "folded-newspaper-d3ef17",
+    "uploadedAt": "2026-09-07T03:03:43.507Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "3eb04838761db9b44359e364a8c4dc758f977b93a2fd936d9e876654ad271b15"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/folded-newspaper-d3ef17"
+  },
+  "props/pizza": {
+    "slug": "pizza-on-a-tray-72ae82",
+    "uploadedAt": "2026-09-07T03:03:46.221Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "d5bba0fca1ca70f3baa5870152a04c45910abb76dff55a5835e1ffe0e0ce9b32"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/pizza-on-a-tray-72ae82"
+  },
+  "props/potted-plant": {
+    "slug": "resilient-houseplant-28c8e0",
+    "uploadedAt": "2026-09-07T03:03:49.034Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "ab0dae31076a512c6bb00d28e3e5f10e3a21ce1f97ec0f8bc7926e80f779ba39"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/resilient-houseplant-28c8e0"
+  },
+  "props/sandwich": {
+    "slug": "lunch-sandwich-069f72",
+    "uploadedAt": "2026-09-07T03:03:51.787Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "5891b5bc67dbe7b458b71761b533ce4c6accbfa2c1ed69dd89a895c98e66c8ec"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/lunch-sandwich-069f72"
+  },
+  "props/sign": {
+    "slug": "blank-sandwich-board-sign-15b37a",
+    "uploadedAt": "2026-09-07T03:03:54.575Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "3ae193f6383738cbbc1c52854122a874bf30b78c28265c44df5bb31579f9a50c"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/blank-sandwich-board-sign-15b37a"
+  },
+  "props/suitcase": {
+    "slug": "travel-suitcase-bfc241",
+    "uploadedAt": "2026-09-07T03:03:57.534Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "69cfe2e1a6e9782c044dd4a626630e394f97e032886dd17a71eb99166f792c01"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/travel-suitcase-bfc241"
+  },
+  "props/table": {
+    "slug": "round-cafe-table-804649",
+    "uploadedAt": "2026-09-07T03:04:00.278Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "00e7428333bd3c36ca82356b775c5a222674bb2be561cbf577579852cf56ff0d"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/round-cafe-table-804649"
+  },
+  "props/traffic-cone": {
+    "slug": "traffic-cone-184cdf",
+    "uploadedAt": "2026-09-07T03:04:03.089Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "2e692ea0049fc25741722548b2f3b80a71232eca15f374951ebeacd23e05cb23"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/traffic-cone-184cdf"
+  },
+  "props/treasure-chest": {
+    "slug": "pirate-treasure-chest-a73318",
+    "uploadedAt": "2026-09-07T03:04:05.859Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "8b40b3e3e6d082e07449d0a3da459a3320805eb1cd1d0ee72f792cf74599d4d3"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/pirate-treasure-chest-a73318"
+  },
+  "props/trophy": {
+    "slug": "first-place-trophy-df0b1b",
+    "uploadedAt": "2026-09-07T03:04:08.650Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "2ee6760e362e54f633f336e6f521b46f723b8ef9e2e87afe791cdefd273ff68a"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/first-place-trophy-df0b1b"
+  },
+  "props/umbrella": {
+    "slug": "storm-umbrella-cb12b9",
+    "uploadedAt": "2026-09-07T03:04:11.422Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "f559ee60c7b022a74aac62d387d041a02d982a7b76cbdd77688df09503774bbb"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/storm-umbrella-cb12b9"
+  },
+  "props/wrench": {
+    "slug": "workshop-wrench-59aa61",
+    "uploadedAt": "2026-09-07T03:04:14.126Z",
+    "verified": true,
+    "sha256": {
+      "prop.svg": "5a993434b617354c113d67a35d4132b48ca54adcbb9c88fa245ea02dc6ad7693"
+    },
+    "url": "https://pelicans-community.sam-cloudflare-d20.workers.dev/api/community/props/workshop-wrench-59aa61"
+  }
+}

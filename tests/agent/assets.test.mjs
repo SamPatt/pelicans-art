@@ -65,3 +65,7 @@ test('multi-concept discovery finds separate assets and ranks combined matches b
  const broad=await searchAssets({source:'pouch',category:'props',query:'duck captain ship duck'});assert.equal(broad.match,'any');assert.equal(broad.items.length,4);assert.equal(broad.items[0].id,'captain-duck');assert.deepEqual(broad.items[0].match.terms,['duck','captain']);
  const narrow=await searchAssets({source:'pouch',category:'props',query:'duck captain',match:'all'});assert.deepEqual(narrow.items.map(x=>x.id),['captain-duck']);await assert.rejects(searchAssets({match:'typo'}),/match/);
 });
+
+test('starter imports retain attribution and scoped reuse permission',async t=>{
+ const root=await project(t);const added=await addAsset(root,{source:'local',category:'props',id:'starter-book'});const meta=JSON.parse(await fs.readFile(added.metadata));assert.equal(meta.author,'SamPatt');assert.equal(meta.collection,'Sandbox starter library');assert.match(meta.license,/reuse and adapt/);
+});

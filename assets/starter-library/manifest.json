@@ -1,0 +1,2637 @@
+{
+  "version": 1,
+  "counts": {
+    "characters": 40,
+    "backgrounds": 30,
+    "props": 30
+  },
+  "items": [
+    {
+      "id": "alien",
+      "category": "characters",
+      "name": "Curious alien visitor",
+      "description": "A green alien with a pear-shaped oversized head, long antennae and a compact plum jumpsuit.",
+      "tags": [
+        "alien",
+        "science-fiction",
+        "space",
+        "visitor",
+        "curious"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "ec2963d7273f5364654e44d46e7969697d27e9ef1ec10a9e501f809af7a0dc94"
+      },
+      "localId": "starter-alien",
+      "localPreview": "/sprites/starter-alien/front.svg",
+      "pouch": {
+        "slug": "curious-alien-visitor-3a1895",
+        "url": "https://pelicans.art/community.html?type=characters&id=curious-alien-visitor-3a1895"
+      }
+    },
+    {
+      "id": "astronaut",
+      "category": "characters",
+      "name": "Optimistic astronaut",
+      "description": "An astronaut in a cream spacesuit with a large round blue-edged clear helmet, chest panel and ochre gloves.",
+      "tags": [
+        "human",
+        "astronaut",
+        "space",
+        "science",
+        "explorer"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "a7029514cedc5b9f2361121cc0677f06fd68c0783be34bf20716fba9cd389d09"
+      },
+      "localId": "starter-astronaut",
+      "localPreview": "/sprites/starter-astronaut/front.svg",
+      "pouch": {
+        "slug": "optimistic-astronaut-dad8f5",
+        "url": "https://pelicans.art/community.html?type=characters&id=optimistic-astronaut-dad8f5"
+      }
+    },
+    {
+      "id": "barista",
+      "category": "characters",
+      "name": "Friendly barista",
+      "description": "A barista with short curls, coral shirt and a dark green apron with a large cream coffee cup emblem.",
+      "tags": [
+        "human",
+        "barista",
+        "cafe",
+        "coffee",
+        "service"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "0ba409e6e3a0c8abf339c11bdaefc45d42894a5cd890d91cb9d01127e58277b4"
+      },
+      "localId": "starter-barista",
+      "localPreview": "/sprites/starter-barista/front.svg",
+      "pouch": {
+        "slug": "friendly-barista-92b3cf",
+        "url": "https://pelicans.art/community.html?type=characters&id=friendly-barista-92b3cf"
+      }
+    },
+    {
+      "id": "bear",
+      "category": "characters",
+      "name": "Gentle lumbering bear",
+      "description": "A broad brown bear with small round ears, a cream muzzle and a large soft belly; a gentle giant.",
+      "tags": [
+        "animal",
+        "bear",
+        "forest",
+        "large",
+        "gentle"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "0b29267b30225cb2d4bdfb6f71167a9224653b10680eee745de746a19ea8067d"
+      },
+      "localId": "starter-bear",
+      "localPreview": "/sprites/starter-bear/front.svg",
+      "pouch": {
+        "slug": "gentle-lumbering-bear-908175",
+        "url": "https://pelicans.art/community.html?type=characters&id=gentle-lumbering-bear-908175"
+      }
+    },
+    {
+      "id": "cat",
+      "category": "characters",
+      "name": "Sardonic house cat",
+      "description": "A slate-blue cat with triangular ears, long curling tail and a cream chest; poised to judge everyone.",
+      "tags": [
+        "animal",
+        "cat",
+        "pet",
+        "home",
+        "sarcastic"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "cf02d88c33077f2a391b1d3a84b668dbfcf1b326fe58ba27b36686de8d81e563"
+      },
+      "localId": "starter-cat",
+      "localPreview": "/sprites/starter-cat/front.svg",
+      "pouch": {
+        "slug": "sardonic-house-cat-3e740e",
+        "url": "https://pelicans.art/community.html?type=characters&id=sardonic-house-cat-3e740e"
+      }
+    },
+    {
+      "id": "chef",
+      "category": "characters",
+      "name": "Busy chef",
+      "description": "A stout chef with a tall cloud-shaped white toque, double-breasted coat, red neckerchief and rolled sleeves.",
+      "tags": [
+        "human",
+        "chef",
+        "kitchen",
+        "restaurant",
+        "cooking"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "54ac489b2e653530cd92feb777cec2577c88a07b2c78c2ec90cef0b8e2f05337"
+      },
+      "localId": "starter-chef",
+      "localPreview": "/sprites/starter-chef/front.svg",
+      "pouch": {
+        "slug": "busy-chef-fc3ac6",
+        "url": "https://pelicans.art/community.html?type=characters&id=busy-chef-fc3ac6"
+      }
+    },
+    {
+      "id": "construction-worker",
+      "category": "characters",
+      "name": "Resourceful builder",
+      "description": "A construction worker with an ochre hard hat, reflective orange vest and sturdy dark trousers.",
+      "tags": [
+        "human",
+        "builder",
+        "construction",
+        "worker",
+        "repair"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "f50ba1e16abf74f65f3386545832b991e666debb6a6dcbee71213b4ab7bc0cda"
+      },
+      "localId": "starter-construction-worker",
+      "localPreview": "/sprites/starter-construction-worker/front.svg",
+      "pouch": {
+        "slug": "resourceful-builder-7e9a9c",
+        "url": "https://pelicans.art/community.html?type=characters&id=resourceful-builder-7e9a9c"
+      }
+    },
+    {
+      "id": "detective",
+      "category": "characters",
+      "name": "Suspicious detective",
+      "description": "A detective with a tilted brown fedora and oversized ochre trench-coat lapels; useful for mysteries and interrogation.",
+      "tags": [
+        "human",
+        "detective",
+        "mystery",
+        "crime",
+        "investigation"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "90b9bf5cf3465b0c63d986f76138281f46c52b3b752baa2f80e44abcdfbd15e8"
+      },
+      "localId": "starter-detective",
+      "localPreview": "/sprites/starter-detective/front.svg",
+      "pouch": {
+        "slug": "suspicious-detective-a14895",
+        "url": "https://pelicans.art/community.html?type=characters&id=suspicious-detective-a14895"
+      }
+    },
+    {
+      "id": "doctor",
+      "category": "characters",
+      "name": "Thoughtful doctor",
+      "description": "A dark-skinned doctor in a sea-green coat, short curls, and a clearly visible stethoscope; useful for clinics and absurd diagnoses.",
+      "tags": [
+        "human",
+        "doctor",
+        "hospital",
+        "clinic",
+        "health"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "b09123e3caa2b0a6810128bb023a55ac8fd36d77a6601494d6b542140855c2db"
+      },
+      "localId": "starter-doctor",
+      "localPreview": "/sprites/starter-doctor/front.svg",
+      "pouch": {
+        "slug": "thoughtful-doctor-103295",
+        "url": "https://pelicans.art/community.html?type=characters&id=thoughtful-doctor-103295"
+      }
+    },
+    {
+      "id": "dog",
+      "category": "characters",
+      "name": "Loyal scruffy dog",
+      "description": "A sandy upright dog with one floppy dark ear, a cream muzzle, jaunty tail and a red collar.",
+      "tags": [
+        "animal",
+        "dog",
+        "pet",
+        "loyal",
+        "home"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "d9fe27ca670b7017cd69a44310138afa33f6987a49be139a4bbf581d2f1aeef4"
+      },
+      "localId": "starter-dog",
+      "localPreview": "/sprites/starter-dog/front.svg",
+      "pouch": {
+        "slug": "loyal-scruffy-dog-fdadb1",
+        "url": "https://pelicans.art/community.html?type=characters&id=loyal-scruffy-dog-fdadb1"
+      }
+    },
+    {
+      "id": "dragon",
+      "category": "characters",
+      "name": "Small dramatic dragon",
+      "description": "A coral dragon with gold horns, small angular wings, a sweeping tail and a pale armored belly.",
+      "tags": [
+        "fantasy",
+        "dragon",
+        "monster",
+        "magic",
+        "fire"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "c09ab828380422d630fec8c3a8aaab14d4f6425a1bc244c3bdb1719a52b25ae5"
+      },
+      "localId": "starter-dragon",
+      "localPreview": "/sprites/starter-dragon/front.svg",
+      "pouch": {
+        "slug": "small-dramatic-dragon-1a03ab",
+        "url": "https://pelicans.art/community.html?type=characters&id=small-dramatic-dragon-1a03ab"
+      }
+    },
+    {
+      "id": "farmer",
+      "category": "characters",
+      "name": "Steady farmer",
+      "description": "A broad-shouldered farmer in a straw hat and green overalls with a cream work shirt.",
+      "tags": [
+        "human",
+        "farmer",
+        "farm",
+        "rural",
+        "garden"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "c4bf6efe60cb9d8a3475132880547744c2fc3f5178fe9e4b3415de20b6ee14c3"
+      },
+      "localId": "starter-farmer",
+      "localPreview": "/sprites/starter-farmer/front.svg",
+      "pouch": {
+        "slug": "steady-farmer-f3d86b",
+        "url": "https://pelicans.art/community.html?type=characters&id=steady-farmer-f3d86b"
+      }
+    },
+    {
+      "id": "firefighter",
+      "category": "characters",
+      "name": "Resolute firefighter",
+      "description": "A firefighter in an ochre helmet and red turnout coat with bright reflective bands; broad stance and reassuring expression.",
+      "tags": [
+        "human",
+        "firefighter",
+        "emergency",
+        "rescue",
+        "fire"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "0b9a930dea42bc4871ed48db596073288909068de2686aec07570a5106973132"
+      },
+      "localId": "starter-firefighter",
+      "localPreview": "/sprites/starter-firefighter/front.svg",
+      "pouch": {
+        "slug": "resolute-firefighter-056137",
+        "url": "https://pelicans.art/community.html?type=characters&id=resolute-firefighter-056137"
+      }
+    },
+    {
+      "id": "fox",
+      "category": "characters",
+      "name": "Smooth-talking fox",
+      "description": "An orange fox with enormous pointed ears, angular cream cheeks and a sweeping white-tipped tail.",
+      "tags": [
+        "animal",
+        "fox",
+        "forest",
+        "clever",
+        "trickster"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "db2282d4ed72c99f3076630a0117d8bd316c3e7994ef0079456a3346e80e2837"
+      },
+      "localId": "starter-fox",
+      "localPreview": "/sprites/starter-fox/front.svg",
+      "pouch": {
+        "slug": "smooth-talking-fox-1373bc",
+        "url": "https://pelicans.art/community.html?type=characters&id=smooth-talking-fox-1373bc"
+      }
+    },
+    {
+      "id": "frog",
+      "category": "characters",
+      "name": "Confident pond frog",
+      "description": "A green frog with wide-set raised eyes, a pale throat and very long splayed orange toes.",
+      "tags": [
+        "animal",
+        "frog",
+        "pond",
+        "amphibian",
+        "confident"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "726b7a05978ee8efd2c60b29479ea844f825e86b65e776a5f146cfb3fb26a263"
+      },
+      "localId": "starter-frog",
+      "localPreview": "/sprites/starter-frog/front.svg",
+      "pouch": {
+        "slug": "confident-pond-frog-0ad0b0",
+        "url": "https://pelicans.art/community.html?type=characters&id=confident-pond-frog-0ad0b0"
+      }
+    },
+    {
+      "id": "ghost",
+      "category": "characters",
+      "name": "Polite sheet ghost",
+      "description": "A floating cream ghost with a scalloped trailing sheet and expressive dark eyes; friendly rather than frightening.",
+      "tags": [
+        "fantasy",
+        "ghost",
+        "supernatural",
+        "haunted",
+        "floating"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "7849fb023b2edc206fdae3d36a00c42e22a1a0a2a8c0b6f19f618d8c8b7fefe5"
+      },
+      "localId": "starter-ghost",
+      "localPreview": "/sprites/starter-ghost/front.svg",
+      "pouch": {
+        "slug": "polite-sheet-ghost-b02caa",
+        "url": "https://pelicans.art/community.html?type=characters&id=polite-sheet-ghost-b02caa"
+      }
+    },
+    {
+      "id": "goat",
+      "category": "characters",
+      "name": "Stubborn goat",
+      "description": "A cream goat with swept-back horns, angular ears, a pointed chin beard and dark split hooves.",
+      "tags": [
+        "animal",
+        "goat",
+        "farm",
+        "stubborn",
+        "mountain"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "bf5dd2c3aa0d55104747c3180556f3eef26e79d976852db816c9c2f08829360f"
+      },
+      "localId": "starter-goat",
+      "localPreview": "/sprites/starter-goat/front.svg",
+      "pouch": {
+        "slug": "stubborn-goat-6ec167",
+        "url": "https://pelicans.art/community.html?type=characters&id=stubborn-goat-6ec167"
+      }
+    },
+    {
+      "id": "grandfather",
+      "category": "characters",
+      "name": "Dapper grandfather",
+      "description": "An elderly man with wispy silver side hair, a plum waistcoat, bow tie and small gold reading spectacles.",
+      "tags": [
+        "human",
+        "elderly",
+        "grandfather",
+        "family",
+        "retired"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "32e5f510ca9545a5a46fc5c5b509d4c62b121f3f880b95f6fea98c6c881753de"
+      },
+      "localId": "starter-grandfather",
+      "localPreview": "/sprites/starter-grandfather/front.svg",
+      "pouch": {
+        "slug": "dapper-grandfather-7f5638",
+        "url": "https://pelicans.art/community.html?type=characters&id=dapper-grandfather-7f5638"
+      }
+    },
+    {
+      "id": "grandmother",
+      "category": "characters",
+      "name": "Spirited grandmother",
+      "description": "An elderly woman with a silver hair bun, green dress and bold coral scarf; an energetic family matriarch.",
+      "tags": [
+        "human",
+        "elderly",
+        "grandmother",
+        "family",
+        "retired"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "e2e8f235cef0476b363d68f0d6c1725e6010e8a82fc4efbdf01a4d1bf57e3b1d"
+      },
+      "localId": "starter-grandmother",
+      "localPreview": "/sprites/starter-grandmother/front.svg",
+      "pouch": {
+        "slug": "spirited-grandmother-d2fc95",
+        "url": "https://pelicans.art/community.html?type=characters&id=spirited-grandmother-d2fc95"
+      }
+    },
+    {
+      "id": "judge",
+      "category": "characters",
+      "name": "Stern judge",
+      "description": "A silver-haired judge with a wide black robe, cream neck tabs and a deliberately unimpressed brow.",
+      "tags": [
+        "human",
+        "judge",
+        "courtroom",
+        "law",
+        "authority"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "dae7abefe717960484997bebb540c4a3f2733caf2c2e27b5efa33f5a4708d801"
+      },
+      "localId": "starter-judge",
+      "localPreview": "/sprites/starter-judge/front.svg",
+      "pouch": {
+        "slug": "stern-judge-8488d3",
+        "url": "https://pelicans.art/community.html?type=characters&id=stern-judge-8488d3"
+      }
+    },
+    {
+      "id": "librarian",
+      "category": "characters",
+      "name": "Exacting librarian",
+      "description": "A librarian with a high dark bun, half-moon spectacles, plum cardigan and an orderly stack of books.",
+      "tags": [
+        "human",
+        "librarian",
+        "library",
+        "books",
+        "quiet"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "fdfc203a6d608cc34c8ead29f95c479ad5ddae7acc58cadc9fb44bac000a4d66"
+      },
+      "localId": "starter-librarian",
+      "localPreview": "/sprites/starter-librarian/front.svg",
+      "pouch": {
+        "slug": "exacting-librarian-374c5c",
+        "url": "https://pelicans.art/community.html?type=characters&id=exacting-librarian-374c5c"
+      }
+    },
+    {
+      "id": "mail-carrier",
+      "category": "characters",
+      "name": "Cheerful mail carrier",
+      "description": "A postal worker in a blue cap and uniform with a diagonal satchel strap and a cream envelope.",
+      "tags": [
+        "human",
+        "mail",
+        "delivery",
+        "postal",
+        "messenger"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "13997a31b094511ddb7976790b0d3d8c9f1c0314fb153a56cb9442ac3ad847cc"
+      },
+      "localId": "starter-mail-carrier",
+      "localPreview": "/sprites/starter-mail-carrier/front.svg",
+      "pouch": {
+        "slug": "cheerful-mail-carrier-77b84f",
+        "url": "https://pelicans.art/community.html?type=characters&id=cheerful-mail-carrier-77b84f"
+      }
+    },
+    {
+      "id": "mechanic",
+      "category": "characters",
+      "name": "Practical mechanic",
+      "description": "A mechanic with a red cap, blue overalls, rolled sleeves and a chunky wrench tucked into the bib pocket.",
+      "tags": [
+        "human",
+        "mechanic",
+        "garage",
+        "repair",
+        "workshop"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "700d44b10e585eb3adeea6f462e6909ae50d7ed57bad70e878408c3c9ba29cd4"
+      },
+      "localId": "starter-mechanic",
+      "localPreview": "/sprites/starter-mechanic/front.svg",
+      "pouch": {
+        "slug": "practical-mechanic-7dee63",
+        "url": "https://pelicans.art/community.html?type=characters&id=practical-mechanic-7dee63"
+      }
+    },
+    {
+      "id": "mouse",
+      "category": "characters",
+      "name": "Plucky little mouse",
+      "description": "A tiny upright grey mouse with enormous pink-lined ears, thin tail and a red neckerchief.",
+      "tags": [
+        "animal",
+        "mouse",
+        "small",
+        "rodent",
+        "plucky"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "952f38b21cdb4c9bcf0bd89b1e6d191e0cbaa64c64118f73f6e646fe38ed2f8e"
+      },
+      "localId": "starter-mouse",
+      "localPreview": "/sprites/starter-mouse/front.svg",
+      "pouch": {
+        "slug": "plucky-little-mouse-6d60b2",
+        "url": "https://pelicans.art/community.html?type=characters&id=plucky-little-mouse-6d60b2"
+      }
+    },
+    {
+      "id": "musician",
+      "category": "characters",
+      "name": "Cool jazz musician",
+      "description": "A musician with swept-up hair, plum suit, mustard scarf and a stylized brass trumpet held across the torso.",
+      "tags": [
+        "human",
+        "musician",
+        "jazz",
+        "music",
+        "performer"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "b14675d7dba562efba051ad81723a453cbcb809aa793edabbfe503439c3ecd29"
+      },
+      "localId": "starter-musician",
+      "localPreview": "/sprites/starter-musician/front.svg",
+      "pouch": {
+        "slug": "cool-jazz-musician-6e2f55",
+        "url": "https://pelicans.art/community.html?type=characters&id=cool-jazz-musician-6e2f55"
+      }
+    },
+    {
+      "id": "office-worker",
+      "category": "characters",
+      "name": "Overworked office worker",
+      "description": "A brown-skinned office worker with an untidy side part, rolled teal sleeves and a loosened red tie.",
+      "tags": [
+        "human",
+        "office",
+        "employee",
+        "business",
+        "tired"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "4f02a2b0e76c06e6aa29be138fe9f69a1927efb2805ea5f101f512d8c6497d3b"
+      },
+      "localId": "starter-office-worker",
+      "localPreview": "/sprites/starter-office-worker/front.svg",
+      "pouch": {
+        "slug": "overworked-office-worker-8c83c6",
+        "url": "https://pelicans.art/community.html?type=characters&id=overworked-office-worker-8c83c6"
+      }
+    },
+    {
+      "id": "owl",
+      "category": "characters",
+      "name": "Scholarly owl",
+      "description": "A round ochre owl with dramatic cream facial discs, plum wings and small orange talons.",
+      "tags": [
+        "animal",
+        "owl",
+        "bird",
+        "wise",
+        "night"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "540c5d5ba1a7994b07ac3876b649857cd3915db2f78a29a0a97b54ed9db4aa57"
+      },
+      "localId": "starter-owl",
+      "localPreview": "/sprites/starter-owl/front.svg",
+      "pouch": {
+        "slug": "scholarly-owl-83d7c3",
+        "url": "https://pelicans.art/community.html?type=characters&id=scholarly-owl-83d7c3"
+      }
+    },
+    {
+      "id": "penguin",
+      "category": "characters",
+      "name": "Formal penguin",
+      "description": "A black-and-cream penguin with flipper arms, ochre feet and a small red bow tie.",
+      "tags": [
+        "animal",
+        "penguin",
+        "bird",
+        "formal",
+        "cold"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "7253d5406b9c695053c0840c6303fb65f9f440a5844208b385e51e64cd7b2891"
+      },
+      "localId": "starter-penguin",
+      "localPreview": "/sprites/starter-penguin/front.svg",
+      "pouch": {
+        "slug": "formal-penguin-c9c0ba",
+        "url": "https://pelicans.art/community.html?type=characters&id=formal-penguin-c9c0ba"
+      }
+    },
+    {
+      "id": "pirate",
+      "category": "characters",
+      "name": "Swaggering pirate",
+      "description": "A pirate captain with an asymmetric black tricorn, red coat and cream cravat; both eyes remain expressive for animation.",
+      "tags": [
+        "human",
+        "pirate",
+        "captain",
+        "ship",
+        "adventure"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "db27ef210f695c616d8f4030616b152cce73ebdcadf25dea9a37f3b1307cf08a"
+      },
+      "localId": "starter-pirate",
+      "localPreview": "/sprites/starter-pirate/front.svg",
+      "pouch": {
+        "slug": "swaggering-pirate-db6066",
+        "url": "https://pelicans.art/community.html?type=characters&id=swaggering-pirate-db6066"
+      }
+    },
+    {
+      "id": "rabbit",
+      "category": "characters",
+      "name": "Anxious rabbit",
+      "description": "A cream rabbit with one bent long ear, oversized hind feet, coral waistcoat and a tiny pink nose.",
+      "tags": [
+        "animal",
+        "rabbit",
+        "bunny",
+        "forest",
+        "nervous"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "730ce4dd2cb560c11f0e0229023ea903b7bf1bd9f747b016eda6dbd614f17706"
+      },
+      "localId": "starter-rabbit",
+      "localPreview": "/sprites/starter-rabbit/front.svg",
+      "pouch": {
+        "slug": "anxious-rabbit-9ce033",
+        "url": "https://pelicans.art/community.html?type=characters&id=anxious-rabbit-9ce033"
+      }
+    },
+    {
+      "id": "raccoon",
+      "category": "characters",
+      "name": "Resourceful raccoon",
+      "description": "A grey raccoon with a dark face mask and a large striped tail; nimble paws suit secretive schemes.",
+      "tags": [
+        "animal",
+        "raccoon",
+        "urban",
+        "sneaky",
+        "night"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "d0a1d5f67424c7268a32898151b08aed8e54a50b638f53b4a0ef00ed4a2b22f2"
+      },
+      "localId": "starter-raccoon",
+      "localPreview": "/sprites/starter-raccoon/front.svg",
+      "pouch": {
+        "slug": "resourceful-raccoon-3584be",
+        "url": "https://pelicans.art/community.html?type=characters&id=resourceful-raccoon-3584be"
+      }
+    },
+    {
+      "id": "robot",
+      "category": "characters",
+      "name": "Helpful box robot",
+      "description": "A teal-and-cream service robot with a square head, asymmetrical antenna, segmented limbs and a gold chest dial.",
+      "tags": [
+        "robot",
+        "science-fiction",
+        "machine",
+        "assistant",
+        "technology"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "e29254ddbf0be4385b58f98bcd193c198bea8945c966de807977437dc43517a8"
+      },
+      "localId": "starter-robot",
+      "localPreview": "/sprites/starter-robot/front.svg",
+      "pouch": {
+        "slug": "helpful-box-robot-f6156c",
+        "url": "https://pelicans.art/community.html?type=characters&id=helpful-box-robot-f6156c"
+      }
+    },
+    {
+      "id": "royal",
+      "category": "characters",
+      "name": "Pompous monarch",
+      "description": "A monarch with a large three-point crown, plum robe, cream collar and an oversized gold medallion.",
+      "tags": [
+        "human",
+        "king",
+        "queen",
+        "royalty",
+        "palace"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "f30ec6b18ca1038e8c627ee5659bd885e9031cc6342166bab133a605d3f0af84"
+      },
+      "localId": "starter-royal",
+      "localPreview": "/sprites/starter-royal/front.svg",
+      "pouch": {
+        "slug": "pompous-monarch-d2d35f",
+        "url": "https://pelicans.art/community.html?type=characters&id=pompous-monarch-d2d35f"
+      }
+    },
+    {
+      "id": "scientist",
+      "category": "characters",
+      "name": "Excitable scientist",
+      "description": "An older scientist with white hair flaring sideways, teal shirt and a white laboratory coat with a pen pocket.",
+      "tags": [
+        "human",
+        "scientist",
+        "laboratory",
+        "research",
+        "inventor"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "f91fe4fc6d347a5c5a5690c1a2b859949086a19218359224c2abbf48c966ec82"
+      },
+      "localId": "starter-scientist",
+      "localPreview": "/sprites/starter-scientist/front.svg",
+      "pouch": {
+        "slug": "excitable-scientist-be6e70",
+        "url": "https://pelicans.art/community.html?type=characters&id=excitable-scientist-be6e70"
+      }
+    },
+    {
+      "id": "student",
+      "category": "characters",
+      "name": "Curious student",
+      "description": "A young student with a rounded hair bob, coral hoodie, and bright mustard backpack straps.",
+      "tags": [
+        "human",
+        "student",
+        "school",
+        "young",
+        "college"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "afa0da9e896f88340e1d589bd40cc44d71474eae1e376e8275f6eecb04e066bc"
+      },
+      "localId": "starter-student",
+      "localPreview": "/sprites/starter-student/front.svg",
+      "pouch": {
+        "slug": "curious-student-3c7a4c",
+        "url": "https://pelicans.art/community.html?type=characters&id=curious-student-3c7a4c"
+      }
+    },
+    {
+      "id": "superhero",
+      "category": "characters",
+      "name": "Earnest superhero",
+      "description": "A superhero in a teal suit with a dramatic coral cape, ochre belt and a bold lightning chest emblem.",
+      "tags": [
+        "human",
+        "superhero",
+        "hero",
+        "rescue",
+        "comic"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "ae4a9cda5a49c0ba5d75e9ec069f63607f01cb0177fb589b713bf9721495bb89"
+      },
+      "localId": "starter-superhero",
+      "localPreview": "/sprites/starter-superhero/front.svg",
+      "pouch": {
+        "slug": "earnest-superhero-d73aa9",
+        "url": "https://pelicans.art/community.html?type=characters&id=earnest-superhero-d73aa9"
+      }
+    },
+    {
+      "id": "teacher",
+      "category": "characters",
+      "name": "Patient teacher",
+      "description": "A warm brown-skinned teacher with a high hair bun, mustard cardigan and an open green lesson book; calm schoolroom authority.",
+      "tags": [
+        "human",
+        "teacher",
+        "school",
+        "education",
+        "book"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "af77e28475372dd1f2fb694d184a37c22df3e874e1929d79e6822e45453ec1c2"
+      },
+      "localId": "starter-teacher",
+      "localPreview": "/sprites/starter-teacher/front.svg",
+      "pouch": {
+        "slug": "patient-teacher-4e503d",
+        "url": "https://pelicans.art/community.html?type=characters&id=patient-teacher-4e503d"
+      }
+    },
+    {
+      "id": "tourist",
+      "category": "characters",
+      "name": "Delighted tourist",
+      "description": "A tourist with a floppy sun hat, coral vacation shirt and a large camera hanging over the chest.",
+      "tags": [
+        "human",
+        "tourist",
+        "travel",
+        "vacation",
+        "camera"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "665579fa81c414cf8e829a9e8bde5430e49c9200eecd312b58b9f712a03a72f6"
+      },
+      "localId": "starter-tourist",
+      "localPreview": "/sprites/starter-tourist/front.svg",
+      "pouch": {
+        "slug": "delighted-tourist-f41fa8",
+        "url": "https://pelicans.art/community.html?type=characters&id=delighted-tourist-f41fa8"
+      }
+    },
+    {
+      "id": "unicorn",
+      "category": "characters",
+      "name": "Self-important unicorn",
+      "description": "A cream unicorn with a long gold horn, flowing coral mane, tiny hooves and a flamboyant tail.",
+      "tags": [
+        "fantasy",
+        "unicorn",
+        "magic",
+        "horse",
+        "proud"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "869f69d4f1186b8837b7b4a876c59a9ed8a19b69231131e8d471854c9497ab14"
+      },
+      "localId": "starter-unicorn",
+      "localPreview": "/sprites/starter-unicorn/front.svg",
+      "pouch": {
+        "slug": "self-important-unicorn-a0e68e",
+        "url": "https://pelicans.art/community.html?type=characters&id=self-important-unicorn-a0e68e"
+      }
+    },
+    {
+      "id": "wizard",
+      "category": "characters",
+      "name": "Distracted wizard",
+      "description": "A wizard wearing a tall bent plum hat and robe, with a flowing silver beard framing a visible animated mouth.",
+      "tags": [
+        "human",
+        "wizard",
+        "magic",
+        "fantasy",
+        "sage"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "front.svg"
+      ],
+      "sha256": {
+        "front.svg": "e84d1a8b7248963eaadaa404fc5591ae933b2f386d1bd59929e9b8d926906b7f"
+      },
+      "localId": "starter-wizard",
+      "localPreview": "/sprites/starter-wizard/front.svg",
+      "pouch": {
+        "slug": "distracted-wizard-714a1c",
+        "url": "https://pelicans.art/community.html?type=characters&id=distracted-wizard-714a1c"
+      }
+    },
+    {
+      "id": "airport-terminal",
+      "category": "backgrounds",
+      "name": "Airport departure lounge",
+      "description": "Broad terminal windows overlooking a parked plane silhouette, overhead gate sign and seating.",
+      "tags": [
+        "airport",
+        "travel",
+        "flight",
+        "terminal"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "1922386a9c426858ad039332beff9b8cb644a5fb5bd77a1f765ea414adb77d30",
+        "portrait.svg": "818ce3a24fa95754df5d606873ef9be0edd5fe2e11abf3b1214e4127fd6d8780"
+      },
+      "localId": "starter-airport-terminal",
+      "localPreview": "/backgrounds/starter-airport-terminal/landscape.svg",
+      "pouch": {
+        "slug": "airport-departure-lounge-87d5a0",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=airport-departure-lounge-87d5a0"
+      }
+    },
+    {
+      "id": "alien-planet",
+      "category": "backgrounds",
+      "name": "Alien planet surface",
+      "description": "Otherworldly mushroom plants frame a spacious dusty landscape beneath two moons.",
+      "tags": [
+        "alien",
+        "planet",
+        "space",
+        "scifi"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "c2d0d22a6d9cc68fe4d2333c02ebbe192079e04d367d844b4d1058c72acca2d7",
+        "portrait.svg": "a9afe1f63ccde5142e43280903281af848e5d9491b26fd7406804ab7978ef11e"
+      },
+      "localId": "starter-alien-planet",
+      "localPreview": "/backgrounds/starter-alien-planet/landscape.svg",
+      "pouch": {
+        "slug": "alien-planet-surface-966225",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=alien-planet-surface-966225"
+      }
+    },
+    {
+      "id": "bus-interior",
+      "category": "backgrounds",
+      "name": "Inside a city bus",
+      "description": "A symmetrical aisle with paired seats, broad windows and yellow grab rails.",
+      "tags": [
+        "bus",
+        "transport",
+        "commute",
+        "interior"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "b43ecac25aa1d8d9f324c41fabe28a4c057a30992c64cdd1875b7082e437a779",
+        "portrait.svg": "0c4d49e9c1d417ad1f46c6ebb64858cf4491dfe906baeef7aa4ae58c22e3860d"
+      },
+      "localId": "starter-bus-interior",
+      "localPreview": "/backgrounds/starter-bus-interior/landscape.svg",
+      "pouch": {
+        "slug": "inside-a-city-bus-1a8586",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=inside-a-city-bus-1a8586"
+      }
+    },
+    {
+      "id": "castle-hall",
+      "category": "backgrounds",
+      "name": "Castle great hall",
+      "description": "Stone columns, hanging banners and an arched doorway surrounding a ceremonial carpet.",
+      "tags": [
+        "castle",
+        "medieval",
+        "royalty",
+        "hall"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "40ea67f05af514a0861c72a7b2532b0df1bf77704e09333aa766904fcbc73d60",
+        "portrait.svg": "f4d766d430d08946b0b4f023a5ce4498e5082e6391c1ab05f0f5065648ed5508"
+      },
+      "localId": "starter-castle-hall",
+      "localPreview": "/backgrounds/starter-castle-hall/landscape.svg",
+      "pouch": {
+        "slug": "castle-great-hall-5506c6",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=castle-great-hall-5506c6"
+      }
+    },
+    {
+      "id": "city-library",
+      "category": "backgrounds",
+      "name": "Public library",
+      "description": "Book-filled shelves flank a quiet reading table and tall window.",
+      "tags": [
+        "library",
+        "books",
+        "reading",
+        "study"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "6af9ecdb8e51483ffd17f27173cb9450872e320f37b1109d29b405ac4aa9a00e",
+        "portrait.svg": "454c25c710d16ec0e6c80de51e01f4b07d77225a9aff62f3f8817d060aa841d2"
+      },
+      "localId": "starter-city-library",
+      "localPreview": "/backgrounds/starter-city-library/landscape.svg",
+      "pouch": {
+        "slug": "public-library-c01694",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=public-library-c01694"
+      }
+    },
+    {
+      "id": "city-street",
+      "category": "backgrounds",
+      "name": "Neighborhood street",
+      "description": "A walkable city block with warm shopfronts and a streetlamp along the sidewalk.",
+      "tags": [
+        "city",
+        "street",
+        "town",
+        "sidewalk"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "20d56e7fe5a29dc01bc0e8ed2d471e2d1ee696e56c61c95be73a60f116c96275",
+        "portrait.svg": "fca4e63e31f3afe4e456368aecdf762c0cc0c8c370ac93318e9082cb0d440045"
+      },
+      "localId": "starter-city-street",
+      "localPreview": "/backgrounds/starter-city-street/landscape.svg",
+      "pouch": {
+        "slug": "neighborhood-street-1b34f1",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=neighborhood-street-1b34f1"
+      }
+    },
+    {
+      "id": "classroom",
+      "category": "backgrounds",
+      "name": "School classroom",
+      "description": "Green chalkboard, geometric lesson and teacher desk with open floor for classroom scenes.",
+      "tags": [
+        "school",
+        "teacher",
+        "lesson",
+        "education"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "3fc03ecc28f5dd1fe5d52a1cf94fa650ea8592b358bb374959798fc43463a8a6",
+        "portrait.svg": "cfcc3fc43d2bf1bd29f1243e7ff7c04f4c9733272944702840ad911a6c2fa587"
+      },
+      "localId": "starter-classroom",
+      "localPreview": "/backgrounds/starter-classroom/landscape.svg",
+      "pouch": {
+        "slug": "school-classroom-66b7e6",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=school-classroom-66b7e6"
+      }
+    },
+    {
+      "id": "conference-room",
+      "category": "backgrounds",
+      "name": "Office conference room",
+      "description": "Presentation screen and boardroom table in a calm modern office. Clear foreground for meetings, interviews and corporate comedy.",
+      "tags": [
+        "office",
+        "meeting",
+        "workplace",
+        "presentation"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "14b3537d016b3c87ebac2e10c939191351ba00afb8117936487506f79cfb6884",
+        "portrait.svg": "688b77d6c379516fdad0c6c529c1f9fee707a36c4f899c94d7ee06582b134949"
+      },
+      "localId": "starter-conference-room",
+      "localPreview": "/backgrounds/starter-conference-room/landscape.svg",
+      "pouch": {
+        "slug": "office-conference-room-83f99d",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=office-conference-room-83f99d"
+      }
+    },
+    {
+      "id": "courtroom",
+      "category": "backgrounds",
+      "name": "Courtroom",
+      "description": "Wooden judges bench under a scales emblem, with an open hearing floor.",
+      "tags": [
+        "court",
+        "judge",
+        "law",
+        "trial"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "194112704ecb44d187f35c6dd594fb5430f312c6832dd689a939b293f7992281",
+        "portrait.svg": "2e76d4f0465f18306771d7ae4c6f0a3f2a0cfe20cc910d81d7e9cd728b12d830"
+      },
+      "localId": "starter-courtroom",
+      "localPreview": "/backgrounds/starter-courtroom/landscape.svg",
+      "pouch": {
+        "slug": "courtroom-2148aa",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=courtroom-2148aa"
+      }
+    },
+    {
+      "id": "cozy-living-room",
+      "category": "backgrounds",
+      "name": "Cozy living room",
+      "description": "Warm lounge with red sofa, framed landscape and large window; clear space in front for actors.",
+      "tags": [
+        "home",
+        "sofa",
+        "family",
+        "lounge"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "ea7d6c3197752c6252e8c10708a74c2c76c73281dfea41fb14d55a95e0a7a041",
+        "portrait.svg": "93b9e2f796c9edd2100c409bb223ffab603a8670f51c6a34a8e7a4fd1414f8bb"
+      },
+      "localId": "starter-cozy-living-room",
+      "localPreview": "/backgrounds/starter-cozy-living-room/landscape.svg",
+      "pouch": {
+        "slug": "cozy-living-room-539e06",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=cozy-living-room-539e06"
+      }
+    },
+    {
+      "id": "elevator-lobby",
+      "category": "backgrounds",
+      "name": "Elevator lobby",
+      "description": "Closed elevator doors with call buttons and a potted plant in a spare building lobby.",
+      "tags": [
+        "elevator",
+        "office",
+        "lobby",
+        "building"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "3043dc7e7bebd4268f26b019a66b424153810812b9669dfc7dfd4309921cbd7c",
+        "portrait.svg": "253d067c03fdf4973918c9b49cc543d9c8b838a1ddc6befba99c03a45573e1e9"
+      },
+      "localId": "starter-elevator-lobby",
+      "localPreview": "/backgrounds/starter-elevator-lobby/landscape.svg",
+      "pouch": {
+        "slug": "elevator-lobby-cdcc14",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=elevator-lobby-cdcc14"
+      }
+    },
+    {
+      "id": "farmyard",
+      "category": "backgrounds",
+      "name": "Red barn farmyard",
+      "description": "A red barn with cross-braced doors, fence sections and rolling fields.",
+      "tags": [
+        "farm",
+        "barn",
+        "rural",
+        "agriculture"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "bd721c0f4e74d3133e64dad7431dd92284c1c8123b4af38321200ea234f54eb4",
+        "portrait.svg": "ade99cd23d42d78c574a56ec3e00ba85a9cf24d1da3ec07187fd3e9c4f98cc85"
+      },
+      "localId": "starter-farmyard",
+      "localPreview": "/backgrounds/starter-farmyard/landscape.svg",
+      "pouch": {
+        "slug": "red-barn-farmyard-ef80c0",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=red-barn-farmyard-ef80c0"
+      }
+    },
+    {
+      "id": "fire-station",
+      "category": "backgrounds",
+      "name": "Fire station garage",
+      "description": "Red segmented engine bay door, brass pole and equipment locker; no vehicle embedded.",
+      "tags": [
+        "firefighter",
+        "garage",
+        "emergency",
+        "station"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "231062dbdb209aedf0fa1d243baa13445638fe9153bb41b891b22bf30e795016",
+        "portrait.svg": "fdc8bcc3199565a0583954fb690a31866fc8f0f2ec81b5470d6a769982781283"
+      },
+      "localId": "starter-fire-station",
+      "localPreview": "/backgrounds/starter-fire-station/landscape.svg",
+      "pouch": {
+        "slug": "fire-station-garage-898cf7",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=fire-station-garage-898cf7"
+      }
+    },
+    {
+      "id": "forest-clearing",
+      "category": "backgrounds",
+      "name": "Forest clearing",
+      "description": "Layered evergreen trees frame a sunlit woodland path and open clearing.",
+      "tags": [
+        "forest",
+        "woods",
+        "nature",
+        "path"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "97a4ab13853eb22b78a0f46c7f853434145fb2c470e7bbe39aab489c9672fbc4",
+        "portrait.svg": "b1388db3627f7f7356cfd4afe6d9a127557425eb81a0cd1f1be1dd815986d264"
+      },
+      "localId": "starter-forest-clearing",
+      "localPreview": "/backgrounds/starter-forest-clearing/landscape.svg",
+      "pouch": {
+        "slug": "forest-clearing-5a4b74",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=forest-clearing-5a4b74"
+      }
+    },
+    {
+      "id": "grocery-store",
+      "category": "backgrounds",
+      "name": "Neighborhood grocery store",
+      "description": "Two stocked shelving units and a produce display around a clear shopping aisle.",
+      "tags": [
+        "shop",
+        "food",
+        "market",
+        "shopping"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "def7518b5ff8341906d7e8a8892e90501570de4f85855aa6732a9312e4e17550",
+        "portrait.svg": "967a56178438b490e3eb91f7fbc237d9b677928657745f5b243236ff207c7c45"
+      },
+      "localId": "starter-grocery-store",
+      "localPreview": "/backgrounds/starter-grocery-store/landscape.svg",
+      "pouch": {
+        "slug": "neighborhood-grocery-store-12ea7f",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=neighborhood-grocery-store-12ea7f"
+      }
+    },
+    {
+      "id": "home-kitchen",
+      "category": "backgrounds",
+      "name": "Home kitchen",
+      "description": "Domestic kitchen with cupboards, window, sink and an open floor for family or cooking scenes.",
+      "tags": [
+        "home",
+        "cooking",
+        "kitchen",
+        "family"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "3e7d051016cda8979534a1b175e0791aa30e927f02c0fe1cc304987025d15364",
+        "portrait.svg": "c24ce67fc9ff7cac56f71b0e56d0f40e5f08abf8f2e020359abf6582de6e8f78"
+      },
+      "localId": "starter-home-kitchen",
+      "localPreview": "/backgrounds/starter-home-kitchen/landscape.svg",
+      "pouch": {
+        "slug": "home-kitchen-db2a57",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=home-kitchen-db2a57"
+      }
+    },
+    {
+      "id": "hospital-waiting-room",
+      "category": "backgrounds",
+      "name": "Hospital waiting room",
+      "description": "Quiet medical waiting area with paired benches, clock and marked treatment door.",
+      "tags": [
+        "hospital",
+        "doctor",
+        "waiting",
+        "medical"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "af24255ee2928fc55d01407e481565270d57b7a03556320828979763eb232381",
+        "portrait.svg": "6f67ddf7deb1386ec547d76525ccdfd8464a634ddb5ca21876feb25d476460a2"
+      },
+      "localId": "starter-hospital-waiting-room",
+      "localPreview": "/backgrounds/starter-hospital-waiting-room/landscape.svg",
+      "pouch": {
+        "slug": "hospital-waiting-room-65e653",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=hospital-waiting-room-65e653"
+      }
+    },
+    {
+      "id": "laboratory",
+      "category": "backgrounds",
+      "name": "Research laboratory",
+      "description": "A clean laboratory with glass flasks, a workbench and overhead pipework.",
+      "tags": [
+        "science",
+        "lab",
+        "research",
+        "experiment"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "d3dde5c98219611d87ade144cee040ff19843a3755f424f19ca1bb9a5a6cf92e",
+        "portrait.svg": "4e6c6680363f17013f13f2f1cc44c020b9f798fb1bbe11d5a9e1377b173c74e1"
+      },
+      "localId": "starter-laboratory",
+      "localPreview": "/backgrounds/starter-laboratory/landscape.svg",
+      "pouch": {
+        "slug": "research-laboratory-8d110a",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=research-laboratory-8d110a"
+      }
+    },
+    {
+      "id": "limestone-cave",
+      "category": "backgrounds",
+      "name": "Limestone cave",
+      "description": "Deep rock chamber framed by stalactites and a shallow turquoise pool.",
+      "tags": [
+        "cave",
+        "underground",
+        "adventure",
+        "rocks"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "d42252646cc2139778169574eeb1289f4271ad46622dfd5e8333991577141315",
+        "portrait.svg": "4f6b4eff2f3b4d8fc36b6669a97e4d4d9e87a7ba274f8397792f694b622fc159"
+      },
+      "localId": "starter-limestone-cave",
+      "localPreview": "/backgrounds/starter-limestone-cave/landscape.svg",
+      "pouch": {
+        "slug": "limestone-cave-09d28d",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=limestone-cave-09d28d"
+      }
+    },
+    {
+      "id": "mountain-overlook",
+      "category": "backgrounds",
+      "name": "Mountain overlook",
+      "description": "Snow-capped peaks behind a broad rocky overlook with space for hikers or adventurers.",
+      "tags": [
+        "mountain",
+        "hiking",
+        "outdoors",
+        "summit"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "f206f6218da658f8aa52357b318893a6a006a33ef2e092915bdad3326fddefba",
+        "portrait.svg": "1d9d8f2dfd788e2560308d2a2131513b291a6b7e40e2a46e54c6df8afb50e008"
+      },
+      "localId": "starter-mountain-overlook",
+      "localPreview": "/backgrounds/starter-mountain-overlook/landscape.svg",
+      "pouch": {
+        "slug": "mountain-overlook-fd757a",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=mountain-overlook-fd757a"
+      }
+    },
+    {
+      "id": "police-station",
+      "category": "backgrounds",
+      "name": "Police station reception",
+      "description": "Reception desk, investigation noticeboard and shield emblem for police procedural scenes.",
+      "tags": [
+        "police",
+        "station",
+        "crime",
+        "reception"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "965edff3f1b120688a7253dcd60f39ce5315490b3ffb8f6e6f281ca0d5c41b6a",
+        "portrait.svg": "68c60d102196a8ef7a9ee2659dd09f175dfedb1a972f4322499cbcc8028ceef9"
+      },
+      "localId": "starter-police-station",
+      "localPreview": "/backgrounds/starter-police-station/landscape.svg",
+      "pouch": {
+        "slug": "police-station-reception-627da7",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=police-station-reception-627da7"
+      }
+    },
+    {
+      "id": "restaurant-dining-room",
+      "category": "backgrounds",
+      "name": "Restaurant dining room",
+      "description": "An intimate restaurant with draped window, pendant light and small side tables.",
+      "tags": [
+        "restaurant",
+        "dinner",
+        "dining",
+        "date"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "2fe1c7bfe36b9ef40f34aec0992cc77efd56acb5010248168a1ac20e003e1b7d",
+        "portrait.svg": "2dd7afb66bbeb5b84e2594c996fa6e7585e8f77aa09b1e2bd5380c53dbf3ecc4"
+      },
+      "localId": "starter-restaurant-dining-room",
+      "localPreview": "/backgrounds/starter-restaurant-dining-room/landscape.svg",
+      "pouch": {
+        "slug": "restaurant-dining-room-b7bf29",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=restaurant-dining-room-b7bf29"
+      }
+    },
+    {
+      "id": "rooftop-at-night",
+      "category": "backgrounds",
+      "name": "City rooftop at night",
+      "description": "Moonlit skyline behind a rooftop parapet and a small stairwell entrance.",
+      "tags": [
+        "rooftop",
+        "night",
+        "city",
+        "skyline"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "16800c24af42d60b36c1ab89f815e643957e64c10f49fb8b1652fadb0b058754",
+        "portrait.svg": "d45b262c34bad994fc0d161d82db4a952bea212ee789718599e6894c9924e122"
+      },
+      "localId": "starter-rooftop-at-night",
+      "localPreview": "/backgrounds/starter-rooftop-at-night/landscape.svg",
+      "pouch": {
+        "slug": "city-rooftop-at-night-f5acca",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=city-rooftop-at-night-f5acca"
+      }
+    },
+    {
+      "id": "rustic-tavern",
+      "category": "backgrounds",
+      "name": "Rustic tavern",
+      "description": "Timber-beamed inn with bottle shelves, oak barrel and a substantial wooden bar.",
+      "tags": [
+        "tavern",
+        "pub",
+        "fantasy",
+        "inn"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "57abfe1f3edb67b6c2231b19dfa3f371b70451f22558f6e6ff1e784e2951b409",
+        "portrait.svg": "e36ecc77fa4b5205674ebbb93f493561eb1b8e4a9d4eebe2ae03470cb92b4a87"
+      },
+      "localId": "starter-rustic-tavern",
+      "localPreview": "/backgrounds/starter-rustic-tavern/landscape.svg",
+      "pouch": {
+        "slug": "rustic-tavern-038c20",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=rustic-tavern-038c20"
+      }
+    },
+    {
+      "id": "seaside-beach",
+      "category": "backgrounds",
+      "name": "Sunny seaside beach",
+      "description": "Gentle waves, a striped beach umbrella and a wide open stretch of sand.",
+      "tags": [
+        "beach",
+        "sea",
+        "holiday",
+        "summer"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "15196185e3df70a110a0c5caee49ed58270008263ab6f3c3590aab8d3acf6d59",
+        "portrait.svg": "a4625de0c85d3e94e5ba9ce8e410f6a0126e163bebc5ad4b8b2672f88c4348cd"
+      },
+      "localId": "starter-seaside-beach",
+      "localPreview": "/backgrounds/starter-seaside-beach/landscape.svg",
+      "pouch": {
+        "slug": "sunny-seaside-beach-b74d72",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=sunny-seaside-beach-b74d72"
+      }
+    },
+    {
+      "id": "spaceship-bridge",
+      "category": "backgrounds",
+      "name": "Spaceship bridge",
+      "description": "Angular observation windows, ring-lit planet and broad control console on a spacecraft bridge.",
+      "tags": [
+        "space",
+        "spaceship",
+        "bridge",
+        "scifi"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "41462feb29f0080df571e8eec09a821cac72bb2ba1623da4c9ba371f4d5f07a5",
+        "portrait.svg": "dec620699c00c796d51cbfefe8e44c4ccd6e647937a445f07604577820f966ed"
+      },
+      "localId": "starter-spaceship-bridge",
+      "localPreview": "/backgrounds/starter-spaceship-bridge/landscape.svg",
+      "pouch": {
+        "slug": "spaceship-bridge-797eff",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=spaceship-bridge-797eff"
+      }
+    },
+    {
+      "id": "theater-stage",
+      "category": "backgrounds",
+      "name": "Theater stage",
+      "description": "Red velvet curtains and a warm pool of stage light on wooden boards.",
+      "tags": [
+        "theater",
+        "performance",
+        "stage",
+        "comedy"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "4183312a3adacc6e2f3c86a3750653cbea51bd4def392aa28d0d671aeaa3f740",
+        "portrait.svg": "acce2f89bdfcaa828d04477005c052ee09d711ba0f4a92e6ddf1c2892d70a8c3"
+      },
+      "localId": "starter-theater-stage",
+      "localPreview": "/backgrounds/starter-theater-stage/landscape.svg",
+      "pouch": {
+        "slug": "theater-stage-2831a8",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=theater-stage-2831a8"
+      }
+    },
+    {
+      "id": "train-platform",
+      "category": "backgrounds",
+      "name": "Covered train platform",
+      "description": "A station canopy, clock, waiting train and layered rails for travel scenes.",
+      "tags": [
+        "train",
+        "railway",
+        "station",
+        "travel"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "168577306285a6d53e1344fdf352ac95527b1f72004d3af999271bdceb93927a",
+        "portrait.svg": "8c5f6f302202383ced9d8c9972204cd3da14693f2d5dc5ae160872a6629adacf"
+      },
+      "localId": "starter-train-platform",
+      "localPreview": "/backgrounds/starter-train-platform/landscape.svg",
+      "pouch": {
+        "slug": "covered-train-platform-7b4758",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=covered-train-platform-7b4758"
+      }
+    },
+    {
+      "id": "underwater-reef",
+      "category": "backgrounds",
+      "name": "Underwater reef",
+      "description": "Sunbeams, seaweed and branching coral surround an open sandy seabed.",
+      "tags": [
+        "ocean",
+        "underwater",
+        "reef",
+        "sea"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "ae8826db8515122dde0666d93e31ca40ca65b1b3762d863b2f782411c4282eeb",
+        "portrait.svg": "a9633e5b69cb777a71464d4b1a4361333ecf583e60526c47bfc1009082f331e5"
+      },
+      "localId": "starter-underwater-reef",
+      "localPreview": "/backgrounds/starter-underwater-reef/landscape.svg",
+      "pouch": {
+        "slug": "underwater-reef-b7bc74",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=underwater-reef-b7bc74"
+      }
+    },
+    {
+      "id": "woodland-campsite",
+      "category": "backgrounds",
+      "name": "Woodland campsite at dusk",
+      "description": "Canvas tent and evergreen silhouettes under moonlight, with open campsite foreground.",
+      "tags": [
+        "camping",
+        "tent",
+        "woods",
+        "night"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "landscape.svg",
+        "portrait.svg"
+      ],
+      "sha256": {
+        "landscape.svg": "1c4a6c89107df6f227d81a93c57caec2372f3e19c20eacfcbce4bc6387186487",
+        "portrait.svg": "e8c6f65828fc591423777350aff1d7d25f4f4d2f17c9ed1cd9a961ba012b7416"
+      },
+      "localId": "starter-woodland-campsite",
+      "localPreview": "/backgrounds/starter-woodland-campsite/landscape.svg",
+      "pouch": {
+        "slug": "woodland-campsite-at-dusk-24b890",
+        "url": "https://pelicans.art/community.html?type=backgrounds&id=woodland-campsite-at-dusk-24b890"
+      }
+    },
+    {
+      "id": "backpack",
+      "category": "props",
+      "name": "Everyday backpack",
+      "description": "A slouchy blue backpack with a cream front pocket, red zipper pulls and an arched carrying loop.",
+      "tags": [
+        "school",
+        "travel",
+        "bag",
+        "student",
+        "hiking"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "efb91aca63fa86005a09c4f40e34d69a205bd5ab15e1ecda30c1e8a5327b0cea"
+      },
+      "localId": "starter-backpack",
+      "localPreview": "/props/starter-backpack/prop.svg",
+      "pouch": {
+        "slug": "everyday-backpack-2659cb",
+        "url": "https://pelicans.art/community.html?type=props&id=everyday-backpack-2659cb"
+      }
+    },
+    {
+      "id": "banana",
+      "category": "props",
+      "name": "Perfectly suspicious banana",
+      "description": "A sweeping yellow banana with a curled tip, green stem and broad inner ridge. A simple readable comedy or kitchen prop.",
+      "tags": [
+        "food",
+        "fruit",
+        "comedy",
+        "snack",
+        "kitchen"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "afc222bddc34048430a656c5f13971ca946dd73da32b42f4370efeefda71e556"
+      },
+      "localId": "starter-banana",
+      "localPreview": "/props/starter-banana/prop.svg",
+      "pouch": {
+        "slug": "perfectly-suspicious-banana-3d433f",
+        "url": "https://pelicans.art/community.html?type=props&id=perfectly-suspicious-banana-3d433f"
+      }
+    },
+    {
+      "id": "book",
+      "category": "props",
+      "name": "Well-loved hardback",
+      "description": "A chunky red hardback book with a cloth spine, cream page block and a gold bookmark peeking below.",
+      "tags": [
+        "library",
+        "school",
+        "reading",
+        "story",
+        "study"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "6305bad970c515497f81452003e1a85c5a3560da69ee02ddfe51c88e186a4756"
+      },
+      "localId": "starter-book",
+      "localPreview": "/props/starter-book/prop.svg",
+      "pouch": {
+        "slug": "well-loved-hardback-7b21d1",
+        "url": "https://pelicans.art/community.html?type=props&id=well-loved-hardback-7b21d1"
+      }
+    },
+    {
+      "id": "broom",
+      "category": "props",
+      "name": "Straw broom",
+      "description": "A wide bristled straw broom with a tall red handle, teal binding and an uneven working edge.",
+      "tags": [
+        "cleaning",
+        "janitor",
+        "witch",
+        "household"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "4b64f20f7c516b362e7ab47b760a11e595db0dc7f5530fbc6104bbd1a19c5c8c"
+      },
+      "localId": "starter-broom",
+      "localPreview": "/props/starter-broom/prop.svg",
+      "pouch": {
+        "slug": "straw-broom-9a2ed4",
+        "url": "https://pelicans.art/community.html?type=props&id=straw-broom-9a2ed4"
+      }
+    },
+    {
+      "id": "cake",
+      "category": "props",
+      "name": "Celebration cake",
+      "description": "A two-layer strawberry cake with dripping cream icing, three candles and a broad serving plate.",
+      "tags": [
+        "food",
+        "birthday",
+        "party",
+        "dessert",
+        "celebration"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "e13b89cfd6b4ff54dfe53f6aa7ce3fabb0fa6fda0a7a6b28ccac8ab6d8c96673"
+      },
+      "localId": "starter-cake",
+      "localPreview": "/props/starter-cake/prop.svg",
+      "pouch": {
+        "slug": "celebration-cake-05ae07",
+        "url": "https://pelicans.art/community.html?type=props&id=celebration-cake-05ae07"
+      }
+    },
+    {
+      "id": "chair",
+      "category": "props",
+      "name": "Wooden kitchen chair",
+      "description": "A warm wooden chair in three-quarter view with a teal cushion, open back slats and four clearly separated legs.",
+      "tags": [
+        "furniture",
+        "home",
+        "kitchen",
+        "seat",
+        "restaurant"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "1cd76a5c756d241aba85379035b3c518139f87a8cc0cd70e3d6fe0ae398d6b2b"
+      },
+      "localId": "starter-chair",
+      "localPreview": "/props/starter-chair/prop.svg",
+      "pouch": {
+        "slug": "wooden-kitchen-chair-cf6992",
+        "url": "https://pelicans.art/community.html?type=props&id=wooden-kitchen-chair-cf6992"
+      }
+    },
+    {
+      "id": "clipboard",
+      "category": "props",
+      "name": "Inspection clipboard",
+      "description": "A honey-colored clipboard with an oversized metal clip and three bold checklist ticks. Useful for officials, doctors and very serious inspections.",
+      "tags": [
+        "office",
+        "checklist",
+        "inspector",
+        "paper",
+        "medical"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "ebbc791460552aaa71590b16b5ae221c98d2af7aed55f63206d59f6f95ffd7ac"
+      },
+      "localId": "starter-clipboard",
+      "localPreview": "/props/starter-clipboard/prop.svg",
+      "pouch": {
+        "slug": "inspection-clipboard-4ea11a",
+        "url": "https://pelicans.art/community.html?type=props&id=inspection-clipboard-4ea11a"
+      }
+    },
+    {
+      "id": "clock",
+      "category": "props",
+      "name": "Alarm clock",
+      "description": "A cream twin-bell alarm clock with red bells, clearly visible dark hands and a teal round face.",
+      "tags": [
+        "time",
+        "bedroom",
+        "alarm",
+        "morning",
+        "deadline"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "0fdfc37589e673d510d887b204552f4ff5594096c77915660680d7c5227d10df"
+      },
+      "localId": "starter-clock",
+      "localPreview": "/props/starter-clock/prop.svg",
+      "pouch": {
+        "slug": "alarm-clock-cfc588",
+        "url": "https://pelicans.art/community.html?type=props&id=alarm-clock-cfc588"
+      }
+    },
+    {
+      "id": "crown",
+      "category": "props",
+      "name": "Slightly crooked crown",
+      "description": "A theatrical gold crown with five broad points, a red central gem and a deep teal inset band.",
+      "tags": [
+        "royalty",
+        "king",
+        "queen",
+        "costume",
+        "fantasy"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "c33bd7e6259399c98ef18f6869dc0d61e2bb40e058ba2efc0f1d28cf7166019b"
+      },
+      "localId": "starter-crown",
+      "localPreview": "/props/starter-crown/prop.svg",
+      "pouch": {
+        "slug": "slightly-crooked-crown-2c6862",
+        "url": "https://pelicans.art/community.html?type=props&id=slightly-crooked-crown-2c6862"
+      }
+    },
+    {
+      "id": "fire-extinguisher",
+      "category": "props",
+      "name": "Fire extinguisher",
+      "description": "A red fire extinguisher with a black hose, pressure gauge and a bold flame symbol on its cream label.",
+      "tags": [
+        "safety",
+        "fire",
+        "emergency",
+        "office",
+        "equipment"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "6995d4f689e31feebd266c335c5ebedb2cef9d8b3b4d9352da4ec36f4d559f0d"
+      },
+      "localId": "starter-fire-extinguisher",
+      "localPreview": "/props/starter-fire-extinguisher/prop.svg",
+      "pouch": {
+        "slug": "fire-extinguisher-0b0234",
+        "url": "https://pelicans.art/community.html?type=props&id=fire-extinguisher-0b0234"
+      }
+    },
+    {
+      "id": "flashlight",
+      "category": "props",
+      "name": "Yellow inspection flashlight",
+      "description": "A sturdy yellow flashlight with an oversized blue lens, rubber grip and hanging wrist loop.",
+      "tags": [
+        "light",
+        "detective",
+        "camping",
+        "emergency",
+        "night"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "f4990138f4e377a4ed75def2223d5082192eef9c7ed578c06a40853b94d14f53"
+      },
+      "localId": "starter-flashlight",
+      "localPreview": "/props/starter-flashlight/prop.svg",
+      "pouch": {
+        "slug": "yellow-inspection-flashlight-e18fb9",
+        "url": "https://pelicans.art/community.html?type=props&id=yellow-inspection-flashlight-e18fb9"
+      }
+    },
+    {
+      "id": "gift",
+      "category": "props",
+      "name": "Big ribbon gift",
+      "description": "A coral present with a wide cream ribbon and exuberant asymmetrical bow, suitable for birthdays or suspicious deliveries.",
+      "tags": [
+        "gift",
+        "birthday",
+        "party",
+        "surprise",
+        "present"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "ce2b1b94e5415742bedfa4c5fd12149bcaacc40506d23274842e4739743c41da"
+      },
+      "localId": "starter-gift",
+      "localPreview": "/props/starter-gift/prop.svg",
+      "pouch": {
+        "slug": "big-ribbon-gift-bf7ad9",
+        "url": "https://pelicans.art/community.html?type=props&id=big-ribbon-gift-bf7ad9"
+      }
+    },
+    {
+      "id": "hammer",
+      "category": "props",
+      "name": "Carpenter hammer",
+      "description": "A heavy steel claw hammer with a long amber handle and a red grip. The split claw and flat striking head read clearly.",
+      "tags": [
+        "tool",
+        "construction",
+        "repair",
+        "workshop"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "ce84c5c61f4bdf4aeb656cb55dc827ec72f8a642ab86802ecc00c82df98dee33"
+      },
+      "localId": "starter-hammer",
+      "localPreview": "/props/starter-hammer/prop.svg",
+      "pouch": {
+        "slug": "carpenter-hammer-2da51e",
+        "url": "https://pelicans.art/community.html?type=props&id=carpenter-hammer-2da51e"
+      }
+    },
+    {
+      "id": "keyring",
+      "category": "props",
+      "name": "Caretaker keyring",
+      "description": "A large blue keyring holding two distinct metal keys and a coral identification tag. Useful for doors, hotels, caretakers and a missing-key reveal.",
+      "tags": [
+        "keys",
+        "door",
+        "hotel",
+        "caretaker",
+        "security"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "6bd79f614a829ee3e84d32093a08afb6f20457bda18296ed06a90e6ffe20aee2"
+      },
+      "localId": "starter-keyring",
+      "localPreview": "/props/starter-keyring/prop.svg",
+      "pouch": {
+        "slug": "caretaker-keyring-e18cd1",
+        "url": "https://pelicans.art/community.html?type=props&id=caretaker-keyring-e18cd1"
+      }
+    },
+    {
+      "id": "laptop",
+      "category": "props",
+      "name": "Stickered laptop",
+      "description": "An open teal laptop with a bright blank screen, chunky keyboard and a little lightning sticker. The screen is clear enough for a scene overlay.",
+      "tags": [
+        "computer",
+        "office",
+        "technology",
+        "screen",
+        "work"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "ae9ca1d8d556c4f7efdafc7ae3367ebdd0a8176c1d026c8eb9ec29302599d1dc"
+      },
+      "localId": "starter-laptop",
+      "localPreview": "/props/starter-laptop/prop.svg",
+      "pouch": {
+        "slug": "stickered-laptop-ac8f7b",
+        "url": "https://pelicans.art/community.html?type=props&id=stickered-laptop-ac8f7b"
+      }
+    },
+    {
+      "id": "megaphone",
+      "category": "props",
+      "name": "Red rally megaphone",
+      "description": "A bright red cone megaphone with a cream horn rim, hand grip and a visible talk button.",
+      "tags": [
+        "announcement",
+        "protest",
+        "coach",
+        "sound",
+        "police"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "35bcfb6f0b4f7240733713faf45983941b4d5728756adfcac91a7e2b57446801"
+      },
+      "localId": "starter-megaphone",
+      "localPreview": "/props/starter-megaphone/prop.svg",
+      "pouch": {
+        "slug": "red-rally-megaphone-5cd7b5",
+        "url": "https://pelicans.art/community.html?type=props&id=red-rally-megaphone-5cd7b5"
+      }
+    },
+    {
+      "id": "microphone",
+      "category": "props",
+      "name": "Stand microphone",
+      "description": "A silver vintage stage microphone on a tall dark stand, with a red on-air switch and broad stable foot.",
+      "tags": [
+        "stage",
+        "music",
+        "singing",
+        "interview",
+        "performance"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "fba65940272f1246d9358a164dbb872dd8f7a780e6bb3eac66deb3b6c4134346"
+      },
+      "localId": "starter-microphone",
+      "localPreview": "/props/starter-microphone/prop.svg",
+      "pouch": {
+        "slug": "stand-microphone-981c6e",
+        "url": "https://pelicans.art/community.html?type=props&id=stand-microphone-981c6e"
+      }
+    },
+    {
+      "id": "mop-bucket",
+      "category": "props",
+      "name": "Mop and bucket",
+      "description": "A coral cleaning bucket with a looping handle and a leaning mop whose broad cream strands hang over the rim.",
+      "tags": [
+        "cleaning",
+        "janitor",
+        "water",
+        "household",
+        "work"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "0cad1df93e6728b966191e4a852fe9aec6fe196e5999a79c69e2864373256de2"
+      },
+      "localId": "starter-mop-bucket",
+      "localPreview": "/props/starter-mop-bucket/prop.svg",
+      "pouch": {
+        "slug": "mop-and-bucket-b78205",
+        "url": "https://pelicans.art/community.html?type=props&id=mop-and-bucket-b78205"
+      }
+    },
+    {
+      "id": "newspaper",
+      "category": "props",
+      "name": "Folded newspaper",
+      "description": "A broad folded cream newspaper with a dramatic headline block, a framed photo and clean column shapes. No real publication or story is named.",
+      "tags": [
+        "news",
+        "paper",
+        "press",
+        "reading",
+        "reporter"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "3eb04838761db9b44359e364a8c4dc758f977b93a2fd936d9e876654ad271b15"
+      },
+      "localId": "starter-newspaper",
+      "localPreview": "/props/starter-newspaper/prop.svg",
+      "pouch": {
+        "slug": "folded-newspaper-d3ef17",
+        "url": "https://pelicans.art/community.html?type=props&id=folded-newspaper-d3ef17"
+      }
+    },
+    {
+      "id": "pizza",
+      "category": "props",
+      "name": "Pizza on a tray",
+      "description": "A generous round pizza on a dark serving tray, with six red pepperoni rounds, basil leaves and one slightly shifted slice.",
+      "tags": [
+        "food",
+        "restaurant",
+        "party",
+        "delivery",
+        "dinner"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "d5bba0fca1ca70f3baa5870152a04c45910abb76dff55a5835e1ffe0e0ce9b32"
+      },
+      "localId": "starter-pizza",
+      "localPreview": "/props/starter-pizza/prop.svg",
+      "pouch": {
+        "slug": "pizza-on-a-tray-72ae82",
+        "url": "https://pelicans.art/community.html?type=props&id=pizza-on-a-tray-72ae82"
+      }
+    },
+    {
+      "id": "potted-plant",
+      "category": "props",
+      "name": "Resilient houseplant",
+      "description": "A cheerful broad-leaf houseplant with an asymmetrical branching silhouette and a terracotta pot. Leaves have generous gaps for clear stage readability.",
+      "tags": [
+        "plant",
+        "home",
+        "office",
+        "garden",
+        "decoration"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "ab0dae31076a512c6bb00d28e3e5f10e3a21ce1f97ec0f8bc7926e80f779ba39"
+      },
+      "localId": "starter-potted-plant",
+      "localPreview": "/props/starter-potted-plant/prop.svg",
+      "pouch": {
+        "slug": "resilient-houseplant-28c8e0",
+        "url": "https://pelicans.art/community.html?type=props&id=resilient-houseplant-28c8e0"
+      }
+    },
+    {
+      "id": "sandwich",
+      "category": "props",
+      "name": "Lunch sandwich",
+      "description": "A tall triangular sandwich showing crisp lettuce, tomato and cheese between two generous slices of bread.",
+      "tags": [
+        "food",
+        "lunch",
+        "picnic",
+        "cafe",
+        "snack"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "5891b5bc67dbe7b458b71761b533ce4c6accbfa2c1ed69dd89a895c98e66c8ec"
+      },
+      "localId": "starter-sandwich",
+      "localPreview": "/props/starter-sandwich/prop.svg",
+      "pouch": {
+        "slug": "lunch-sandwich-069f72",
+        "url": "https://pelicans.art/community.html?type=props&id=lunch-sandwich-069f72"
+      }
+    },
+    {
+      "id": "sign",
+      "category": "props",
+      "name": "Blank sandwich-board sign",
+      "description": "A freestanding chalkboard sandwich sign with a warm wood frame and a deliberately empty dark writing surface. Add scene-specific text over the board.",
+      "tags": [
+        "sign",
+        "shop",
+        "restaurant",
+        "notice",
+        "blank"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "3ae193f6383738cbbc1c52854122a874bf30b78c28265c44df5bb31579f9a50c"
+      },
+      "localId": "starter-sign",
+      "localPreview": "/props/starter-sign/prop.svg",
+      "pouch": {
+        "slug": "blank-sandwich-board-sign-15b37a",
+        "url": "https://pelicans.art/community.html?type=props&id=blank-sandwich-board-sign-15b37a"
+      }
+    },
+    {
+      "id": "suitcase",
+      "category": "props",
+      "name": "Travel suitcase",
+      "description": "An upright mustard rolling suitcase with an extended handle, two wheels and bold contrasting travel labels.",
+      "tags": [
+        "travel",
+        "airport",
+        "luggage",
+        "holiday",
+        "hotel"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "69cfe2e1a6e9782c044dd4a626630e394f97e032886dd17a71eb99166f792c01"
+      },
+      "localId": "starter-suitcase",
+      "localPreview": "/props/starter-suitcase/prop.svg",
+      "pouch": {
+        "slug": "travel-suitcase-bfc241",
+        "url": "https://pelicans.art/community.html?type=props&id=travel-suitcase-bfc241"
+      }
+    },
+    {
+      "id": "table",
+      "category": "props",
+      "name": "Round cafe table",
+      "description": "A compact round cafe table with a honey-colored top and a dark branching pedestal, leaving room for actors on both sides.",
+      "tags": [
+        "furniture",
+        "cafe",
+        "restaurant",
+        "dining",
+        "desk"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "00e7428333bd3c36ca82356b775c5a222674bb2be561cbf577579852cf56ff0d"
+      },
+      "localId": "starter-table",
+      "localPreview": "/props/starter-table/prop.svg",
+      "pouch": {
+        "slug": "round-cafe-table-804649",
+        "url": "https://pelicans.art/community.html?type=props&id=round-cafe-table-804649"
+      }
+    },
+    {
+      "id": "traffic-cone",
+      "category": "props",
+      "name": "Traffic cone",
+      "description": "A sturdy orange road cone with two broad cream reflective stripes and a wide dark weighted base.",
+      "tags": [
+        "street",
+        "construction",
+        "traffic",
+        "warning",
+        "road"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "2e692ea0049fc25741722548b2f3b80a71232eca15f374951ebeacd23e05cb23"
+      },
+      "localId": "starter-traffic-cone",
+      "localPreview": "/props/starter-traffic-cone/prop.svg",
+      "pouch": {
+        "slug": "traffic-cone-184cdf",
+        "url": "https://pelicans.art/community.html?type=props&id=traffic-cone-184cdf"
+      }
+    },
+    {
+      "id": "treasure-chest",
+      "category": "props",
+      "name": "Pirate treasure chest",
+      "description": "An open wooden treasure chest with an arched lid, brass bands and a mound of oversized gold coins.",
+      "tags": [
+        "pirate",
+        "treasure",
+        "gold",
+        "fantasy",
+        "container"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "8b40b3e3e6d082e07449d0a3da459a3320805eb1cd1d0ee72f792cf74599d4d3"
+      },
+      "localId": "starter-treasure-chest",
+      "localPreview": "/props/starter-treasure-chest/prop.svg",
+      "pouch": {
+        "slug": "pirate-treasure-chest-a73318",
+        "url": "https://pelicans.art/community.html?type=props&id=pirate-treasure-chest-a73318"
+      }
+    },
+    {
+      "id": "trophy",
+      "category": "props",
+      "name": "First-place trophy",
+      "description": "A large gold cup with proud curling handles, a narrow stem and a solid teal prize plinth.",
+      "tags": [
+        "award",
+        "competition",
+        "sport",
+        "winner",
+        "prize"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "2ee6760e362e54f633f336e6f521b46f723b8ef9e2e87afe791cdefd273ff68a"
+      },
+      "localId": "starter-trophy",
+      "localPreview": "/props/starter-trophy/prop.svg",
+      "pouch": {
+        "slug": "first-place-trophy-df0b1b",
+        "url": "https://pelicans.art/community.html?type=props&id=first-place-trophy-df0b1b"
+      }
+    },
+    {
+      "id": "umbrella",
+      "category": "props",
+      "name": "Storm umbrella",
+      "description": "An open teal umbrella with alternating cream panels, a curved wooden handle and scalloped rain canopy.",
+      "tags": [
+        "weather",
+        "rain",
+        "street",
+        "travel"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "f559ee60c7b022a74aac62d387d041a02d982a7b76cbdd77688df09503774bbb"
+      },
+      "localId": "starter-umbrella",
+      "localPreview": "/props/starter-umbrella/prop.svg",
+      "pouch": {
+        "slug": "storm-umbrella-cb12b9",
+        "url": "https://pelicans.art/community.html?type=props&id=storm-umbrella-cb12b9"
+      }
+    },
+    {
+      "id": "wrench",
+      "category": "props",
+      "name": "Workshop wrench",
+      "description": "A broad steel open-end wrench with a blue handle inset and unmistakable crescent jaw.",
+      "tags": [
+        "tool",
+        "repair",
+        "mechanic",
+        "workshop",
+        "plumbing"
+      ],
+      "model": "GPT-6 Astra",
+      "files": [
+        "prop.svg"
+      ],
+      "sha256": {
+        "prop.svg": "5a993434b617354c113d67a35d4132b48ca54adcbb9c88fa245ea02dc6ad7693"
+      },
+      "localId": "starter-wrench",
+      "localPreview": "/props/starter-wrench/prop.svg",
+      "pouch": {
+        "slug": "workshop-wrench-59aa61",
+        "url": "https://pelicans.art/community.html?type=props&id=workshop-wrench-59aa61"
+      }
+    }
+  ]
+}

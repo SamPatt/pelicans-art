@@ -1,0 +1,24 @@
+{
+  "name": "Storm umbrella",
+  "description": "An open teal umbrella with alternating cream panels, a curved wooden handle and scalloped rain canopy.",
+  "category": "props",
+  "tags": [
+    "weather",
+    "rain",
+    "street",
+    "travel"
+  ],
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 1,
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

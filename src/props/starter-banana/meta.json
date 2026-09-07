@@ -1,0 +1,25 @@
+{
+  "name": "Perfectly suspicious banana",
+  "description": "A sweeping yellow banana with a curled tip, green stem and broad inner ridge. A simple readable comedy or kitchen prop.",
+  "category": "props",
+  "tags": [
+    "food",
+    "fruit",
+    "comedy",
+    "snack",
+    "kitchen"
+  ],
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 0.6,
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Formal penguin",
+  "description": "A black-and-cream penguin with flipper arms, ochre feet and a small red bow tie.",
+  "tags": [
+    "animal",
+    "penguin",
+    "bird",
+    "formal",
+    "cold"
+  ],
+  "model": "GPT-6 Astra",
+  "category": "characters",
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

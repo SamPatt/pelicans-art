@@ -1,0 +1,16 @@
+{
+  "name": "Patient teacher",
+  "description": "A warm brown-skinned teacher with a high hair bun, mustard cardigan and an open green lesson book; calm schoolroom authority.",
+  "tags": [
+    "human",
+    "teacher",
+    "school",
+    "education",
+    "book"
+  ],
+  "model": "GPT-6 Astra",
+  "category": "characters",
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

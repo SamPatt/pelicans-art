@@ -1,0 +1,16 @@
+{
+  "name": "Cool jazz musician",
+  "description": "A musician with swept-up hair, plum suit, mustard scarf and a stylized brass trumpet held across the torso.",
+  "tags": [
+    "human",
+    "musician",
+    "jazz",
+    "music",
+    "performer"
+  ],
+  "model": "GPT-6 Astra",
+  "category": "characters",
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

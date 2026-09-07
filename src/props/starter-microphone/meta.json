@@ -1,0 +1,25 @@
+{
+  "name": "Stand microphone",
+  "description": "A silver vintage stage microphone on a tall dark stand, with a red on-air switch and broad stable foot.",
+  "category": "props",
+  "tags": [
+    "stage",
+    "music",
+    "singing",
+    "interview",
+    "performance"
+  ],
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 1,
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Mop and bucket",
+  "description": "A coral cleaning bucket with a looping handle and a leaning mop whose broad cream strands hang over the rim.",
+  "category": "props",
+  "tags": [
+    "cleaning",
+    "janitor",
+    "water",
+    "household",
+    "work"
+  ],
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 0.9,
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

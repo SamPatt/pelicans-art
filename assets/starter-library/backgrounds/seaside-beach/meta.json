@@ -1,0 +1,20 @@
+{
+  "name": "Sunny seaside beach",
+  "description": "Gentle waves, a striped beach umbrella and a wide open stretch of sand.",
+  "tags": [
+    "beach",
+    "sea",
+    "holiday",
+    "summer"
+  ],
+  "model": "GPT-6 Astra",
+  "category": "backgrounds",
+  "defaultScale": 1,
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

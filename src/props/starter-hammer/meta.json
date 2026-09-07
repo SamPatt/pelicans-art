@@ -1,0 +1,24 @@
+{
+  "name": "Carpenter hammer",
+  "description": "A heavy steel claw hammer with a long amber handle and a red grip. The split claw and flat striking head read clearly.",
+  "category": "props",
+  "tags": [
+    "tool",
+    "construction",
+    "repair",
+    "workshop"
+  ],
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 0.7,
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

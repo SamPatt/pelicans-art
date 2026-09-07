@@ -1,0 +1,25 @@
+{
+  "name": "Slightly crooked crown",
+  "description": "A theatrical gold crown with five broad points, a red central gem and a deep teal inset band.",
+  "category": "props",
+  "tags": [
+    "royalty",
+    "king",
+    "queen",
+    "costume",
+    "fantasy"
+  ],
+  "model": "GPT-6 Astra",
+  "anchorPoint": [
+    0.5,
+    1
+  ],
+  "holdOffset": [
+    0,
+    -10
+  ],
+  "defaultScale": 0.8,
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

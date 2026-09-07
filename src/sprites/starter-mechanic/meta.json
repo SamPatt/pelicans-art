@@ -1,0 +1,16 @@
+{
+  "name": "Practical mechanic",
+  "description": "A mechanic with a red cap, blue overalls, rolled sleeves and a chunky wrench tucked into the bib pocket.",
+  "tags": [
+    "human",
+    "mechanic",
+    "garage",
+    "repair",
+    "workshop"
+  ],
+  "model": "GPT-6 Astra",
+  "category": "characters",
+  "collection": "Sandbox starter library",
+  "license": "You may reuse and adapt this asset in skits and share the resulting skits and editable projects. Retain attribution in editable bundles. Other uses: see https://github.com/SamPatt/pelicans-art/blob/main/ASSET-LICENSE.md#sandbox-starter-library",
+  "author": "SamPatt"
+}

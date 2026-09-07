@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320">
+<title>Alarm clock</title>
+<g stroke="#263e44" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M100 262 83 298m131-36 18 36" fill="none" stroke-width="15"/><path d="M101 85 81 53m137 29 22-30M158 64V37" fill="none" /><path d="M47 80q-15-60 38-62 39-2 47 33Zm141-29q16-57 60-32 32 17 18 61Z" fill="#ce6550" /><circle cx="158" cy="170" r="112" fill="#f4e5bf" /><circle cx="158" cy="170" r="94" fill="#549a95" /><path d="M158 91v12m79 67h-12m-67 79v-12m-79-67h12" fill="#f4e5bf" /><path d="M158 121v49l-45 30" fill="none" stroke-width="10"/><circle cx="158" cy="170" r="8" fill="#efbd4d" /></g>
+</svg>

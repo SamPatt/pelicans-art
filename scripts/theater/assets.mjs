@@ -15,7 +15,7 @@ function categories(category){if(category&&!Object.hasOwn(folders,category))thro
 function sourceCheck(source,all=false){if(!(all?['local','pouch','project','all']:['local','pouch','project']).includes(source))throw Error(`source must be local${all?', pouch, project, or all':', pouch, or project'}`);}
 function normalize(meta,source,category,id,files=[]){
  meta=object(meta);
- return {source,category,id,name:string(meta.name||meta.assetName,300)||id,description:string(meta.description),tags:Array.isArray(meta.tags)?meta.tags.filter(t=>typeof t==='string').slice(0,30).map(t=>t.slice(0,80)):[],model:string(meta.model,200)||'Unknown',username:string(meta.username,100)||undefined,files,previews:files.map(file=>source==='pouch'?`${API}/${category}/${id}/${file}`:`https://pelicans.art/${folders[category]}/${id}/${file}`)};
+ return {source,category,id,license:string(meta.license,1000)||undefined,author:string(meta.author,200)||undefined,collection:string(meta.collection,200)||undefined,name:string(meta.name||meta.assetName,300)||id,description:string(meta.description),tags:Array.isArray(meta.tags)?meta.tags.filter(t=>typeof t==='string').slice(0,30).map(t=>t.slice(0,80)):[],model:string(meta.model,200)||'Unknown',username:string(meta.username,100)||undefined,files,previews:files.map(file=>source==='pouch'?`${API}/${category}/${id}/${file}`:`https://pelicans.art/${folders[category]}/${id}/${file}`)};
 }
 async function boundedFetch(url,{optional=false}={}){
  const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(15000)});
@@ -108,6 +108,7 @@ export async function addAsset(directory,{source,category,id,name=id,orientation
  if((await fs.lstat(skitPath)).isSymbolicLink())throw Error('skit.json cannot be a symlink');
  const original=await fs.readFile(skitPath,'utf8'),skit=JSON.parse(original);if(!skit||typeof skit!=='object'||Array.isArray(skit))throw Error('Expected a project skit.json object');
  const record=source==='local'?await localRecord(category,id):source==='project'?(await projectRecords(project,category)).find(r=>r.id===id):await pouchRecord(category,id);if(!record)throw Error('Asset not found in selected project');
+ if(source==='pouch'&&category==='backgrounds'){const extra=await boundedFetch(`${API}/${category}/${id}/meta.json`,{optional:true});if(extra){const meta=object(JSON.parse(extra));for(const field of ['license','author','collection'])if(typeof meta[field]==='string')record[field]=string(meta[field],field==='license'?1000:200);}}
  const files=[];
  for(const file of record.files){
   if(category==='backgrounds'&&orientation&&file!==`${orientation}.svg`)continue;
