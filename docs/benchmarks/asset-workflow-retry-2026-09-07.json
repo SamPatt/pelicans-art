@@ -1,8 +1,8 @@
 {
-  "start": "2026-09-07T00:05:52.827071+00:00",
+  "start": "2026-09-07T00:05:48+00:00",
   "scope": "Approved portrait script and finished assets; fresh project and speech cache; warm existing Pocket service; no installation or creative review.",
   "readyAt": "2026-09-07T00:07:31.000498+00:00",
-  "readySeconds": 98.173427,
+  "readySeconds": 103.000498,
   "runtimeRevision": "236e8a0f78b58cd62e20aa0d15d4db3cb1a37c53",
   "commands": {
     "import-customer": {
@@ -68,8 +68,11 @@
     "No pure causal speedup claim: prior production-after-approval included artwork adaptation and approval recovery.",
     "Command timings omit process startup/import before the CLI clock, agent work, tool transport/approval and delivery file copies. Whole elapsed time includes them.",
     "Visual review and automatic decoding/coverage checks, not a listening review.",
-    "The exact chat-message delivery timestamp was not captured. The verified-ready marker is 98.17 seconds; the link was sent next. A later 151-second marker includes post-delivery audit composition and must not be labeled delivery time."
+    "The exact chat-message delivery timestamp was not captured. The verified-ready marker is 103.00 seconds; the link was sent next. A later 156-second marker includes post-delivery audit composition and must not be labeled delivery time.",
+    "Start is the first clock tool reading. The shell marker occurred 4.83 seconds later; the initial 98.17-second report omitted that tool/approval interval. Corrected whole-run ready time is 103.00 seconds."
   ],
   "postDeliveryAuditMarkerAt": "2026-09-07T00:08:23.822366+00:00",
-  "postDeliveryAuditMarkerSeconds": 150.995295
+  "postDeliveryAuditMarkerSeconds": 155.822366,
+  "firstCommandMarkerAt": "2026-09-07T00:05:52.827071+00:00",
+  "firstCommandToReadySeconds": 98.173427
 }
