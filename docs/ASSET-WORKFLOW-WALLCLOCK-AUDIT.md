@@ -41,3 +41,18 @@ The four instrumented CLI commands totaled **36.52 seconds**: preview including 
 Use this exact approved script, orientation and finished asset set for a repeat run. That isolates project assembly, synthesis, preview and delivery from new art. Then compare a fresh agent session using only the published skill, without prior-project knowledge. Keep the chat review checkpoint, but do not add further review questions after approval unless a material creative choice changes.
 
 Raw events: [JSON](benchmarks/asset-workflow-wallclock-2026-09-06.json). Editable source: [example](../examples/name-for-the-order/skit.json). Speech cache and complete delivery remain in the local project; no Pouch upload was performed.
+
+
+## Finished-assets repeat after fixes — 7 September 2026
+
+The follow-up used the exact approved portrait script and artwork, imported into a fresh project with no copied speech cache. The existing local Pocket service remained warm. The new project discovery found the portrait café; the new voice command verified alba and paul without guessing an HTTP route. Eight unique recordings were synthesized and the repeated line reused twice. The result is 25.626 seconds with 10/10 lines captured and muxed. Image review, decoding, private-link HEAD check, and independent ZIP integrity checks passed. No listening review was performed.
+
+Ready to deliver: **98.17 seconds**. The video link was sent next. Its exact message timestamp was not captured; a later 151-second marker includes audit composition after delivery and is explicitly labeled as such in the [raw measurements](benchmarks/asset-workflow-retry-2026-09-07.json). Report-writing, skill packaging, deployment and commits are excluded.
+
+The CLI render including synthesis took 32.84 seconds. Asset imports took about 1.67 seconds combined; discovery and voice catalog lookup took about 0.02 seconds. The rest of elapsed time includes agent/tool turns, screenshot inspection, approval latency and file delivery. The approved visuals did not need a separate pre-render preview.
+
+This is a successful fast path for an approved script and reusable artwork, **not** a controlled measurement of a new skit or proof that code changes alone caused the reduction from the previous 6m 56s production phase. The earlier run also included 4m 04s of discovery, adaptation, authoring and interruption recovery before source files were written. A future fresh-agent creative test is still needed.
+
+Implemented fixes: exclude empty assets; accent-insensitive search with café/coffee synonyms and relevance ordering; verified portrait filtering; explicit selected-project asset search/import without scanning other directories; pinned voice catalog lookup with descriptive notes; automatic command timestamps/durations; and skill guidance to reuse approved work and avoid redundant renders or custom helpers.
+
+Regression validation: 53/54 tests passed on the concurrent full run; the single Chromium screenshot failure passed on the isolated five-test rerun. The 11 targeted discovery/voice tests passed, including project boundary and Pouch orientation checks. No behavior fix was inferred from the transient screenshot error.

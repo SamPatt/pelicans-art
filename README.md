@@ -59,7 +59,7 @@ The deliberately simple visual style is part early web animation, part AI artifa
 Copy the block below into an agent chat that can run shell commands. Your agent downloads the skill and sets up the runtime, then works out the skit with you in chat before creating the video.
 
 ```text
-Download https://pelicans.art/downloads/pelican-theater-1.0.14.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.14.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.
+Download https://pelicans.art/downloads/pelican-theater-1.0.15.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.15.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.
 
 Use the tested runtime commit in the receipt's ref field. Fetch the public runtime from https://github.com/SamPatt/pelicans-art.git over HTTPS; no GitHub login, token, SSH alias, or deploy key is needed. If fetching fails, explain the network or environment problem. Do not request tokens, change Git authentication, or change repository visibility.
 

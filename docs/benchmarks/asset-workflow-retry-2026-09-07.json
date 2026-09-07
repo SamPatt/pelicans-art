@@ -1,0 +1,75 @@
+{
+  "start": "2026-09-07T00:05:52.827071+00:00",
+  "scope": "Approved portrait script and finished assets; fresh project and speech cache; warm existing Pocket service; no installation or creative review.",
+  "readyAt": "2026-09-07T00:07:31.000498+00:00",
+  "readySeconds": 98.173427,
+  "runtimeRevision": "236e8a0f78b58cd62e20aa0d15d4db3cb1a37c53",
+  "commands": {
+    "import-customer": {
+      "startedAt": "2026-09-07T00:05:53.000Z",
+      "finishedAt": "2026-09-07T00:05:53.412Z",
+      "seconds": 0.412187383
+    },
+    "import-cafe": {
+      "startedAt": "2026-09-07T00:05:53.928Z",
+      "finishedAt": "2026-09-07T00:05:54.350Z",
+      "seconds": 0.421819416
+    },
+    "render": {
+      "startedAt": "2026-09-07T00:05:54.906Z",
+      "finishedAt": "2026-09-07T00:06:27.749Z",
+      "seconds": 32.842692148000005
+    },
+    "validate": {
+      "startedAt": "2026-09-07T00:05:54.862Z",
+      "finishedAt": "2026-09-07T00:05:54.865Z",
+      "seconds": 0.002997104
+    },
+    "voices": {
+      "startedAt": "2026-09-07T00:05:52.911Z",
+      "finishedAt": "2026-09-07T00:05:52.921Z",
+      "seconds": 0.009695211
+    },
+    "inspect": {
+      "startedAt": "2026-09-07T00:06:59.005Z",
+      "finishedAt": "2026-09-07T00:07:01.307Z",
+      "seconds": 2.301797844
+    },
+    "init": {
+      "startedAt": "2026-09-07T00:05:52.959Z",
+      "finishedAt": "2026-09-07T00:05:52.960Z",
+      "seconds": 0.0014002829999999946
+    },
+    "import-bucket": {
+      "startedAt": "2026-09-07T00:05:54.398Z",
+      "finishedAt": "2026-09-07T00:05:54.811Z",
+      "seconds": 0.412952356
+    },
+    "discovery": {
+      "startedAt": "2026-09-07T00:05:52.866Z",
+      "finishedAt": "2026-09-07T00:05:52.873Z",
+      "seconds": 0.006895375999999999
+    },
+    "package": {
+      "startedAt": "2026-09-07T00:07:01.348Z",
+      "finishedAt": "2026-09-07T00:07:01.509Z",
+      "seconds": 0.160262366
+    },
+    "import-barista": {
+      "startedAt": "2026-09-07T00:05:53.461Z",
+      "finishedAt": "2026-09-07T00:05:53.879Z",
+      "seconds": 0.418284174
+    }
+  },
+  "timedCommandSeconds": 36.99098366100001,
+  "limitations": [
+    "Existing runtime and warm Pocket; fresh project and no copied speech cache.",
+    "Approved script and exact finished portrait artwork reused, so excludes new writing, drawing, format adaptation and creative review.",
+    "No pure causal speedup claim: prior production-after-approval included artwork adaptation and approval recovery.",
+    "Command timings omit process startup/import before the CLI clock, agent work, tool transport/approval and delivery file copies. Whole elapsed time includes them.",
+    "Visual review and automatic decoding/coverage checks, not a listening review.",
+    "The exact chat-message delivery timestamp was not captured. The verified-ready marker is 98.17 seconds; the link was sent next. A later 151-second marker includes post-delivery audit composition and must not be labeled delivery time."
+  ],
+  "postDeliveryAuditMarkerAt": "2026-09-07T00:08:23.822366+00:00",
+  "postDeliveryAuditMarkerSeconds": 150.995295
+}
