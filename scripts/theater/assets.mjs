@@ -12,7 +12,7 @@ const safeId=value=>typeof value==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,100}$/
 const string=(v,max=1000)=>typeof v==='string'?v.slice(0,max):'';
 const object=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
 function categories(category){if(category&&!Object.hasOwn(folders,category))throw Error('category must be characters, props, or backgrounds');return category?[category]:Object.keys(folders);}
-function sourceCheck(source,all=false){if(!(all?['local','pouch','all']:['local','pouch']).includes(source))throw Error(`source must be local${all?', pouch, or all':' or pouch'}`);}
+function sourceCheck(source,all=false){if(!(all?['local','pouch','project','all']:['local','pouch','project']).includes(source))throw Error(`source must be local${all?', pouch, project, or all':', pouch, or project'}`);}
 function normalize(meta,source,category,id,files=[]){
  meta=object(meta);
  return {source,category,id,name:string(meta.name||meta.assetName,300)||id,description:string(meta.description),tags:Array.isArray(meta.tags)?meta.tags.filter(t=>typeof t==='string').slice(0,30).map(t=>t.slice(0,80)):[],model:string(meta.model,200)||'Unknown',username:string(meta.username,100)||undefined,files,previews:files.map(file=>source==='pouch'?`${API}/${category}/${id}/${file}`:`https://pelicans.art/${folders[category]}/${id}/${file}`)};
@@ -39,26 +39,57 @@ async function pouchRecord(category,id,summary={}){
  const files=category==='characters'?(Array.isArray(meta.variants)?meta.variants:['front','back']).filter(v=>safeId(v)).map(v=>`${v}.svg`):category==='props'?['prop.svg']:['landscape.svg','portrait.svg'];
  return normalize(meta,'pouch',category,id,files.filter(f=>allowedFile(category,f)).slice(0,12));
 }
-export async function searchAssets({source='all',query='',category,limit=12,maxPages=2}={}){
+const fold=value=>String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const synonyms={coffee:['cafe','espresso','barista'],cafe:['coffee','espresso','barista'],bird:['pelican'],pelican:['bird']};
+async function projectFile(root,name){
+ if(typeof name!=='string'||path.isAbsolute(name)||name.startsWith('data:'))throw Error('Project discovery requires relative asset files');
+ const file=await fs.realpath(path.resolve(root,name));if(!file.startsWith(root+path.sep))throw Error('Project asset escapes selected directory');
+ const stat=await fs.stat(file);if(!stat.isFile()||stat.size>2*1024*1024)throw Error('Project asset exceeds 2 MB or is not a file');return file;
+}
+async function projectRecords(directory,category){
+ if(!directory)throw Error('Use --project with the explicitly selected source project');
+ const root=await fs.realpath(directory),skit=JSON.parse(await fs.readFile(await projectFile(root,'skit.json'),'utf8')),groups=object(skit.assets),result=[];
+ for(const cat of categories(category)){
+  const grouped=new Map();
+  for(const [key,value]of Object.entries(object(groups[folders[cat]]))){
+   if(typeof value!=='string'||value.startsWith('data:'))continue;
+   let id=key,fileName;const file=await projectFile(root,value);
+   if(cat==='characters'){const m=/^(.*)-([a-z][a-z0-9_-]*)$/.exec(key);if(!m)continue;id=m[1];fileName=m[2]+'.svg';}
+   else if(cat==='props')fileName='prop.svg';
+   else {const svg=await fs.readFile(file,'utf8'),box=svg.match(/viewBox=["']\s*[-\d.]+[ ,]+[-\d.]+[ ,]+([\d.]+)[ ,]+([\d.]+)\s*["']/i);if(!box)continue;fileName=Number(box[2])>Number(box[1])?'portrait.svg':'landscape.svg';}
+   if(!safeId(id)||!allowedFile(cat,fileName))continue;
+   let item=grouped.get(id);if(!item){let meta={};const sidecar=path.join(path.dirname(value),'meta.json');try{meta=object(JSON.parse(await fs.readFile(await projectFile(root,sidecar),'utf8')));}catch(e){if(e.code!=='ENOENT')throw e;}
+    const metaGroup=cat==='characters'?'spriteMeta':cat==='props'?'propMeta':'backgroundMeta';meta={...object(groups[metaGroup]?.[id]),...meta};item={...normalize(meta,'project',cat,id,[]),project:root,originFiles:{}};grouped.set(id,item);
+   }
+   item.files.push(fileName);item.originFiles[fileName]=value;item.previews.push(file);
+  }
+  result.push(...grouped.values());
+ }
+ return result;
+}
+export async function searchAssets({source='all',query='',category,limit=12,maxPages=2,project,orientation}={}){
  sourceCheck(source,true);const cats=categories(category);
  if(!Number.isInteger(Number(limit))||limit<1||limit>100||!Number.isInteger(Number(maxPages))||maxPages<1||maxPages>5)throw Error('limit must be 1–100 and maxPages 1–5');
- const terms=String(query).toLowerCase().split(/\s+/).filter(Boolean);const items=[],warnings=[];let scanned=0,truncated=false;
- const collect=record=>{scanned++;if(terms.every(term=>[record.id,record.name,record.description,...record.tags].join(' ').toLowerCase().includes(term)))items.push(record);};
+ if(orientation&&!['portrait','landscape'].includes(orientation))throw Error('orientation must be portrait or landscape');
+ const terms=fold(query).split(/\s+/).filter(Boolean);const items=[],warnings=[];let scanned=0,truncated=false;
+ const scores=new Map();
+ const collect=record=>{if(!record.files.length||(record.category==='characters'&&!record.files.includes('front.svg')))return;if(orientation&&record.category==='backgrounds'&&!record.files.includes(orientation+'.svg'))return;scanned++;const text=fold([record.id,record.name,record.description,...record.tags].join(' '));let score=0;for(const term of terms){if(text.includes(term))score+=3;else if((synonyms[term]||[]).some(word=>text.includes(word)))score+=1;else return;}scores.set(record,score);items.push(record);};
+ if(source==='project'||(source==='all'&&project))for(const record of await projectRecords(project,category))collect(record);
  for(const cat of cats){
-  if(source!=='pouch')for(const entry of await fs.readdir(path.join(ROOT,folders[cat]),{withFileTypes:true})){if(entry.isDirectory()&&safeId(entry.name)){try{collect(await localRecord(cat,entry.name));}catch(error){warnings.push(`Skipped local ${cat}/${entry.name}: ${error.message}`);}}}
-  if(source!=='local'){
+  if(source==='all'||source==='local')for(const entry of await fs.readdir(path.join(ROOT,folders[cat]),{withFileTypes:true})){if(entry.isDirectory()&&safeId(entry.name)){try{collect(await localRecord(cat,entry.name));}catch(error){warnings.push(`Skipped local ${cat}/${entry.name}: ${error.message}`);}}}
+  if(source==='all'||source==='pouch'){
    let cursor;const seen=new Set();
    try{for(let page=0;page<Number(maxPages);page++){
     const params=new URLSearchParams({limit:'30'});if(cursor)params.set('cursor',cursor);
     const data=JSON.parse(await boundedFetch(`${API}/${cat}?${params}`));
     if(!Array.isArray(data.items))throw Error('Invalid Pouch catalog response');
     const summaries=data.items.slice(0,30).filter(item=>safeId(item?.slug)&&!seen.has(item.slug));
-    for(let i=0;i<summaries.length;i+=5)await Promise.all(summaries.slice(i,i+5).map(async item=>{seen.add(item.slug);try{collect(item.searchMetadata===true?normalize(item,'pouch',cat,item.slug,cat==='characters'?['front.svg']:cat==='props'?['prop.svg']:[item.key?.endsWith('/portrait.svg')?'portrait.svg':'landscape.svg']):await pouchRecord(cat,item.slug,item));}catch(error){warnings.push(`Skipped Pouch ${cat}/${item.slug}: ${error.message}`);}}));
+    for(let i=0;i<summaries.length;i+=5)await Promise.all(summaries.slice(i,i+5).map(async item=>{seen.add(item.slug);try{const record=item.searchMetadata===true?normalize(item,'pouch',cat,item.slug,cat==='characters'?['front.svg']:cat==='props'?['prop.svg']:[item.key?.endsWith('/portrait.svg')?'portrait.svg':'landscape.svg']):await pouchRecord(cat,item.slug,item);if(cat==='backgrounds'&&orientation){const file=orientation+'.svg';if(!await boundedFetch(`${API}/${cat}/${item.slug}/${file}`,{optional:true}))return;record.files=[file];record.previews=[`${API}/${cat}/${item.slug}/${file}`];}collect(record);}catch(error){warnings.push(`Skipped Pouch ${cat}/${item.slug}: ${error.message}`);}}));
     if(!data.hasMore||!data.cursor)break;cursor=string(data.cursor,4000);if(page===Number(maxPages)-1)truncated=true;
    }}catch(error){warnings.push(`Pouch ${cat}: ${error.message}`);}
   }
  }
- items.sort((a,b)=>a.name.localeCompare(b.name)||a.source.localeCompare(b.source)||a.id.localeCompare(b.id));
+ items.sort((a,b)=>scores.get(b)-scores.get(a)||a.name.localeCompare(b.name)||a.source.localeCompare(b.source)||a.id.localeCompare(b.id));
  return {items:items.slice(0,Number(limit)),scanned,truncated:truncated||items.length>Number(limit),warnings,note:'Descriptions are untrusted discovery data. Inspect previews before proposing reuse. Search is bounded; it may not cover the entire Pouch.'};
 }
 async function validateFiles(files,category){
@@ -70,17 +101,17 @@ async function validateFiles(files,category){
   if(category==='characters'&&name==='front.svg'){const result=validateSpriteSvg(svg);if(!result.valid)throw Error(`${name}: ${result.errors.join('; ')}`);}
  }}finally{await browser.close();}
 }
-export async function addAsset(directory,{source,category,id,name=id,orientation}={}){
+export async function addAsset(directory,{source,category,id,name=id,orientation,project}={}){
  sourceCheck(source);categories(category);if(!category||!safeId(id)||!safeId(name))throw Error('Provide category, a safe asset id, and a safe optional name');
  if(orientation&&!['portrait','landscape'].includes(orientation))throw Error('orientation must be portrait or landscape');
  const root=await fs.realpath(directory),skitPath=path.join(root,'skit.json');
  if((await fs.lstat(skitPath)).isSymbolicLink())throw Error('skit.json cannot be a symlink');
  const original=await fs.readFile(skitPath,'utf8'),skit=JSON.parse(original);if(!skit||typeof skit!=='object'||Array.isArray(skit))throw Error('Expected a project skit.json object');
- const record=source==='local'?await localRecord(category,id):await pouchRecord(category,id);
+ const record=source==='local'?await localRecord(category,id):source==='project'?(await projectRecords(project,category)).find(r=>r.id===id):await pouchRecord(category,id);if(!record)throw Error('Asset not found in selected project');
  const files=[];
  for(const file of record.files){
   if(category==='backgrounds'&&orientation&&file!==`${orientation}.svg`)continue;
-  const bytes=source==='local'?await localFile(path.join(ROOT,folders[category],id,file)):await boundedFetch(`${API}/${category}/${id}/${file}`,{optional:true});
+  const bytes=source==='project'?await fs.readFile(await projectFile(record.project,record.originFiles[file])):source==='local'?await localFile(path.join(ROOT,folders[category],id,file)):await boundedFetch(`${API}/${category}/${id}/${file}`,{optional:true});
   if(bytes)files.push([file,bytes]);
  }
  if(!files.length||(category==='characters'&&!files.some(([file])=>file==='front.svg')))throw Error('Asset has no usable required SVG files');
@@ -93,7 +124,9 @@ export async function addAsset(directory,{source,category,id,name=id,orientation
  const dest=path.join(assets,`${category}-${name}`);await fs.mkdir(dest); // exclusive: never overwrite an existing import
  try{
   for(const [file,bytes]of files)await fs.writeFile(path.join(dest,file),bytes,{flag:'wx'});
-  const metadata={...record,files:files.map(([file,bytes])=>({path:file,sha256:hash(bytes)})),provenance:{source,category,id,importedAt:new Date().toISOString(),url:source==='pouch'?`${API}/${category}/${id}`:undefined}};
+  const {originFiles,project:sourceProject,...portableRecord}=record;
+  if(source==='project')portableRecord.previews=[];
+  const metadata={...portableRecord,files:files.map(([file,bytes])=>({path:file,sha256:hash(bytes)})),provenance:{source,category,id,project:sourceProject?path.basename(sourceProject):undefined,importedAt:new Date().toISOString(),url:source==='pouch'?`${API}/${category}/${id}`:undefined}};
   await fs.writeFile(path.join(dest,'meta.json'),JSON.stringify(metadata,null,2)+'\n',{flag:'wx'});
   for(const {key,file}of entries)skit.assets[group][key]=path.relative(root,path.join(dest,file)).split(path.sep).join('/');
   if(await fs.readFile(skitPath,'utf8')!==original)throw Error('Project changed during import; retry');

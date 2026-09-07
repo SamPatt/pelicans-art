@@ -38,3 +38,23 @@ test('new portrait-only Pouch summaries point to a portrait preview without deta
  globalThis.fetch=async()=>{requests++;return new Response(JSON.stringify({items:[{slug:'tall-room',key:'backgrounds/tall-room/portrait.svg',name:'Tall room',description:'A narrow hallway',tags:['hall'],searchMetadata:true}],hasMore:false}));};
  const result=await searchAssets({source:'pouch',category:'backgrounds'});assert.equal(requests,1);assert.match(result.items[0].previews[0],/portrait.svg$/);
 });
+
+test('discovery excludes empty characters and matches coffee to accented café',async()=>{
+ const characters=await searchAssets({source:'local',category:'characters',limit:100});assert.ok(characters.items.every(r=>r.files.includes('front.svg')));
+ const cafes=await searchAssets({source:'local',category:'backgrounds',query:'coffee'});assert.ok(cafes.items.some(r=>r.id==='astra-corner-cafe'));
+ const portrait=await searchAssets({source:'local',category:'backgrounds',query:'cafe',orientation:'portrait'});assert.ok(!portrait.items.some(r=>r.id==='astra-corner-cafe'));
+});
+test('explicit project discovery and import preserve usable portrait assets without leaking source paths',async t=>{
+ const from=path.resolve('examples/name-for-the-order');const found=await searchAssets({source:'project',project:from,query:'coffee',category:'backgrounds',orientation:'portrait'});assert.equal(found.items[0].id,'cafe');assert.deepEqual(found.items[0].files,['portrait.svg']);
+ const root=await project(t);const added=await addAsset(root,{source:'project',project:from,category:'backgrounds',id:'cafe',orientation:'portrait'});assert.match(added.registered[0].path,/portrait.svg$/);const meta=await fs.readFile(added.metadata,'utf8');assert.ok(!meta.includes(from));assert.match(meta,/portrait/);
+ await assert.rejects(searchAssets({source:'project'}),/--project/);
+ const bad=await project(t);await fs.writeFile(path.join(bad,'skit.json'),JSON.stringify({assets:{props:{outside:'../outside.svg'}}}));await assert.rejects(searchAssets({source:'project',project:bad}));
+});
+
+test('Pouch portrait filter checks the actual file instead of guessing from landscape summary',async t=>{
+ const prior=globalThis.fetch;t.after(()=>globalThis.fetch=prior);
+ globalThis.fetch=async url=>new Response(String(url).endsWith('portrait.svg')?'<svg/>':JSON.stringify({items:[{slug:'both',key:'backgrounds/both/landscape.svg',searchMetadata:true,name:'Both'}],hasMore:false}));
+ const found=await searchAssets({source:'pouch',category:'backgrounds',orientation:'portrait'});assert.equal(found.items.length,1);assert.deepEqual(found.items[0].files,['portrait.svg']);
+ globalThis.fetch=async url=>String(url).endsWith('portrait.svg')?new Response('',{status:404}):new Response(JSON.stringify({items:[{slug:'wide-only',key:'backgrounds/wide-only/landscape.svg',searchMetadata:true}],hasMore:false}));
+ assert.equal((await searchAssets({source:'pouch',category:'backgrounds',orientation:'portrait'})).items.length,0);
+});
