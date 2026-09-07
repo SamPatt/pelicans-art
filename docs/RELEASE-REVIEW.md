@@ -37,7 +37,7 @@ Setup remains non-root, isolated, hash-locked and explicit about OS-level change
 
 - Release and main CI passed for `9e2c63d`; all 148 local tests passed, including upload-control and moderation regression coverage.
 - The live Worker serves SVGs with CSP/nosniff, and Pouch SVG rendering and sharing actions passed a mobile-viewport browser check.
-- GitHub Pages and skill download/checksum verification passed. The current download is skill 1.0.17, which adds advisory pacing measurements, explicit pacing proposals, entrance/prop guidance, and any-term asset discovery to the combined completion workflow; earlier immutable releases remain available for reproducibility.
+- GitHub Pages and skill download/checksum verification passed. The current download is skill 1.0.18, which strengthens pause recommendations, requires review of pacing flags, and documents deliberate Batman-style interruptions; the runtime remains pinned to the tested 1.0.17 implementation; earlier immutable releases remain available for reproducibility.
 - Public visibility, anonymous access, secret scanning, push protection, private vulnerability reporting, and dependency alerts were verified enabled. No open secret alerts were reported at publication; monitoring continues.
 
 ## Before unrestricted community promotion

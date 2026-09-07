@@ -93,6 +93,34 @@ This is a fragment: register the actual sprite/background/prop assets in the ini
 
 ## Choose the comic pace before production
 
-Propose brisk, conversational, or dry with reaction pauses during chat review. These are creative choices, not new JSON fields or global playback-speed settings. Translate the agreed choice into explicit pauses at important exchanges, visual reveals, and punchlines. Start with roughly 0.4–0.7 seconds of added space at selected conversational turns, or 0.7–1.2 seconds for a dry reaction; vary deliberately rather than applying a delay to every line. The player already waits about 0.2 seconds after an ordinary sequential recording.
+Propose brisk, conversational, or dry with reaction pauses during chat review. Write important timing into the proposal, for example `[reaction: 1.3 s]`, `[hold reveal: 1.8 s]`, or `[interrupt before the sentence finishes]`. These are planning notes, not new JSON fields. Turn them into supported `pause` and `offset` actions. Prefer conversational pacing with readable reactions unless the user chooses a faster exchange.
 
-Keep fast character delivery if intentional. When an individual recording is hard to follow, audition or revise that line instead of slowing the whole skit. Duration estimates in the proposal are approximate: compare the completed duration and `pacing` advisories with the agreed feel. Words/minute includes recording silence and is unreliable for very short utterances; a hint does not prove poor delivery. Preserve the approved script and reuse speech when changing pauses only.
+Use these starting points for ordinary sequential skits. They are authoring recommendations, not hard-coded minimums:
+
+| Beat | Intended space | How to author it |
+| --- | --- | --- |
+| Ordinary conversational reply | 0.8–1.2 s after the recording ends | Add `pause` of 0.6–1.0 s; the player already adds about 0.2 s |
+| Dry or surprised reaction | 1.2–1.8 s after the recording ends | Add `pause` of 1.0–1.6 s, ideally with a readable look or expression |
+| Visual reveal | Let movement finish, then hold 1.0–1.5 s | Allow the movement's duration separately; do not count travel time as the reaction hold |
+| Final punchline | Hold the finished pose 2–3 s | Add a final `pause`; avoid cutting away during the audience's reaction |
+| Deliberate brisk exchange or interruption | Shorter gap or early interruption | Mark the intention in the plan and use the interruption example below |
+
+Choose a value for each meaningful handoff instead of leaving most lines at the built-in 0.2-second delay. Vary it with the character's intention. Do not mechanically add pauses to every action or stretch a scene merely to hit a runtime target. A sequence of silent pauses cannot repair words delivered too quickly inside one recording.
+
+Before delivery, address each `pacing.reviewLines` entry: revise the affected recording/timing, or briefly explain why the brisk delivery or interruption is intentional for the approved plan. Keep this review concise; do not add another full diagnostic pass. If listening is unavailable, state that limitation rather than dismissing a flag as acceptable by ear. A clean `findings` list does not mean the comic pace was reviewed. In conversational/dry scenes, also consider recordings around 200–240 words/minute even if below the automatic 240 threshold. Words/minute is only a clue, especially for short lines.
+
+For a hurried line, audition or revise only that line; consider a slower preset, a supported per-line tempo change, or a meaningful internal beat. For precise intra-sentence timing, split it into two `say` actions with an explicit pause at a natural phrase boundary, preserving the approved wording and updating supplied-audio indices when applicable. Do not change global playback speed or regenerate unaffected dialogue. When the finished skit is materially shorter than the proposed duration (for example 25 seconds against 30–35), review the delivery and holds before accepting the difference; report the actual duration without claiming the estimate was met.
+
+### Deliberate interruptions remain supported
+
+The shipped Batman skit uses this pattern. Place the negative `offset` on the action immediately after the interrupted `say`; do not insert a pause between them:
+
+```json
+[
+  {"do":"say", "who":"cashier", "line":"Yes, it comes standard with—"},
+  {"do":"shot", "type":"closeup", "who":"batman", "offset":-0.75},
+  {"do":"say", "who":"batman", "line":"I'm bat man."}
+]
+```
+
+This starts the cut/response about 0.75 seconds before the prior recording would finish in sequential playback. Preserve authored negative offsets and short-gap exchanges when revising other pauses. A pacing overlap advisory can be accepted with the explanation that this is the intended interruption; it must not trigger blanket silence insertion. Use `finish` and the normal review to check the resulting cut-in, especially when changing the interrupted line's duration. Keep sources and speech cache for revisions.
