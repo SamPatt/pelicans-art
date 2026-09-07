@@ -65,7 +65,7 @@ test('both architecture locks preserve the pinned package versions and hashes',a
   for(const lock of locks) {
     assert.match(lock,/^pocket-tts==2\.1\.0 /m);
     assert.match(lock,/^torch==2\.8\.0\+cpu /m);
-    for(const entry of lock.trim().split(/\n(?=[a-zA-Z])/))assert.match(entry,/--hash=sha256:[a-f0-9]{64}/);
+    for(const entry of lock.replace(/^#.*\n/gm,'').trim().split(/\n(?=[a-zA-Z])/))assert.match(entry,/--hash=sha256:[a-f0-9]{64}/);
   }
 });
 
@@ -90,5 +90,5 @@ test('Apple Silicon lock uses the pinned macOS CPU-capable Torch wheel',async()=
  assert.match(lock,/^torch==2\.8\.0 /m);
  assert.match(lock,/^pocket-tts==2\.1\.0 /m);
  assert.ok(!lock.includes('+cpu'));
- for(const entry of lock.trim().split(/\n(?=[a-zA-Z])/))assert.match(entry,/--hash=sha256:[a-f0-9]{64}/);
+ for(const entry of lock.replace(/^#.*\n/gm,'').trim().split(/\n(?=[a-zA-Z])/))assert.match(entry,/--hash=sha256:[a-f0-9]{64}/);
 });
