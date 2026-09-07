@@ -479,7 +479,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible {
 
   .hero-pelican {
     flex-basis:auto;
-    align-self:flex-end;
+    align-self:center;
     margin-top:24px
   }
 
