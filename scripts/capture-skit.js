@@ -135,7 +135,7 @@ async function extractAudioFiles(skit, timeline, tempDir) {
   return files;
 }
 
-function detectSyncMarker(rawVideo) {
+function detectSyncMarker(rawVideo, stageHeight) {
   const probe = JSON.parse(run('ffprobe', [
     '-v', 'error', '-select_streams', 'v:0',
     '-show_entries', 'stream=avg_frame_rate', '-of', 'json', rawVideo
@@ -144,7 +144,7 @@ function detectSyncMarker(rawVideo) {
   const frameRate = numerator / denominator;
   const pixels = runBuffer('ffmpeg', [
     '-v', 'error', '-i', rawVideo,
-    '-vf', 'format=rgb24,crop=1:1:16:16',
+    '-vf', `format=rgb24,crop=1:1:16:${stageHeight + 16}`,
     '-f', 'rawvideo', 'pipe:1'
   ]);
 
@@ -158,7 +158,10 @@ function detectSyncMarker(rawVideo) {
   throw new Error('Capture synchronization marker was not found in the raw video.');
 }
 
-function createMp4({ rawVideo, output, trimStart, duration, audioFiles }) {
+function createMp4({ rawVideo, output, trimStart, duration, audioFiles, viewport }) {
+  // The synchronization gutter is outside the stage: remove it without covering
+  // artwork or trimming the first spoken line.
+  const videoFilter = `[0:v]setpts=PTS-STARTPTS,crop=${viewport.width}:${viewport.height}:0:0[vout]`;
   const args = ['-y', '-ss', trimStart.toFixed(3), '-i', rawVideo];
   for (const audio of audioFiles) args.push('-i', audio.file);
 
@@ -169,13 +172,13 @@ function createMp4({ rawVideo, output, trimStart, duration, audioFiles }) {
     });
     const inputs = audioFiles.map((_, i) => `[a${i}]`).join('');
     args.push(
-      '-filter_complex', `[0:v]setpts=PTS-STARTPTS,drawbox=x=0:y=0:w=3:h=3:color=black:t=fill[vout];${delayed.join(';')};${inputs}amix=inputs=${audioFiles.length}:normalize=0:dropout_transition=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad=whole_dur=${duration.toFixed(3)}[aout]`,
+      '-filter_complex', `${videoFilter};${delayed.join(';')};${inputs}amix=inputs=${audioFiles.length}:normalize=0:dropout_transition=0,loudnorm=I=-16:TP=-1.5:LRA=11,apad=whole_dur=${duration.toFixed(3)}[aout]`,
       '-map', '[vout]', '-map', '[aout]'
     );
   } else {
     args.push(
       '-f', 'lavfi', '-i', 'anullsrc=channel_layout=stereo:sample_rate=48000',
-      '-filter_complex', '[0:v]setpts=PTS-STARTPTS,drawbox=x=0:y=0:w=3:h=3:color=black:t=fill[vout]',
+      '-filter_complex', videoFilter,
       '-map', '[vout]', '-map', '1:a:0'
     );
   }
@@ -199,7 +202,8 @@ async function captureSkit(browser, skitId, options) {
   const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), `ai-improv-${skitId}-`));
   await fsp.mkdir(outputDir, { recursive: true });
 
-  const context = await browser.newContext({ viewport, recordVideo: { dir: tempDir, size: viewport } });
+  const recordingViewport = { ...viewport, height: viewport.height + 32 };
+  const context = await browser.newContext({ viewport: recordingViewport, recordVideo: { dir: tempDir, size: recordingViewport } });
   const page = await context.newPage();
   const diagnostics = [];
   page.on('console', message => {
@@ -211,22 +215,27 @@ async function captureSkit(browser, skitId, options) {
   await page.goto(`${options.baseUrl}/skit-player.html?embed=1&skit=${encodeURIComponent(skitId)}`, { waitUntil: 'load' });
   await page.locator('#playBtn:not([disabled])').waitFor({ timeout: 30_000 });
   await page.waitForFunction(() => document.body.dataset.playbackState === 'ready');
-  await page.addStyleTag({ content: '#controls { display: none !important; }' });
-  await page.evaluate(captions => {
+  await page.addStyleTag({ content: `
+    #controls { display: none !important; }
+    body.embed-mode #viewport, body.embed-mode #viewport.landscape {
+      width: ${viewport.width}px !important; height: ${viewport.height}px !important;
+    }
+  ` });
+  await page.evaluate(({ captions, stageHeight }) => {
     document.body.classList.toggle('captions-off', !captions);
     window.__captureTimeline = [];
     window.__captureStart = 0;
     const marker = document.createElement('div');
     marker.id = 'capture-sync-marker';
-    marker.style.cssText = 'position:fixed;left:0;top:0;width:32px;height:32px;background:transparent;z-index:2147483647;pointer-events:none';
+    marker.style.cssText = `position:fixed;left:0;top:${stageHeight}px;width:32px;height:32px;background:transparent;z-index:2147483647;pointer-events:none`;
     document.body.appendChild(marker);
     window.addEventListener('ai-improv:audio-start', event => {
       window.__captureTimeline.push({ ...event.detail, at: performance.now() });
     });
-  }, options.captions);
+  }, { captions: options.captions, stageHeight: viewport.height });
 
   const coverPath = path.join(outputDir, 'cover.png');
-  await page.screenshot({ path: coverPath });
+  await page.screenshot({ path: coverPath, clip: { x: 0, y: 0, ...viewport } });
   const startedAt = Date.now();
   await page.evaluate(() => {
     window.__captureStart = performance.now();
@@ -245,7 +254,7 @@ async function captureSkit(browser, skitId, options) {
     await page.waitForTimeout(1_500);
   }
   const stillPath = path.join(outputDir, 'still.png');
-  await page.screenshot({ path: stillPath });
+  await page.screenshot({ path: stillPath, clip: { x: 0, y: 0, ...viewport } });
 
   await page.waitForFunction(() => document.body.dataset.playbackState === 'complete', null, { timeout: options.timeout });
   const completedAt = Date.now();
@@ -262,11 +271,11 @@ async function captureSkit(browser, skitId, options) {
   const playbackSeconds = (completedAt - startedAt) / 1000;
   const targetDuration = playbackSeconds + 1;
   const rawDuration = Number(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nw=1:nk=1', rawVideo]));
-  const syncMarker = detectSyncMarker(rawVideo);
+  const syncMarker = detectSyncMarker(rawVideo, viewport.height);
   const trimStart = syncMarker.trimStart;
   const audioFiles = await extractAudioFiles(skit, timeline, tempDir);
   const mp4Path = path.join(outputDir, `${skitId}.mp4`);
-  createMp4({ rawVideo, output: mp4Path, trimStart, duration: targetDuration, audioFiles });
+  createMp4({ rawVideo, output: mp4Path, trimStart, duration: targetDuration, audioFiles, viewport });
 
   const probe = JSON.parse(run('ffprobe', ['-v', 'error', '-show_streams', '-show_format', '-of', 'json', mp4Path]));
   const manifest = {
@@ -287,6 +296,8 @@ async function captureSkit(browser, skitId, options) {
     })),
     synchronization: {
       method: 'visual-marker',
+      markerOutsideStage: true,
+      gutterPixels: 32,
       rawVideoDuration: rawDuration,
       trimStart,
       markerFrame: syncMarker.frame,

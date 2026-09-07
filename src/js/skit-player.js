@@ -79,13 +79,58 @@
       cameraAnimation = requestAnimationFrame(tick);
     }
     
-    // Get the camera Y target for a character by reading its actual position in the DOM
-    // offsetTop/offsetHeight are layout values unaffected by camera transforms
-    function getCharacterFaceY(char) {
-      const stage = document.getElementById('stage');
-      const el = char.el;
-      const faceY = el.offsetTop + el.offsetHeight * 0.35;
-      return (faceY / stage.offsetHeight) * 100;
+    // Measure SVG geometry in stage coordinates. Screen-space measurements include
+    // nested SVG transforms, facing direction and character scale; removing the
+    // stage rectangle also removes the current camera transform.
+    function stageBounds(node) {
+      const stageRect = document.getElementById('stage').getBoundingClientRect();
+      if (!stageRect.width || !stageRect.height || !node) return null;
+      let rect;
+      try {
+        const box = node.getBBox();
+        const matrix = node.getScreenCTM();
+        if (!matrix || (!box.width && !box.height)) return null;
+        const points = [[box.x, box.y], [box.x + box.width, box.y],
+          [box.x, box.y + box.height], [box.x + box.width, box.y + box.height]]
+          .map(([x, y]) => new DOMPoint(x, y).matrixTransform(matrix));
+        rect = { left: Math.min(...points.map(p => p.x)), right: Math.max(...points.map(p => p.x)),
+          top: Math.min(...points.map(p => p.y)), bottom: Math.max(...points.map(p => p.y)) };
+      } catch (_) { rect = node.getBoundingClientRect(); }
+      return {
+        left: (rect.left - stageRect.left) / stageRect.width * 100,
+        right: (rect.right - stageRect.left) / stageRect.width * 100,
+        top: (rect.top - stageRect.top) / stageRect.height * 100,
+        bottom: (rect.bottom - stageRect.top) / stageRect.height * 100
+      };
+    }
+
+    function unionBounds(bounds) {
+      const valid = bounds.filter(Boolean);
+      if (!valid.length) return null;
+      return { left: Math.min(...valid.map(b => b.left)), right: Math.max(...valid.map(b => b.right)),
+        top: Math.min(...valid.map(b => b.top)), bottom: Math.max(...valid.map(b => b.bottom)) };
+    }
+
+    function getCharacterFace(char) {
+      const features = char.el.querySelectorAll('#eye-left-white, #eye-right-white, #mouth-closed');
+      let bounds = unionBounds([...features].map(stageBounds));
+      if (!bounds) bounds = unionBounds([...char.el.querySelectorAll('#head, #head-top, #head-bottom')].map(stageBounds));
+      if (bounds) return { x: (bounds.left + bounds.right) / 2, y: (bounds.top + bounds.bottom) / 2 };
+      // Older sprites without face IDs retain a scaled upper-body fallback.
+      bounds = stageBounds(char.el.querySelector('svg')) || stageBounds(char.el);
+      return bounds ? { x: (bounds.left + bounds.right) / 2, y: bounds.top + (bounds.bottom - bounds.top) * 0.35 }
+        : { x: char.x, y: 50 };
+    }
+
+    function frameCharacters(chars, maximumZoom) {
+      const bounds = unionBounds(chars.map(c => stageBounds(c.el.querySelector('svg')) || stageBounds(c.el)));
+      if (!bounds) { camera.x = 50; camera.y = 50; return; }
+      // Reserve room around the entire cast, including tall hats and short actors.
+      // The extra bottom margin keeps feet clear of the caption area.
+      camera.zoom = Math.max(1, Math.min(maximumZoom, 88 / Math.max(1, bounds.right - bounds.left),
+        76 / Math.max(1, bounds.bottom - bounds.top)));
+      camera.x = (bounds.left + bounds.right) / 2;
+      camera.y = (bounds.top + bounds.bottom) / 2 + 5 / camera.zoom;
     }
 
     function shot(type, who = null, hardCut = true) {
@@ -99,43 +144,22 @@
 
       camera.zoom = preset.zoom;
 
-      if (preset.frameBoth) {
-        // Frame both characters - center between them
-        const chars = Object.values(characters).filter(c => !c.el.classList.contains('offscreen'));
-        if (chars.length) {
-          const xs = chars.map(c => c.x);
-          const ys = chars.map(c => getCharacterFaceY(c));
-          camera.x = (Math.min(...xs) + Math.max(...xs)) / 2;
-          camera.y = (Math.min(...ys) + Math.max(...ys)) / 2;
-        }
+      const visibleChars = Object.entries(characters).filter(([, c]) => !c.el.classList.contains('offscreen'));
+      if (type === 'wide') {
+        camera.x = 50; camera.y = 50; camera.follow = null;
+      } else if (preset.frameBoth) {
+        frameCharacters(visibleChars.map(([, c]) => c), preset.zoom);
         camera.follow = null;
       } else if (who && characters[who]) {
-        // Frame on specific character's face position (adjusted for scale)
-        camera.x = characters[who].x;
-        camera.y = getCharacterFaceY(characters[who]);
-        camera.follow = who;
+        const face = getCharacterFace(characters[who]);
+        camera.x = face.x; camera.y = face.y; camera.follow = who;
+      } else if (visibleChars.length === 1) {
+        const [name, char] = visibleChars[0];
+        const face = getCharacterFace(char);
+        camera.x = face.x; camera.y = face.y; camera.follow = name;
       } else {
-        // No character specified - try to auto-detect
-        // If only one character is visible, focus on them
-        const visibleChars = Object.entries(characters).filter(([_, c]) => !c.el.classList.contains('offscreen'));
-        if (visibleChars.length === 1) {
-          const [name, char] = visibleChars[0];
-          camera.x = char.x;
-          camera.y = getCharacterFaceY(char);
-          camera.follow = name;
-        } else if (visibleChars.length > 1) {
-          // Multiple visible - center between them
-          const xs = visibleChars.map(([_, c]) => c.x);
-          const ys = visibleChars.map(([_, c]) => getCharacterFaceY(c));
-          camera.x = (Math.min(...xs) + Math.max(...xs)) / 2;
-          camera.y = (Math.min(...ys) + Math.max(...ys)) / 2;
-          camera.follow = null;
-        } else {
-          // No visible characters - fallback to center
-          camera.x = 50;
-          camera.y = preset.y || 50;
-          camera.follow = null;
-        }
+        frameCharacters(visibleChars.map(([, c]) => c), preset.zoom);
+        camera.follow = null;
       }
 
       updateCamera();
@@ -149,7 +173,8 @@
     function followCharacter(name) {
       if (!characters[name]) return;
       camera.follow = name;
-      animateCameraTo(characters[name].x, getCharacterFaceY(characters[name]), 600);
+      const face = getCharacterFace(characters[name]);
+      animateCameraTo(face.x, face.y, 600);
     }
     
     // === CHARACTER SYSTEM ===
@@ -927,6 +952,8 @@
       if (!char) return;
 
       char.el.style.transition = `left ${duration}s ease-in-out, opacity 0.3s`;
+      const previousX = char.x;
+      const previousFace = camera.follow === name ? getCharacterFace(char) : null;
       char.x = toX;
       char.el.style.left = `${toX}%`;
 
@@ -935,7 +962,7 @@
       char.el.classList.add(toX < 50 ? 'pos-left' : 'pos-right');
 
       if (camera.follow === name) {
-        animateCameraTo(toX, getCharacterFaceY(char), duration * 1000);
+        animateCameraTo(previousFace.x + toX - previousX, previousFace.y, duration * 1000);
       }
 
       // Update any held props to follow with same transition

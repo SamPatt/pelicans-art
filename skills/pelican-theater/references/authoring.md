@@ -4,9 +4,7 @@ Commands run from the runtime checkout. Use absolute project paths when the agen
 
 ```sh
 node scripts/theater.mjs init data/projects/my-skit
-node scripts/theater.mjs validate data/projects/my-skit
-node scripts/theater.mjs build data/projects/my-skit
-node scripts/theater.mjs render data/projects/my-skit
+node scripts/theater.mjs finish data/projects/my-skit
 ```
 
 `project.json`: keep the complete pinned `tts` profile emitted by `init` or `import`; change only the endpoint to your scoped service. Do not substitute the `english` alias or manually shorten the profile. Existing supplied recordings are retained; revised lines use the new preset profile. Other authorized speech engines need their own configuration without Pocket profile fields.
@@ -59,3 +57,11 @@ If local Pocket was requested and installation or readiness fails, report whethe
 When the user chooses agent-supplied recordings, record the actual provider and actual voice name for each character in delivery notes. Different rate settings on one voice are not distinct voices. Use cast voice values compatible with the intended future synthesis endpoint; bookkeeping labels for supplied files must not be presented as selectable Pocket presets.
 
 Embedded audio makes existing dialogue playable, not automatically regenerable. Before promising editable voiced delivery, either verify the configured endpoint and preset voices for future changed dialogue, or clearly state that revised lines require the agent to regenerate and reattach supplied recordings. Do not claim a localhost endpoint is ready merely because its URL remains in project.json. Preserve existing recordings; if switching to Pocket for revisions, explicitly choose supported Pocket voice names and review any resulting recording invalidation. Test one changed line when claiming that the project's voice revision path works.
+
+## Staging and camera framing
+
+Cast `x` and `y` are percentages of the stage: x is the actor's horizontal center; y is its bottom anchor (default near the floor). Keep the entire painted actor inside the stage in the chosen orientation. Actor `scale` affects its displayed size; judge a preview rather than assuming one SVG unit is one screen pixel. Use a wide shot to establish the setting.
+
+Closeup, medium, and extreme-closeup shots target actual SVG eye/mouth geometry, including nested transforms and facing direction. Head groups provide a fallback; older actors without recognizable face elements use the legacy 35%-height target. Keep the documented face IDs on unconventional actors too; do not translate all artwork merely to satisfy a presumed fixed face anchor. Camera follow retains the face offset while the actor moves.
+
+A two-shot fits the visible painted cast with margins, up to 1.4x zoom; wide retains the full stage at 1x. Camera fitting cannot recover artwork placed outside the original stage. For crowded portrait scenes, reduce actor sizes or change staging rather than repeatedly changing face anchors. Check caption clearance in the contact sheet, especially on closeups. The recording synchronization marker is outside the exported frame; do not cover a corner with a postprocessing patch.

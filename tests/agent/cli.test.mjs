@@ -75,3 +75,11 @@ test('preview, inspect and package deliver portable artifacts and reject changed
  const {run}=await import('../../scripts/theater/project.mjs');assert.equal((await run('python3',['-c','import zipfile,sys; z=zipfile.ZipFile(sys.argv[1]); assert z.testzip() is None; print(len(z.namelist()))',packaged.archive.path])).toString().trim(),String(packaged.entries.length));
  skit.meta.title='Changed title';await writeJson(path.join(root,'skit.json'),skit);const stale=await invoke(['package',root]);assert.equal(stale.code,1);assert.match(stale.error,/Source changed/);
 });
+
+test('finish delivers checked custom-output artifacts and detects archive corruption',async t=>{
+ const root=await project(t),skit=await json(path.join(root,'skit.json'));skit.script=[{do:'pause',duration:0.3}];await writeJson(path.join(root,'skit.json'),skit);
+ const result=await invoke(['finish',root,'--output',path.join(root,'custom output')]);assert.equal(result.code,0,result.error);assert.equal(result.ok,true);assert.equal(result.archiveVerified,true);assert.equal(result.requiresVisualReview,true);assert.deepEqual(result.checks.findings,[]);assert.ok(result.phases.inspectSeconds>0);assert.ok((await fs.stat(result.contactSheet.path)).size>100);
+ const {verifyStoredZip}=await import('../../scripts/theater/workflow.mjs');const delivery=await json(result.deliveryManifest);assert.equal(await verifyStoredZip(result.archive.path,delivery.entries),true);
+ const bytes=await fs.readFile(result.archive.path);bytes[30+bytes.readUInt16LE(26)]^=1;const corrupt=path.join(root,'corrupt.zip');await fs.writeFile(corrupt,bytes);await assert.rejects(verifyStoredZip(corrupt,delivery.entries),/integrity/);
+ skit.script=[{do:'unsupported-action'}];await writeJson(path.join(root,'skit.json'),skit);const before=await fs.readdir(path.join(root,'output'));const failed=await invoke(['finish',root]);assert.equal(failed.ok,false);assert.equal(failed.code,1);assert.deepEqual(await fs.readdir(path.join(root,'output')),before);
+});

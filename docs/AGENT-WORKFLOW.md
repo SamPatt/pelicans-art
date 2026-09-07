@@ -16,7 +16,7 @@ node scripts/theater.mjs setup --tts --python python3.12
 node scripts/theater.mjs doctor --endpoint http://127.0.0.1:8001/tts --wait 120 --json
 node scripts/theater.mjs init data/projects/my-skit
 node scripts/theater.mjs validate data/projects/my-skit
-node scripts/theater.mjs render data/projects/my-skit
+node scripts/theater.mjs finish data/projects/my-skit
 ```
 
 Install FFmpeg using your OS package manager. `setup` installs npm dependencies and Chromium; Linux browser OS libraries may need `npx playwright install-deps chromium`. `setup --tts` adds an isolated pinned Pocket 2.1.0 environment under `.runtime/`, with CPU Torch 2.8.0 on Linux. It does not alter the agent's environment or start services. Locked local Pocket setup supports Linux x64 and ARM64/WSL with glibc 2.28+ and Python 3.12; other platforms can use an existing compatible speech endpoint.
@@ -50,7 +50,7 @@ To resume a downloaded GUI bundle in the CLI:
 
 ```sh
 node scripts/theater.mjs import data/projects/revised --bundle /path/to/download.json
-node scripts/theater.mjs render data/projects/revised
+node scripts/theater.mjs finish data/projects/revised
 ```
 
 CLI bundles preserve explicit caption-only mode when reimported. Unknown or misplaced command options return JSON errors before work begins.
@@ -105,7 +105,7 @@ The portable skill now includes [asset discovery and workflow tools](../skills/p
 node scripts/theater.mjs assets search --query "coffee" --source all
 node scripts/theater.mjs assets add data/projects/my-skit --source local --category props --id astra-coffee-cup --name coffee
 node scripts/theater.mjs preview data/projects/my-skit --serve
-node scripts/theater.mjs render data/projects/my-skit
+node scripts/theater.mjs finish data/projects/my-skit
 node scripts/theater.mjs inspect data/projects/my-skit
 node scripts/theater.mjs package data/projects/my-skit
 ```
@@ -113,3 +113,9 @@ node scripts/theater.mjs package data/projects/my-skit
 `preview` avoids MP4 capture and reuses cached speech. `inspect` checks the existing video and creates review images. `package` makes the source ZIP and returns attachment paths, MIME types, sizes, and hashes; it refuses stale renders. Local preview links require an existing authorized delivery route for mobile users.
 
 New SVG deliveries emit `meta.json` with category, description, tags, and model. Keep that metadata with the artwork and include it when uploading to the Pouch. Pouch search results expose those fields for new uploads and tolerate incomplete legacy metadata. Imports preserve source attribution and metadata; generation and packaging do not upload automatically.
+
+## Combined completion (skill 1.0.16)
+
+Use `finish <project>` after authoring. It validates/builds, renders, checks decoding and speech coverage, makes a contact sheet, and creates an integrity-verified editable ZIP. Review the contact sheet once and listen where supported, then attach the returned files. JSON includes phase timings, report paths, and delivery hashes. Individual `render`, `inspect`, and `package` commands remain available for troubleshooting; do not repeat passed checks without a changed artifact or observed problem.
+
+Closeups now target SVG face geometry and two-shots fit the painted cast. The capture synchronization marker is recorded outside the stage and cropped from the export, preserving the opening audio. See the portable skill's authoring reference for staging rules.

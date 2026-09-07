@@ -34,9 +34,7 @@ For newly authored assets, use `svg --kind character|prop|background --title ...
 node scripts/theater.mjs preview data/projects/my-skit --serve
 # Or use an existing authorized theater server:
 node scripts/theater.mjs preview data/projects/my-skit --base-url https://your-private-theater.example
-node scripts/theater.mjs render data/projects/my-skit
-node scripts/theater.mjs inspect data/projects/my-skit
-node scripts/theater.mjs package data/projects/my-skit
+node scripts/theater.mjs finish data/projects/my-skit
 ```
 
 Check selected voices with `node scripts/theater.mjs voices --endpoint <actual-tts-url> --select alba,paul`. This reads the running Pocket wrapper's `/health` `voicePresets`, verifies the pinned catalog revision, returns canonical IDs with subjective descriptions, and fails if a selected ID is unavailable. Do not guess `/voices` or repeatedly run synthesis doctor on an already-verified warm service. The next build still validates actual synthesis.
@@ -54,6 +52,8 @@ For staging revisions, reuse the project and speech cache; do not reinstall or r
 
 Once the plan is approved, do not repeat the questionnaire. Reuse the approved script and complete asset variants; adapt only what the user changed. Search metadata and the portrait filter before committing to a background. No search result is a reason to redraw an already available, approved asset.
 
-Batch independent discovery and voice checks. After editing, run validate then preview, inspect the preview, then render and inspect the video. Once checks pass, package and deliver; avoid extra helper authoring or repeated full captures without an observed defect. For an unchanged previously approved visual layout, a separate preview before render is optional.
+Batch independent discovery and voice checks. After editing, use `finish`, review its contact sheet once, and deliver when it passes. A separate preview is optional for uncertain staging or a requested early review; do not require it before every render. Do not add independent ffprobe, decode, per-line probes, ZIP checks, or duplicate manifest reads after successful built-in checks. Recheck when media is modified after checking, a diagnostic fails, or the user requests a deeper audit. Read the staging guidance before investigating player code; avoid helper authoring and repeated captures without an observed defect.
 
 Every CLI JSON result includes `execution.startedAt`, `finishedAt`, and elapsed `seconds`. Save results directly when benchmarking. Record wallclock start and delivery timestamps around the whole conversation as well; command durations omit agent planning/composition, visual review, transport and approval overhead. Report user review intervals and installation separately. Do not present a finished-assets repeat as a fresh-skit benchmark.
+
+`finish` combines build/render, inspection, and packaging, returning phase timings, a contact sheet, full report paths, delivery hashes, and verified ZIP integrity. It stops on a failed phase. Automated success still requires one visual review; listen when supported. `render`, `inspect`, and `package` remain available individually. If copying files for attachment, compare the copied file hash with the returned hash rather than repeating the whole inspection.
