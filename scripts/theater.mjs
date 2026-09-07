@@ -100,7 +100,7 @@ async function setup() {
         else await run(basePython,['-I','-m','venv',env]);
       }
       await checkVenv(env,run);
-      const packages=['--require-hashes','--only-binary',':all:','-r',path.join(ROOT,inspection.speechLock.path),'--extra-index-url','https://download.pytorch.org/whl/cpu'];
+      const packages=['--require-hashes','--only-binary',':all:','-r',path.join(ROOT,inspection.speechLock.path),...(process.platform==='linux'?['--extra-index-url','https://download.pytorch.org/whl/cpu']:[])];
       if (hasUv) await run('uv',['pip','install','--python',python,'--index-strategy','unsafe-best-match',...packages]);
       else await run(python,['-I','-m','pip','--isolated','install',...packages]);
       await run(python,[path.join(ROOT,'scripts/theater/pocket-server.py'),'prepare']);

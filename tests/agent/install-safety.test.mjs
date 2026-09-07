@@ -3,13 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import {checkDirectories,checkPlatform,checkVenv,preflight,pocketLocks} from '../../scripts/theater/install-safety.mjs';
+import {checkDirectories,checkPlatform,checkVenv,preflight,pocketLocks,macPocketLock,speechLockPath} from '../../scripts/theater/install-safety.mjs';
 import {run} from '../../scripts/theater/project.mjs';
 
 test('unsupported local speech platforms fail before installation',()=>{
   for (const config of [{platform:'darwin',arch:'x64'},{platform:'linux',arch:'riscv64'},{platform:'linux',arch:'x64',glibc:'2.17'},{platform:'win32',arch:'x64'}]) assert.throws(()=>checkPlatform({...config,tts:true}));
   checkPlatform({platform:'linux',arch:'x64',glibc:'2.28',tts:true});
   checkPlatform({platform:'darwin',arch:'arm64',tts:false});
+  checkPlatform({platform:'darwin',arch:'arm64',tts:true});
+  assert.equal(speechLockPath('darwin','arm64'),macPocketLock);
+  assert.equal(speechLockPath('darwin','x64'),undefined);
   checkPlatform({platform:'linux',arch:'arm64',glibc:'2.39',tts:true});
   assert.throws(()=>checkPlatform({platform:'linux',arch:'arm64',glibc:'2.27',tts:true}));
   assert.notEqual(pocketLocks.arm64,pocketLocks.x64);
@@ -80,4 +83,12 @@ test('a missing optional executable never leaves a long timeout holding the CLI 
   const result=await run(process.execPath,['--input-type=module','-e',`import {run} from ${JSON.stringify(moduleUrl)}; await run('pelican-nonexistent-executable',[],{timeout:1200000}).catch(()=>{}); console.log('done');`],{timeout:3000});
   assert.equal(result.toString().trim(),'done');
   await assert.rejects(run(process.execPath,['-e','setInterval(()=>{},1000)'],{timeout:50}),/timed out/);
+});
+
+test('Apple Silicon lock uses the pinned macOS CPU-capable Torch wheel',async()=>{
+ const lock=await fs.readFile(macPocketLock,'utf8');
+ assert.match(lock,/^torch==2\.8\.0 /m);
+ assert.match(lock,/^pocket-tts==2\.1\.0 /m);
+ assert.ok(!lock.includes('+cpu'));
+ for(const entry of lock.trim().split(/\n(?=[a-zA-Z])/))assert.match(entry,/--hash=sha256:[a-f0-9]{64}/);
 });

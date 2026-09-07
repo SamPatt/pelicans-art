@@ -1,0 +1,63 @@
+name: macOS installation and rendering
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'scripts/theater.mjs'
+      - 'scripts/theater/**'
+      - '.github/workflows/macos.yml'
+  pull_request:
+    paths:
+      - 'scripts/theater.mjs'
+      - 'scripts/theater/**'
+      - '.github/workflows/macos.yml'
+permissions:
+  contents: read
+jobs:
+  render:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Prepare disposable runner prerequisites
+        run: brew install ffmpeg
+      - name: Install rendering dependencies through normal CLI
+        run: node scripts/theater.mjs setup
+      - name: Test CLI rendering and supplied recordings
+        run: node --test tests/agent/cli.test.mjs
+      - name: Install locked Apple Silicon Pocket
+        if: runner.arch == 'ARM64'
+        run: |
+          node scripts/theater.mjs setup --check --tts --python python3.12
+          if ! node scripts/theater.mjs setup --tts --python python3.12 > pocket-setup.json; then
+            cat pocket-setup.json
+            exit 1
+          fi
+          mv pocket-setup.json .runtime/ci-setup.json
+      - name: Synthesize, revise, and render with local Pocket
+        if: runner.arch == 'ARM64'
+        run: node scripts/theater/pocket-install-smoke.mjs
+      - name: Preserve evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-evidence-${{ matrix.runner }}
+          path: |
+            pocket-setup.json
+            .runtime/ci-setup.json
+            .runtime/ci-pocket.log
+            .runtime/ci-speech-result.json
+            .runtime/install-*.json
+            .runtime/ci-skit/output/render/project/
+          include-hidden-files: true
+          retention-days: 7

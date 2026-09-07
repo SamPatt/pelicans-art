@@ -5,6 +5,11 @@ import {createHash} from 'node:crypto';
 
 export const pocketLocks = Object.freeze({x64:'scripts/theater/pocket-linux-py312.lock',arm64:'scripts/theater/pocket-linux-arm64-py312.lock'});
 
+export const macPocketLock = 'scripts/theater/pocket-macos-arm64-py312.lock';
+export function speechLockPath(platform=process.platform, arch=process.arch) {
+  return platform === 'darwin' && arch === 'arm64' ? macPocketLock : platform === 'linux' ? pocketLocks[arch] : undefined;
+}
+
 // Reject redirected installation directories, but allow the normal venv Python symlink.
 export async function checkDirectories(root, relatives) {
   const canonical = await fs.realpath(root);
@@ -22,7 +27,7 @@ export async function checkDirectories(root, relatives) {
 export function checkPlatform({node=process.versions.node, platform=process.platform, arch=process.arch, glibc=process.report.getReport().header.glibcVersionRuntime, tts=false}={}) {
   if (Number(node.split('.')[0]) < 22) throw new Error('Install Node 22+ before setup; setup does not replace Node.');
   if (!['linux','darwin'].includes(platform)) throw new Error('Use Linux/WSL or macOS for rendering; native Windows setup is not supported.');
-  if (tts && (platform !== 'linux' || !Object.hasOwn(pocketLocks,arch) || !glibc || Number(glibc.split('.')[0]) < 2 || (Number(glibc.split('.')[0]) === 2 && Number(glibc.split('.')[1]) < 28))) throw new Error('Locked local Pocket setup currently requires Linux x64 or ARM64 with glibc 2.28+. Other platforms can use an existing compatible speech endpoint; their local Pocket installation is not yet verified.');
+  if (tts && (!speechLockPath(platform,arch) || (platform === 'linux' && (!glibc || Number(glibc.split('.')[0]) < 2 || (Number(glibc.split('.')[0]) === 2 && Number(glibc.split('.')[1]) < 28))))) throw new Error('Locked local Pocket setup currently requires Linux x64 or ARM64 with glibc 2.28+, or Apple Silicon macOS. Other platforms can use an existing compatible speech endpoint; their local Pocket installation is not yet verified.');
 }
 export async function checkVenv(env, run) {
   const stat = await fs.lstat(env).catch(error => { if(error.code !== 'ENOENT') throw error; });
@@ -44,7 +49,7 @@ export async function preflight(root, {tts, svgOnly=false, python, run}) {
     const uv=await run('uv',['--version']).then(()=>true).catch(()=>false);
     if (!uv) await run(exists?path.join(root,'.runtime/pocket-tts-2.1.0/bin/python'):python,exists?['-I','-m','pip','--version']:['-I','-c','import venv,ensurepip']);
   }
-  const speechLock = tts ? {path:pocketLocks[process.arch],sha256:createHash('sha256').update(await fs.readFile(path.join(root,pocketLocks[process.arch]))).digest('hex')} : undefined;
+  const speechLock = tts ? {path:speechLockPath(),sha256:createHash('sha256').update(await fs.readFile(path.join(root,speechLockPath()))).digest('hex')} : undefined;
   const disk = await fs.statfs(root);
   return {platform:process.platform,architecture:process.arch,speechLock,freeDiskBytes:disk.bavail*disk.bsize,totalMemoryBytes:os.totalmem(),freeMemoryBytes:os.freemem()};
 }
