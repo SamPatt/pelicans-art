@@ -59,7 +59,7 @@ The deliberately simple visual style is part early web animation, part AI artifa
 Copy the block below into an agent chat that can run shell commands. Your agent downloads the skill and sets up the runtime, then works out the skit with you in chat before creating the video.
 
 ```text
-Download https://pelicans.art/downloads/pelican-theater-1.0.19.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.19.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.
+Download https://pelicans.art/downloads/pelican-theater-1.0.20.zip and its release receipt https://pelicans.art/downloads/pelican-theater-1.0.20.json into a new temporary directory. Verify the ZIP's SHA-256 against the receipt, extract it, and read pelican-theater/SKILL.md and its required references. Follow the skill in this conversation; handle fetching the runtime and setup yourself, without asking me to clone the repository first.
 
 Use the tested runtime commit in the receipt's ref field. Fetch the public runtime from https://github.com/SamPatt/pelicans-art.git over HTTPS; no GitHub login, token, SSH alias, or deploy key is needed. If fetching fails, explain the network or environment problem. Do not request tokens, change Git authentication, or change repository visibility.
 
@@ -72,7 +72,7 @@ After delivering the video, invite my next idea or offer two short, absurd sugge
 
 Your agent will download the [portable skill](skills/pelican-theater/SKILL.md). It handles dependency checks, SVG structure, skit validation, speech, rendering, and delivering the finished video in chat. You review the plot and ask for revisions in the same conversation.
 
-For shell users, follow the [CLI quickstart](docs/AGENT-WORKFLOW.md). Node.js 22+, FFmpeg, Chromium, and a speech service are needed for voiced MP4s. The CLI starts its own temporary player; running the Express authoring server is unnecessary. Locked local Pocket setup supports Linux x64 and ARM64 (including compatible WSL installations), glibc 2.28+, and Python 3.12. Other platforms can use an existing speech endpoint; macOS rendering has not yet had a clean-machine rehearsal.
+For shell users, follow the [CLI quickstart](docs/AGENT-WORKFLOW.md). Node.js 22+, FFmpeg, Chromium, and a speech service are needed for voiced MP4s. The CLI starts its own temporary player; running the Express authoring server is unnecessary. Locked local Pocket setup supports Linux x64 and ARM64 (glibc 2.28+, including compatible WSL installations) and Apple Silicon macOS, with Python 3.12. macOS 15 rendering is tested on Apple Silicon and Intel; Intel Macs need supplied recordings or an existing speech endpoint because the pinned Torch release has no Intel Mac wheel.
 
 ## Companion Editor
 

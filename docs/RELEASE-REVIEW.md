@@ -31,13 +31,13 @@ The primary workflow is direct SVG/JSON authoring through an agent and the CLI, 
 
 See [CLI verification](CLI-VERIFICATION.md) and [Editor testing](EDITOR-TESTING.md). Native ARM64 installation, real Pocket speech, dialogue revision and H.264/AAC rendering passed in GitHub [run 34042378085](https://github.com/SamPatt/pelicans-art/actions/runs/34042378085). The published main revision `38e97cc` also passed Test, ARM64 installation and Pages deployment. The installer/server/CLI and pinned speech inputs in this candidate are identical to that verified runtime; this review does not claim another fresh Hermes VPS installation.
 
-Setup remains non-root, isolated, hash-locked and explicit about OS-level changes. Services bind privately; origin checks are not user authentication. Linux x64 and ARM64 are the verified local Pocket targets. macOS and physical Safari remain unverified beyond the documented scope.
+Setup remains non-root, isolated, hash-locked and explicit about OS-level changes. Services bind privately; origin checks are not user authentication. Linux x64/ARM64 and Apple Silicon macOS 15 are verified local Pocket targets. macOS 15 Intel rendering also passed; Intel requires supplied speech or a compatible endpoint. See the [macOS rehearsal](AGENT-WORKFLOW.md#macos-rehearsal-2026-09-07). Interactive Safari and personal Mac environments remain outside this CI verification.
 
 ## Publication completed
 
 - Release and main CI passed for `9e2c63d`; all 148 local tests passed, including upload-control and moderation regression coverage.
 - The live Worker serves SVGs with CSP/nosniff, and Pouch SVG rendering and sharing actions passed a mobile-viewport browser check.
-- GitHub Pages and skill download/checksum verification passed. The current download is skill 1.0.19, which searches the bundled 100-asset sandbox library first and retains the pacing and deliberate-interruption guidance; its runtime includes the library and preserves attribution and reuse permissions on import; earlier immutable releases remain available for reproducibility.
+- GitHub Pages and skill download/checksum verification passed. The current download is skill 1.0.20, which adds Apple Silicon installation guidance and pins the Mac-tested runtime, while retaining the bundled asset library and pacing guidance; earlier immutable releases remain available for reproducibility.
 - Public visibility, anonymous access, secret scanning, push protection, private vulnerability reporting, and dependency alerts were verified enabled. No open secret alerts were reported at publication; monitoring continues.
 
 ## Before unrestricted community promotion
